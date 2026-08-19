@@ -1,23 +1,23 @@
-// ===== 🔒 لایه امنیتی پیشرفته مافیاسان (Advanced Frontend Protection) =====
+'use strict';
+
+// =========================================================================
+// 🔒 لایه امنیتی پیشرفته مافیاسان (Advanced Frontend Protection)
+// =========================================================================
 
 // 1. جلوگیری از قرارگیری سایت در آی‌فریم (Anti-Clickjacking)
-// اگر کسی بخواهد سایت شما را در سایت دیگری نمایش دهد، خودکار خارج می‌شود
 if (window.top !== window.self) {
     window.top.location = window.self.location;
 }
 
-// تابع کمکی برای تشخیص فیلدهای متنی (تا کاربر بتواند تایپ کند)
+// تابع کمکی برای تشخیص فیلدهای متنی
 const isInput = (target) => {
     const tag = target.tagName;
     return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
 };
 
-// 2. قفل کردن تعاملات ماوس (راست‌کلیک، درگ، دراپ، انتخاب متن)
+// 2. قفل کردن تعاملات ماوس
 document.addEventListener('contextmenu', e => {
-    if (!isInput(e.target)) {
-        e.preventDefault();
-        // e.stopPropagation(); // در صورت نیاز فعال شود
-    }
+    if (!isInput(e.target)) e.preventDefault();
 }, true);
 
 document.addEventListener('selectstart', e => {
@@ -26,16 +26,13 @@ document.addEventListener('selectstart', e => {
 
 document.addEventListener('dragstart', e => e.preventDefault(), true);
 document.addEventListener('drop', e => e.preventDefault(), true);
-
-// جلوگیری از کپی و کات (به جز داخل فیلدهای متنی)
 document.addEventListener('copy', e => { if (!isInput(e.target)) e.preventDefault(); }, true);
 document.addEventListener('cut', e => { if (!isInput(e.target)) e.preventDefault(); }, true);
 
-// 3. مقابله با کلیک‌های رگباری و دبل‌کلیک (جلوگیری از اسپم یا انتخاب ناخواسته)
+// 3. مقابله با کلیک‌های رگباری و دبل‌کلیک
 let clickCount = 0;
 let clickTimer = null;
 document.addEventListener('click', e => {
-    // اگر روی دکمه‌ها رگباری کلیک شود، فقط یک بار ثبت می‌شود
     if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') {
         clickCount++;
         if (clickCount > 1) {
@@ -44,50 +41,23 @@ document.addEventListener('click', e => {
             e.stopImmediatePropagation();
         }
         clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => { clickCount = 0; }, 800); // بازگشت به حالت عادی بعد از 0.8 ثانیه
+        clickTimer = setTimeout(() => { clickCount = 0; }, 800);
     }
-}, true); // استفاده از true (Capture Phase) برای اولویت بالاتر نسبت به همه رویدادها
+}, true);
 
 // 4. قفل کردن کامل کلیدهای میانبر کیبورد
 document.addEventListener('keydown', e => {
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const ctrl = isMac ? e.metaKey : e.ctrlKey;
-    const alt = e.altKey;
-    const shift = e.shiftKey;
-
-    // بستن F12 و PrintScreen
-    if (e.key === 'F12' || e.key === 'PrintScreen') {
-        e.preventDefault();
-        return false;
-    }
-
-    // بستن Ctrl+U (سورس), S (ذخیره), P (چاپ)
-    if (ctrl && ['u','U','s','S','p','P'].includes(e.key)) {
-        e.preventDefault();
-        return false;
-    }
-
-    // بستن Ctrl+Shift+I, J, C (ابزار توسعه‌دهنده)
-    if (ctrl && shift && ['i','I','j','J','c','C'].includes(e.key)) {
-        e.preventDefault();
-        return false;
-    }
-
-    // بستن Cmd+Option+I, J, C (مخصوص مک)
-    if (isMac && alt && ['i','I','j','J','c','C'].includes(e.key)) {
-        e.preventDefault();
-        return false;
-    }
-
-    // جلوگیری از Ctrl+A (انتخاب همه) به جز در اینپوت‌ها
-    if (ctrl && ['a','A'].includes(e.key) && !isInput(e.target)) {
-        e.preventDefault();
-        return false;
-    }
+    
+    if (e.key === 'F12' || e.key === 'PrintScreen') { e.preventDefault(); return false; }
+    if (ctrl && ['u','U','s','S','p','P'].includes(e.key)) { e.preventDefault(); return false; }
+    if (ctrl && e.shiftKey && ['i','I','j','J','c','C'].includes(e.key)) { e.preventDefault(); return false; }
+    if (isMac && e.altKey && ['i','I','j','J','c','C'].includes(e.key)) { e.preventDefault(); return false; }
+    if (ctrl && ['a','A'].includes(e.key) && !isInput(e.target)) { e.preventDefault(); return false; }
 }, true);
 
 // 5. تله‌گذاری هوشمند کنسول (Debugger Trap)
-// اگر کاربر به هر طریقی کنسول را باز کند، مرورگر فریز شده و جلسه کاربر پاک می‌شود
 (function detectDevTools() {
     const threshold = 160;
     let devtoolsOpen = false;
@@ -95,8 +65,7 @@ document.addEventListener('keydown', e => {
     const check = () => {
         const widthDiff = window.outerWidth - window.innerWidth > threshold;
         const heightDiff = window.outerHeight - window.innerHeight > threshold;
-        
-        // تله دیباگر: اگر کنسول باز باشد، این خط اجرا شده و مرورگر را متوقف می‌کند
+
         const element = new Image();
         Object.defineProperty(element, 'id', {
             get: function () {
@@ -107,7 +76,6 @@ document.addEventListener('keydown', e => {
         console.log('%c', element);
 
         if (widthDiff || heightDiff || devtoolsOpen) {
-            // اقدام امنیتی: پاک کردن نشست و نابودی صفحه
             localStorage.removeItem('ms_session');
             document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0d1017;color:#ff4444;font-family:tahoma,sans-serif;text-align:center;padding:20px;"><h1>⛔ دسترسی غیرمجاز تشخیص داده شد</h1><p>به دلیل تلاش برای دستکاری کد، دسترسی شما قطع گردید.</p></div>';
             setTimeout(() => { 
@@ -116,12 +84,10 @@ document.addEventListener('keydown', e => {
             }, 1500);
         }
     };
-
     setInterval(check, 1000);
 })();
 
 // 6. بی‌اثر کردن دستورات کنسول (Console Spoofing)
-// اگر کسی کنسول را باز کند، دستوراتش هیچ خروجی‌ای نمی‌دهد
 const noop = () => {};
 console.log = noop;
 console.warn = noop;
@@ -129,9 +95,8 @@ console.error = noop;
 console.info = noop;
 console.debug = noop;
 console.clear = noop;
+// =========================================================================
 
-// ===== پایان لایه امنیتی =====
-'use strict';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -176,7 +141,6 @@ async function dbSet(key,value){
     return r.some(x=>x.status==='fulfilled'&&x.value===true);
 }
 
-// ✅ اکانت‌های پیش‌فرض که همیشه باید وجود داشته باشن
 const DEFAULT_USERS = [
     {id:'u-creator',firstName:'سازنده',lastName:'مافیاسان',gameName:'Creator',mobile:'09904844031',email:'-',password:'Par1617230',role:'creator',avatar:null},
     {id:'u-sup1',firstName:'پشتیبانی',lastName:'مافیاسان',gameName:'Support 1',mobile:'09940940720',email:'-',password:'Erfan.sh85',role:'support',avatar:null},
@@ -189,7 +153,6 @@ let formSettings = {};
 let announcements = [];
 let currentSession = localStorage.getItem('ms_session') || null;
 
-// ✅ تضمین وجود اکانت‌های پیش‌فرض با رمز درست
 function ensureDefaultUsers(){
     let changed = false;
     DEFAULT_USERS.forEach(du => {
@@ -208,30 +171,26 @@ async function loadAllData(){
         const [u, r, s, a] = await Promise.all([
             dbGet(USERS_KEY), dbGet(REQUESTS_KEY), dbGet(SETTINGS_KEY), dbGet(ANNOUNCE_KEY)
         ]);
-        
-        // ✅ اصلاح حیاتی: اگر به دلیل خطای شبکه u نال بود، دیتابیس را بازنویسی نمی‌کنیم تا اطلاعات کاربران پاک نشود.
+
         if(u && Array.isArray(u)) {
             usersCache = u;
         } else {
             usersCache = JSON.parse(JSON.stringify(DEFAULT_USERS));
         }
-        
+
         if(r && Array.isArray(r)) requestsCache = r; else requestsCache = [];
         if(s && typeof s === 'object') formSettings = s;
         else formSettings = {nazer:true,nazerArshad:true,admin:true,adminArshad:true,gardanandeh:true,poshtibani:true};
         if(a && Array.isArray(a)) announcements = a; else announcements = [];
 
-        // ✅ فقط در صورتی تغییرات را ذخیره کن که داده‌ها از دیتابیس خوانده شده باشند (u !== null) و نیاز به آپدیت دیفالت‌ها باشد.
         if(u !== null && ensureDefaultUsers()){ 
             await dbSet(USERS_KEY, usersCache); 
         }
         
-        // مقداردهی اولیه سایر کلیدها فقط در صورتی که واقعاً خالی باشند
         if(!r){ await dbSet(REQUESTS_KEY, requestsCache); }
         if(!s){ await dbSet(SETTINGS_KEY, formSettings); }
         if(!a){ await dbSet(ANNOUNCE_KEY, announcements); }
     }catch(e){
-        console.error(e);
         toast('خطا در دریافت اطلاعات','err');
     }
 }
@@ -279,8 +238,13 @@ function roleTickHtml(role){
 
 let toastTimer;
 function toast(msg,type='ok'){
-    const t=$('#toast');t.textContent=msg;t.className='toast show '+(type==='err'?'t-err':'t-ok');
-    clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+    const t=$('#toast');
+    if(t){
+        t.textContent=msg;
+        t.className='toast show '+(type==='err'?'t-err':'t-ok');
+        clearTimeout(toastTimer);
+        toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+    }
 }
 
 let currentPage='home', currentRole='nazer';
@@ -309,6 +273,7 @@ async function readAsDataURL(f){
 
 function renderUserArea(){
     const u=currentUser();const area=$('#userArea');
+    if(!area) return;
     if(u){
         area.innerHTML=`<img src="${u.avatar || defaultAvatar}" class="user-avatar" alt="avatar" onerror="this.src='${defaultAvatar}'">
             <span><b>${esc(u.firstName)}</b> ${badge(u)}</span>
@@ -350,6 +315,7 @@ function updateRoleButtons(){
 
 function renderPublicAnnounce(){
     const box=$('#publicAnnounce');
+    if(!box) return;
     if(!announcements.length){box.innerHTML='<p class="muted small">هنوز معرفی‌ای ثبت نشده است.</p>';return;}
     box.innerHTML=announcements.map(a=>`
         <div class="ann-card">
@@ -368,14 +334,14 @@ function showPage(name){
     if(name==='forms'){renderMyRequests();updateRoleButtons();renderPublicAnnounce();}
     if(name==='panel') renderPanel();
     renderNavLinks();renderUserArea();
-    $('#navLinksDesktop').classList.remove('open');
+    const nav=$('#navLinksDesktop'); if(nav) nav.classList.remove('open');
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function renderMyRequests(){
     const u=currentUser();if(!u) return;
     const reqs=requestsCache.filter(r=>r.userId===u.id);
-    const box=$('#myRequests');
+    const box=$('#myRequests'); if(!box) return;
     if(!reqs.length){box.innerHTML='<p class="muted small">هنوز درخواستی ثبت نکرده‌اید.</p>';return;}
     box.innerHTML=reqs.map(r=>`
         <div class="card req-card">
@@ -394,12 +360,13 @@ function renderMyRequests(){
 
 function renderPanel(){
     const u=currentUser();if(!isStaff(u)) return;
-    $('#panelRoleTitle').innerHTML=(isCreator(u)?'سازنده ':'پشتیبانی ')+badge(u);
+    const titleEl=$('#panelRoleTitle');
+    if(titleEl) titleEl.innerHTML=(isCreator(u)?'سازنده ':'پشتیبانی ')+badge(u);
     renderPanelReqs(); renderPanelUsers(); renderSettings(); renderAnnounce();
 }
 
 function renderPanelReqs(){
-    const box=$('#panelReqs');
+    const box=$('#panelReqs'); if(!box) return;
     if(!requestsCache.length) box.innerHTML='<p class="muted small">هنوز درخواستی ثبت نشده است.</p>';
     else{
         box.innerHTML=requestsCache.map(r=>{
@@ -451,7 +418,7 @@ function renderPanelReqs(){
 }
 
 function renderPanelUsers(){
-    const usersTable=$('#panelUsers');
+    const usersTable=$('#panelUsers'); if(!usersTable) return;
     usersTable.innerHTML=`<div class="table-wrap"><table>
         <tr><th>نام</th><th>نام خانوادگی</th><th>بازی</th><th>موبایل</th><th>ایمیل</th><th>مقام</th></tr>
         ${usersCache.map(x=>`<tr><td>${esc(x.firstName)}</td><td>${esc(x.lastName)}</td><td>${esc(x.gameName||'-')}</td><td>${esc(x.mobile)}</td><td>${esc(x.email||'-')}</td><td>${badge(x)||'کاربر'}</td></tr>`).join('')}
@@ -459,7 +426,7 @@ function renderPanelUsers(){
 }
 
 function renderSettings(){
-    const box=$('#panelSettings');
+    const box=$('#panelSettings'); if(!box) return;
     const u=currentUser();
     if(!isCreator(u)){box.innerHTML='<p class="muted small">فقط سازنده دسترسی به تنظیمات فرم‌ها دارد.</p>';return;}
     box.innerHTML=Object.keys(ROLES).map(key=>{
@@ -481,7 +448,7 @@ function renderSettings(){
 
 function renderAnnounce(){
     const u=currentUser();
-    const box=$('#panelAnnounce');
+    const box=$('#panelAnnounce'); if(!box) return;
     if(!isCreator(u)){box.innerHTML='<p class="muted small">فقط سازنده دسترسی به معرفی مقام دارد.</p>';return;}
     box.innerHTML=`
         <div class="card form" style="margin-bottom:14px">
@@ -502,8 +469,9 @@ function renderAnnounce(){
         toast('معرفی ثبت شد');
     };
 }
+
 function renderAnnList(){
-    const box=$('#annList');
+    const box=$('#annList'); if(!box) return;
     if(!announcements.length){box.innerHTML='<p class="muted small">هنوز معرفی‌ای ثبت نشده.</p>';return;}
     box.innerHTML=announcements.map(a=>`
         <div class="ann-card">
@@ -527,16 +495,16 @@ document.addEventListener('click', async e=>{
     const rl=e.target.closest('[data-role]');
     if(rl){openRole(rl.dataset.role);return;}
     const cl=e.target.closest('[data-close]');
-    if(cl){$('#'+cl.dataset.close).classList.remove('show');return;}
+    if(cl){const m=$('#'+cl.dataset.close); if(m) m.classList.remove('show');return;}
     const lt=e.target.closest('[data-light]');
-    if(lt){$('#lightboxImg').src=lt.src;$('#lightbox').classList.add('show');return;}
+    if(lt){const lbImg=$('#lightboxImg'); const lb=$('#lightbox'); if(lbImg) lbImg.src=lt.src; if(lb) lb.classList.add('show');return;}
     const tb=e.target.closest('[data-tab]');
     if(tb){
         $$('.tab').forEach(t=>t.classList.toggle('active',t===tb));
-        $('#panelReqs').classList.toggle('hidden',tb.dataset.tab!=='reqs');
-        $('#panelUsers').classList.toggle('hidden',tb.dataset.tab!=='users');
-        $('#panelSettings').classList.toggle('hidden',tb.dataset.tab!=='settings');
-        $('#panelAnnounce').classList.toggle('hidden',tb.dataset.tab!=='announce');
+        const reqs=$('#panelReqs'); if(reqs) reqs.classList.toggle('hidden',tb.dataset.tab!=='reqs');
+        const users=$('#panelUsers'); if(users) users.classList.toggle('hidden',tb.dataset.tab!=='users');
+        const sets=$('#panelSettings'); if(sets) sets.classList.toggle('hidden',tb.dataset.tab!=='settings');
+        const ann=$('#panelAnnounce'); if(ann) ann.classList.toggle('hidden',tb.dataset.tab!=='announce');
         return;
     }
     if(e.target.closest('#openRegister')){openModal('modalRegister');return;}
@@ -547,7 +515,7 @@ document.addEventListener('click', async e=>{
     }
     const rp=e.target.closest('[data-reply]');
     if(rp){
-        const id=rp.dataset.reply, txt=$('#rep-'+id).value.trim();
+        const id=rp.dataset.reply, txt=$('#rep-'+id)?.value.trim();
         if(!txt){toast('متن پاسخ را بنویسید','err');return;}
         const me=currentUser(), r=requestsCache.find(x=>x.id===id);
         if(r){
@@ -582,70 +550,77 @@ document.addEventListener('click', async e=>{
     }
 });
 
-$('#menuToggle').addEventListener('click',()=>{ $('#navLinksDesktop').classList.toggle('open'); });
+const menuToggle=$('#menuToggle');
+if(menuToggle) menuToggle.addEventListener('click',()=>{ const nav=$('#navLinksDesktop'); if(nav) nav.classList.toggle('open'); });
 
-function openModal(id){$('#'+id).classList.add('show');}
+function openModal(id){const m=$('#'+id); if(m) m.classList.add('show');}
 $$('.modal .dialog').forEach(d=>d.addEventListener('click',e=>e.stopPropagation()));
 $$('.modal').forEach(m=>{ if(m.id!=='lightbox') m.addEventListener('click',()=>m.classList.remove('show')); });
-$('#lightbox').addEventListener('click',()=>$('#lightbox').classList.remove('show'));
+const lightbox=$('#lightbox');
+if(lightbox) lightbox.addEventListener('click',()=>lightbox.classList.remove('show'));
 
-$('#roleRulesBtn').addEventListener('click',()=>$('#roleRulesBox').classList.toggle('hidden'));
-$('#roleApplyBtn').addEventListener('click',()=>openApply(currentRole));
+const roleRulesBtn=$('#roleRulesBtn');
+if(roleRulesBtn) roleRulesBtn.addEventListener('click',()=>{const box=$('#roleRulesBox'); if(box) box.classList.toggle('hidden');});
+const roleApplyBtn=$('#roleApplyBtn');
+if(roleApplyBtn) roleApplyBtn.addEventListener('click',()=>openApply(currentRole));
 
 function openRole(key){
     currentRole=key;
-    $('#roleTitle').textContent=ROLES[key].title;
-    $('#roleRulesText').textContent=ROLES[key].rule;
-    $('#roleRulesBox').classList.add('hidden');
+    const title=$('#roleTitle'); if(title) title.textContent=ROLES[key].title;
+    const rules=$('#roleRulesText'); if(rules) rules.textContent=ROLES[key].rule;
+    const box=$('#roleRulesBox'); if(box) box.classList.add('hidden');
     showPage('role');
 }
+
 function openApply(key){
     const u=currentUser();
     if(!u){toast('ابتدا ثبت نام کنید یا وارد حساب شوید','err');openModal('modalLogin');return;}
     if(formSettings[key]===false){toast('فرم این مقام فعلاً غیرفعال است','err');return;}
     currentRole=key;
-    $('#applyRoleTitle').textContent=ROLES[key].title;
+    const applyTitle=$('#applyRoleTitle'); if(applyTitle) applyTitle.textContent=ROLES[key].title;
     showPage('apply');
 }
 
 function bindImgPrev(inputId, prevId, maxMB=1.5){
-    $('#'+inputId).addEventListener('change', ev=>{
+    const input=$('#'+inputId); if(!input) return;
+    input.addEventListener('change', ev=>{
         const f=ev.target.files[0];if(!f) return;
         if(f.size>maxMB*1024*1024){toast('حجم عکس باید کمتر از '+maxMB+' مگابایت باشد','err');ev.target.value='';return;}
-        const p=$('#'+prevId);p.classList.remove('hidden');
-        p.src=URL.createObjectURL(f);
+        const p=$('#'+prevId); if(p) { p.classList.remove('hidden'); p.src=URL.createObjectURL(f); }
     });
 }
 bindImgPrev('rAvatar','rAvatarPrev');
 bindImgPrev('aShenas','prevShenas');
 bindImgPrev('aPhoto','prevPhoto');
 
-$('#aMedia').addEventListener('change', ev=>{
-    const f=ev.target.files[0];if(!f) return;
-    if(!(f.type.startsWith('video')||f.type.startsWith('audio'))){toast('فایل باید ویدیو یا ویس باشد','err');ev.target.value='';return;}
-    const url=URL.createObjectURL(f);
-    const mediaEl=document.createElement(f.type.startsWith('video')?'video':'audio');
-    mediaEl.preload='metadata';mediaEl.src=url;
-    mediaEl.onloadedmetadata=()=>{
-        const dur=mediaEl.duration;
-        if(dur>120){toast('مدت زمان نباید بیشتر از ۲ دقیقه باشد','err');ev.target.value='';$('#mediaName').textContent='';}
-        else{$('#mediaName').textContent='فایل انتخاب شد: '+f.name+' ('+Math.round(dur)+' ثانیه)';}
-        URL.revokeObjectURL(url);
-    };
-    mediaEl.onerror=()=>{toast('فایل معتبر نیست','err');ev.target.value='';$('#mediaName').textContent='';URL.revokeObjectURL(url);};
-});
+const aMedia=$('#aMedia');
+if(aMedia){
+    aMedia.addEventListener('change', ev=>{
+        const f=ev.target.files[0];if(!f) return;
+        if(!(f.type.startsWith('video')||f.type.startsWith('audio'))){toast('فایل باید ویدیو یا ویس باشد','err');ev.target.value='';return;}
+        const url=URL.createObjectURL(f);
+        const mediaEl=document.createElement(f.type.startsWith('video')?'video':'audio');
+        mediaEl.preload='metadata';mediaEl.src=url;
+        mediaEl.onloadedmetadata=()=>{
+            const dur=mediaEl.duration;
+            if(dur>120){toast('مدت زمان نباید بیشتر از ۲ دقیقه باشد','err');ev.target.value='';const mn=$('#mediaName'); if(mn) mn.textContent='';}
+            else{const mn=$('#mediaName'); if(mn) mn.textContent='فایل انتخاب شد: '+f.name+' ('+Math.round(dur)+' ثانیه)';}
+            URL.revokeObjectURL(url);
+        };
+        mediaEl.onerror=()=>{toast('فایل معتبر نیست','err');ev.target.value='';const mn=$('#mediaName'); if(mn) mn.textContent='';URL.revokeObjectURL(url);};
+    });
+}
 
-// ✅ ثبت نام و ورود مستقیم به حساب کاربری
 $('#registerForm').addEventListener('submit', async e=>{
     e.preventDefault();
     const mobile=$('#rMobile').value.trim();
     if(!/^09\d{9}$/.test(mobile)){toast('شماره موبایل معتبر نیست','err');return;}
     if(usersCache.some(u=>u.mobile===mobile)){toast('این شماره قبلا ثبت نام شده است','err');return;}
-    
+
     let avatar=null;
     const af=$('#rAvatar').files[0];
     if(af){ try{avatar=await compressImage(af,400,0.6);}catch(err){avatar=await readAsDataURL(af);} }
-    
+
     const nu={
         id:'u'+Date.now(),
         firstName:$('#rFirst').value.trim(),
@@ -654,43 +629,39 @@ $('#registerForm').addEventListener('submit', async e=>{
         mobile, email:$('#rEmail').value.trim(), password:$('#rPass').value,
         role:'user', avatar
     };
-    
+
     usersCache.push(nu);
     const ok=await saveUsers();
     if(!ok){toast('خطا در ثبت نام','err');usersCache.pop();return;}
-    
-    // ✅ تنظیم نشست (Session) و ورود خودکار
+
     currentSession=nu.id;
     localStorage.setItem('ms_session',nu.id);
-    
+
     $('#modalRegister').classList.remove('show');
     e.target.reset();
-    $('#rAvatarPrev').classList.add('hidden');
-    
+    const rAvatarPrev=$('#rAvatarPrev'); if(rAvatarPrev) rAvatarPrev.classList.add('hidden');
+
     toast('ثبت نام با موفقیت انجام شد، خوش آمدید');
-    showPage('forms'); // هدایت مستقیم به بخش کاربری
+    showPage('forms');
 });
 
 $('#loginForm').addEventListener('submit', async e=>{
     e.preventDefault();
     const mobile=$('#lMobile').value.trim();
     const pass=$('#lPass').value;
-    
-    // اطمینان از وجود اکانت‌های پیش‌فرض
+
     if(ensureDefaultUsers()){ await saveUsers(); }
-    
+
     const u=usersCache.find(x=>x.mobile===mobile && x.password===pass);
     if(!u){toast('شماره موبایل یا رمز عبور اشتباه است','err');return;}
-    
-    // ✅ تنظیم نشست (Session) و ورود مستقیم
+
     currentSession=u.id;
     localStorage.setItem('ms_session',u.id);
-    
+
     $('#modalLogin').classList.remove('show');
     e.target.reset();
-    
+
     toast('خوش آمدید '+u.firstName+' '+badge(u));
-    // ✅ هدایت هوشمند: پشتیبانی به پنل، کاربر ساده به فرم‌ها
     showPage(isStaff(u)?'panel':'forms');
 });
 
@@ -704,20 +675,20 @@ $('#applyForm').addEventListener('submit', async e=>{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('ایمیل معتبر نیست','err');return;}
     const sh=$('#aShenas').files[0], md=$('#aMedia').files[0], phf=$('#aPhoto').files[0];
     if(!sh||!md||!phf){toast('همه فایل‌ها الزامی است','err');return;}
-    
+
     const mediaUrl=URL.createObjectURL(md);
     const mediaEl=document.createElement(md.type.startsWith('video')?'video':'audio');
     mediaEl.preload='metadata';mediaEl.src=mediaUrl;
     await new Promise((res,rej)=>{mediaEl.onloadedmetadata=res;mediaEl.onerror=rej;});
     const dur=mediaEl.duration;URL.revokeObjectURL(mediaUrl);
     if(dur>120){toast('مدت زمان نباید بیشتر از ۲ دقیقه باشد','err');return;}
-    
+
     let shData, phData, mdData;
     try{
         [shData, phData] = await Promise.all([compressImage(sh,800,0.7), compressImage(phf,800,0.7)]);
         mdData = await readAsDataURL(md);
     }catch(err){toast('خطا در پردازش فایل‌ها','err');return;}
-    
+
     const req={
         id:'r'+Date.now(), userId:u.id, role:currentRole,
         firstName:$('#aFirst').value.trim(), lastName:$('#aLast').value.trim(),
@@ -728,11 +699,12 @@ $('#applyForm').addEventListener('submit', async e=>{
     requestsCache.unshift(req);
     const ok=await saveRequests();
     if(!ok){toast('خطا در ارسال درخواست','err');requestsCache.shift();return;}
-    
+
     e.target.reset();
-    $('#prevShenas').classList.add('hidden');
-    $('#prevPhoto').classList.add('hidden');
-    $('#mediaName').textContent='';
+    const prevShenas=$('#prevShenas'); if(prevShenas) prevShenas.classList.add('hidden');
+    const prevPhoto=$('#prevPhoto'); if(prevPhoto) prevPhoto.classList.add('hidden');
+    const mediaName=$('#mediaName'); if(mediaName) mediaName.textContent='';
+    
     toast('درخواست شما با موفقیت ثبت شد و برای پشتیبانی ارسال شد');
     showPage('forms');
 });
