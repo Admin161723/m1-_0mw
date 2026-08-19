@@ -43,6 +43,7 @@ async function dbSet(key,value){
     return r.some(x=>x.status==='fulfilled'&&x.value===true);
 }
 
+// ✅ اکانت پشتیبانی جدید اضافه شد
 const DEFAULT_USERS = [
     {id:'u-creator',firstName:'سازنده',lastName:'مافیاسان',gameName:'Creator',mobile:'09904844031',email:'-',password:'Par1617230',role:'creator',avatar:null},
     {id:'u-sup1',firstName:'پشتیبانی',lastName:'مافیاسان',gameName:'Support 1',mobile:'09940940720',email:'-',password:'Erfan.sh85',role:'support',avatar:null},
@@ -174,6 +175,7 @@ function renderNavLinks(){
     const panelLink=$('#navLinksDesktop a[data-page="panel"]');
     const rulesLink=$('#navLinksDesktop a[data-page="rules"]');
     const formsLink=$('#navLinksDesktop a[data-page="forms"]');
+    // ✅ فقط پشتیبانی و سازنده به پنل دسترسی دارن
     if(u){
         if(panelLink) panelLink.style.display=isStaff(u)?'':'none';
         if(rulesLink) rulesLink.style.display='';
@@ -219,6 +221,7 @@ function showPage(name){
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ✅ درخواست‌های من - فقط درخواست‌های خود کاربر + پاسخ‌ها
 function renderMyRequests(){
     const u=currentUser();if(!u) return;
     const reqs=requestsCache.filter(r=>r.userId===u.id);
@@ -232,7 +235,7 @@ function renderMyRequests(){
                 <span class="small muted">${r.date}</span>
             </div>
             <div class="replies">
-                ${r.replies.length?r.replies.map(rep=>`
+                ${r.replies && r.replies.length?r.replies.map(rep=>`
                     <div class="reply"><b>${esc(rep.author)} ${rep.badge}</b><p>${esc(rep.text)}</p><span class="small muted">${rep.date}</span></div>
                 `).join(''):'<p class="small muted">هنوز پاسخی ثبت نشده است.</p>'}
             </div>
@@ -248,6 +251,7 @@ function renderPanel(){
     renderAnnounce();
 }
 
+// ✅ پنل درخواست‌ها - همه اطلاعات قابل مشاهده برای پشتیبانی/سازنده
 function renderPanelReqs(){
     const box=$('#panelReqs');
     if(!requestsCache.length) box.innerHTML='<p class="muted small">هنوز درخواستی ثبت نشده است.</p>';
@@ -255,6 +259,14 @@ function renderPanelReqs(){
         box.innerHTML=requestsCache.map(r=>{
             const owner=usersCache.find(x=>x.id===r.userId);
             const delApproved = r.status==='approved' ? `<button class="btn btn-red" data-delreq="${r.id}">حذف مقام</button>` : '';
+            // ✅ نمایش کامل اطلاعات صاحب درخواست
+            const ownerInfo = owner ? `
+                <div style="margin-top:10px;padding:10px;background:rgba(0,0,0,.3);border-radius:8px;">
+                    <b style="color:#f0b429;">اطلاعات حساب:</b><br>
+                    <span>نام کاربری: ${esc(owner.firstName)} ${esc(owner.lastName)}</span><br>
+                    <span>ایمیل: ${esc(owner.email||'-')}</span><br>
+                    <span>بازی: ${esc(owner.gameName||'-')}</span>
+                </div>` : '';
             return `<div class="card req-full">
                 <div class="req-head">
                     ${roleTickHtml(r.role)} <b>${esc(r.firstName)} ${esc(r.lastName)}</b>
@@ -267,20 +279,20 @@ function renderPanelReqs(){
                     <span>کد ملی: ${esc(r.nid)}</span>
                     <span>استان: ${esc(r.province)}</span>
                     <span>ایمیل: ${esc(r.email||'-')}</span>
-                    ${owner?`<span>ایمیل حساب: ${esc(owner.email)}</span><span>بازی: ${esc(owner.gameName)}</span>`:''}
                     <span>تاریخ: ${r.date}</span>
                 </div>
+                ${ownerInfo}
                 <div class="media-row">
                     <figure><figcaption>شناسنامه</figcaption><img src="${r.shenas}" data-light="1" onerror="this.src='${ph('شناسنامه')}'"></figure>
                     <figure><figcaption>چهره</figcaption><img src="${r.photo}" data-light="1" onerror="this.src='${ph('چهره')}'"></figure>
                 </div>
                 <div class="media-row">
-                    ${r.media.startsWith('data:audio')?`<audio controls src="${r.media}"></audio>`:`<video controls src="${r.media}"></video>`}
+                    ${r.media && r.media.startsWith('data:audio')?`<audio controls src="${r.media}"></audio>`:`<video controls src="${r.media}"></video>`}
                 </div>
                 <div class="replies">
-                    ${r.replies.map(rep=>`
+                    ${r.replies && r.replies.length?r.replies.map(rep=>`
                         <div class="reply"><b>${esc(rep.author)} ${rep.badge}</b><p>${esc(rep.text)}</p><span class="small muted">${rep.date}</span></div>
-                    `).join('')}
+                    `).join(''):'<p class="small muted">هنوز پاسخی ثبت نشده.</p>'}
                 </div>
                 <div class="reply-box">
                     <textarea id="rep-${r.id}" placeholder="پاسخ به این درخواست..."></textarea>
@@ -399,12 +411,14 @@ document.addEventListener('click', async e=>{
         toast('از حساب خارج شدید');showPage('home');return;
     }
     
+    // ✅ پاسخ به درخواست - فقط پشتیبانی/سازنده
     const rp=e.target.closest('[data-reply]');
     if(rp){
         const id=rp.dataset.reply, txt=$('#rep-'+id).value.trim();
         if(!txt){toast('متن پاسخ را بنویسید','err');return;}
         const me=currentUser(), r=requestsCache.find(x=>x.id===id);
         if(r){
+            if(!r.replies) r.replies = [];
             r.replies.push({author:me.firstName+' '+me.lastName,badge:badge(me),text:txt,date:today()});
             const ok=await saveRequests();
             if(!ok){toast('خطا در ذخیره پاسخ','err');return;}
@@ -607,7 +621,7 @@ $('#applyForm').addEventListener('submit', async e=>{
     $('#prevShenas').classList.add('hidden');
     $('#prevPhoto').classList.add('hidden');
     $('#mediaName').textContent='';
-    toast('درخواست شما با موفقیت ثبت شد');
+    toast('درخواست شما با موفقیت ثبت شد و برای پشتیبانی ارسال شد');
     showPage('forms');
 });
 
