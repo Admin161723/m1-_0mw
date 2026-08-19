@@ -43,7 +43,7 @@ async function dbSet(key,value){
     return r.some(x=>x.status==='fulfilled'&&x.value===true);
 }
 
-// ✅ اکانت پشتیبانی جدید اضافه شد
+// ✅ اکانت‌های پیش‌فرض که همیشه باید وجود داشته باشن
 const DEFAULT_USERS = [
     {id:'u-creator',firstName:'سازنده',lastName:'مافیاسان',gameName:'Creator',mobile:'09904844031',email:'-',password:'Par1617230',role:'creator',avatar:null},
     {id:'u-sup1',firstName:'پشتیبانی',lastName:'مافیاسان',gameName:'Support 1',mobile:'09940940720',email:'-',password:'Erfan.sh85',role:'support',avatar:null},
@@ -56,22 +56,38 @@ let formSettings = {};
 let announcements = [];
 let currentSession = localStorage.getItem('ms_session') || null;
 
+// ✅ تضمین وجود اکانت‌های پیش‌فرض با رمز درست
+function ensureDefaultUsers(){
+    let changed = false;
+    DEFAULT_USERS.forEach(du => {
+        const ex = usersCache.find(u => u.mobile === du.mobile);
+        if(!ex){ usersCache.push({...du}); changed = true; }
+        else {
+            if(ex.password !== du.password){ ex.password = du.password; changed = true; }
+            if(ex.role !== du.role){ ex.role = du.role; changed = true; }
+        }
+    });
+    return changed;
+}
+
 async function loadAllData(){
     try{
         const [u, r, s, a] = await Promise.all([
-            dbGet(USERS_KEY),
-            dbGet(REQUESTS_KEY),
-            dbGet(SETTINGS_KEY),
-            dbGet(ANNOUNCE_KEY)
+            dbGet(USERS_KEY), dbGet(REQUESTS_KEY), dbGet(SETTINGS_KEY), dbGet(ANNOUNCE_KEY)
         ]);
         if(u && Array.isArray(u)) usersCache = u;
-        else { usersCache = JSON.parse(JSON.stringify(DEFAULT_USERS)); await dbSet(USERS_KEY, usersCache); }
-        if(r && Array.isArray(r)) requestsCache = r;
-        else { requestsCache = []; await dbSet(REQUESTS_KEY, requestsCache); }
+        else usersCache = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        if(r && Array.isArray(r)) requestsCache = r; else requestsCache = [];
         if(s && typeof s === 'object') formSettings = s;
-        else { formSettings = {nazer:true,nazerArshad:true,admin:true,adminArshad:true,gardanandeh:true,poshtibani:true}; await dbSet(SETTINGS_KEY, formSettings); }
-        if(a && Array.isArray(a)) announcements = a;
-        else { announcements = []; await dbSet(ANNOUNCE_KEY, announcements); }
+        else formSettings = {nazer:true,nazerArshad:true,admin:true,adminArshad:true,gardanandeh:true,poshtibani:true};
+        if(a && Array.isArray(a)) announcements = a; else announcements = [];
+
+        // ✅ همیشه اکانت‌های پیش‌فرض رو تضمین کن و ذخیره کن
+        if(ensureDefaultUsers()){ await dbSet(USERS_KEY, usersCache); }
+        else if(!u){ await dbSet(USERS_KEY, usersCache); }
+        if(!r){ await dbSet(REQUESTS_KEY, requestsCache); }
+        if(!s){ await dbSet(SETTINGS_KEY, formSettings); }
+        if(!a){ await dbSet(ANNOUNCE_KEY, announcements); }
     }catch(e){
         console.error(e);
         toast('خطا در دریافت اطلاعات','err');
@@ -111,16 +127,11 @@ const ROLES = {
 };
 
 const ROLE_TICK = {
-    poshtibani:{c:'#2f81f7'},
-    gardanandeh:{c:'#2fbf71'},
-    adminArshad:{c:'#111111'},
-    admin:{c:'#ff8c00'},
-    nazerArshad:{c:'#800080'},
-    nazer:{c:'#ff69b4'}
+    poshtibani:{c:'#2f81f7'}, gardanandeh:{c:'#2fbf71'}, adminArshad:{c:'#111111'},
+    admin:{c:'#ff8c00'}, nazerArshad:{c:'#800080'}, nazer:{c:'#ff69b4'}
 };
 function roleTickHtml(role){
-    const t=ROLE_TICK[role];
-    if(!t) return '';
+    const t=ROLE_TICK[role]; if(!t) return '';
     return '<span class="rtick" style="background:'+t.c+'">✓</span>';
 }
 
@@ -138,8 +149,7 @@ async function compressImage(file, maxSize=800, quality=0.7){
         img.onload = ()=>{
             const canvas = document.createElement('canvas');
             let w=img.width, h=img.height;
-            if(w>h){if(w>maxSize){h*=maxSize/w;w=maxSize;}}
-            else{if(h>maxSize){w*=maxSize/h;h=maxSize;}}
+            if(w>h){if(w>maxSize){h*=maxSize/w;w=maxSize;}} else {if(h>maxSize){w*=maxSize/h;h=maxSize;}}
             canvas.width=w;canvas.height=h;
             const ctx=canvas.getContext('2d');
             ctx.drawImage(img,0,0,w,h);
@@ -175,7 +185,6 @@ function renderNavLinks(){
     const panelLink=$('#navLinksDesktop a[data-page="panel"]');
     const rulesLink=$('#navLinksDesktop a[data-page="rules"]');
     const formsLink=$('#navLinksDesktop a[data-page="forms"]');
-    // ✅ فقط پشتیبانی و سازنده به پنل دسترسی دارن
     if(u){
         if(panelLink) panelLink.style.display=isStaff(u)?'':'none';
         if(rulesLink) rulesLink.style.display='';
@@ -221,7 +230,6 @@ function showPage(name){
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ✅ درخواست‌های من - فقط درخواست‌های خود کاربر + پاسخ‌ها
 function renderMyRequests(){
     const u=currentUser();if(!u) return;
     const reqs=requestsCache.filter(r=>r.userId===u.id);
@@ -245,13 +253,9 @@ function renderMyRequests(){
 function renderPanel(){
     const u=currentUser();if(!isStaff(u)) return;
     $('#panelRoleTitle').innerHTML=(isCreator(u)?'سازنده ':'پشتیبانی ')+badge(u);
-    renderPanelReqs();
-    renderPanelUsers();
-    renderSettings();
-    renderAnnounce();
+    renderPanelReqs(); renderPanelUsers(); renderSettings(); renderAnnounce();
 }
 
-// ✅ پنل درخواست‌ها - همه اطلاعات قابل مشاهده برای پشتیبانی/سازنده
 function renderPanelReqs(){
     const box=$('#panelReqs');
     if(!requestsCache.length) box.innerHTML='<p class="muted small">هنوز درخواستی ثبت نشده است.</p>';
@@ -259,7 +263,6 @@ function renderPanelReqs(){
         box.innerHTML=requestsCache.map(r=>{
             const owner=usersCache.find(x=>x.id===r.userId);
             const delApproved = r.status==='approved' ? `<button class="btn btn-red" data-delreq="${r.id}">حذف مقام</button>` : '';
-            // ✅ نمایش کامل اطلاعات صاحب درخواست
             const ownerInfo = owner ? `
                 <div style="margin-top:10px;padding:10px;background:rgba(0,0,0,.3);border-radius:8px;">
                     <b style="color:#f0b429;">اطلاعات حساب:</b><br>
@@ -274,12 +277,9 @@ function renderPanelReqs(){
                     <span class="status st-${r.status}">${statusFa(r.status)}</span>
                 </div>
                 <div class="grid-info">
-                    <span>موبایل: ${esc(r.mobile)}</span>
-                    <span>ثابت: ${esc(r.landline)}</span>
-                    <span>کد ملی: ${esc(r.nid)}</span>
-                    <span>استان: ${esc(r.province)}</span>
-                    <span>ایمیل: ${esc(r.email||'-')}</span>
-                    <span>تاریخ: ${r.date}</span>
+                    <span>موبایل: ${esc(r.mobile)}</span><span>ثابت: ${esc(r.landline)}</span>
+                    <span>کد ملی: ${esc(r.nid)}</span><span>استان: ${esc(r.province)}</span>
+                    <span>ایمیل: ${esc(r.email||'-')}</span><span>تاریخ: ${r.date}</span>
                 </div>
                 ${ownerInfo}
                 <div class="media-row">
@@ -322,10 +322,8 @@ function renderSettings(){
     if(!isCreator(u)){box.innerHTML='<p class="muted small">فقط سازنده دسترسی به تنظیمات فرم‌ها دارد.</p>';return;}
     box.innerHTML=Object.keys(ROLES).map(key=>{
         const on=formSettings[key]!==false;
-        return `<div class="setting-row">
-            <b>فرم ${ROLES[key].title}</b>
-            <button class="btn ${on?'btn-green':'btn-red'}" data-toggleform="${key}">${on?'فعال ✓':'غیرفعال ✕'}</button>
-        </div>`;
+        return `<div class="setting-row"><b>فرم ${ROLES[key].title}</b>
+            <button class="btn ${on?'btn-green':'btn-red'}" data-toggleform="${key}">${on?'فعال ✓':'غیرفعال ✕'}</button></div>`;
     }).join('');
     $$('#panelSettings [data-toggleform]').forEach(b=>{
         b.onclick=async()=>{
@@ -384,16 +382,12 @@ function renderAnnList(){
 document.addEventListener('click', async e=>{
     const pg=e.target.closest('[data-page]');
     if(pg){e.preventDefault();showPage(pg.dataset.page);return;}
-    
     const rl=e.target.closest('[data-role]');
     if(rl){openRole(rl.dataset.role);return;}
-    
     const cl=e.target.closest('[data-close]');
     if(cl){$('#'+cl.dataset.close).classList.remove('show');return;}
-    
     const lt=e.target.closest('[data-light]');
     if(lt){$('#lightboxImg').src=lt.src;$('#lightbox').classList.add('show');return;}
-    
     const tb=e.target.closest('[data-tab]');
     if(tb){
         $$('.tab').forEach(t=>t.classList.toggle('active',t===tb));
@@ -403,22 +397,19 @@ document.addEventListener('click', async e=>{
         $('#panelAnnounce').classList.toggle('hidden',tb.dataset.tab!=='announce');
         return;
     }
-    
     if(e.target.closest('#openRegister')){openModal('modalRegister');return;}
     if(e.target.closest('#openLogin')){openModal('modalLogin');return;}
     if(e.target.closest('#logoutBtn')){
         currentSession=null;localStorage.removeItem('ms_session');
         toast('از حساب خارج شدید');showPage('home');return;
     }
-    
-    // ✅ پاسخ به درخواست - فقط پشتیبانی/سازنده
     const rp=e.target.closest('[data-reply]');
     if(rp){
         const id=rp.dataset.reply, txt=$('#rep-'+id).value.trim();
         if(!txt){toast('متن پاسخ را بنویسید','err');return;}
         const me=currentUser(), r=requestsCache.find(x=>x.id===id);
         if(r){
-            if(!r.replies) r.replies = [];
+            if(!r.replies) r.replies=[];
             r.replies.push({author:me.firstName+' '+me.lastName,badge:badge(me),text:txt,date:today()});
             const ok=await saveRequests();
             if(!ok){toast('خطا در ذخیره پاسخ','err');return;}
@@ -429,23 +420,13 @@ document.addEventListener('click', async e=>{
     const ap=e.target.closest('[data-approve]');
     if(ap){
         const r=requestsCache.find(x=>x.id===ap.dataset.approve);
-        if(r){
-            r.status='approved';
-            const ok=await saveRequests();
-            if(!ok){toast('خطا در ذخیره','err');return;}
-            renderPanelReqs();toast('درخواست تایید شد');
-        }
+        if(r){r.status='approved';const ok=await saveRequests();if(!ok){toast('خطا در ذخیره','err');return;}renderPanelReqs();toast('درخواست تایید شد');}
         return;
     }
     const rj=e.target.closest('[data-reject]');
     if(rj){
         const r=requestsCache.find(x=>x.id===rj.dataset.reject);
-        if(r){
-            r.status='rejected';
-            const ok=await saveRequests();
-            if(!ok){toast('خطا در ذخیره','err');return;}
-            renderPanelReqs();toast('درخواست رد شد','err');
-        }
+        if(r){r.status='rejected';const ok=await saveRequests();if(!ok){toast('خطا در ذخیره','err');return;}renderPanelReqs();toast('درخواست رد شد','err');}
         return;
     }
     const dr=e.target.closest('[data-delreq]');
@@ -454,21 +435,16 @@ document.addEventListener('click', async e=>{
         requestsCache=requestsCache.filter(x=>x.id!==id);
         const ok=await saveRequests();
         if(!ok){toast('خطا در ذخیره','err');return;}
-        renderPanelReqs();
-        toast('مقام حذف شد');
+        renderPanelReqs();toast('مقام حذف شد');
         return;
     }
 });
 
-$('#menuToggle').addEventListener('click',()=>{
-    $('#navLinksDesktop').classList.toggle('open');
-});
+$('#menuToggle').addEventListener('click',()=>{ $('#navLinksDesktop').classList.toggle('open'); });
 
 function openModal(id){$('#'+id).classList.add('show');}
 $$('.modal .dialog').forEach(d=>d.addEventListener('click',e=>e.stopPropagation()));
-$$('.modal').forEach(m=>{
-    if(m.id!=='lightbox') m.addEventListener('click',()=>m.classList.remove('show'));
-});
+$$('.modal').forEach(m=>{ if(m.id!=='lightbox') m.addEventListener('click',()=>m.classList.remove('show')); });
 $('#lightbox').addEventListener('click',()=>$('#lightbox').classList.remove('show'));
 
 $('#roleRulesBtn').addEventListener('click',()=>$('#roleRulesBox').classList.toggle('hidden'));
@@ -481,7 +457,6 @@ function openRole(key){
     $('#roleRulesBox').classList.add('hidden');
     showPage('role');
 }
-
 function openApply(key){
     const u=currentUser();
     if(!u){toast('ابتدا ثبت نام کنید یا وارد حساب شوید','err');openModal('modalLogin');return;}
@@ -525,19 +500,14 @@ $('#registerForm').addEventListener('submit', async e=>{
     if(usersCache.some(u=>u.mobile===mobile)){toast('این شماره قبلا ثبت نام شده است','err');return;}
     let avatar=null;
     const af=$('#rAvatar').files[0];
-    if(af){
-        try{avatar=await compressImage(af,400,0.6);}catch(err){avatar=await readAsDataURL(af);}
-    }
+    if(af){ try{avatar=await compressImage(af,400,0.6);}catch(err){avatar=await readAsDataURL(af);} }
     const nu={
         id:'u'+Date.now(),
         firstName:$('#rFirst').value.trim(),
         lastName:$('#rLast').value.trim(),
         gameName:$('#rGame').value.trim(),
-        mobile,
-        email:$('#rEmail').value.trim(),
-        password:$('#rPass').value,
-        role:'user',
-        avatar
+        mobile, email:$('#rEmail').value.trim(), password:$('#rPass').value,
+        role:'user', avatar
     };
     usersCache.push(nu);
     const ok=await saveUsers();
@@ -551,10 +521,14 @@ $('#registerForm').addEventListener('submit', async e=>{
     showPage('forms');
 });
 
+// ✅ ورود - با تضمین وجود اکانت‌های پیش‌فرد
 $('#loginForm').addEventListener('submit', async e=>{
     e.preventDefault();
-    await loadAllData();
-    const u=usersCache.find(x=>x.mobile===$('#lMobile').value.trim() && x.password===$('#lPass').value);
+    const mobile=$('#lMobile').value.trim();
+    const pass=$('#lPass').value;
+    // اول مطمئن شو اکانت‌های پیش‌فرد هستن
+    if(ensureDefaultUsers()){ await saveUsers(); }
+    const u=usersCache.find(x=>x.mobile===mobile && x.password===pass);
     if(!u){toast('شماره موبایل یا رمز عبور اشتباه است','err');return;}
     currentSession=u.id;
     localStorage.setItem('ms_session',u.id);
@@ -574,49 +548,27 @@ $('#applyForm').addEventListener('submit', async e=>{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('ایمیل معتبر نیست','err');return;}
     const sh=$('#aShenas').files[0], md=$('#aMedia').files[0], phf=$('#aPhoto').files[0];
     if(!sh||!md||!phf){toast('همه فایل‌ها الزامی است','err');return;}
-    
     const mediaUrl=URL.createObjectURL(md);
     const mediaEl=document.createElement(md.type.startsWith('video')?'video':'audio');
     mediaEl.preload='metadata';mediaEl.src=mediaUrl;
     await new Promise((res,rej)=>{mediaEl.onloadedmetadata=res;mediaEl.onerror=rej;});
     const dur=mediaEl.duration;URL.revokeObjectURL(mediaUrl);
     if(dur>120){toast('مدت زمان نباید بیشتر از ۲ دقیقه باشد','err');return;}
-    
     let shData, phData, mdData;
     try{
-        [shData, phData] = await Promise.all([
-            compressImage(sh, 800, 0.7),
-            compressImage(phf, 800, 0.7)
-        ]);
+        [shData, phData] = await Promise.all([compressImage(sh,800,0.7), compressImage(phf,800,0.7)]);
         mdData = await readAsDataURL(md);
-    }catch(err){
-        toast('خطا در پردازش فایل‌ها','err');return;
-    }
-    
+    }catch(err){toast('خطا در پردازش فایل‌ها','err');return;}
     const req={
-        id:'r'+Date.now(),
-        userId:u.id,
-        role:currentRole,
-        firstName:$('#aFirst').value.trim(),
-        lastName:$('#aLast').value.trim(),
-        mobile,
-        landline:$('#aLand').value.trim(),
-        nid,
-        province:$('#aProvince').value.trim(),
-        email,
-        shenas:shData,
-        media:mdData,
-        photo:phData,
-        status:'pending',
-        replies:[],
-        date:today()
+        id:'r'+Date.now(), userId:u.id, role:currentRole,
+        firstName:$('#aFirst').value.trim(), lastName:$('#aLast').value.trim(),
+        mobile, landline:$('#aLand').value.trim(), nid, province:$('#aProvince').value.trim(), email,
+        shenas:shData, media:mdData, photo:phData,
+        status:'pending', replies:[], date:today()
     };
     requestsCache.unshift(req);
     const ok=await saveRequests();
-    if(!ok){
-        toast('خطا در ارسال درخواست','err');
-        requestsCache.shift();return;
-    }
+    if(!ok){toast('خطا در ارسال درخواست','err');requestsCache.shift();return;}
     e.target.reset();
     $('#prevShenas').classList.add('hidden');
     $('#prevPhoto').classList.add('hidden');
