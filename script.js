@@ -45,7 +45,7 @@ async function dbSet(key,value){
 
 const DEFAULT_USERS = [
     {id:'u-creator',firstName:'سازنده',lastName:'مافیاسان',gameName:'Creator',mobile:'09904844031',email:'-',password:'Par1617230',role:'creator',avatar:null},
-    {id:'u-sup1',firstName:'پشتیبانی',lastName:'مافیاسان',gameName:'Support 1',mobile:'09190882182',email:'-',password:'1234567890',role:'support',avatar:null},
+    {id:'u-sup1',firstName:'پشتیبانی',lastName:'مافیاسان',gameName:'Support 1',mobile:'09940940720',email:'-',password:'Erfan.sh85',role:'support',avatar:null},
     {id:'u-sup2',firstName:'پشتیبانی',lastName:'مافیاسان',gameName:'Support 2',mobile:'09904845012',email:'-',password:'1234567890',role:'support',avatar:null}
 ];
 
