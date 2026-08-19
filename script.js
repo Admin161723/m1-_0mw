@@ -1,3 +1,136 @@
+// ===== 🔒 لایه امنیتی پیشرفته مافیاسان (Advanced Frontend Protection) =====
+
+// 1. جلوگیری از قرارگیری سایت در آی‌فریم (Anti-Clickjacking)
+// اگر کسی بخواهد سایت شما را در سایت دیگری نمایش دهد، خودکار خارج می‌شود
+if (window.top !== window.self) {
+    window.top.location = window.self.location;
+}
+
+// تابع کمکی برای تشخیص فیلدهای متنی (تا کاربر بتواند تایپ کند)
+const isInput = (target) => {
+    const tag = target.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
+};
+
+// 2. قفل کردن تعاملات ماوس (راست‌کلیک، درگ، دراپ، انتخاب متن)
+document.addEventListener('contextmenu', e => {
+    if (!isInput(e.target)) {
+        e.preventDefault();
+        // e.stopPropagation(); // در صورت نیاز فعال شود
+    }
+}, true);
+
+document.addEventListener('selectstart', e => {
+    if (!isInput(e.target)) e.preventDefault();
+}, true);
+
+document.addEventListener('dragstart', e => e.preventDefault(), true);
+document.addEventListener('drop', e => e.preventDefault(), true);
+
+// جلوگیری از کپی و کات (به جز داخل فیلدهای متنی)
+document.addEventListener('copy', e => { if (!isInput(e.target)) e.preventDefault(); }, true);
+document.addEventListener('cut', e => { if (!isInput(e.target)) e.preventDefault(); }, true);
+
+// 3. مقابله با کلیک‌های رگباری و دبل‌کلیک (جلوگیری از اسپم یا انتخاب ناخواسته)
+let clickCount = 0;
+let clickTimer = null;
+document.addEventListener('click', e => {
+    // اگر روی دکمه‌ها رگباری کلیک شود، فقط یک بار ثبت می‌شود
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') {
+        clickCount++;
+        if (clickCount > 1) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        }
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => { clickCount = 0; }, 800); // بازگشت به حالت عادی بعد از 0.8 ثانیه
+    }
+}, true); // استفاده از true (Capture Phase) برای اولویت بالاتر نسبت به همه رویدادها
+
+// 4. قفل کردن کامل کلیدهای میانبر کیبورد
+document.addEventListener('keydown', e => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const ctrl = isMac ? e.metaKey : e.ctrlKey;
+    const alt = e.altKey;
+    const shift = e.shiftKey;
+
+    // بستن F12 و PrintScreen
+    if (e.key === 'F12' || e.key === 'PrintScreen') {
+        e.preventDefault();
+        return false;
+    }
+
+    // بستن Ctrl+U (سورس), S (ذخیره), P (چاپ)
+    if (ctrl && ['u','U','s','S','p','P'].includes(e.key)) {
+        e.preventDefault();
+        return false;
+    }
+
+    // بستن Ctrl+Shift+I, J, C (ابزار توسعه‌دهنده)
+    if (ctrl && shift && ['i','I','j','J','c','C'].includes(e.key)) {
+        e.preventDefault();
+        return false;
+    }
+
+    // بستن Cmd+Option+I, J, C (مخصوص مک)
+    if (isMac && alt && ['i','I','j','J','c','C'].includes(e.key)) {
+        e.preventDefault();
+        return false;
+    }
+
+    // جلوگیری از Ctrl+A (انتخاب همه) به جز در اینپوت‌ها
+    if (ctrl && ['a','A'].includes(e.key) && !isInput(e.target)) {
+        e.preventDefault();
+        return false;
+    }
+}, true);
+
+// 5. تله‌گذاری هوشمند کنسول (Debugger Trap)
+// اگر کاربر به هر طریقی کنسول را باز کند، مرورگر فریز شده و جلسه کاربر پاک می‌شود
+(function detectDevTools() {
+    const threshold = 160;
+    let devtoolsOpen = false;
+
+    const check = () => {
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        
+        // تله دیباگر: اگر کنسول باز باشد، این خط اجرا شده و مرورگر را متوقف می‌کند
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+            get: function () {
+                devtoolsOpen = true;
+                throw new Error('DevTools detected');
+            }
+        });
+        console.log('%c', element);
+
+        if (widthDiff || heightDiff || devtoolsOpen) {
+            // اقدام امنیتی: پاک کردن نشست و نابودی صفحه
+            localStorage.removeItem('ms_session');
+            document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0d1017;color:#ff4444;font-family:tahoma,sans-serif;text-align:center;padding:20px;"><h1>⛔ دسترسی غیرمجاز تشخیص داده شد</h1><p>به دلیل تلاش برای دستکاری کد، دسترسی شما قطع گردید.</p></div>';
+            setTimeout(() => { 
+                window.close(); 
+                window.location.href = 'about:blank'; 
+            }, 1500);
+        }
+    };
+
+    setInterval(check, 1000);
+})();
+
+// 6. بی‌اثر کردن دستورات کنسول (Console Spoofing)
+// اگر کسی کنسول را باز کند، دستوراتش هیچ خروجی‌ای نمی‌دهد
+const noop = () => {};
+console.log = noop;
+console.warn = noop;
+console.error = noop;
+console.info = noop;
+console.debug = noop;
+console.clear = noop;
+
+// ===== پایان لایه امنیتی =====
 'use strict';
 
 const $ = (s, r = document) => r.querySelector(s);
