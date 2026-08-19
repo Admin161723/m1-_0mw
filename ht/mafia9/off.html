@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>اتصال قطع شد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Tahoma', system-ui, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1;
+        }
+
+        .modal {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 320px;
+            background: linear-gradient(135deg, #1a1f3e 0%, #0a0f1e 100%);
+            border-radius: 24px;
+            padding: 30px 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: modalIn 0.3s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: rgba(255, 68, 68, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .icon-box::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 68, 68, 0.4);
+            animation: pulse 1.5s ease-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .wifi-icon {
+            width: 44px;
+            height: 44px;
+            fill: #ff4444;
+        }
+
+        .title {
+            font-size: 19px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .confirm-btn:active {
+            transform: scale(0.98);
+        }
+
+        .confirm-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status-text {
+            margin-top: 14px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        .status-dot.online {
+            background: #2ecc71;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<div class="modal">
+    <div class="icon-box">
+        <svg class="wifi-icon" viewBox="0 0 24 24">
+            <path d="M12 3C7.79 3 3.93 4.56.89 7.12l1.43 1.43C5.07 6.24 8.41 5 12 5s6.93 1.24 9.68 3.55l1.43-1.43C20.07 4.56 16.21 3 12 3zm0 5c-2.97 0-5.71 1.03-7.87 2.73l1.43 1.43C7.47 10.65 9.67 9.93 12 9.93s4.53.72 6.44 2.23l1.43-1.43C17.71 9.03 14.97 8 12 8zm0 5c-1.74 0-3.35.57-4.65 1.52l1.43 1.43C9.84 15.2 10.89 14.8 12 14.8s2.16.4 3.22 1.15l1.43-1.43C15.35 13.57 13.74 13 12 13zm0 5l-2 2 2 2 2-2-2-2z"/>
+        </svg>
+    </div>
+
+    <h1 class="title">اتصال قطع شد</h1>
+    <p class="subtitle">
+        اینترنت شما قطع شده یا بازی بسته شد.<br>
+        اتصال را بررسی و دوباره امتحان کنید.
+    </p>
+
+    <button class="confirm-btn" id="confirmBtn">تایید</button>
+
+    <div class="status-text">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">در حال بررسی اتصال...</span>
+    </div>
+</div>
+
+<script>
+    const REDIS_URL = "https://smooth-werewolf-200782.upstash.io";
+    const REDIS_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+
+    const PAGES = {
+        index: 'index.html',
+        ban: 'Ban.html'
+    };
+
+    const confirmBtn = document.getElementById('confirmBtn');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    function isOnline() {
+        return navigator.onLine;
+    }
+
+    async function getBanStatus(phone) {
+        try {
+            const response = await fetch(
+                `${REDIS_URL}/get/ban:${encodeURIComponent(phone)}`,
+                { headers: { 'Authorization': `Bearer ${REDIS_TOKEN}` } }
+            );
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data.result) {
+                return JSON.parse(data.result);
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function updateStatus() {
+        if (isOnline()) {
+            statusDot.classList.add('online');
+            statusText.innerText = 'آنلاین';
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = 'تایید';
+        } else {
+            statusDot.classList.remove('online');
+            statusText.innerText = 'آفلاین';
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'در انتظار اتصال...';
+        }
+    }
+
+    confirmBtn.addEventListener('click', async () => {
+        if (!isOnline()) {
+            return;
+        }
+
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = 'در حال بررسی...';
+
+        try {
+            const loggedInUser = localStorage.getItem('currentLoggedInUser');
+
+            if (!loggedInUser) {
+                window.location.href = PAGES.index;
+                return;
+            }
+
+            const userInfo = JSON.parse(loggedInUser);
+            const phone = userInfo.phone;
+
+            const banStatus = await getBanStatus(phone);
+
+            if (banStatus && banStatus.isBanned) {
+                const params = new URLSearchParams({
+                    phone: phone,
+                    by: banStatus.bannedBy || 'مدیریت',
+                    reason: banStatus.reason || 'بدون دلیل',
+                    duration: banStatus.duration || 'permanent',
+                    expires: banStatus.expiresAt || '',
+                    createdAt: banStatus.createdAt || banStatus.bannedAt || ''
+                });
+                window.location.href = `${PAGES.ban}?${params.toString()}`;
+                return;
+            }
+
+            window.location.href = PAGES.index;
+
+        } catch (e) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = 'تایید';
+        }
+    });
+
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    updateStatus();
+</script>
+
+</body>
+</html>
