@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f5f0e1">
+<title>گروه‌ها - بازی مافیا</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
+html { width: 100% !important; height: 100% !important; overflow: hidden !important; position: fixed !important; inset: 0; overscroll-behavior: none !important; background: #f5f0e1 !important; touch-action: none !important; }
+body { font-family: 'Vazirmatn', Tahoma, sans-serif; background: #f5f0e1 !important; width: 100% !important; height: 100% !important; position: fixed !important; inset: 0; display: flex; justify-content: center; overflow: hidden !important; color: #4a3b2a; }
+input, textarea, select { font-size: 16px !important; -webkit-user-select: text !important; user-select: text !important; touch-action: manipulation !important; }
+img { -webkit-user-drag: none !important; }
+
+.game-container { width: 100%; max-width: 420px; height: 100vh; height: 100dvh; background: linear-gradient(180deg, #fdfbf7 0%, #f5f0e1 100%); position: relative; display: flex; flex-direction: column; overflow: hidden !important; }
+
+.top-bar { background: linear-gradient(180deg, #e6dcc3 0%, #d4c5a9 100%); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #c8b896; z-index: 50; flex-shrink: 0; }
+.currency-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.6); padding: 6px 12px; border-radius: 20px; border: 2px solid #d4c5a9; }
+.coin-icon-top { width: 36px; height: 36px; background: radial-gradient(circle at 35% 35%, #ffe44d 0%, #ffd700 30%, #daa520 70%, #b8860b 100%); border-radius: 50%; border: 2px solid #c8960c; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+.coin-icon-top::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: radial-gradient(circle, #b8860b 0%, #8b6914 100%); border-radius: 50%; }
+.gem-icon-top { width: 28px; height: 28px; background: linear-gradient(135deg, #e040fb 0%, #7c4dff 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); }
+.currency-value { font-weight: 900; font-size: 16px; color: #5c4b37; min-width: 30px; text-align: center; }
+
+.search-container { padding: 12px 15px; background: #fdfbf7; flex-shrink: 0; }
+.search-box { width: 100%; padding: 12px 16px; background: #fffef9; border: 2px solid #e6dcc3; border-radius: 12px; color: #4a3b2a; font-size: 14px; font-family: 'Vazirmatn', Tahoma, sans-serif; outline: none; }
+.search-box::placeholder { color: #a89f8e; }
+
+.tabs-container { display: flex; background: #e6dcc3; border-bottom: 2px solid #d4c5a9; flex-shrink: 0; }
+.tab-btn { flex: 1; padding: 14px 8px; text-align: center; font-size: 14px; font-weight: 900; color: #8b7355; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+.tab-btn.active { color: #5c4b37; background: #fdfbf7; border-bottom-color: #bc6c25; }
+
+.view-section { display: none; padding: 15px; flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.view-section.active { display: block; }
+
+.group-card { background: #fffef9; border: 2px solid #e6dcc3; border-radius: 14px; padding: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; position: relative; }
+.group-card.my-group { border-color: #bc6c25; background: #fff8eb; }
+.group-card.verified-card { border-color: #ffd700; box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
+.group-logo { width: 50px; height: 50px; background: linear-gradient(135deg, #d4c5a9, #bc6c25); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+.group-logo svg { width: 30px; height: 30px; fill: white; }
+.group-info { flex: 1; min-width: 0; }
+.group-name { font-size: 16px; font-weight: 900; color: #4a3b2a; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.group-meta { font-size: 12px; color: #8b7355; font-weight: 700; }
+.group-tag-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.group-tag { background: #e6dcc3; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 900; color: #5c4b37; direction: ltr; display: inline-block; }
+.group-tag.colored { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+
+.group-verified-tick { width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); flex-shrink: 0; }
+.about-verified-tick { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
+
+.fab-menu-btn { position: absolute; bottom: 85px; left: 15px; width: 56px; height: 56px; background: linear-gradient(180deg, #bc6c25, #8b5e3c); border-radius: 50%; border: 3px solid #fdfbf7; box-shadow: 0 4px 12px rgba(74, 59, 42, 0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; }
+.fab-menu-btn svg { width: 28px; height: 28px; fill: white; }
+.creator-panel-btn { position: absolute; bottom: 85px; right: 15px; width: 56px; height: 56px; background: linear-gradient(180deg, #e74c3c, #c0392b); border-radius: 50%; border: 3px solid #fdfbf7; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 90; }
+.creator-panel-btn.show { display: flex; }
+.creator-panel-btn svg { width: 28px; height: 28px; fill: white; }
+.fab-options { position: absolute; bottom: 150px; left: 15px; display: none; flex-direction: column; gap: 10px; z-index: 90; }
+.fab-options.show { display: flex; }
+.fab-option { background: #fffef9; border: 2px solid #e6dcc3; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; color: #4a3b2a; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+
+.chat-container { display: flex; flex-direction: column; height: 100%; position: relative; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.4); border-radius: 12px; margin-bottom: 10px; }
+.message-row { display: flex; flex-direction: column; max-width: 85%; }
+.message-row.own { align-self: flex-end; align-items: flex-end; }
+.message-row.other { align-self: flex-start; align-items: flex-start; }
+.msg-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; color: #8b7355; font-weight: 700; }
+.msg-bubble { background: #e6dcc3; padding: 10px 14px; border-radius: 14px 14px 4px 14px; color: #4a3b2a; font-size: 14px; line-height: 1.5; word-break: break-word; }
+.message-row.own .msg-bubble { background: #d4c5a9; border-radius: 14px 14px 14px 4px; }
+.msg-bubble.announcement { background: linear-gradient(135deg, #fff3cd, #ffe69c); border: 2px dashed #bc6c25; font-weight: 700; }
+.msg-actions { display: flex; gap: 8px; margin-top: 4px; }
+.msg-action-btn { cursor: pointer; background: none; border: none; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.msg-action-btn svg { width: 18px; height: 18px; fill: #8b7355; }
+.chat-input-area { display: flex; gap: 8px; align-items: center; background: #fffef9; padding: 10px; border-radius: 14px; border: 2px solid #e6dcc3; flex-shrink: 0; position: sticky; bottom: 0; z-index: 10; margin-top: auto; }
+.chat-input { flex: 1; background: transparent; border: none; color: #4a3b2a; font-size: 14px; font-family: 'Vazirmatn', Tahoma, sans-serif; outline: none; }
+.chat-input::placeholder { color: #a89f8e; }
+.chat-send-btn, .chat-announce-btn { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; flex-shrink: 0; }
+.chat-send-btn { background: linear-gradient(180deg, #bc6c25, #8b5e3c); }
+.chat-announce-btn { background: linear-gradient(180deg, #e6dcc3, #c8b896); }
+.chat-send-btn svg, .chat-announce-btn svg { width: 20px; height: 20px; fill: white; }
+.chat-announce-btn svg { fill: #4a3b2a; }
+
+.about-header { text-align: center; padding: 20px; background: #fffef9; border-radius: 16px; border: 2px solid #e6dcc3; margin-bottom: 15px; }
+.about-header.verified-about { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+.about-logo { width: 80px; height: 80px; background: linear-gradient(135deg, #d4c5a9, #bc6c25); border-radius: 20px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: white; }
+.about-logo svg { width: 50px; height: 50px; fill: white; }
+.about-name { font-size: 22px; font-weight: 900; color: #4a3b2a; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.about-desc { font-size: 13px; color: #8b7355; line-height: 1.6; margin-bottom: 12px; }
+.about-stats { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+.stat-badge { background: #e6dcc3; padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; color: #5c4b37; display: inline-flex; align-items: center; gap: 4px; }
+.action-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.action-btn { padding: 10px 18px; border-radius: 10px; border: 2px solid #d4c5a9; background: #fffef9; color: #4a3b2a; font-size: 13px; font-weight: 700; font-family: 'Vazirmatn', Tahoma, sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.action-btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+.action-btn.primary { background: #bc6c25; color: white; border-color: #bc6c25; }
+.action-btn.danger { background: #e74c3c; color: white; border-color: #c0392b; }
+.action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.members-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+.member-card { background: #fffef9; border: 2px solid #e6dcc3; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.member-card.owner-card { border-color: #ffd700; background: linear-gradient(135deg, #fff8eb, #fffef9); }
+.member-card.deputy-card { border-color: #bc6c25; background: linear-gradient(135deg, #fffaf0, #fffef9); }
+.member-avatar { width: 50px; height: 50px; background: #d4c5a9; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; overflow: hidden; flex-shrink: 0; }
+.member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.member-avatar svg { width: 26px; height: 26px; fill: #8b7355; }
+.member-info { flex: 1; min-width: 0; }
+.member-name { font-size: 15px; font-weight: 900; color: #4a3b2a; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-role { font-size: 11px; font-weight: 700; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.member-role.owner-role { color: #d4a017; }
+.member-role.deputy-role { color: #bc6c25; }
+.member-role.member-role { color: #8b7355; }
+.member-cups { background: #e6dcc3; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 900; color: #5c4b37; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.section-title { font-size: 16px; font-weight: 900; color: #4a3b2a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.trophy-icon { width: 22px; height: 22px; background: linear-gradient(180deg, #ffd700, #ffa500); clip-path: polygon(20% 0, 80% 0, 80% 30%, 100% 30%, 100% 50%, 80% 50%, 80% 80%, 65% 80%, 65% 100%, 35% 100%, 35% 80%, 20% 80%, 20% 50%, 0 50%, 0 30%, 20% 30%); display: inline-block; vertical-align: middle; }
+
+.bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%); display: flex; align-items: center; justify-content: space-around; z-index: 100; border-top: 2px solid #2a5a9a; height: 68px; flex-shrink: 0; }
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 6px 20px; flex: 1; height: 100%; position: relative; }
+.nav-item.active { background: rgba(255,255,255,0.1); }
+.nav-item.active::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 3px; background: #4a9eff; border-radius: 0 0 3px 3px; }
+.nav-shop { width: 40px; height: 34px; position: relative; pointer-events: none; }
+.shop-awning { width: 40px; height: 12px; background: repeating-linear-gradient(90deg, #f44336 0px, #f44336 8px, #ffeb3b 8px, #ffeb3b 16px, #4caf50 16px, #4caf50 24px, #2196f3 24px, #2196f3 32px, #f44336 32px, #f44336 40px); border-radius: 3px 3px 0 0; }
+.shop-base { width: 34px; height: 20px; background: linear-gradient(180deg, #5c6bc0, #3f51b5); margin: 0 auto; border-radius: 0 0 4px 4px; position: relative; border: 1px solid #3949ab; }
+.shop-base::before { content: ''; position: absolute; top: 4px; left: 6px; width: 22px; height: 12px; background: #ffd700; border-radius: 2px; }
+.nav-home { width: 44px; height: 40px; position: relative; pointer-events: none; }
+.home-roof { width: 0; height: 0; border-left: 24px solid transparent; border-right: 24px solid transparent; border-bottom: 20px solid #f44336; margin: 0 auto; }
+.home-body { width: 34px; height: 20px; background: white; margin: 0 auto; border-radius: 0 0 3px 3px; position: relative; }
+.home-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 13px; height: 15px; background: #5d4037; border-radius: 3px 3px 0 0; }
+.nav-friends { display: flex; align-items: center; gap: 0; pointer-events: none; }
+.friend-head { width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; position: relative; }
+.friend-1 { background: #42a5f5; z-index: 2; margin-right: -6px; }
+.friend-2 { background: #66bb6a; }
+.nav-label { color: #f5f0e1; font-size: 11px; font-weight: 700; margin-top: 2px; pointer-events: none; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(74, 59, 42, 0.6); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.active { display: flex; }
+.modal-box { background: #fdfbf7; border: 3px solid #d4c5a9; border-radius: 20px; width: 100%; max-width: 360px; max-height: 85vh; overflow-y: auto; }
+.modal-header { background: linear-gradient(180deg, #e6dcc3, #d4c5a9); padding: 16px; text-align: center; border-radius: 17px 17px 0 0; position: relative; }
+.modal-title { font-size: 18px; font-weight: 900; color: #4a3b2a; }
+.modal-close { position: absolute; top: -12px; left: -12px; width: 32px; height: 32px; background: #e74c3c; border: 3px solid #fdfbf7; border-radius: 50%; color: white; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-input { width: 100%; padding: 12px; background: #fffef9; border: 2px solid #e6dcc3; border-radius: 10px; color: #4a3b2a; font-size: 15px; font-family: 'Vazirmatn', Tahoma, sans-serif; text-align: center; outline: none; }
+.modal-input:disabled { background: #f0ebe0; color: #a89f8e; cursor: not-allowed; opacity: 0.7; }
+.modal-select { width: 100%; padding: 12px; background: #fffef9; border: 2px solid #e6dcc3; border-radius: 10px; color: #4a3b2a; font-size: 15px; font-family: 'Vazirmatn', Tahoma, sans-serif; outline: none; cursor: pointer; }
+.modal-hint { font-size: 12px; color: #8b7355; text-align: center; font-weight: 700; }
+
+.logo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
+.logo-option { aspect-ratio: 1; background: #e6dcc3; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid transparent; }
+.logo-option svg { width: 32px; height: 32px; fill: #5c4b37; }
+.logo-option.selected { border-color: #bc6c25; background: #fff8eb; }
+
+.btn-primary { width: 100%; padding: 14px; background: linear-gradient(180deg, #bc6c25, #8b5e3c); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 900; font-family: 'Vazirmatn', Tahoma, sans-serif; cursor: pointer; box-shadow: 0 4px 0 #6d462b; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary svg { width: 20px; height: 20px; fill: white; }
+.btn-primary.gold { background: linear-gradient(180deg, #ffd700, #ff9800); color: #3a2a00; box-shadow: 0 4px 0 #b8860b; }
+
+.request-item { display: flex; align-items: center; justify-content: space-between; background: #fffef9; border: 2px solid #e6dcc3; border-radius: 10px; padding: 10px; margin-bottom: 8px; gap: 10px; }
+.request-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-small { padding: 6px 12px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+.btn-accept { background: #2ecc71; color: white; }
+.btn-reject { background: #e74c3c; color: white; }
+
+.toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #4a3b2a; color: #fdfbf7; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; z-index: 300; box-shadow: 0 4px 12px rgba(0,0,0,0.2); white-space: nowrap; max-width: 90%; opacity: 0; pointer-events: none; transition: all 0.3s; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; white-space: normal; }
+.toast.error { background: #e74c3c; }
+.empty-state { text-align: center; color: #8b7355; padding: 40px 20px; font-size: 14px; font-weight: 700; }
+.empty-state svg { width: 60px; height: 60px; fill: #c8b896; margin-bottom: 15px; display: block; margin: 0 auto; }
+
+.creator-group-item { background: #fffef9; border: 2px solid #e6dcc3; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+.creator-group-top { display: flex; align-items: center; gap: 10px; }
+.creator-group-info { flex: 1; min-width: 0; }
+.creator-group-name { font-size: 14px; font-weight: 900; color: #4a3b2a; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+.creator-group-meta { font-size: 11px; color: #8b7355; }
+.creator-group-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.creator-action-btn { border: none; border-radius: 8px; padding: 8px 10px; font-size: 11px; font-weight: 900; cursor: pointer; font-family: 'Vazirmatn', Tahoma, sans-serif; display: flex; align-items: center; gap: 4px; color: white; flex-shrink: 0; }
+.creator-action-btn svg { width: 12px; height: 12px; fill: white; }
+.creator-action-btn.delete { background: linear-gradient(180deg, #e74c3c, #c0392b); }
+.creator-action-btn.tick { background: linear-gradient(180deg, #ffd700, #ff9800); color: #3a2a00; }
+.creator-action-btn.tick svg { fill: #3a2a00; }
+.creator-action-btn.tick.active { background: linear-gradient(180deg, #4CAF50, #388e3c); color: white; }
+.creator-action-btn.tick.active svg { fill: white; }
+
+.creator-user-item { background: #fffef9; border: 2px solid #e6dcc3; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.creator-user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #d4c5a9; overflow: hidden; flex-shrink: 0; border: 2px solid #fff; }
+.creator-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.creator-user-info { flex: 1; min-width: 0; }
+.creator-user-name { font-size: 13px; font-weight: 900; color: #4a3b2a; }
+.creator-user-meta { font-size: 10px; color: #8b7355; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.creator-user-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.color-preview { width: 100%; height: 40px; border-radius: 10px; border: 2px solid #e6dcc3; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; margin-top: 8px; }
+
+.creator-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.creator-tab { flex: 1; padding: 10px; background: #e6dcc3; border: 2px solid #d4c5a9; border-radius: 10px; font-size: 13px; font-weight: 900; color: #5c4b37; cursor: pointer; text-align: center; }
+.creator-tab.active { background: #bc6c25; color: white; border-color: #8b5e3c; }
+
+.view-section::-webkit-scrollbar, .chat-messages::-webkit-scrollbar, .modal-box::-webkit-scrollbar { width: 4px; }
+.view-section::-webkit-scrollbar-thumb, .chat-messages::-webkit-scrollbar-thumb, .modal-box::-webkit-scrollbar-thumb { background: rgba(188,108,37,0.3); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <div class="top-bar">
+    <div class="currency-item"><div class="coin-icon-top"></div><span class="currency-value" id="userCoins">۰</span></div>
+    <div class="currency-item"><div class="gem-icon-top"></div><span class="currency-value" id="userGems">۰</span></div>
+  </div>
+
+  <div class="search-container">
+    <input type="text" class="search-box" placeholder="جستجوی نام یا تگ گروه..." id="searchInput" oninput="searchGroups()">
+  </div>
+
+  <div class="tabs-container">
+    <button class="tab-btn active" id="tabBtnList" onclick="switchTab('list')">گروه‌ها</button>
+    <button class="tab-btn" id="tabBtnChat" onclick="switchTab('chat')" style="display:none;">چت</button>
+    <button class="tab-btn" id="tabBtnAbout" onclick="switchTab('about')" style="display:none;">درباره</button>
+  </div>
+
+  <div class="view-section active" id="viewList"><div id="groupsContainer"></div></div>
+
+  <div class="view-section" id="viewChat">
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-area">
+        <button class="chat-announce-btn" id="btnAnnounce" onclick="sendAnnouncement()" style="display:none;">
+          <svg viewBox="0 0 24 24"><path d="M18 11v2h4v-2h-4z"/></svg>
+        </button>
+        <input type="text" class="chat-input" placeholder="پیام خود را بنویسید..." id="chatInput" onkeypress="handleChatKey(event)">
+        <button class="chat-send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-section" id="viewAbout">
+    <div class="about-header" id="aboutHeader">
+      <div class="about-logo" id="aboutLogo"></div>
+      <div class="about-name" id="aboutName">نام گروه</div>
+      <div class="about-desc" id="aboutDesc">توضیحات گروه</div>
+      <div class="about-stats">
+        <div class="stat-badge">👥 <span id="aboutMembers">۰</span>/<span id="aboutCapacity">۵۰</span></div>
+        <div class="stat-badge">🏷️ <span id="aboutTag" style="direction:ltr; display:inline-block;">TAG</span></div>
+      </div>
+      <div class="action-buttons" id="aboutActions"></div>
+    </div>
+    <h3 class="section-title">👥 اعضای گروه</h3>
+    <div class="members-list" id="membersList"></div>
+  </div>
+
+  <div class="fab-menu-btn" id="fabMenuBtn">
+    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+  </div>
+
+  <div class="creator-panel-btn" id="creatorPanelBtn" title="پنل سازنده">
+    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+  </div>
+
+  <div class="fab-options" id="fabOptions">
+    <div class="fab-option" id="fabJoinBtn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="#4a3b2a"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>
+      ورود با تگ گروه
+    </div>
+    <div class="fab-option" id="fabCreateBtn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="#bc6c25"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      ساخت گروه جدید (۱۵۰ الماس)
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" id="navShop"><div class="nav-shop"><div class="shop-awning"></div><div class="shop-base"></div></div><div class="nav-label">فروشگاه</div></div>
+    <div class="nav-item" id="navHome"><div class="nav-home"><div class="home-roof"></div><div class="home-body"><div class="home-door"></div></div></div><div class="nav-label">خانه</div></div>
+    <div class="nav-item active"><div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div><div class="nav-label">گروه</div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalCreate">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">ساخت گروه جدید</div><button class="modal-close" id="closeCreate">✕</button></div>
+    <div class="modal-body">
+      <input type="text" class="modal-input" placeholder="نام گروه" id="createName" maxlength="20">
+      <input type="text" class="modal-input" placeholder="تگ گروه (حداکثر ۶ کاراکتر)" id="createTag" maxlength="6" style="direction:ltr; text-transform:uppercase;">
+      <input type="text" class="modal-input" placeholder="توضیحات (اختیاری)" id="createDesc" maxlength="100">
+
+      <div id="colorCodeSection" style="border: 2px dashed #bc6c25; border-radius: 12px; padding: 12px; background: #fff8eb;">
+        <div style="font-size:13px; font-weight:900; color:#5c4b37; text-align:center; margin-bottom:8px;">🎨 شمارش رنگ (اختیاری)</div>
+        <div class="modal-hint" id="myColorCodeDisplay">عدد رنگ را بزن (۱ تا ۱۰۰) تا اسم و تگ همان رنگ شود</div>
+        <input type="number" class="modal-input" id="createColorCode" placeholder="شماره رنگ (اختیاری)" min="1" max="100" style="margin-top:8px;">
+        <div class="color-preview" id="createColorPreview" style="display:none;">پیش‌نمایش</div>
+      </div>
+
+      <div style="font-size:13px; font-weight:700; color:#8b7355; text-align:center;">انتخاب لوگو:</div>
+      <div class="logo-grid" id="logoGrid"></div>
+
+      <button class="btn-primary" id="btnCreateGroup">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        ساخت گروه (۱۵۰ الماس)
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalJoin">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">ورود به گروه</div><button class="modal-close" id="closeJoin">✕</button></div>
+    <div class="modal-body">
+      <input type="text" class="modal-input" placeholder="تگ گروه را وارد کنید" id="joinTag" maxlength="6" style="direction:ltr; text-transform:uppercase;">
+      <button class="btn-primary" id="btnRequestJoin">ارسال درخواست</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalRequests">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">درخواست‌های عضویت</div><button class="modal-close" id="closeRequests">✕</button></div>
+    <div class="modal-body" id="requestsList" style="max-height:300px; overflow-y:auto;"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalUserActions">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title" id="userActionName">نام کاربر</div><button class="modal-close" id="closeUserActions">✕</button></div>
+    <div class="modal-body" id="userActionsList"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalEdit">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">ویرایش گروه</div><button class="modal-close" id="closeEdit">✕</button></div>
+    <div class="modal-body">
+      <input type="text" class="modal-input" placeholder="نام جدید" id="editName">
+      <textarea class="modal-input" placeholder="توضیحات" id="editDesc" style="height:70px; resize:none; text-align:right;"></textarea>
+      <button class="btn-primary" id="btnSaveEdit">ذخیره</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalCreatorPanel">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><div class="modal-title">🛡️ پنل سازنده</div><button class="modal-close" id="closeCreatorPanel">✕</button></div>
+    <div class="modal-body">
+      <div class="creator-tabs">
+        <div class="creator-tab active" id="creatorTabGroups" onclick="switchCreatorTab('groups')">👥 گروه‌ها</div>
+        <div class="creator-tab" id="creatorTabUsers" onclick="switchCreatorTab('users')">🎨 کاربران</div>
+      </div>
+      <div id="creatorGroupsView"></div>
+      <div id="creatorUsersView" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalAssignColor">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">🎨 اختصاص رنگ به کاربر</div><button class="modal-close" id="closeAssignColor">✕</button></div>
+    <div class="modal-body">
+      <div id="assignColorUserName" style="text-align:center; font-weight:900; font-size:16px; color:#4a3b2a; margin-bottom:10px;"></div>
+      <div class="modal-hint">انتخاب رنگ:</div>
+      <select class="modal-select" id="assignColorSelect"></select>
+      <div class="color-preview" id="assignColorPreview" style="margin-top:10px;">-</div>
+      <button class="btn-primary gold" id="btnSaveColor" style="margin-top:12px;">ذخیره رنگ</button>
+      <button class="btn-primary" id="btnRemoveColor" style="margin-top:8px; background: linear-gradient(180deg, #757575, #616161); box-shadow: 0 4px 0 #424242;">حذف رنگ اختصاصی</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toPersianNum(num) {
+  const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  return (num || 0).toString().replace(/[0-9]/g, w => p[+w]);
+}
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { toast.classList.remove('show'); }, 2500);
+}
+function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('active'); }
+
+function gm(g){ return (g && g.members) ? g.members : []; }
+function gp(g){ return (g && g.pending) ? g.pending : []; }
+function gd(g){ return (g && g.deputies) ? g.deputies : []; }
+
+const COLOR_CODES = {
+  1:{name:'سفید',hex:'#FFFFFF',text:'#000'},2:{name:'مشکی',hex:'#000000',text:'#fff'},
+  3:{name:'قرمز',hex:'#FF0000',text:'#fff'},4:{name:'سبز',hex:'#008000',text:'#fff'},
+  5:{name:'آبی',hex:'#0000FF',text:'#fff'},6:{name:'زرد',hex:'#FFD700',text:'#000'},
+  7:{name:'نارنجی',hex:'#FFA500',text:'#000'},8:{name:'صورتی',hex:'#FF69B4',text:'#fff'},
+  9:{name:'بنفش',hex:'#800080',text:'#fff'},10:{name:'قهوه‌ای',hex:'#8B4513',text:'#fff'},
+  11:{name:'خاکستری',hex:'#808080',text:'#fff'},12:{name:'طلایی',hex:'#FFD700',text:'#000'},
+  13:{name:'نقره‌ای',hex:'#C0C0C0',text:'#000'},14:{name:'نیلی',hex:'#4B0082',text:'#fff'},
+  15:{name:'لاجوردی',hex:'#26619C',text:'#fff'},16:{name:'فیروزه‌ای',hex:'#40E0D0',text:'#000'},
+  17:{name:'زمردی',hex:'#50C878',text:'#000'},18:{name:'یاسی',hex:'#C8A2C8',text:'#000'},
+  19:{name:'ارغوانی',hex:'#9932CC',text:'#fff'},20:{name:'کرم',hex:'#FFFDD0',text:'#000'},
+  21:{name:'بژ',hex:'#F5F5DC',text:'#000'},22:{name:'مسی',hex:'#B87333',text:'#fff'},
+  23:{name:'برنزی',hex:'#CD7F32',text:'#fff'},24:{name:'عنابی',hex:'#800020',text:'#fff'},
+  25:{name:'سورمه‌ای',hex:'#000080',text:'#fff'},26:{name:'اناری',hex:'#A52A2A',text:'#fff'},
+  27:{name:'گیلاسی',hex:'#DE3163',text:'#fff'},28:{name:'شکلاتی',hex:'#7B3F00',text:'#fff'},
+  29:{name:'عسلی',hex:'#EB9605',text:'#000'},30:{name:'خردلی',hex:'#FFDB58',text:'#000'},
+  31:{name:'زیتونی',hex:'#808000',text:'#fff'},32:{name:'سبز دودی',hex:'#2F4F4F',text:'#fff'},
+  33:{name:'آبی نفتی',hex:'#003153',text:'#fff'},34:{name:'آبی آسمانی',hex:'#87CEEB',text:'#000'},
+  35:{name:'سبز روشن',hex:'#90EE90',text:'#000'},36:{name:'قرمز تیره',hex:'#8B0000',text:'#fff'},
+  37:{name:'زعفرانی',hex:'#F4C430',text:'#000'},38:{name:'هلویی',hex:'#FFDAB9',text:'#000'},
+  39:{name:'ارکیده‌ای',hex:'#DA70D6',text:'#000'},40:{name:'سرخابی',hex:'#FF00FF',text:'#fff'},
+  41:{name:'کاهی',hex:'#EED9C4',text:'#000'},42:{name:'نی‌ای',hex:'#C0CA33',text:'#000'},
+  43:{name:'دودی',hex:'#545454',text:'#fff'},44:{name:'آلوچه‌ای',hex:'#DDA0DD',text:'#000'},
+  45:{name:'تمشکی',hex:'#E30B5C',text:'#fff'},46:{name:'شرابی',hex:'#722F37',text:'#fff'},
+  47:{name:'یاقوتی',hex:'#E0115F',text:'#fff'},48:{name:'لیمویی',hex:'#FFF44F',text:'#000'},
+  49:{name:'نعنایی',hex:'#98FF98',text:'#000'},50:{name:'آبی دریایی',hex:'#006994',text:'#fff'},
+  51:{name:'سبز نظامی',hex:'#4B5320',text:'#fff'},52:{name:'ماشی',hex:'#A78B2D',text:'#000'},
+  53:{name:'حنایی',hex:'#B7410E',text:'#fff'},54:{name:'زرشکی',hex:'#990000',text:'#fff'},
+  55:{name:'گلی',hex:'#FFB6C1',text:'#000'},56:{name:'ارغوانی روشن',hex:'#CC5599',text:'#fff'},
+  57:{name:'بنفش آبی',hex:'#8A2BE2',text:'#fff'},58:{name:'سبز چمنی',hex:'#7CFC00',text:'#000'},
+  59:{name:'زرد آفتابی',hex:'#FAD02E',text:'#000'},60:{name:'نارنجی سوخته',hex:'#CC5500',text:'#fff'},
+  61:{name:'یشمی',hex:'#00A86B',text:'#fff'},62:{name:'فلفلی',hex:'#FF3F3F',text:'#fff'},
+  63:{name:'زنگاری',hex:'#B7410E',text:'#fff'},64:{name:'آبی یخی',hex:'#99FFFF',text:'#000'},
+  65:{name:'صورتی مات',hex:'#E75480',text:'#fff'},66:{name:'بنفش تیره',hex:'#301934',text:'#fff'},
+  67:{name:'سبز کله‌قازی',hex:'#004242',text:'#fff'},68:{name:'زرد نخودی',hex:'#E9C98C',text:'#000'},
+  69:{name:'قرمز آجری',hex:'#CB4154',text:'#fff'},70:{name:'خاکی',hex:'#C3B091',text:'#000'},
+  71:{name:'استخوانی',hex:'#E3DAC9',text:'#000'},72:{name:'مرواریدی',hex:'#FDEEF4',text:'#000'},
+  73:{name:'بلوطی',hex:'#80461B',text:'#fff'},74:{name:'گردویی',hex:'#5C4033',text:'#fff'},
+  75:{name:'دارچینی',hex:'#D2691E',text:'#fff'},76:{name:'زنجبیلی',hex:'#B06500',text:'#fff'},
+  77:{name:'شیری',hex:'#FFFAF0',text:'#000'},78:{name:'کرم روشن',hex:'#FFF8E7',text:'#000'},
+  79:{name:'عاجی',hex:'#FFFFF0',text:'#000'},80:{name:'طوسی',hex:'#808080',text:'#fff'},
+  81:{name:'سربی',hex:'#36454F',text:'#fff'},82:{name:'فولادی',hex:'#4682B4',text:'#fff'},
+  83:{name:'آبی کبالتی',hex:'#0047AB',text:'#fff'},84:{name:'سبز باتلاقی',hex:'#ACBF60',text:'#000'},
+  85:{name:'زرد کهربایی',hex:'#FFBF00',text:'#000'},86:{name:'نارنجی مرجانی',hex:'#FF7F50',text:'#000'},
+  87:{name:'قرمز گوجه',hex:'#FF6347',text:'#fff'},88:{name:'صورتی تند',hex:'#FF1493',text:'#fff'},
+  89:{name:'یاسمنی',hex:'#C8A2C8',text:'#000'},90:{name:'سنبلی',hex:'#F4A460',text:'#000'},
+  91:{name:'گندمی',hex:'#F5DEB3',text:'#000'},92:{name:'جو دوسری',hex:'#E6D8AD',text:'#000'},
+  93:{name:'پسته‌ای',hex:'#93C572',text:'#000'},94:{name:'سبز سیبی',hex:'#8DB600',text:'#000'},
+  95:{name:'آبی فیروزه تیره',hex:'#00CED1',text:'#000'},96:{name:'نیلی سیر',hex:'#1F305E',text:'#fff'},
+  97:{name:'ارغوانی دودی',hex:'#967BB6',text:'#fff'},98:{name:'قهوه روشن',hex:'#C19A6B',text:'#000'},
+  99:{name:'شکلاتی شیری',hex:'#7B3F00',text:'#fff'},100:{name:'مشکی جت',hex:'#0A0A0A',text:'#fff'}
+};
+function getColorByCode(code) {
+  if (!code) return null;
+  const n = parseInt(code);
+  if (n >= 1 && n <= 100) return COLOR_CODES[n];
+  return null;
+}
+
+const ICONS = {
+  shield: '<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>',
+  lion: '<svg viewBox="0 0 24 24"><path d="M7 4c-1.1 0-2 .9-2 2v1c-1.1 0-2 .9-2 2v7c0 2.76 2.24 5 5 5h8c2.76 0 5-2.24 5-5V9c0-1.1-.9-2-2-2V6c0-1.1-.9-2-2-2H7z"/></svg>',
+  eagle: '<svg viewBox="0 0 24 24"><path d="M18 4l-2 2H8L6 4H2v2l2.5 1c-.83 1.2-1.5 2.68-1.5 4.5C3 15 5 18 8 19l2 2v1h4v-1l2-2c3-1 5-4 5-7.5 0-1.82-.67-3.3-1.5-4.5L22 6V4h-4z"/></svg>',
+  dragon: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>',
+  skull: '<svg viewBox="0 0 24 24"><path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>',
+  fire: '<svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>',
+  snowflake: '<svg viewBox="0 0 24 24"><path d="M22 11h-4.17l3.24-3.24-1.41-1.42L15 11h-2V9l4.66-4.66-1.42-1.41L13 6.17V2h-2v4.17L7.76 2.93 6.34 4.34 11 9v2H9L4.34 6.34 2.93 7.76 6.17 11H2v2h4.17l-3.24 3.24 1.41 1.42L9 13h2v2l-4.66 4.66 1.42 1.41L11 17.83V22h2v-4.17l3.24 3.24 1.42-1.41L13 15v-2h2l4.66 4.66 1.41-1.42L17.83 13H22z"/></svg>',
+  lightning: '<svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>',
+  wolf: '<svg viewBox="0 0 24 24"><path d="M4.5 9.5C4.5 5.36 7.86 2 12 2s7.5 3.36 7.5 7.5c0 1.92-.72 3.67-1.91 5h1.91v2c0 1.1-.9 2-2 2h-1.09c-.42.6-1.01 1.08-1.69 1.37l-.03.04C14.4 21.11 13.25 22 12 22s-2.4-.89-2.69-2.09l-.03-.04c-.68-.29-1.27-.77-1.69-1.37H6.5c-1.1 0-2-.9-2-2v-2h1.91c-1.19-1.33-1.91-3.08-1.91-5z"/></svg>',
+  scorpion: '<svg viewBox="0 0 24 24"><path d="M20 9l-2-2V3h-2v3.17l-2-2V3h-2v4c-1.1 0-2 .9-2 2v2.17L8 9.17V5H6v3.17L4 6.17V4H2v2c0 1.1.9 2 2 2l2 2 2 2-1 3-3-1v2l2.5.83L8.5 20l1.5-1.5-1-1.5 1-3 2 1 2-1 1 3-1 1.5L15.5 20l2-3.17L20 16v-2l-3 1-1-3 2-2 2-2c1.1 0 2-.9 2-2V4h-2v2.17L18 8.17z"/></svg>',
+  sword: '<svg viewBox="0 0 24 24"><path d="M14.12 4l1.88 1.88-6.07 6.06L8.06 10l6.06-6z"/></svg>',
+  rose: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 .88.23 1.71.63 2.43C5.4 10.69 4 12.95 4 15.5 4 18.54 6.46 21 9.5 21c1.33 0 2.55-.47 3.5-1.27.95.8 2.17 1.27 3.5 1.27C19.54 21 22 18.54 22 15.5c0-2.55-1.4-4.81-3.63-6.07.4-.72.63-1.55.63-2.43 0-2.76-2.24-5-5-5z"/></svg>',
+  fox: '<svg viewBox="0 0 24 24"><path d="M18.65 2.85l-7.72 7.72c-.47-.24-1-.37-1.56-.37-1.93 0-3.5 1.57-3.5 3.5 0 .47.1.92.27 1.33l-3.29 3.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l3.29-3.29c.41.17.86.27 1.33.27 1.93 0 3.5-1.57 3.5-3.5 0-.56-.13-1.09-.37-1.56l7.72-7.72c.39-.39.39-1.02 0-1.41-.38-.36-1.02-.36-1.38.03z"/></svg>',
+  crown: '<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>',
+  mask: '<svg viewBox="0 0 24 24"><path d="M5 8c0-3.31 3.13-6 7-6s7 2.69 7 6c0 2.65-.95 5.11-2.56 7H7.56C5.95 13.11 5 10.65 5 8z"/></svg>',
+  pirateFlag: '<svg viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>',
+  star: '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
+  delete: '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
+  copy: '<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1z"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>',
+  leave: '<svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59z"/></svg>',
+  inbox: '<svg viewBox="0 0 24 24"><path d="M19 3H4.99c-1.11 0-1.98.89-1.98 2L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2z"/></svg>',
+  send: '<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>',
+  userDefault: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+  emptyGroups: '<svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3z"/></svg>'
+};
+const LOGO_KEYS = ['shield', 'lion', 'eagle', 'dragon', 'skull', 'fire', 'snowflake', 'lightning', 'wolf', 'scorpion', 'sword', 'rose', 'fox', 'crown', 'mask', 'pirateFlag'];
+function getLogoSvg(key) { return ICONS[key] || ICONS.shield; }
+
+const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
+const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
+const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+const JSONBIN_KEY = "$2a$10$G8pgSWnFz4w/.voj3lfBPuJL7luRXAXiR/fIufC3YIB4.qRkZSjSS";
+const JSONBIN_ID1 = "6a310a04da38895dfec86661";
+const JSONBIN_ID2 = "6a53f4c8f5f4af5e298541fe";
+const CREATOR_PHONE = '09904844031';
+const CLAN_TICK_IMG = 'TikK2.png';
+
+async function upstashGet(url, token, k) {
+  try {
+    const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
+    const r = await fetch(url + '/get/' + encodeURIComponent(k), { headers: { 'Authorization': 'Bearer ' + token }, signal: c.signal });
+    clearTimeout(t); if (!r.ok) return null; const d = await r.json();
+    if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
+    return null;
+  } catch (e) { return null; }
+}
+async function upstashSet(url, token, k, v) {
+  try {
+    const jsonValue = JSON.stringify(v); const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
+    const r = await fetch(url + '/set/' + encodeURIComponent(k) + '/' + encodeURIComponent(jsonValue), { headers: { 'Authorization': 'Bearer ' + token }, signal: c.signal });
+    clearTimeout(t); return r.ok;
+  } catch (e) { return false; }
+}
+async function jsonbinRead(binId) {
+  try {
+    const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY }, signal: c.signal });
+    clearTimeout(t); if (!r.ok) return null; const d = await r.json(); return d.record || {};
+  } catch (e) { return null; }
+}
+async function jsonbinWrite(binId, data) {
+  try {
+    const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + binId, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY }, body: JSON.stringify(data), signal: c.signal });
+    clearTimeout(t); return r.ok;
+  } catch (e) { return false; }
+}
+async function redisGet(key) {
+  let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
+  if (v !== null) return v;
+  v = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
+  if (v !== null) return v;
+  const b1 = await jsonbinRead(JSONBIN_ID1);
+  if (b1 && b1[key] !== undefined) return b1[key];
+  const b2 = await jsonbinRead(JSONBIN_ID2);
+  if (b2 && b2[key] !== undefined) return b2[key];
+  return null;
+}
+async function redisSet(key, value) {
+  const p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
+  const p2 = upstashSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key, value);
+  const p3 = (async function() { const b = await jsonbinRead(JSONBIN_ID1) || {}; b[key] = value; return jsonbinWrite(JSONBIN_ID1, b); })();
+  const p4 = (async function() { const b = await jsonbinRead(JSONBIN_ID2) || {}; b[key] = value; return jsonbinWrite(JSONBIN_ID2, b); })();
+  const results = await Promise.allSettled([p1, p2, p3, p4]);
+  return results.some(r => r.status === 'fulfilled' && r.value === true);
+}
+
+async function getUser(phone) { return await redisGet('user:' + phone); }
+async function saveUser(phone, userData) { return await redisSet('user:' + phone, userData); }
+async function getAllUsers() { return await redisGet('all_users') || {}; }
+async function saveAllUsers(users) { return await redisSet('all_users', users); }
+async function getGroups() { return await redisGet('police_groups') || []; }
+async function saveGroups(groups) { return await redisSet('police_groups', groups); }
+
+let currentUser = null;
+let groups = [];
+let currentGroupId = null;
+let selectedLogo = 'shield';
+let targetUserIdForAction = null;
+let chatSyncInterval = null;
+let usersCache = { ts: 0, data: {} };
+let currentCreatorTab = 'groups';
+let colorAssignTarget = null;
+
+function clearUsersCache() { usersCache = { ts: 0, data: {} }; }
+async function getUsersCached(force = false) {
+  const now = Date.now();
+  if (force || now - usersCache.ts > 1000) {
+    usersCache = { ts: now, data: await getAllUsers() };
+  }
+  return usersCache.data;
+}
+function getAvatarHtml(avatarStr) {
+  if (!avatarStr) return ICONS.userDefault;
+  if (avatarStr.includes('.png') || avatarStr.includes('.jpg') || avatarStr.includes('.jpeg') || avatarStr.includes('.webp') || avatarStr.startsWith('data:')) {
+    return '<img src="' + avatarStr + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;">';
+  }
+  return ICONS.userDefault;
+}
+
+async function loadUserData() {
+  const loggedIn = localStorage.getItem('currentLoggedInUser');
+  if (!loggedIn) { window.location.href = 'index.html'; return; }
+  const userInfo = JSON.parse(loggedIn);
+  const user = await getUser(userInfo.phone);
+  if (!user) { window.location.href = 'index.html'; return; }
+  currentUser = user;
+  currentUser.id = userInfo.phone;
+  currentUser.coins = currentUser.coins || 0;
+  currentUser.gems = currentUser.gems || 0;
+  groups = await getGroups();
+  if (currentUser.id === CREATOR_PHONE) document.getElementById('creatorPanelBtn').classList.add('show');
+}
+
+async function saveData() {
+  if (!currentUser) return;
+  await saveUser(currentUser.id, currentUser);
+  clearUsersCache();
+  const allUsers = await getAllUsers();
+  allUsers[currentUser.id] = currentUser;
+  await saveAllUsers(allUsers);
+  await saveGroups(groups);
+  updateUI();
+}
+function updateUI() {
+  if (!currentUser) return;
+  document.getElementById('userCoins').textContent = toPersianNum(currentUser.coins);
+  document.getElementById('userGems').textContent = toPersianNum(currentUser.gems);
+}
+
+function switchTab(view) {
+  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const viewMap = { 'list': 'viewList', 'chat': 'viewChat', 'about': 'viewAbout' };
+  const tabMap = { 'list': 'tabBtnList', 'chat': 'tabBtnChat', 'about': 'tabBtnAbout' };
+  const viewEl = document.getElementById(viewMap[view]);
+  const tabEl = document.getElementById(tabMap[view]);
+  if (viewEl) viewEl.classList.add('active');
+  if (tabEl) tabEl.classList.add('active');
+  if (view === 'list') {
+    document.getElementById('tabBtnChat').style.display = 'none';
+    document.getElementById('tabBtnAbout').style.display = 'none';
+    currentGroupId = null;
+    stopChatSync();
+  }
+  if (view === 'chat') { renderChat(); startChatSync(); }
+  if (view === 'about') renderAbout();
+}
+
+async function renderGroupsList() {
+  groups = await getGroups();
+  const container = document.getElementById('groupsContainer');
+  container.innerHTML = '';
+  if (!groups || groups.length === 0) {
+    container.innerHTML = '<div class="empty-state">' + ICONS.emptyGroups + '<div>هنوز هیچ گروهی ساخته نشده</div></div>';
+    return;
+  }
+  const memberGroup = groups.find(g => gm(g).includes(currentUser.id));
+  const pendingGroup = groups.find(g => gp(g).includes(currentUser.id));
+  const myGroup = memberGroup || pendingGroup;
+  if (myGroup) container.appendChild(createGroupCard(myGroup, true));
+  groups.filter(g => g.id !== (myGroup ? myGroup.id : '')).forEach(g => { container.appendChild(createGroupCard(g, false)); });
+}
+
+function createGroupCard(group, isMine) {
+  const div = document.createElement('div');
+  const isVerified = group.verified === true;
+  div.className = 'group-card' + (isMine ? ' my-group' : '') + (isVerified ? ' verified-card' : '');
+  div.onclick = () => openGroup(group.id);
+  const isMember = gm(group).includes(currentUser.id);
+  const isPending = gp(group).includes(currentUser.id);
+  const statusText = isMember ? 'عضو هستید' : (isPending ? 'در انتظار' : toPersianNum(gm(group).length) + '/' + toPersianNum(group.capacity||50));
+
+  // ✅ فقط گروه‌های سازنده می‌توانند رنگی باشند
+  const colorData = (group.owner === CREATOR_PHONE) ? getColorByCode(group.colorCode) : null;
+
+  let tagStyle = '';
+  let tagClass = 'group-tag';
+  let tagNameHtml = esc(group.name);
+  if (colorData) {
+    tagStyle = 'background:' + colorData.hex + '; color:' + colorData.text + ';';
+    tagClass += ' colored';
+    tagNameHtml = '<span style="color:' + colorData.hex + '; text-shadow: 0 1px 2px rgba(0,0,0,0.25);">' + esc(group.name) + '</span>';
+  }
+  const tickHtml = isVerified ? '<img src="' + CLAN_TICK_IMG + '" class="group-verified-tick" onerror="this.style.display=\'none\'">' : '';
+  div.innerHTML = '<div class="group-logo">' + getLogoSvg(group.logo) + '</div><div class="group-info"><div class="group-name">' + tagNameHtml + ' ' + tickHtml + '</div><div class="group-tag-row"><span class="' + tagClass + '" style="' + tagStyle + '">' + esc(group.tag) + '</span></div><div class="group-meta">' + statusText + '</div></div>';
+  return div;
+}
+
+function searchGroups() {
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  document.querySelectorAll('.group-card').forEach(card => { card.style.display = card.innerText.toLowerCase().includes(query) ? 'flex' : 'none'; });
+}
+
+async function openGroup(groupId) {
+  currentGroupId = groupId;
+  groups = await getGroups();
+  const group = groups.find(g => g.id === groupId);
+  if (!group) return;
+  const isMember = gm(group).includes(currentUser.id);
+  const isOwner = group.owner === currentUser.id;
+  document.getElementById('tabBtnAbout').style.display = 'block';
+  document.getElementById('tabBtnChat').style.display = (isMember || isOwner) ? 'block' : 'none';
+  switchTab('about');
+}
+
+async function renderAbout() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  const allUsers = await getUsersCached(true);
+  const header = document.getElementById('aboutHeader');
+  const isVerified = group.verified === true;
+  header.className = 'about-header' + (isVerified ? ' verified-about' : '');
+  document.getElementById('aboutLogo').innerHTML = getLogoSvg(group.logo);
+  const nameEl = document.getElementById('aboutName');
+
+  // ✅ فقط گروه‌های سازنده می‌توانند رنگی باشند
+  const colorData = (group.owner === CREATOR_PHONE) ? getColorByCode(group.colorCode) : null;
+
+  const tickHtml = isVerified ? ' <img src="' + CLAN_TICK_IMG + '" class="about-verified-tick" onerror="this.style.display=\'none\'">' : '';
+  if (colorData) {
+    nameEl.innerHTML = '<span style="color:' + colorData.hex + '; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">' + esc(group.name) + '</span>' + tickHtml;
+  } else {
+    nameEl.innerHTML = esc(group.name) + tickHtml;
+  }
+  document.getElementById('aboutDesc').textContent = group.desc || 'بدون توضیحات';
+  document.getElementById('aboutMembers').textContent = toPersianNum(gm(group).length);
+  document.getElementById('aboutCapacity').textContent = toPersianNum(group.capacity||50);
+  const tagEl = document.getElementById('aboutTag');
+  tagEl.textContent = group.tag;
+  if (colorData) {
+    tagEl.style.background = colorData.hex;
+    tagEl.style.color = colorData.text;
+    tagEl.style.fontWeight = '900';
+  } else {
+    tagEl.style.background = '#e6dcc3';
+    tagEl.style.color = '#5c4b37';
+  }
+  const actionsDiv = document.getElementById('aboutActions');
+  actionsDiv.innerHTML = '';
+  const isOwner = group.owner === currentUser.id;
+  const isDeputy = gd(group).includes(currentUser.id);
+  const isMember = gm(group).includes(currentUser.id);
+  const isPending = gp(group).includes(currentUser.id);
+  if (isOwner || isDeputy) {
+    if (gp(group).length > 0) {
+      const btn = document.createElement('button');
+      btn.className = 'action-btn primary';
+      btn.innerHTML = ICONS.inbox + ' درخواست‌ها (' + toPersianNum(gp(group).length) + ')';
+      btn.onclick = openRequestsModal;
+      actionsDiv.appendChild(btn);
+    }
+  }
+  if (isOwner) {
+    const editBtn = document.createElement('button');
+    editBtn.className = 'action-btn';
+    editBtn.innerHTML = ICONS.edit + ' ویرایش';
+    editBtn.onclick = openEditModal;
+    actionsDiv.appendChild(editBtn);
+    const upBtn = document.createElement('button');
+    upBtn.className = 'action-btn primary';
+    upBtn.innerHTML = 'افزایش ظرفیت (۵۰ الماس)';
+    upBtn.onclick = upgradeCapacity;
+    actionsDiv.appendChild(upBtn);
+  }
+  if (isMember && !isOwner) {
+    const leaveBtn = document.createElement('button');
+    leaveBtn.className = 'action-btn danger';
+    leaveBtn.innerHTML = ICONS.leave + ' خروج';
+    leaveBtn.onclick = leaveGroup;
+    actionsDiv.appendChild(leaveBtn);
+  } else if (isPending) {
+    const waitBtn = document.createElement('button');
+    waitBtn.className = 'action-btn';
+    waitBtn.innerHTML = 'در انتظار تایید';
+    waitBtn.disabled = true;
+    actionsDiv.appendChild(waitBtn);
+  } else if (!isMember && !isOwner) {
+    const reqBtn = document.createElement('button');
+    reqBtn.className = 'action-btn primary';
+    reqBtn.innerHTML = ICONS.send + ' درخواست عضویت';
+    reqBtn.onclick = async () => {
+      groups = await getGroups();
+      const g = groups.find(x => x.id === currentGroupId);
+      if (g) {
+        if (gp(g).includes(currentUser.id)) { showToast('قبلاً درخواست داده‌اید', true); return; }
+        if (gm(g).includes(currentUser.id)) { showToast('قبلاً عضو هستید', true); return; }
+        if (!g.pending) g.pending = [];
+        g.pending.push(currentUser.id);
+        await saveData();
+        await renderAbout();
+        showToast('درخواست ارسال شد');
+      }
+    };
+    actionsDiv.appendChild(reqBtn);
+  }
+  const listDiv = document.getElementById('membersList');
+  listDiv.innerHTML = '';
+  const sortedMembers = [...gm(group)].sort((a, b) => {
+    if (a === group.owner) return -1;
+    if (b === group.owner) return 1;
+    const aDep = gd(group).includes(a) ? 1 : 0;
+    const bDep = gd(group).includes(b) ? 1 : 0;
+    return bDep - aDep;
+  });
+  sortedMembers.forEach(uid => {
+    const uData = allUsers[uid] || { name: 'کاربر', avatar: null, cups: 0 };
+    const isOwnerMember = uid === group.owner;
+    const isDeputyMember = gd(group).includes(uid);
+    const roleText = isOwnerMember ? '👑 مدیر گروه' : (isDeputyMember ? '⭐ معاون' : '👤 عضو');
+    const roleClass = isOwnerMember ? 'owner-role' : (isDeputyMember ? 'deputy-role' : 'member-role');
+    const cardClass = isOwnerMember ? 'owner-card' : (isDeputyMember ? 'deputy-card' : '');
+    const isMe = uid === currentUser.id;
+    const card = document.createElement('div');
+    card.className = 'member-card ' + cardClass;
+    card.onclick = () => openUserActions(uid);
+    card.innerHTML = '<div class="member-avatar">' + getAvatarHtml(uData.avatar) + '</div>' +
+      '<div class="member-info"><div class="member-name">' + (uData.name||'کاربر') + (isMe ? ' <span style="color:#bc6c25;font-size:10px;">(شما)</span>' : '') + '</div>' +
+      '<div class="member-role ' + roleClass + '">' + roleText + '</div></div>' +
+      '<div class="member-cups"><span class="trophy-icon"></span>' + toPersianNum(uData.cups||0) + '</div>';
+    listDiv.appendChild(card);
+  });
+}
+
+async function openRequestsModal() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  const allUsers = await getUsersCached(true);
+  const list = document.getElementById('requestsList');
+  list.innerHTML = '';
+  if (gp(group).length === 0) {
+    list.innerHTML = '<div class="empty-state">درخواستی وجود ندارد</div>';
+  } else {
+    for (const uid of gp(group)) {
+      const uData = allUsers[uid] || { name: 'کاربر', avatar: null };
+      const div = document.createElement('div');
+      div.className = 'request-item';
+      div.innerHTML = '<div style="display:flex; align-items:center; gap:10px; min-width: 0; flex: 1;">' +
+        '<div class="member-avatar" style="width:40px; height:40px; flex-shrink:0;">' + getAvatarHtml(uData.avatar) + '</div>' +
+        '<div style="font-weight:700; color:#4a3b2a;">' + (uData.name || 'کاربر') + '</div></div>' +
+        '<div class="request-actions"><button class="btn-small btn-accept" data-uid="' + uid + '">تایید</button>' +
+        '<button class="btn-small btn-reject" data-uid="' + uid + '">رد</button></div>';
+      list.appendChild(div);
+    }
+    list.querySelectorAll('.btn-accept').forEach(btn => { btn.onclick = () => handleRequest(btn.dataset.uid, true); });
+    list.querySelectorAll('.btn-reject').forEach(btn => { btn.onclick = () => handleRequest(btn.dataset.uid, false); });
+  }
+  document.getElementById('modalRequests').classList.add('active');
+}
+
+async function handleRequest(userId, accept) {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) { showToast('گروه یافت نشد', true); return; }
+  const uData = await getUser(userId) || { name: 'کاربر' };
+  const userName = uData.name || 'کاربر';
+  if (!group.pending) group.pending = [];
+  group.pending = group.pending.filter(id => id !== userId);
+  if (accept) {
+    if (gm(group).length >= (group.capacity||50)) {
+      showToast('ظرفیت تکمیل است', true);
+      group.pending.push(userId);
+      await saveData();
+      openRequestsModal();
+      return;
+    }
+    group.members = gm(group).slice();
+    group.members.push(userId);
+    if (!group.chat) group.chat = [];
+    group.chat.push({ id: Date.now(), userId: 'system', userName: 'سیستم', text: '«' + userName + '» پیوست.', time: 'اکنون', isAnnounce: true });
+    const saveSuccess = await saveGroups(groups);
+    if (!saveSuccess) {
+      showToast('خطا در ذخیره', true);
+      group.members = group.members.filter(id => id !== userId);
+      group.pending.push(userId);
+      openRequestsModal();
+      return;
+    }
+    showToast('تایید شد ✅');
+  } else {
+    await saveGroups(groups);
+    showToast('رد شد');
+  }
+  closeModal('modalRequests');
+  await renderAbout();
+}
+
+async function openUserActions(userId) {
+  if (userId === currentUser.id) { showToast('این گزینه برای خود شما غیرفعال است'); return; }
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  const isOwner = group.owner === currentUser.id;
+  const isDeputy = gd(group).includes(currentUser.id);
+  const isTargetOwner = group.owner === userId;
+  const isTargetDeputy = gd(group).includes(userId);
+  const uData = (await getUsersCached(true))[userId] || { name: 'کاربر' };
+  targetUserIdForAction = userId;
+  document.getElementById('userActionName').textContent = uData.name || 'کاربر';
+  const list = document.getElementById('userActionsList');
+  list.innerHTML = '';
+  if (isOwner) {
+    if (!isTargetDeputy && !isTargetOwner) {
+      const btn = document.createElement('button'); btn.className = 'btn-primary'; btn.style.marginBottom = '10px';
+      btn.innerHTML = ICONS.star + ' ارتقا به معاون'; btn.onclick = promoteUser; list.appendChild(btn);
+    }
+    if (isTargetDeputy) {
+      const btn = document.createElement('button'); btn.className = 'btn-primary'; btn.style.marginBottom = '10px'; btn.style.background = 'linear-gradient(180deg, #95a5a6, #7f8c8d)';
+      btn.innerHTML = 'عزل از معاونت'; btn.onclick = demoteUser; list.appendChild(btn);
+    }
+    if (!isTargetOwner) {
+      const btn = document.createElement('button'); btn.className = 'btn-primary'; btn.style.marginBottom = '10px'; btn.style.background = 'linear-gradient(180deg, #f1c40f, #f39c12)';
+      btn.innerHTML = ICONS.crown + ' انتقال مالکیت'; btn.onclick = transferOwnership; list.appendChild(btn);
+    }
+    const kickBtn = document.createElement('button'); kickBtn.className = 'btn-primary';
+    kickBtn.style.background = 'linear-gradient(180deg, #e74c3c, #c0392b)';
+    kickBtn.innerHTML = 'اخراج'; kickBtn.onclick = kickUser; list.appendChild(kickBtn);
+  } else if (isDeputy) {
+    if (!isTargetOwner && !isTargetDeputy) {
+      const btn = document.createElement('button'); btn.className = 'btn-primary';
+      btn.style.background = 'linear-gradient(180deg, #e74c3c, #c0392b)';
+      btn.innerHTML = 'اخراج عضو'; btn.onclick = kickUser; list.appendChild(btn);
+    } else {
+      list.innerHTML = '<div class="empty-state">دسترسی ندارید</div>';
+    }
+  } else {
+    list.innerHTML = '<div class="empty-state">فقط مدیر و معاون دسترسی دارند</div>';
+  }
+  document.getElementById('modalUserActions').classList.add('active');
+}
+
+async function promoteUser() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  if (!group.deputies) group.deputies = [];
+  if (!group.deputies.includes(targetUserIdForAction)) {
+    group.deputies.push(targetUserIdForAction);
+    await saveData(); closeModal('modalUserActions'); clearUsersCache(); await renderAbout();
+    showToast('ارتقا یافت');
+  }
+}
+async function demoteUser() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  if (!group.deputies) group.deputies = [];
+  group.deputies = group.deputies.filter(id => id !== targetUserIdForAction);
+  await saveData(); closeModal('modalUserActions'); clearUsersCache(); await renderAbout();
+  showToast('عزل شد');
+}
+async function transferOwnership() {
+  if (!confirm('انتقال مالکیت؟')) return;
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  group.owner = targetUserIdForAction;
+  if (group.deputies) group.deputies = group.deputies.filter(id => id !== targetUserIdForAction);
+  await saveData(); closeModal('modalUserActions'); clearUsersCache(); await renderAbout();
+  showToast('مالکیت منتقل شد');
+}
+async function kickUser() {
+  if (!confirm('اخراج؟')) return;
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  group.members = gm(group).filter(id => id !== targetUserIdForAction);
+  group.deputies = gd(group).filter(id => id !== targetUserIdForAction);
+  group.pending = gp(group).filter(id => id !== targetUserIdForAction);
+  await saveData(); closeModal('modalUserActions'); clearUsersCache(); await renderAbout();
+  showToast('اخراج شد');
+}
+
+function initLogoGrid() {
+  const grid = document.getElementById('logoGrid');
+  grid.innerHTML = '';
+  LOGO_KEYS.forEach(key => {
+    const div = document.createElement('div');
+    div.className = 'logo-option' + (key === selectedLogo ? ' selected' : '');
+    div.innerHTML = getLogoSvg(key);
+    div.onclick = () => { selectedLogo = key; document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
+    grid.appendChild(div);
+  });
+}
+
+function openCreateModal() {
+  document.getElementById('fabOptions').classList.remove('show');
+  if (!currentUser) { showToast('اول وارد حساب شو', true); return; }
+  if ((currentUser.gems || 0) < 150) { showToast('الماس کافی ندارید (۱۵۰ لازمه)', true); return; }
+
+  // ✅ بررسی سازنده بودن - کد رنگی فقط برای سازنده فعال است
+  const isCreator = currentUser.id === CREATOR_PHONE;
+  const colorSection = document.getElementById('colorCodeSection');
+  const colorInput = document.getElementById('createColorCode');
+  const colorHint = document.getElementById('myColorCodeDisplay');
+  const colorPreview = document.getElementById('createColorPreview');
+
+  if (isCreator) {
+    // سازنده: کد رنگی فعال است
+    colorSection.style.display = 'block';
+    colorSection.style.borderColor = '#bc6c25';
+    colorSection.style.background = '#fff8eb';
+    colorInput.disabled = false;
+    colorInput.placeholder = 'شماره رنگ (۱ تا ۱۰۰)';
+    colorHint.innerHTML = '🎨 عدد رنگ را بزن (۱ تا ۱۰۰) تا اسم و تگ همان رنگ شود';
+    colorHint.style.color = '#5c4b37';
+    colorInput.value = '';
+    colorPreview.style.display = 'none';
+  } else {
+    // کاربر عادی: کد رنگی غیرفعال است
+    colorSection.style.display = 'block';
+    colorSection.style.borderColor = '#a89f8e';
+    colorSection.style.background = '#f0ebe0';
+    colorInput.disabled = true;
+    colorInput.placeholder = '🔒 فقط سازنده دسترسی دارد';
+    colorHint.innerHTML = '🔒 کد رنگی فقط برای سازنده فعال است. گروه شما معمولی ساخته می‌شود.';
+    colorHint.style.color = '#e74c3c';
+    colorInput.value = '';
+    colorPreview.style.display = 'none';
+  }
+
+  document.getElementById('createName').value = '';
+  document.getElementById('createTag').value = '';
+  document.getElementById('createDesc').value = '';
+  document.getElementById('modalCreate').classList.add('active');
+}
+
+// ✅ ساخت گروه - فقط سازنده می‌تواند گروه رنگی بسازد
+async function createGroup() {
+  try {
+    if (!currentUser) { showToast('اول وارد حساب شو', true); return; }
+    const name = (document.getElementById('createName').value || '').trim();
+    const tag = (document.getElementById('createTag').value || '').trim().toUpperCase();
+    const desc = (document.getElementById('createDesc').value || '').trim();
+    if (!name) { showToast('❌ نام گروه را بنویس', true); return; }
+    if (!tag) { showToast('❌ تگ گروه را بنویس', true); return; }
+    if (!/^[A-Z0-9]{1,6}$/.test(tag)) { showToast('❌ تگ فقط حروف انگلیسی/عدد (حداکثر ۶)', true); return; }
+
+    // ✅ فقط سازنده می‌تواند کد رنگی داشته باشد
+    let finalColorCode = null;
+    if (currentUser.id === CREATOR_PHONE) {
+      const cc = (document.getElementById('createColorCode').value || '').trim();
+      if (cc) { 
+        const n = parseInt(cc); 
+        if (n >= 1 && n <= 100) finalColorCode = n; 
+      }
+    }
+
+    groups = await getGroups();
+    const dup = groups.some(g => (g.tag || '').toUpperCase() === tag);
+    if (dup) { showToast('❌ این تگ قبلاً گرفته شده، تگ دیگری بزن', true); return; }
+    if ((currentUser.gems || 0) < 150) { showToast('❌ الماس کافی ندارید (۱۵۰ لازمه)', true); return; }
+
+    currentUser.gems -= 150;
+    const newGroup = {
+      id: 'g' + Date.now(),
+      name: name,
+      tag: tag,
+      desc: desc,
+      logo: selectedLogo,
+      owner: currentUser.id,
+      deputies: [],
+      members: [currentUser.id],
+      pending: [],
+      capacity: 50,
+      colorCode: finalColorCode,
+      verified: false,
+      chat: [{ id: Date.now(), userId: 'system', userName: 'سیستم', text: 'گروه ' + name + ' ساخته شد.', time: 'اکنون', isAnnounce: true }]
+    };
+    groups.unshift(newGroup);
+
+    let ok = await saveGroups(groups);
+    if (!ok) ok = await saveGroups(groups);
+    if (!ok) { currentUser.gems += 150; showToast('❌ ذخیره نشد؛ اینترنت را چک کن و دوباره بزن', true); return; }
+
+    await saveUser(currentUser.id, currentUser);
+    clearUsersCache();
+    const allUsers = await getAllUsers();
+    allUsers[currentUser.id] = currentUser;
+    await saveAllUsers(allUsers);
+
+    closeModal('modalCreate');
+    if (finalColorCode) {
+      const cd = COLOR_CODES[finalColorCode];
+      showToast('✅ گروه رنگی «' + cd.name + '» ساخته شد!');
+    } else {
+      showToast('✅ گروه ساخته شد!');
+    }
+    await renderGroupsList();
+    updateUI();
+    document.getElementById('createName').value = '';
+    document.getElementById('createTag').value = '';
+    document.getElementById('createDesc').value = '';
+    document.getElementById('createColorCode').value = '';
+  } catch (e) {
+    showToast('❌ خطا: ' + (e && e.message ? e.message : 'نامشخص'), true);
+  }
+}
+
+function openJoinByTagModal() { document.getElementById('fabOptions').classList.remove('show'); document.getElementById('modalJoin').classList.add('active'); }
+async function requestJoinGroup() {
+  const tag = document.getElementById('joinTag').value.trim().toUpperCase();
+  groups = await getGroups();
+  const group = groups.find(g => g.tag === tag);
+  if (!group) { showToast('گروه یافت نشد', true); return; }
+  if (gm(group).includes(currentUser.id)) { showToast('قبلاً عضو هستید', true); return; }
+  if (gp(group).includes(currentUser.id)) { showToast('قبلاً درخواست داده‌اید', true); return; }
+  if (!group.pending) group.pending = [];
+  group.pending.push(currentUser.id);
+  await saveData();
+  closeModal('modalJoin');
+  document.getElementById('joinTag').value = '';
+  showToast('درخواست ارسال شد');
+  await renderGroupsList();
+}
+
+async function leaveGroup() {
+  if (!confirm('خروج از گروه؟')) return;
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  if (group.owner === currentUser.id) { showToast('مدیر نمی‌تواند خارج شود', true); return; }
+  group.members = gm(group).filter(id => id !== currentUser.id);
+  group.deputies = gd(group).filter(id => id !== currentUser.id);
+  group.pending = gp(group).filter(id => id !== currentUser.id);
+  if (group.members.length === 0) groups = groups.filter(g => g.id !== currentGroupId);
+  currentGroupId = null;
+  document.getElementById('tabBtnChat').style.display = 'none';
+  document.getElementById('tabBtnAbout').style.display = 'none';
+  await saveData();
+  switchTab('list');
+  await renderGroupsList();
+  showToast('خارج شدید');
+}
+
+async function upgradeCapacity() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  if ((currentUser.gems || 0) < 50) { showToast('الماس کافی ندارید', true); return; }
+  currentUser.gems -= 50;
+  group.capacity = (group.capacity||50) + 50;
+  await saveData();
+  await renderAbout();
+  showToast('ظرفیت افزایش یافت');
+}
+
+async function openEditModal() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  document.getElementById('editName').value = group.name;
+  document.getElementById('editDesc').value = group.desc || '';
+  document.getElementById('modalEdit').classList.add('active');
+}
+
+async function saveGroupEdit() {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  const newName = document.getElementById('editName').value.trim();
+  const newDesc = document.getElementById('editDesc').value.trim();
+  if (!newName) { showToast('نام نمی‌تواند خالی باشد', true); return; }
+  group.name = newName;
+  group.desc = newDesc;
+  await saveData();
+  closeModal('modalEdit');
+  await renderAbout();
+  await renderGroupsList();
+  showToast('بروزرسانی شد');
+}
+
+function toggleFabMenu() {
+  const fab = document.getElementById('fabOptions');
+  document.getElementById('fabJoinBtn').onclick = openJoinByTagModal;
+  document.getElementById('fabCreateBtn').onclick = openCreateModal;
+  fab.classList.toggle('show');
+}
+
+function switchCreatorTab(tab) {
+  currentCreatorTab = tab;
+  document.getElementById('creatorTabGroups').classList.toggle('active', tab === 'groups');
+  document.getElementById('creatorTabUsers').classList.toggle('active', tab === 'users');
+  document.getElementById('creatorGroupsView').style.display = tab === 'groups' ? 'block' : 'none';
+  document.getElementById('creatorUsersView').style.display = tab === 'users' ? 'block' : 'none';
+  if (tab === 'groups') renderCreatorGroups();
+  else renderCreatorUsers();
+}
+
+async function openCreatorPanel() {
+  if (currentUser.id !== CREATOR_PHONE) { showToast('فقط سازنده', true); return; }
+  document.getElementById('modalCreatorPanel').classList.add('active');
+  await getUsersCached(true);
+  switchCreatorTab(currentCreatorTab);
+}
+
+async function renderCreatorGroups() {
+  groups = await getGroups();
+  const allUsers = await getUsersCached();
+  const view = document.getElementById('creatorGroupsView');
+  view.innerHTML = '';
+  if (!groups || groups.length === 0) { view.innerHTML = '<div class="empty-state">گروهی نیست</div>'; return; }
+  const statsDiv = document.createElement('div');
+  statsDiv.style.cssText = 'background:#fff8eb; border:2px solid #ffd700; border-radius:10px; padding:12px; margin-bottom:15px; text-align:center;';
+  statsDiv.innerHTML = '<div style="font-size:13px; font-weight:900; color:#5c4b37;">📊 ' + toPersianNum(groups.length) + ' گروه</div>';
+  view.appendChild(statsDiv);
+  for (const group of groups) {
+    const ownerData = allUsers[group.owner] || { name: 'نامشخص' };
+    const isVerified = group.verified === true;
+    const isOwnerCreator = group.owner === CREATOR_PHONE;
+    const colorData = isOwnerCreator ? getColorByCode(group.colorCode) : null;
+    const colorBadge = colorData ? '<span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:' + colorData.hex + '; border:1px solid #000;"></span> ' + colorData.name : '';
+    const item = document.createElement('div');
+    item.className = 'creator-group-item';
+    item.innerHTML = '<div class="creator-group-top">' +
+      '<div class="group-logo" style="width:40px; height:40px; border-radius:10px;">' + getLogoSvg(group.logo) + '</div>' +
+      '<div class="creator-group-info"><div class="creator-group-name">' + esc(group.name) + (isVerified ? ' <img src="' + CLAN_TICK_IMG + '" style="width:26px; height:26px;" onerror="this.style.display=\'none\'">' : '') + '</div>' +
+      '<div class="creator-group-meta">[' + esc(group.tag) + '] · 👤 ' + (ownerData.name||'نامشخص') + (colorBadge ? ' · ' + colorBadge : '') + '</div></div></div>' +
+      '<div class="creator-group-actions"><button class="creator-action-btn tick ' + (isVerified ? 'active' : '') + '" data-gid="' + group.id + '" data-action="tick">' +
+      (isVerified ? '✅ دارای تیک' : '⭐ دادن تیک') +
+      '</button><button class="creator-action-btn delete" data-gid="' + group.id + '" data-action="delete">' + ICONS.delete + ' حذف</button></div>';
+    view.appendChild(item);
+  }
+  view.querySelectorAll('[data-action="tick"]').forEach(btn => { btn.onclick = () => toggleGroupTick(btn.dataset.gid); });
+  view.querySelectorAll('[data-action="delete"]').forEach(btn => { btn.onclick = () => deleteGroupAsCreator(btn.dataset.gid); });
+}
+
+async function renderCreatorUsers() {
+  const allUsers = await getUsersCached();
+  const view = document.getElementById('creatorUsersView');
+  view.innerHTML = '';
+  const users = Object.entries(allUsers).filter(([p, u]) => p !== CREATOR_PHONE);
+  if (!users.length) { view.innerHTML = '<div class="empty-state">کاربری نیست</div>'; return; }
+  const infoDiv = document.createElement('div');
+  infoDiv.style.cssText = 'background:#fff8eb; border:2px solid #bc6c25; border-radius:10px; padding:10px; margin-bottom:12px; text-align:center; font-size:12px; color:#5c4b37; font-weight:700;';
+  infoDiv.innerHTML = '🎨 به هر کاربر یک کد رنگ (۱ تا ۱۰۰) بده.';
+  view.appendChild(infoDiv);
+  for (const [phone, u] of users) {
+    const colorData = getColorByCode(u.colorCode);
+    const colorText = colorData ? ('🎨 ' + u.colorCode + ': ' + colorData.name) : '❌ بدون رنگ';
+    const colorStyle = colorData ? 'background:' + colorData.hex + '; color:' + colorData.text + '; padding:2px 8px; border-radius:6px; font-weight:900;' : 'color:#8b7355;';
+    const item = document.createElement('div');
+    item.className = 'creator-user-item';
+    item.innerHTML = '<div class="creator-user-avatar">' + getAvatarHtml(u.avatar) + '</div>' +
+      '<div class="creator-user-info"><div class="creator-user-name">' + (u.name || 'کاربر') + '</div>' +
+      '<div class="creator-user-meta"><span style="' + colorStyle + '">' + colorText + '</span></div></div>' +
+      '<div class="creator-user-actions"><button class="creator-action-btn" data-phone="' + phone + '" style="background: linear-gradient(180deg, #9c27b0, #6a1b9a); color: white;">🎨 رنگ</button></div>';
+    view.appendChild(item);
+  }
+  view.querySelectorAll('.creator-user-actions button').forEach(btn => { btn.onclick = () => openAssignColorModal(btn.dataset.phone); });
+}
+
+async function toggleGroupTick(groupId) {
+  if (currentUser.id !== CREATOR_PHONE) { showToast('فقط سازنده', true); return; }
+  groups = await getGroups();
+  const group = groups.find(g => g.id === groupId);
+  if (!group) return;
+  group.verified = !group.verified;
+  await saveGroups(groups);
+  showToast(group.verified ? '✅ تیک داده شد' : '⭐ تیک برداشته شد');
+  renderCreatorGroups();
+  if (currentGroupId === groupId) await renderAbout();
+  await renderGroupsList();
+}
+
+async function deleteGroupAsCreator(groupId) {
+  const group = groups.find(g => g.id === groupId);
+  if (!group) return;
+  if (!confirm('حذف "' + group.name + '"?')) return;
+  groups = await getGroups();
+  groups = groups.filter(g => g.id !== groupId);
+  await saveGroups(groups);
+  showToast('حذف شد');
+  renderCreatorGroups();
+  if (currentGroupId === groupId) { currentGroupId = null; switchTab('list'); await renderGroupsList(); }
+}
+
+async function openAssignColorModal(phone) {
+  if (currentUser.id !== CREATOR_PHONE) { showToast('فقط سازنده', true); return; }
+  colorAssignTarget = phone;
+  const allUsers = await getAllUsers();
+  const u = allUsers[phone];
+  if (!u) return;
+  document.getElementById('assignColorUserName').textContent = '👤 ' + (u.name || 'کاربر');
+  const sel = document.getElementById('assignColorSelect');
+  sel.innerHTML = '<option value="">بدون رنگ</option>';
+  for (let i = 1; i <= 100; i++) {
+    const c = COLOR_CODES[i];
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i + ': ' + c.name;
+    if (u.colorCode && parseInt(u.colorCode) === i) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  updateColorPreview();
+  document.getElementById('modalAssignColor').classList.add('active');
+}
+
+function updateColorPreview() {
+  const sel = document.getElementById('assignColorSelect');
+  const preview = document.getElementById('assignColorPreview');
+  const val = sel.value;
+  if (val) {
+    const cd = COLOR_CODES[parseInt(val)];
+    preview.style.display = 'flex';
+    preview.style.background = cd.hex;
+    preview.style.color = cd.text;
+    preview.textContent = cd.name + ' (' + val + ')';
+  } else {
+    preview.style.display = 'flex';
+    preview.style.background = '#e6dcc3';
+    preview.style.color = '#5c4b37';
+    preview.textContent = 'بدون رنگ';
+  }
+}
+
+async function saveUserColor() {
+  if (!colorAssignTarget) return;
+  const sel = document.getElementById('assignColorSelect');
+  const val = sel.value;
+  const allUsers = await getAllUsers();
+  const u = allUsers[colorAssignTarget];
+  if (!u) return;
+  if (val) {
+    u.colorCode = parseInt(val);
+    const cd = COLOR_CODES[parseInt(val)];
+    showToast('🎨 رنگ ' + cd.name + ' اختصاص داده شد');
+  } else {
+    delete u.colorCode;
+    showToast('❌ رنگ حذف شد');
+  }
+  allUsers[colorAssignTarget] = u;
+  await saveAllUsers(allUsers);
+  await saveUser(colorAssignTarget, u);
+  closeModal('modalAssignColor');
+  colorAssignTarget = null;
+  renderCreatorUsers();
+}
+
+async function removeUserColor() {
+  if (!colorAssignTarget) return;
+  const allUsers = await getAllUsers();
+  const u = allUsers[colorAssignTarget];
+  if (!u) return;
+  delete u.colorCode;
+  allUsers[colorAssignTarget] = u;
+  await saveAllUsers(allUsers);
+  await saveUser(colorAssignTarget, u);
+  showToast('❌ رنگ حذف شد');
+  closeModal('modalAssignColor');
+  colorAssignTarget = null;
+  renderCreatorUsers();
+}
+
+async function renderChat() {
+  if (!currentGroupId) return;
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '';
+  const isOwner = group.owner === currentUser.id;
+  const isDeputy = gd(group).includes(currentUser.id);
+  const isAdmin = isOwner || isDeputy;
+  document.getElementById('btnAnnounce').style.display = isAdmin ? 'flex' : 'none';
+  if (!group.chat || group.chat.length === 0) { container.innerHTML = '<div class="empty-state">پیامی نیست</div>'; return; }
+  group.chat.forEach(msg => {
+    const isOwn = msg.userId === currentUser.id;
+    const canDelete = isOwn || isAdmin;
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message-row ' + (isOwn ? 'own' : 'other');
+    let actionsHtml = '';
+    if (canDelete) actionsHtml += '<button class="msg-action-btn" onclick="deleteMessage(' + msg.id + ')">' + ICONS.delete + '</button>';
+    actionsHtml += '<button class="msg-action-btn" onclick="copyMessage(\'' + msg.text.replace(/'/g, "\\'") + '\')">' + ICONS.copy + '</button>';
+    msgDiv.innerHTML = '<div class="msg-header"><span>' + msg.userName + '</span><span style="opacity:0.7;">' + msg.time + '</span></div>' +
+      '<div class="msg-bubble ' + (msg.isAnnounce ? 'announcement' : '') + '">' + msg.text + '</div>' +
+      '<div class="msg-actions">' + actionsHtml + '</div>';
+    container.appendChild(msgDiv);
+  });
+  setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+}
+
+function handleChatKey(e) { if (e.key === 'Enter') sendMessage(); }
+async function sendMessage(isAnnounce = false) {
+  const text = document.getElementById('chatInput').value.trim();
+  if (!text) return;
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  if (!gm(group).includes(currentUser.id)) { showToast('عضو نیستید', true); return; }
+  if (!group.chat) group.chat = [];
+  group.chat.push({ id: Date.now(), userId: currentUser.id, userName: currentUser.name || 'کاربر', text: text, time: new Date().toLocaleTimeString('fa-IR', {hour: '2-digit', minute:'2-digit'}), isAnnounce: isAnnounce });
+  if (group.chat.length > 100) group.chat = group.chat.slice(-100);
+  document.getElementById('chatInput').value = '';
+  await saveData();
+  await renderChat();
+}
+function sendAnnouncement() { sendMessage(true); }
+async function deleteMessage(msgId) {
+  groups = await getGroups();
+  const group = groups.find(g => g.id === currentGroupId);
+  if (!group) return;
+  const isOwn = group.chat.find(m => m.id === msgId)?.userId === currentUser.id;
+  const isAdmin = group.owner === currentUser.id || gd(group).includes(currentUser.id);
+  if (isOwn || isAdmin) {
+    group.chat = group.chat.filter(m => m.id !== msgId);
+    await saveData();
+    await renderChat();
+    showToast('حذف شد');
+  }
+}
+function copyMessage(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('کپی شد')).catch(() => showToast('کپی نشد', true));
+}
+function startChatSync() { stopChatSync(); chatSyncInterval = setInterval(async () => { if (currentGroupId && document.getElementById('viewChat').classList.contains('active')) await renderChat(); }, 3000); }
+function stopChatSync() { if (chatSyncInterval) { clearInterval(chatSyncInterval); chatSyncInterval = null; } }
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('fabMenuBtn').addEventListener('click', toggleFabMenu);
+  document.getElementById('closeCreate').addEventListener('click', () => closeModal('modalCreate'));
+  document.getElementById('closeJoin').addEventListener('click', () => closeModal('modalJoin'));
+  document.getElementById('closeRequests').addEventListener('click', () => closeModal('modalRequests'));
+  document.getElementById('closeUserActions').addEventListener('click', () => closeModal('modalUserActions'));
+  document.getElementById('closeEdit').addEventListener('click', () => closeModal('modalEdit'));
+  document.getElementById('closeCreatorPanel').addEventListener('click', () => closeModal('modalCreatorPanel'));
+  document.getElementById('closeAssignColor').addEventListener('click', () => closeModal('modalAssignColor'));
+  document.getElementById('btnCreateGroup').addEventListener('click', createGroup);
+  document.getElementById('btnRequestJoin').addEventListener('click', requestJoinGroup);
+  document.getElementById('btnSaveEdit').addEventListener('click', saveGroupEdit);
+  document.getElementById('creatorPanelBtn').addEventListener('click', openCreatorPanel);
+  document.getElementById('btnSaveColor').addEventListener('click', saveUserColor);
+  document.getElementById('btnRemoveColor').addEventListener('click', removeUserColor);
+  document.getElementById('assignColorSelect').addEventListener('change', updateColorPreview);
+  document.getElementById('navShop').addEventListener('click', () => { window.location.href = 'Safe Foroshgahe.html'; });
+  document.getElementById('navHome').addEventListener('click', () => { window.location.href = 'Safe Asli Bazi.html'; });
+  document.querySelectorAll('.modal-overlay').forEach(overlay => { overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); }); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.fab-menu-btn') && !e.target.closest('.fab-options')) document.getElementById('fabOptions').classList.remove('show'); });
+
+  const colorInput = document.getElementById('createColorCode');
+  if (colorInput) {
+    colorInput.addEventListener('input', function() {
+      // ✅ فقط سازنده می‌تواند از input رنگ استفاده کند
+      if (currentUser.id !== CREATOR_PHONE) return;
+
+      const val = parseInt(this.value);
+      const preview = document.getElementById('createColorPreview');
+      if (val >= 1 && val <= 100) {
+        const cd = COLOR_CODES[val];
+        preview.style.display = 'flex';
+        preview.style.background = cd.hex;
+        preview.style.color = cd.text;
+        preview.textContent = '✅ ' + cd.name;
+      } else if (val) {
+        preview.style.display = 'flex';
+        preview.style.background = '#e74c3c';
+        preview.style.color = '#fff';
+        preview.textContent = '❌ بین ۱ تا ۱۰۰';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+  }
+
+  (async function() {
+    try {
+      await loadUserData();
+      await renderGroupsList();
+      initLogoGrid();
+      updateUI();
+    } catch (e) {
+      showToast('خطا در بارگذاری', true);
+    }
+  })();
+});
+</script>
+
+</body>
+</html>
