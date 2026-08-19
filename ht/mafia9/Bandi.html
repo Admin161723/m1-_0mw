@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#061a3a">
+<title>رتبه‌بندی شما</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  html {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    position: fixed !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overscroll-behavior: none !important;
+    background: #061a3a !important;
+    touch-action: none !important;
+  }
+
+  body {
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    background: linear-gradient(180deg, #0a2a5a 0%, #061a3a 100%) !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: fixed !important;
+    top: 0; left: 0;
+    margin: 0 !important; padding: 0 !important;
+    display: flex;
+    justify-content: center;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+    color: white;
+  }
+
+  input, textarea, select {
+    font-size: 16px !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    touch-action: manipulation !important;
+  }
+
+  img, a, button, div {
+    -webkit-user-drag: none !important;
+    user-drag: none !important;
+  }
+
+  .page-wrapper {
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    height: 100dvh;
+    background: linear-gradient(180deg, #0a2a5a 0%, #061a3a 100%);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  .header {
+    background: linear-gradient(180deg, #1e4a8a 0%, #163d75 100%);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: 2px solid #2a5a9a;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .back-btn {
+    position: absolute;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 24px;
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: all 0.2s;
+    touch-action: manipulation;
+  }
+  .back-btn:active {
+    background: rgba(255,255,255,0.3);
+    transform: scale(0.95);
+  }
+
+  .header-title {
+    color: white;
+    font-size: 20px;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .refresh-btn {
+    position: absolute;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background: rgba(74,158,255,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 20px;
+    border: 2px solid rgba(74,158,255,0.4);
+    transition: all 0.2s;
+    touch-action: manipulation;
+  }
+  .refresh-btn:active {
+    background: rgba(74,158,255,0.4);
+    transform: scale(0.95);
+  }
+  .refresh-btn.spinning { animation: spin 1s linear infinite; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .tabs {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 15px;
+    background: linear-gradient(180deg, #1e4a8a, #163d75);
+    border: 2px solid #2a5a9a;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    font-family: 'Vazirmatn', sans-serif;
+    touch-action: manipulation;
+  }
+
+  .tab.active {
+    background: linear-gradient(180deg, #3a8adc, #2a7acc);
+    border-color: #4a9eff;
+    box-shadow: 0 4px 15px rgba(58,138,220,0.4);
+  }
+
+  .leaderboard {
+    padding: 15px;
+    padding-bottom: 30px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: auto;
+    touch-action: pan-y;
+  }
+
+  .rank-item {
+    background: linear-gradient(180deg, #2a7acc, #1a5aaa);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid #3a8adc;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+    touch-action: manipulation;
+  }
+  .rank-item:active { transform: scale(0.98); }
+
+  .rank-item.top-1 {
+    background: linear-gradient(180deg, #ffd700, #ff8c00);
+    border-color: #ffd700;
+  }
+  .rank-item.top-2 {
+    background: linear-gradient(180deg, #c0c0c0, #808080);
+    border-color: #c0c0c0;
+  }
+  .rank-item.top-3 {
+    background: linear-gradient(180deg, #cd7f32, #8b4513);
+    border-color: #cd7f32;
+  }
+  .rank-item.current-user {
+    border: 3px solid #4a9eff !important;
+    box-shadow: 0 0 20px rgba(74,158,255,0.6);
+    background: linear-gradient(180deg, #3a8adc, #2a7acc);
+  }
+
+  .rank-number {
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: white;
+    flex-shrink: 0;
+  }
+  .rank-item.top-1 .rank-number,
+  .rank-item.top-2 .rank-number,
+  .rank-item.top-3 .rank-number {
+    background: rgba(255,255,255,0.3);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .user-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 3px solid white;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    background: #1a3a6a;
+    position: relative;
+  }
+  .user-avatar img {
+    width: 100%; height: 100%; object-fit: cover;
+    pointer-events: none;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+
+  .user-name {
+    color: white;
+    font-weight: 900;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    max-width: 100%;
+    transition: font-size 0.2s;
+  }
+  .user-name.short { font-size: 17px; }
+  .user-name.medium { font-size: 15px; }
+  .user-name.long { font-size: 13px; }
+  .user-name.very-long { font-size: 11px; }
+
+  .user-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-creator { background: linear-gradient(180deg, #ffd700, #ff8c00); color: #000; }
+  .badge-admin { background: linear-gradient(180deg, #9c27b0, #7b1fa2); color: white; }
+  .badge-moderator { background: linear-gradient(180deg, #f44336, #d32f2f); color: white; }
+  .badge-support { background: linear-gradient(180deg, #4caf50, #388e3c); color: white; }
+  .badge-banned { background: linear-gradient(180deg, #757575, #616161); color: white; }
+
+  .user-level {
+    color: rgba(255,255,255,0.9);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .level-star {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,0,0,0.3);
+    padding: 6px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .star-icon {
+    width: 24px; height: 24px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    pointer-events: none;
+  }
+  .level-value {
+    color: white;
+    font-size: 18px;
+    font-weight: 900;
+  }
+
+  .medal { width: 45px; height: 45px; flex-shrink: 0; }
+  .medal.gold {
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23ffd700" stroke="%23ff8c00" stroke-width="3"/><text x="50" y="65" font-size="40" text-anchor="middle" fill="%23b8860b" font-weight="900">1</text></svg>') center/contain no-repeat;
+  }
+  .medal.silver {
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23c0c0c0" stroke="%23808080" stroke-width="3"/><text x="50" y="65" font-size="40" text-anchor="middle" fill="%23696969" font-weight="900">2</text></svg>') center/contain no-repeat;
+  }
+  .medal.bronze {
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23cd7f32" stroke="%238b4513" stroke-width="3"/><text x="50" y="65" font-size="40" text-anchor="middle" fill="%23654321" font-weight="900">3</text></svg>') center/contain no-repeat;
+  }
+
+  .rank-badge {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    color: white;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255,255,255,0.6);
+    font-size: 16px;
+  }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+
+  .toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.error { background: linear-gradient(180deg, #f44336 0%, #da190b 100%); }
+
+  .leaderboard::-webkit-scrollbar { width: 4px; }
+  .leaderboard::-webkit-scrollbar-thumb { background: rgba(74,158,255,0.4); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+  <div class="header">
+    <button class="back-btn" onclick="goBack()">‹</button>
+    <div class="header-title">رتبه‌بندی شما</div>
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshLeaderboard()">↻</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" onclick="switchTab('nearby')" id="tabNearby">نزدیک من</button>
+    <button class="tab active" onclick="switchTab('top')" id="tabTop">برترین‌ها</button>
+  </div>
+
+  <div class="leaderboard" id="leaderboard">
+    <div class="empty-state">در حال بارگذاری از سرور...<div class="loading-spinner"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ================================================================
+  // 🔒 قفل کامل زوم، کپی، کشش و نگه‌داشتن
+  // ================================================================
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('gesturechange', e => e.preventDefault());
+  document.addEventListener('gestureend', e => e.preventDefault());
+
+  document.addEventListener('touchmove', function(e) {
+    const target = e.target;
+    const leaderboard = document.getElementById('leaderboard');
+    if (target !== leaderboard && !leaderboard.contains(target)) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    }
+    lastTouchEnd = now;
+  }, false);
+
+  document.addEventListener('contextmenu', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  document.addEventListener('selectstart', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('copy', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+  });
+  document.addEventListener('cut', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+  });
+  document.addEventListener('dragstart', e => e.preventDefault());
+
+  function preventOverscroll(el) {
+    if (!el) return;
+    el.addEventListener('touchstart', function() {
+      if (el.scrollTop <= 0) el.scrollTop = 1;
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight) {
+        el.scrollTop = el.scrollHeight - el.clientHeight - 1;
+      }
+    }, { passive: true });
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
+      e.preventDefault();
+    }
+  });
+
+  // ================================================================
+  // نوتیفیکیشن
+  // ================================================================
+  function showToast(message, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = message;
+    t.className = 'toast show' + (type === 'error' ? ' error' : '');
+    setTimeout(() => { t.classList.remove('show'); }, 3000);
+  }
+
+  // ================================================================
+  // 🔥 سیستم ۴ لایه Fallback دیتابیس
+  // ================================================================
+  const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
+  const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+  const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
+  const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+  const JSONBIN_KEY = "$2a$10$G8pgSWnFz4w/.voj3lfBPuJL7luRXAXiR/fIufC3YIB4.qRkZSjSS";
+  const JSONBIN_ID1 = "6a310a04da38895dfec86661";
+  const JSONBIN_ID2 = "6a53f4c8f5f4af5e298541fe";
+
+  // ===== توابع Upstash =====
+  async function upstashGet(url, token, k) {
+    try {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 5000);
+      const r = await fetch(url + '/get/' + encodeURIComponent(k), {
+        headers: { 'Authorization': 'Bearer ' + token },
+        signal: c.signal
+      });
+      clearTimeout(t);
+      if (!r.ok) return null;
+      const d = await r.json();
+      if (d && d.result) {
+        try { return JSON.parse(d.result); } catch (e) { return d.result; }
+      }
+      return null;
+    } catch (e) { return null; }
+  }
+
+  async function upstashSet(url, token, k, v) {
+    try {
+      const jsonValue = JSON.stringify(v);
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 5000);
+      const r = await fetch(url + '/set/' + encodeURIComponent(k) + '/' + encodeURIComponent(jsonValue), {
+        headers: { 'Authorization': 'Bearer ' + token },
+        signal: c.signal
+      });
+      clearTimeout(t);
+      return r.ok;
+    } catch (e) { return false; }
+  }
+
+  async function upstashDel(url, token, k) {
+    try {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 5000);
+      const r = await fetch(url + '/del/' + encodeURIComponent(k), {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        signal: c.signal
+      });
+      clearTimeout(t);
+      return r.ok;
+    } catch (e) { return false; }
+  }
+
+  // ===== توابع JSONBin =====
+  async function jsonbinRead(binId) {
+    try {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 5000);
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
+        headers: { 'X-Master-Key': JSONBIN_KEY },
+        signal: c.signal
+      });
+      clearTimeout(t);
+      if (!r.ok) return null;
+      const d = await r.json();
+      return d.record || {};
+    } catch (e) { return null; }
+  }
+
+  async function jsonbinWrite(binId, data) {
+    try {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 5000);
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_KEY
+        },
+        body: JSON.stringify(data),
+        signal: c.signal
+      });
+      clearTimeout(t);
+      return r.ok;
+    } catch (e) { return false; }
+  }
+
+  // ===== تابع اصلی GET (۴ لایه) =====
+  async function redisGet(key) {
+    // ۱. اول Upstash قدیمی
+    let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
+    if (v !== null) return v;
+
+    // ۲. Upstash جدید
+    v = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
+    if (v !== null) return v;
+
+    // ۳. JSONBin1
+    const b1 = await jsonbinRead(JSONBIN_ID1);
+    if (b1 && b1[key] !== undefined) return b1[key];
+
+    // ۴. JSONBin2
+    const b2 = await jsonbinRead(JSONBIN_ID2);
+    if (b2 && b2[key] !== undefined) return b2[key];
+
+    return null;
+  }
+
+  // ===== تابع اصلی SET (۴ لایه) =====
+  async function redisSet(key, value) {
+    const p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
+    const p2 = upstashSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key, value);
+
+    const p3 = (async function() {
+      const b = await jsonbinRead(JSONBIN_ID1) || {};
+      b[key] = value;
+      return jsonbinWrite(JSONBIN_ID1, b);
+    })();
+
+    const p4 = (async function() {
+      const b = await jsonbinRead(JSONBIN_ID2) || {};
+      b[key] = value;
+      return jsonbinWrite(JSONBIN_ID2, b);
+    })();
+
+    const results = await Promise.allSettled([p1, p2, p3, p4]);
+    return results.some(r => r.status === 'fulfilled' && r.value === true);
+  }
+
+  // ===== تابع اصلی DEL (۴ لایه) =====
+  async function redisDel(key) {
+    const p1 = upstashDel(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
+    const p2 = upstashDel(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
+
+    const p3 = (async function() {
+      const b = await jsonbinRead(JSONBIN_ID1) || {};
+      delete b[key];
+      return jsonbinWrite(JSONBIN_ID1, b);
+    })();
+
+    const p4 = (async function() {
+      const b = await jsonbinRead(JSONBIN_ID2) || {};
+      delete b[key];
+      return jsonbinWrite(JSONBIN_ID2, b);
+    })();
+
+    await Promise.allSettled([p1, p2, p3, p4]);
+    return true;
+  }
+
+  async function getAllUsers() {
+    return await redisGet('all_users') || {};
+  }
+
+  async function getUser(phone) {
+    return await redisGet('user:' + phone);
+  }
+
+  // ================================================================
+  // توابع کمکی
+  // ================================================================
+  function toPersianNum(num) {
+    const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return (num || 0).toString().replace(/[0-9]/g, w => persian[+w]);
+  }
+
+  function getNameSizeClass(name) {
+    if (!name) return 'medium';
+    const len = name.length;
+    if (len <= 10) return 'short';
+    if (len <= 16) return 'medium';
+    if (len <= 22) return 'long';
+    return 'very-long';
+  }
+
+  function getRoleBadge(rank) {
+    if (!rank) return '';
+    const r = rank.trim();
+    if (r === 'سازنده') return '<span class="user-badge badge-creator">سازنده</span>';
+    if (r === 'پشتیبانی') return '<span class="user-badge badge-support">پشتیبانی</span>';
+    if (r === 'ادمین' || r === 'ادمین ارشد') return '<span class="user-badge badge-admin">' + r + '</span>';
+    if (r === 'گرداننده') return '<span class="user-badge badge-moderator">گرداننده</span>';
+    if (r === 'ناظر' || r === 'ناظر ارشد') return '<span class="user-badge badge-moderator">' + r + '</span>';
+    return '';
+  }
+
+  let currentTab = 'top';
+  let currentUserData = null;
+  let currentPhone = null;
+  let currentUsersCache = {};
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (tab === 'top') {
+      document.getElementById('tabTop').classList.add('active');
+    } else {
+      document.getElementById('tabNearby').classList.add('active');
+    }
+    loadLeaderboard();
+  }
+
+  function getMedalClass(rank) {
+    if (rank === 1) return 'gold';
+    if (rank === 2) return 'silver';
+    if (rank === 3) return 'bronze';
+    return '';
+  }
+
+  async function loadLeaderboard() {
+    const leaderboard = document.getElementById('leaderboard');
+    leaderboard.innerHTML = '<div class="empty-state">در حال بارگذاری از سرور...<div class="loading-spinner"></div></div>';
+
+    const allUsers = await getAllUsers();
+    currentUsersCache = allUsers;
+    let users = Object.values(allUsers).filter(u => u && u.fullProfile);
+
+    users.sort((a, b) => {
+      const levelA = a.level || 1;
+      const levelB = b.level || 1;
+      if (levelB !== levelA) return levelB - levelA;
+      return (b.score || 0) - (a.score || 0);
+    });
+
+    if (users.length === 0) {
+      leaderboard.innerHTML = '<div class="empty-state">هنوز کاربری ثبت‌نام نکرده است</div>';
+      return;
+    }
+
+    if (currentTab === 'top') {
+      leaderboard.innerHTML = users.map((user, index) => createRankItem(user, index + 1)).join('');
+    } else {
+      const currentUserIndex = users.findIndex(u => 
+        (currentPhone && allUsers[currentPhone] && u.name === allUsers[currentPhone].name) ||
+        u.name === currentUserData?.name
+      );
+
+      if (currentUserIndex === -1) {
+        leaderboard.innerHTML = '<div class="empty-state">شما در رتبه‌بندی نیستید</div>';
+        return;
+      }
+
+      let startIndex = Math.max(0, currentUserIndex - 4);
+      let endIndex = Math.min(users.length, currentUserIndex + 5);
+
+      const nearbyUsers = users.slice(startIndex, endIndex);
+      leaderboard.innerHTML = nearbyUsers.map((user, index) => {
+        const actualRank = startIndex + index + 1;
+        return createRankItem(user, actualRank);
+      }).join('');
+    }
+
+    preventOverscroll(leaderboard);
+  }
+
+  function createRankItem(user, rank) {
+    const medalClass = getMedalClass(rank);
+    const isCurrentUser = currentPhone && currentUsersCache[currentPhone] && 
+                          user.name === currentUsersCache[currentPhone].name;
+    const avatarSrc = user.avatar || 'InShot_20260403_212625191.png';
+    const userName = user.name || 'کاربر';
+    const userLevel = user.level || 1;
+    const roleBadge = getRoleBadge(user.rank);
+    const bannedBadge = user.banned ? '<span class="user-badge badge-banned">بن شده</span>' : '';
+
+    const nameSizeClass = getNameSizeClass(userName);
+
+    return `
+      <div class="rank-item ${rank <= 3 ? 'top-' + rank : ''} ${isCurrentUser ? 'current-user' : ''}">
+        <div class="rank-number">${toPersianNum(rank)}</div>
+        <div class="user-avatar">
+          <img src="${avatarSrc}" alt="${userName}" onerror="this.src='InShot_20260403_212625191.png'">
+        </div>
+        <div class="user-info">
+          <div class="user-name-row">
+            <span class="user-name ${nameSizeClass}">${userName}${isCurrentUser ? ' (شما)' : ''}</span>
+            ${roleBadge}
+            ${bannedBadge}
+          </div>
+          <div class="user-level">سطح ${toPersianNum(userLevel)} • امتیاز ${toPersianNum(user.score || 0)}</div>
+        </div>
+        <div class="level-star">
+          <svg class="star-icon" viewBox="0 0 24 24" fill="#ffd700">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span class="level-value">${toPersianNum(userLevel)}</span>
+        </div>
+        ${rank <= 3 ? `<div class="medal ${medalClass}"></div>` : `<div class="rank-badge">${toPersianNum(rank)}</div>`}
+      </div>
+    `;
+  }
+
+  async function refreshLeaderboard() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    await loadLeaderboard();
+    btn.classList.remove('spinning');
+    showToast('رتبه‌بندی به‌روز شد');
+  }
+
+  function goBack() {
+    window.location.href = 'Safe Asli Bazi.html';
+  }
+
+  // ================================================================
+  // راه‌اندازی
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', async () => {
+    const loggedIn = localStorage.getItem('currentLoggedInUser');
+    if (!loggedIn) {
+      showToast('ابتدا وارد شوید', 'error');
+      setTimeout(() => window.location.href = 'index.html', 1500);
+      return;
+    }
+
+    try {
+      const userInfo = JSON.parse(loggedIn);
+      currentPhone = userInfo.phone;
+
+      const freshUser = await getUser(currentPhone);
+      if (freshUser) {
+        currentUserData = freshUser;
+      } else {
+        currentUserData = { name: userInfo.name || 'کاربر', level: 1, avatar: 'InShot_20260403_212625191.png' };
+      }
+
+      currentUsersCache = await getAllUsers();
+      await loadLeaderboard();
+
+      // به‌روزرسانی خودکار هر 30 ثانیه
+      setInterval(async () => {
+        currentUsersCache = await getAllUsers();
+        const freshMe = await getUser(currentPhone);
+        if (freshMe) currentUserData = freshMe;
+        if (document.visibilityState === 'visible') {
+          loadLeaderboard();
+        }
+      }, 30000);
+
+    } catch (e) {
+      showToast('خطا در بارگذاری', 'error');
+      console.error(e);
+    }
+  });
+
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && currentPhone) {
+      const freshMe = await getUser(currentPhone);
+      if (freshMe) currentUserData = freshMe;
+      currentUsersCache = await getAllUsers();
+      loadLeaderboard();
+    }
+  });
+</script>
+
+</body>
+</html>
