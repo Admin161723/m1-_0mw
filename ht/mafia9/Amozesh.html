@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a2a5a">
+<title>آموزش - MafiaSun</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+html {
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+}
+
+body {
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  background: linear-gradient(180deg, #0a2a5a 0%, #061a3a 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  color: #fff;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+button, .role-card, .tab, .nav-arrow, .back-btn {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+
+button:focus, .role-card:focus {
+  outline: none;
+}
+
+input, textarea {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  background: linear-gradient(180deg, #1e4a8a 0%, #163d75 100%);
+  padding: 15px;
+  padding-top: max(15px, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-bottom: 2px solid #2a5a9a;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.back-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+}
+
+.back-btn:active {
+  transform: translateY(-50%) scale(0.92);
+  background: rgba(255,255,255,0.2);
+}
+
+.back-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.header-title {
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 15px;
+  background: linear-gradient(180deg, #1e4a8a, #163d75);
+  border: 2px solid #2a5a9a;
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.tab.active {
+  background: linear-gradient(180deg, #3a8adc, #2a7acc);
+  border-color: #4a9eff;
+  box-shadow: 0 4px 15px rgba(58,138,220,0.4);
+}
+
+.tab:active {
+  transform: scale(0.96);
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.content {
+  padding: 15px;
+  display: none;
+}
+
+.content.active {
+  display: block;
+}
+
+.brand-header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: linear-gradient(180deg, rgba(58,138,220,0.2), rgba(42,122,172,0.2));
+  border-radius: 15px;
+  border: 2px solid #4a9eff;
+}
+
+.brand-name {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(180deg, #4a9eff, #2a7acc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+}
+
+.brand-subtitle {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.role-section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  background: linear-gradient(180deg, #dc2626, #b91c1c);
+  color: white;
+  padding: 12px;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 15px rgba(220,38,38,0.4);
+}
+
+.section-title.citizen {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.role-card {
+  background: linear-gradient(180deg, rgba(220,38,38,0.2), rgba(185,28,28,0.2));
+  border: 2px solid #dc2626;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.role-card.citizen {
+  background: linear-gradient(180deg, rgba(37,99,235,0.2), rgba(29,78,216,0.2));
+  border-color: #2563eb;
+}
+
+.role-card:active {
+  transform: scale(0.95);
+}
+
+.role-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+  display: block;
+}
+
+.role-name {
+  background: linear-gradient(180deg, #dc2626, #b91c1c);
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.role-card.citizen .role-name {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background: linear-gradient(180deg, #1e4a8a, #0a1628);
+  border-radius: 20px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  border: 3px solid;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content.mafia {
+  border-color: #dc2626;
+}
+
+.modal-content.citizen {
+  border-color: #2563eb;
+}
+
+.modal-header {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.modal-header img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-role-icon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 50px;
+  height: 50px;
+  background: rgba(220,38,38,0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.modal-content.citizen .modal-role-icon {
+  background: rgba(37,99,235,0.9);
+}
+
+.modal-role-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.modal-title {
+  background: linear-gradient(180deg, #dc2626, #b91c1c);
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.modal-content.citizen .modal-title {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+}
+
+.modal-body {
+  padding: 20px;
+  color: white;
+  line-height: 2;
+  font-size: 14px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-arrows {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px 20px 15px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.nav-arrow {
+  width: 45px;
+  height: 45px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.3s;
+}
+
+.nav-arrow:active {
+  background: rgba(255,255,255,0.25);
+  border-color: white;
+  transform: scale(0.92);
+}
+
+.nav-arrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+.rules-text {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  line-height: 2.2;
+  font-size: 14px;
+}
+
+.rules-section {
+  margin-bottom: 25px;
+}
+
+.rules-section:last-child {
+  margin-bottom: 0;
+}
+
+.rules-title {
+  color: #4a9eff;
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4a9eff;
+  padding-bottom: 5px;
+}
+
+.rules-section p {
+  margin-bottom: 8px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a9eff;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a8adc;
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <div class="header">
+    <button class="back-btn" id="backBtn" aria-label="بازگشت">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="header-title">آموزش</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="roles">نقش‌ها</button>
+    <button class="tab" data-tab="rules">قوانین</button>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Roles Content -->
+    <div id="rolesContent" class="content active">
+      <div class="brand-header">
+        <div class="brand-name">MafiaSun</div>
+        <div class="brand-subtitle">یک سناریوی جدید و هیجان‌انگیز</div>
+      </div>
+
+      <!-- Mafia Roles -->
+      <div class="role-section">
+        <div class="section-title">مافیا</div>
+        <div class="roles-grid">
+          <div class="role-card" data-role="boss">
+            <img src="N1.webp" alt="رئیس مافیا">
+            <div class="role-name">رئیس مافیا</div>
+          </div>
+          <div class="role-card" data-role="saboteur">
+            <img src="N2.webp" alt="خرابکار">
+            <div class="role-name">خرابکار</div>
+          </div>
+          <div class="role-card" data-role="accuser">
+            <img src="N3.webp" alt="تهمت زن">
+            <div class="role-name">تهمت زن</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Citizen Roles -->
+      <div class="role-section">
+        <div class="section-title citizen">شهروند</div>
+        <div class="roles-grid">
+          <div class="role-card citizen" data-role="citizen">
+            <img src="N4.webp" alt="شهروند">
+            <div class="role-name">شهروند</div>
+          </div>
+          <div class="role-card citizen" data-role="detective">
+            <img src="N5.webp" alt="کارآگاه">
+            <div class="role-name">کارآگاه</div>
+          </div>
+          <div class="role-card citizen" data-role="doctor">
+            <img src="N6.webp" alt="پزشک">
+            <div class="role-name">پزشک</div>
+          </div>
+          <div class="role-card citizen" data-role="gunner">
+            <img src="N7.webp" alt="تفنگدار">
+            <div class="role-name">تفنگدار</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules Content -->
+    <div id="rulesContent" class="content">
+      <div class="rules-text">
+        <div class="rules-section">
+          <div class="rules-title">شرایط استفاده</div>
+          <p>کلیه اصول، رویه‌ها و قوانین این بازی منطبق با قوانین جمهوری اسلامی ایران می‌باشد. استفاده از شما از بازی مفیدمون به معنی پذیرش کلیه قوانین بازی می‌باشد و متعهد می‌شوید هیچ‌گونه فعالیت غیرقانونی در محیط بازی انجام ندهید و حرف‌های سیاسی هم حرف نزنید و از حاشیه در آوردن داخل این اپلیکیشن مراقبت کنید.</p>
+          <br>
+          <p>موارد زیر تخلف و نقض قوانین بازی خواهد بود:</p>
+          <p>- بی‌احترامی، توهین، تهدید، آزار و اذیت و به کار بردن الفاظ رکیک</p>
+          <p>- استفاده از نام و یا عبارات نامناسب برای نام کاربری، اسم گروه، لابی، چت و یا سایر قسمت‌های بازی</p>
+          <p>- سوءاستفاده، تبعیض و توهین بر اساس جنسیت، گرایش جنسی، قومیت، نژاد، مذهب، ناتوانی جسمی سایر کاربران</p>
+          <p>- هرگونه صحبت و بحث سیاسی و عقیدتی و غیر مرتبط با بازی</p>
+          <p>- ارسال هرگونه محتوای تبلیغاتی و شخصی، استفاده از بازی برای اهداف غیرقانونی، غیراخلاقی و نامناسب</p>
+          <p>- استفاده از هر روش تقلب در بازی</p>
+          <p>در صورت مشاهده هرگونه از موارد تخلف نامبرده شده توسط بازیکنان (از طریق نظارت تیم سازنده، گزارش سایر کاربران و...) اقدامات لازم جهت چت برخورد با شخص خاطی انجام و جریمه متناسب با نوع تخلف در نظر گرفته خواهد شد.</p>
+          <p>جریمه شامل تذکر، کسر امتیاز، تعلیق موقت و دائمی حساب کاربری می‌باشد.</p>
+        </div>
+
+        <div class="rules-section">
+          <div class="rules-title">حریم خصوصی</div>
+          <p>بازی مافیاسان نسبت به حریم خصوصی و اطلاعات همه کاربران حساسیت ویژه دارد. در طول استفاده از بازی اطلاعاتی نظیر شماره موبایل، تاریخ تولد کاربران دریافت خواهد شد، این اطلاعات کاملاً محرمانه نزد ما محفوظ خواهند ماند و صرفاً از این اطلاعات جهت احراز هویت کاربران، بهبود سطح کیفی بازی، جلوگیری از تقلب و تخلف از قوانین و دسته‌بندی سنی کاربران استفاده خواهد شد.</p>
+        </div>
+
+        <div class="rules-section">
+          <div class="rules-title">مالکیت معنوی</div>
+          <p>مالکیت معنوی تمام محتوای تولید و منتشر شده در داخل و خارج از بازی (شبکه‌های اجتماعی بازی مافیاسان)، شامل همه محتوای تصویری و گرافیکی، چیندمانی، صوتی و موسیقی و هرگونه محتوای متنی متعلق به بازی مافیاسان بوده و هرگونه استفاده و یا کپی‌برداری از آن‌ها خلاف قوانین بوده و پیگرد قانونی خواهد داشت.</p>
+          <p>تمام هزینه‌های پرداخت شده شما داخل بازی شامل خرید بسته‌های سکه، الماس و آیتم‌های فروشگاهی غیرقابل برگشت خواهد بود.</p>
+          <p>در صورت بروز مشکل در فرآیند خرید می‌توانید از طریق پشتیبانی با ما در ارتباط باشید.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role Modal -->
+  <div class="modal-overlay" id="roleModal">
+    <div class="modal-content" id="modalContent">
+      <div class="modal-header">
+        <img id="modalImage" src="" alt="">
+        <div class="modal-role-icon" id="modalIcon"></div>
+      </div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="nav-arrows">
+        <button class="nav-arrow" id="nextBtn" aria-label="نقش بعدی">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <button class="nav-arrow" id="prevBtn" aria-label="نقش قبلی">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // جلوگیری از راست کلیک و منوی کپی
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('copy', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('cut', function(e) { e.preventDefault(); return false; });
+  document.addEventListener('paste', function(e) { e.preventDefault(); return false; });
+
+  // جلوگیری از ترکیب‌های کلیدی
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+      if (['c','x','v','a','s','u','p'].indexOf(e.key.toLowerCase()) !== -1) {
+        e.preventDefault();
+        return false;
+      }
+    }
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+  });
+
+  // آیکون‌های SVG برای مدال (به جای ایموجی)
+  var icons = {
+    boss: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-5 4-5-6-5 6-5-4z"/><path d="M5 20h14"/><circle cx="12" cy="6" r="1" fill="currentColor"/></svg>',
+    saboteur: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="7"/><path d="M15.5 7.5l3-3"/><path d="M18.5 4.5l1.5-1.5"/><path d="M16 2l2 2"/><line x1="8" y1="13" x2="14" y2="13"/><line x1="11" y1="10" x2="11" y2="16"/></svg>',
+    accuser: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c0 2 1.5 4 3 4s3-2 3-4-1.5-4-3-4-3 2-3 4z"/><path d="M14 12c0 2 1.5 4 3 4s3-2 3-4-1.5-4-3-4-3 2-3 4z"/><path d="M12 4c-1 0-2 .5-2 1.5S11 7 12 7s2-.5 2-1.5S13 4 12 4z"/><path d="M12 7v3"/><path d="M5 16c0 2 3 4 7 4s7-2 7-4"/></svg>',
+    citizen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    detective: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/><circle cx="11" cy="11" r="3"/></svg>',
+    doctor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>',
+    gunner: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h14"/><path d="M16 9h4l2 3-2 3h-4"/><path d="M6 12v5l-2 2"/><path d="M10 12v5l-2 2"/></svg>'
+  };
+
+  var roles = {
+    boss: {
+      name: 'رئیس مافیا',
+      type: 'mafia',
+      image: 'N1.webp',
+      icon: 'boss',
+      description: 'کل شات‌های مافیا دست او می‌باشد و انتخاب شلیک اول اولویت او است. رئیس مافیا رهبر تیم مافیا است و تصمیم‌گیرنده نهایی در شلیک‌های شبانه می‌باشد.'
+    },
+    saboteur: {
+      name: 'خرابکار',
+      type: 'mafia',
+      image: 'N2.webp',
+      icon: 'saboteur',
+      description: 'می‌تواند در شب یک نفر را به عنوان خرابکاری انتخاب کند و کسی که دستش تفنگ جنگی باشد در روز تفنگ داشته باشد و به یکی شلیک کند به جای آن خودش بیرون می‌رود.'
+    },
+    accuser: {
+      name: 'تهمت زن',
+      type: 'mafia',
+      image: 'N3.webp',
+      icon: 'accuser',
+      description: 'فردی است که هر شب می‌تواند یک نفر را به عنوان تهمت انتخاب کند و فردی که تهمت شده استعلامش برای کارآگاه بازی مثبت می‌باشد.'
+    },
+    citizen: {
+      name: 'شهروند ساده',
+      type: 'citizen',
+      image: 'N4.webp',
+      icon: 'citizen',
+      description: 'هیچ کاری در شب ندارد و باید در روز به شهروندان کمک کند. شهروندان ساده با بحث و گفتگو در روز سعی در شناسایی مافیا دارند.'
+    },
+    detective: {
+      name: 'کارآگاه',
+      type: 'citizen',
+      image: 'N5.webp',
+      icon: 'detective',
+      description: 'بازی هرشب می‌تواند یک نفر را استعلام بگیرد. استعلام رئیس مافیا برای او منفی است و استعلام تهمت زن به کسی که تهمت زده مثبت می‌باشد.'
+    },
+    doctor: {
+      name: 'پزشک',
+      type: 'citizen',
+      image: 'N6.webp',
+      icon: 'doctor',
+      description: 'می‌تواند یک نفر را در شب نجات دهد. پزشک هر شب می‌تواند یک نفر را انتخاب کند و اگر مافیا به آن نفر شلیک کرده باشد، نجات پیدا می‌کند.'
+    },
+    gunner: {
+      name: 'تفنگدار',
+      type: 'citizen',
+      image: 'N7.webp',
+      icon: 'gunner',
+      description: 'هر شب می‌تواند به یک نفر تفنگ جنگی و تفنگ مشقی بدهد. به فردی که تفنگ جنگی داده بزند روی یک نفر، تفنگ را اون فرد از بازی خارج می‌شود ولی تفنگ مشقی زده شود فرد داخل بازی می‌ماند.'
+    }
+  };
+
+  var roleOrder = ['boss', 'saboteur', 'accuser', 'citizen', 'detective', 'doctor', 'gunner'];
+  var currentIndex = 0;
+
+  var roleModal = document.getElementById('roleModal');
+  var modalContent = document.getElementById('modalContent');
+  var modalImage = document.getElementById('modalImage');
+  var modalTitle = document.getElementById('modalTitle');
+  var modalBody = document.getElementById('modalBody');
+  var modalIcon = document.getElementById('modalIcon');
+
+  function switchTab(tab) {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.remove('active');
+    }
+    var contents = document.querySelectorAll('.content');
+    for (var j = 0; j < contents.length; j++) {
+      contents[j].classList.remove('active');
+    }
+
+    if (tab === 'roles') {
+      document.querySelector('.tab[data-tab="roles"]').classList.add('active');
+      document.getElementById('rolesContent').classList.add('active');
+    } else {
+      document.querySelector('.tab[data-tab="rules"]').classList.add('active');
+      document.getElementById('rulesContent').classList.add('active');
+    }
+  }
+
+  function showRole(roleKey) {
+    currentIndex = roleOrder.indexOf(roleKey);
+    var currentRole = roles[roleKey];
+
+    modalImage.src = currentRole.image;
+    modalTitle.textContent = currentRole.name;
+    modalBody.textContent = currentRole.description;
+    modalIcon.innerHTML = icons[currentRole.icon];
+
+    modalContent.className = 'modal-content ' + currentRole.type;
+    roleModal.classList.add('active');
+  }
+
+  function closeModal() {
+    roleModal.classList.remove('active');
+  }
+
+  function nextRole() {
+    currentIndex = (currentIndex + 1) % roleOrder.length;
+    showRole(roleOrder[currentIndex]);
+  }
+
+  function prevRole() {
+    currentIndex = (currentIndex - 1 + roleOrder.length) % roleOrder.length;
+    showRole(roleOrder[currentIndex]);
+  }
+
+  function goBack() {
+    window.location.href = 'Safe Asli Bazi.html';
+  }
+
+  // اتصال رویدادها به تب‌ها
+  var tabButtons = document.querySelectorAll('.tab');
+  for (var t = 0; t < tabButtons.length; t++) {
+    tabButtons[t].addEventListener('click', function(e) {
+      e.preventDefault();
+      switchTab(this.getAttribute('data-tab'));
+    });
+  }
+
+  // اتصال رویدادها به کارت‌های نقش
+  var cards = document.querySelectorAll('.role-card');
+  for (var c = 0; c < cards.length; c++) {
+    cards[c].addEventListener('click', function(e) {
+      e.preventDefault();
+      var roleKey = this.getAttribute('data-role');
+      showRole(roleKey);
+    });
+  }
+
+  // کلیک روی overlay
+  roleModal.addEventListener('click', function(e) {
+    if (e.target === roleModal) {
+      closeModal();
+    }
+  });
+
+  // دکمه‌های ناوبری
+  document.getElementById('nextBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    nextRole();
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    prevRole();
+  });
+
+  document.getElementById('modalContent').addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+
+  // دکمه برگشت
+  document.getElementById('backBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    goBack();
+  });
+
+  // ناوبری با کیبورد
+  document.addEventListener('keydown', function(e) {
+    if (roleModal.classList.contains('active')) {
+      if (e.key === 'ArrowLeft') { nextRole(); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { prevRole(); e.preventDefault(); }
+      if (e.key === 'Escape') { closeModal(); e.preventDefault(); }
+    }
+  });
+
+  // جلوگیری از pinch zoom روی موبایل
+  document.addEventListener('touchmove', function(e) {
+    if (e.scale && e.scale !== 1) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+  document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
+  document.addEventListener('gestureend', function(e) { e.preventDefault(); });
+
+  // جلوگیری از double-tap zoom
+  var lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    var now = Date.now();
+    if (now - lastTouchEnd <= 350) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+
+})();
+</script>
+
+</body>
+</html>
