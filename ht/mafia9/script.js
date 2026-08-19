@@ -101,47 +101,32 @@ async function jsonbinWrite(binId, data) {
 // ===== تابع اصلی GET (۴ لایه) =====
 async function redisGet(key) {
   if (!appVerified) return null;
-
-  // ۱. اول Upstash قدیمی
   var v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
   if (v1 !== null) return v1;
-
-  // ۲. اگه قدیمی خالی/خطا → Upstash جدید
   var v2 = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
   if (v2 !== null) return v2;
-
-  // ۳. اگه اون هم نبود → JSONBin1
   var b1 = await jsonbinRead(JSONBIN_ID1);
   if (b1 && b1[key] !== undefined) return b1[key];
-
-  // ۴. اگه اون هم نبود → JSONBin2
   var b2 = await jsonbinRead(JSONBIN_ID2);
   if (b2 && b2[key] !== undefined) return b2[key];
-
   return null;
 }
 
 // ===== تابع اصلی SET (۴ لایه) =====
 async function redisSet(key, value) {
   if (!appVerified) return false;
-
-  // همزمان به هر ۴ تا می‌نویسیم
   var p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
   var p2 = upstashSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key, value);
-
-  // برای JSONBin: باید کل JSON رو بخونیم، آپدیت کنیم، بنویسیم
   var p3 = (async function() {
     var b = await jsonbinRead(JSONBIN_ID1) || {};
     b[key] = value;
     return jsonbinWrite(JSONBIN_ID1, b);
   })();
-
   var p4 = (async function() {
     var b = await jsonbinRead(JSONBIN_ID2) || {};
     b[key] = value;
     return jsonbinWrite(JSONBIN_ID2, b);
   })();
-
   var results = await Promise.allSettled([p1, p2, p3, p4]);
   return results.some(function(r) { return r.status === 'fulfilled' && r.value === true; });
 }
@@ -149,27 +134,23 @@ async function redisSet(key, value) {
 // ===== تابع اصلی DEL (۴ لایه) =====
 async function redisDel(key) {
   if (!appVerified) return false;
-
   var p1 = upstashDel(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
   var p2 = upstashDel(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
-
   var p3 = (async function() {
     var b = await jsonbinRead(JSONBIN_ID1) || {};
     delete b[key];
     return jsonbinWrite(JSONBIN_ID1, b);
   })();
-
   var p4 = (async function() {
     var b = await jsonbinRead(JSONBIN_ID2) || {};
     delete b[key];
     return jsonbinWrite(JSONBIN_ID2, b);
   })();
-
   await Promise.allSettled([p1, p2, p3, p4]);
   return true;
 }
 
-// ===== بقیه کد بدون تغییر =====
+// ===== توابع کمکی =====
 async function getUser(phone) { return await redisGet('user:' + phone); }
 async function saveUser(phone, userData) { return await redisSet('user:' + phone, userData); }
 async function getAllUsers() { return await redisGet('all_users') || {}; }
@@ -585,26 +566,18 @@ function bindEvents() {
   });
 }
 
+// ===== تابع اصلاح‌شده startBoot (بدون بررسی سرور در لحظه اول) =====
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
   if (!isInsideApp()) { killApp(); return; }
 
-  try {
-    var m = await getMaintenance();
-    if (m && m.on) {
-      var loggedIn = null;
-      try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch (e) {}
-      var phone = loggedIn ? loggedIn.phone : null;
-      if (phone !== CREATOR_PHONE) {
-        showServerDown();
-        return;
-      }
-    }
-  } catch (e) {}
+  // بررسی قطع بودن سرور از اینجا حذف شد تا سازنده همیشه بتواند وارد صفحه لاگین شود.
+  // بررسی سرور در زمان زدن دکمه "ادامه" توسط کاربر انجام می‌شود که امن و صحیح است.
 
   await initSpecialAccounts();
   bindEvents();
+  
   var selectedImg = document.getElementById('selectedAvatarImg');
   if (selectedImg) selectedImg.src = selectedAvatarSrc;
   var imgs = document.querySelectorAll('img');
@@ -619,12 +592,14 @@ async function startBoot() {
     var loopGuard = 0;
     try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch (e) {}
     var now = Date.now();
+    
     if (goMain && (now - loopGuard) > 15000) {
       try { sessionStorage.setItem('__lastMainJump', String(now)); } catch (e) {}
 
       try {
         var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
         var phone = loggedIn ? loggedIn.phone : null;
+        // فقط اگر کاربر سازنده نباشد، در هدایت خودکار چک می‌شود
         if (phone !== CREATOR_PHONE) {
           var m = await getMaintenance();
           if (m && m.on) {
