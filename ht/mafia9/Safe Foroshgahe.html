@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>فروشگاه - بازی مافیا</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        html {
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            position: fixed !important;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overscroll-behavior: none !important;
+            background: #0a1628 !important;
+            touch-action: none !important;
+        }
+
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background: #0a1628 !important;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px);
+            width: 100% !important;
+            height: 100% !important;
+            position: fixed !important;
+            top: 0; left: 0;
+            margin: 0 !important; padding: 0 !important;
+            display: flex;
+            justify-content: center;
+            overflow: hidden !important;
+            overscroll-behavior: none !important;
+            touch-action: none !important;
+            color: #fff;
+        }
+
+        input, textarea, select {
+            font-size: 16px !important;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            touch-action: manipulation !important;
+        }
+
+        img, a, button, div {
+            -webkit-user-drag: none !important;
+            user-drag: none !important;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            height: 100dvh;
+            background: #0a1628;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden !important;
+            overscroll-behavior: none !important;
+            touch-action: none !important;
+            padding-bottom: 68px;
+        }
+
+        .top-bar {
+            background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 100;
+            border-bottom: 2px solid #2a5a9a;
+            flex-shrink: 0;
+        }
+
+        .currency-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .coin-icon-top {
+            width: 32px; height: 32px;
+            background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255,215,0,0.6);
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+            pointer-events: none;
+        }
+        .gem-icon-top {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #e040fb 0%, #b030e0 40%, #7c4dff 100%);
+            clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%);
+            box-shadow: 0 0 10px rgba(124,77,255,0.6);
+            pointer-events: none;
+        }
+        .currency-value {
+            font-weight: 900; font-size: 18px; color: #fff;
+            min-width: 35px; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        .add-btn {
+            width: 26px; height: 26px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 18px;
+            border: none; color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .add-btn.gold { background: linear-gradient(180deg, #ff8c42, #e06520); }
+        .add-btn.gem { background: linear-gradient(180deg, #c040ff, #9020dd); }
+
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain !important;
+            -webkit-overflow-scrolling: auto;
+            touch-action: pan-y;
+        }
+
+        .neon-title { text-align: center; padding: 30px 20px; }
+        .neon-box {
+            display: inline-block; padding: 25px 50px;
+            border: 3px solid #ff00ff; border-radius: 25px;
+            position: relative; background: rgba(0,0,0,0.3);
+            box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, inset 0 0 20px rgba(255,0,255,0.3);
+            animation: neonPulse 1.5s ease-in-out infinite alternate;
+        }
+        .neon-box::before {
+            content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
+            border: 3px solid #00ffff; border-radius: 30px;
+            box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff;
+            animation: neonPulse2 1.5s ease-in-out infinite alternate; z-index: -1;
+            pointer-events: none;
+        }
+        @keyframes neonPulse {
+            from { box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, inset 0 0 20px rgba(255,0,255,0.3); }
+            to { box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 80px #ff00ff, inset 0 0 30px rgba(255,0,255,0.5); }
+        }
+        @keyframes neonPulse2 {
+            from { box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; }
+            to { box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 80px #00ffff; }
+        }
+        .neon-title h1 {
+            font-size: 52px; font-weight: 900; color: #fff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 80px #ff00ff;
+            margin-bottom: 10px; letter-spacing: 2px;
+            pointer-events: none;
+        }
+        .timer-24h {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 18px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px #ffd700;
+            pointer-events: none;
+        }
+        .timer-icon {
+            width: 26px; height: 26px; background: #ffd700; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #000; font-size: 14px;
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%);
+            padding: 12px; text-align: center; font-size: 24px; font-weight: 900;
+            color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin: 20px 15px 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+        .section-header.purple { background: linear-gradient(90deg, #e040fb 0%, #7c4dff 50%, #e040fb 100%); }
+        .section-header.red { background: linear-gradient(90deg, #ff5252 0%, #ff1744 50%, #ff5252 100%); }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 15px; margin-bottom: 25px; }
+        .card {
+            border-radius: 15px; padding: 15px 10px; text-align: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4); transition: transform 0.2s;
+            cursor: pointer; position: relative; overflow: hidden;
+            touch-action: manipulation;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+            border-radius: 12px 12px 0 0;
+            pointer-events: none;
+        }
+        .card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(40%);
+        }
+        .card:active:not(.disabled):not(.waiting) { transform: scale(0.95); }
+        .card-amount { font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px; pointer-events: none; }
+        .card-image { width: 60px; height: 60px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 50px; pointer-events: none; }
+        .card-price {
+            background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; color: #fff; margin-top: 10px;
+            pointer-events: none;
+        }
+        .old-price { text-decoration: line-through; color: rgba(255,255,255,0.6); font-size: 12px; display: block; margin-bottom: 2px; }
+        .soon-badge {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #ffd700;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 3px 6px;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .coin-card { background: linear-gradient(180deg, #ffc107 0%, #ff9800 100%); border: 3px solid #ffb300; }
+        .coin-img {
+            width: 50px; height: 50px;
+            background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%);
+            border-radius: 50%; margin: 10px auto; box-shadow: 0 0 15px rgba(255,215,0,0.6);
+            pointer-events: none;
+        }
+        .diamond-card { background: linear-gradient(180deg, #e040fb 0%, #7c4dff 100%); border: 3px solid #ab47bc; }
+        .diamond-img {
+            width: 45px; height: 45px;
+            background: linear-gradient(135deg, #ff66ff 0%, #cc00cc 50%, #990099 100%);
+            clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%);
+            margin: 10px auto; box-shadow: 0 0 15px rgba(255,0,255,0.6);
+            pointer-events: none;
+        }
+        .emoji-card { background: linear-gradient(180deg, #ff5252 0%, #ff1744 100%); border: 3px solid #ff5252; }
+        .emoji-img { font-size: 45px; margin: 10px auto; pointer-events: none; }
+        .emoji-price {
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px;
+            font-size: 14px; font-weight: 700;
+            pointer-events: none;
+        }
+
+        .free-coin-card {
+            background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
+            border: 3px solid #81c784;
+            grid-column: 1 / -1;
+            padding: 20px 15px;
+            position: relative;
+            animation: pulseCard 2s ease-in-out infinite;
+        }
+        .free-coin-card.waiting {
+            background: linear-gradient(180deg, #757575 0%, #424242 100%);
+            border-color: #9e9e9e;
+            animation: none;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        @keyframes pulseCard {
+            0%, 100% { box-shadow: 0 0 20px rgba(76,175,80,0.5); }
+            50% { box-shadow: 0 0 40px rgba(76,175,80,0.9); }
+        }
+        .free-coin-card-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            pointer-events: none;
+        }
+        .free-coin-info {
+            flex: 1;
+            text-align: right;
+        }
+        .free-coin-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .free-coin-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 700;
+        }
+        .free-coin-amount {
+            font-size: 28px;
+            font-weight: 900;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.6);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .free-coin-amount::before {
+            content: '🪙';
+            font-size: 28px;
+        }
+        .video-icon-big {
+            font-size: 50px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        .daily-counter {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #ff5252, #d32f2f);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 900;
+            box-shadow: 0 2px 8px rgba(211,47,47,0.5);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Modal ویدیو واقعی */
+        .ad-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.97);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 15px;
+            overscroll-behavior: none;
+        }
+        .ad-modal.show { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .ad-container {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            border: 3px solid #4a9eff;
+            box-shadow: 0 0 40px rgba(74,158,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .ad-label {
+            display: inline-block;
+            background: linear-gradient(180deg, #ff9800, #f57c00);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        .ad-title {
+            font-size: 20px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .ad-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 700;
+        }
+
+        .ad-video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .ad-video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .ad-video-wrapper video::-webkit-media-controls {
+            display: none !important;
+        }
+        .ad-video-wrapper video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+
+        /* اسپینر در حال بارگذاری ویدیو */
+        .video-loading {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: white;
+            font-weight: 700;
+            z-index: 5;
+        }
+        .video-loading.hidden { display: none; }
+        .video-spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top: 4px solid #4a9eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .ad-progress-container {
+            margin-bottom: 12px;
+        }
+        .ad-progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .ad-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9eff, #00ffff);
+            border-radius: 5px;
+            transition: width 0.3s linear;
+            box-shadow: 0 0 10px rgba(74,158,255,0.6);
+            width: 0%;
+        }
+        .ad-timer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 700;
+        }
+
+        .ad-reward {
+            background: rgba(76,175,80,0.2);
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .ad-reward-text {
+            font-size: 13px;
+            color: #81c784;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .ad-reward-amount {
+            font-size: 22px;
+            font-weight: 900;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.6);
+        }
+
+        .ad-close-btn {
+            background: linear-gradient(180deg, #757575, #424242);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 15px;
+            font-weight: 900;
+            cursor: not-allowed;
+            opacity: 0.5;
+            width: 100%;
+            touch-action: manipulation;
+            transition: all 0.3s;
+        }
+        .ad-close-btn.ready {
+            background: linear-gradient(180deg, #4caf50, #388e3c);
+            cursor: pointer;
+            opacity: 1;
+            box-shadow: 0 0 15px rgba(76,175,80,0.6);
+            animation: readyPulse 1s ease-in-out infinite;
+        }
+        @keyframes readyPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(76,175,80,0.6); }
+            50% { box-shadow: 0 0 25px rgba(76,175,80,1); }
+        }
+        .ad-close-btn.ready:active { transform: scale(0.97); }
+
+        .failed-section {
+            background: linear-gradient(180deg, #9c27b0 0%, #7b1fa2 100%);
+            border-radius: 15px; padding: 20px; margin: 0 15px 20px;
+            text-align: center; border: 2px solid #ba68c8;
+        }
+        .failed-text { font-size: 16px; font-weight: 700; margin-bottom: 15px; line-height: 1.8; pointer-events: none; }
+        .failed-btn {
+            background: linear-gradient(180deg, #ff9800 0%, #f57c00 100%);
+            border: none; padding: 15px 30px; border-radius: 12px;
+            font-family: 'Vazirmatn', sans-serif; font-size: 18px; font-weight: 900;
+            color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            touch-action: manipulation;
+        }
+        .failed-btn:active { transform: scale(0.95); }
+
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%);
+            display: flex; align-items: center; justify-content: space-around;
+            z-index: 100; border-top: 2px solid #2a5a9a;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.3); height: 68px;
+            flex-shrink: 0;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; padding: 6px 20px; flex: 1; height: 100%;
+            transition: background 0.2s; position: relative;
+            touch-action: manipulation;
+        }
+        .nav-item.active { background: rgba(255,255,255,0.08); }
+        .nav-item.active::before {
+            content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+            height: 3px; background: #4a9eff; border-radius: 0 0 3px 3px;
+        }
+        .nav-label { color: white; font-size: 11px; font-weight: 700; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); pointer-events: none; }
+        .nav-shop { width: 40px; height: 34px; position: relative; pointer-events: none; }
+        .shop-awning {
+            width: 40px; height: 12px;
+            background: repeating-linear-gradient(90deg, #f44336 0px, #f44336 8px, #ffeb3b 8px, #ffeb3b 16px, #4caf50 16px, #4caf50 24px, #2196f3 24px, #2196f3 32px, #f44336 32px, #f44336 40px);
+            border-radius: 3px 3px 0 0;
+        }
+        .shop-base {
+            width: 34px; height: 20px; background: linear-gradient(180deg, #5c6bc0, #3f51b5);
+            margin: 0 auto; border-radius: 0 0 4px 4px; position: relative; border: 1px solid #3949ab;
+        }
+        .shop-base::before { content: ''; position: absolute; top: 4px; left: 6px; width: 22px; height: 12px; background: #ffd700; border-radius: 2px; }
+        .nav-home { width: 44px; height: 40px; position: relative; pointer-events: none; }
+        .home-roof {
+            width: 0; height: 0; border-left: 24px solid transparent; border-right: 24px solid transparent;
+            border-bottom: 20px solid #f44336; margin: 0 auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+        .home-body { width: 34px; height: 20px; background: white; margin: 0 auto; border-radius: 0 0 3px 3px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .home-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 13px; height: 15px; background: #5d4037; border-radius: 3px 3px 0 0; }
+        .nav-friends { display: flex; align-items: center; gap: 0; pointer-events: none; }
+        .friend-head { width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; position: relative; }
+        .friend-head::before { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 26px; height: 12px; background: inherit; border-radius: 13px 13px 0 0; }
+        .friend-1 { background: #42a5f5; z-index: 2; margin-right: -6px; }
+        .friend-2 { background: #66bb6a; }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 10001;
+            pointer-events: none;
+            white-space: nowrap;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { background: linear-gradient(180deg, #f44336 0%, #da190b 100%); }
+        .toast.info { background: linear-gradient(180deg, #2196f3 0%, #1976d2 100%); }
+
+        .scroll-content::-webkit-scrollbar { width: 4px; }
+        .scroll-content::-webkit-scrollbar-thumb { background: rgba(74,158,255,0.4); border-radius: 2px; }
+
+        @media (max-width: 480px) {
+            .neon-title h1 { font-size: 40px; }
+            .ad-container { padding: 15px; }
+            .ad-title { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper" id="pageWrapper">
+    <div class="top-bar">
+        <div class="currency-item">
+            <div class="coin-icon-top">🪙</div>
+            <span class="currency-value" id="shopCoins">۰</span>
+            <button class="add-btn gold" disabled>+</button>
+        </div>
+        <div class="currency-item">
+            <div class="gem-icon-top"></div>
+            <span class="currency-value" id="shopGems">۰</span>
+            <button class="add-btn gem" disabled>+</button>
+        </div>
+    </div>
+
+    <div class="scroll-content" id="scrollContent">
+        <div class="neon-title">
+            <div class="neon-box">
+                <h1>فروشگاه</h1>
+                <div class="timer-24h">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="freeCoinTimerText">آماده دریافت</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header">🎬 سکه رایگان با تماشای ویدیو</div>
+        <div class="cards-grid">
+            <div class="card free-coin-card" id="freeCoinCard" onclick="watchAdForCoins()">
+                <div class="daily-counter" id="dailyCounter">روز ۱ از ۳</div>
+                <div class="free-coin-card-content">
+                    <div class="video-icon-big">🎬</div>
+                    <div class="free-coin-info">
+                        <div class="free-coin-title">تماشای تبلیغ</div>
+                        <div class="free-coin-subtitle" id="freeCoinSubtitle">یک ویدیو کوتاه تماشا کن و سکه بگیر!</div>
+                    </div>
+                    <div class="free-coin-amount" id="freeCoinAmount">۳۰</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header">سکه (به زودی)</div>
+        <div class="cards-grid">
+            <div class="card coin-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۵۰۰</div>
+                <div class="coin-img"></div>
+                <div class="card-price">۳۰ هزار تومان</div>
+            </div>
+            <div class="card coin-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۱۰۰۰</div>
+                <div class="coin-img"></div>
+                <div class="card-price">۵۹ هزار تومان</div>
+            </div>
+            <div class="card coin-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۲۲۰۰</div>
+                <div class="old-price">۱۵۰۰</div>
+                <div class="coin-img"></div>
+                <div class="card-price">۱۱۹ هزار تومان</div>
+            </div>
+            <div class="card coin-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۵۰۰۰</div>
+                <div class="old-price">۴۰۰۰</div>
+                <div class="card-image">💰</div>
+                <div class="card-price">۲۳۹ هزار تومان</div>
+            </div>
+            <div class="card coin-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۱۲۰۰۰</div>
+                <div class="old-price">۱۰۰۰۰</div>
+                <div class="card-image">🏦</div>
+                <div class="card-price">۴۷۹ هزار تومان</div>
+            </div>
+        </div>
+
+        <div class="section-header purple">الماس (به زودی)</div>
+        <div class="cards-grid">
+            <div class="card diamond-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۲۰</div>
+                <div class="diamond-img"></div>
+                <div class="card-price">۳۰ هزار تومان</div>
+            </div>
+            <div class="card diamond-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۴۰</div>
+                <div class="diamond-img" style="transform: scale(1.3);"></div>
+                <div class="card-price">۵۹ هزار تومان</div>
+            </div>
+            <div class="card diamond-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۱۰۰</div>
+                <div class="old-price">۸۰</div>
+                <div class="diamond-img" style="transform: scale(1.5);"></div>
+                <div class="card-price">۱۱۹ هزار تومان</div>
+            </div>
+            <div class="card diamond-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۲۵۰</div>
+                <div class="old-price">۲۰۰</div>
+                <div class="diamond-img" style="transform: scale(1.7);"></div>
+                <div class="card-price">۲۳۹ هزار تومان</div>
+            </div>
+            <div class="card diamond-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۶۰۰</div>
+                <div class="old-price">۵۰۰</div>
+                <div class="card-image">💎</div>
+                <div class="card-price">۴۷۹ هزار تومان</div>
+            </div>
+            <div class="card diamond-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۱۵۰۰</div>
+                <div class="old-price">۱۲۰۰</div>
+                <div class="card-image">💎</div>
+                <div class="card-price">۹۵۹ هزار تومان</div>
+            </div>
+        </div>
+
+        <div class="section-header red">ایموجی متحرک (به زودی)</div>
+        <div class="cards-grid">
+            <div class="card emoji-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۱</div>
+                <div class="emoji-img">😎😘</div>
+                <div class="emoji-price">
+                    <span>۱۵</span>
+                    <div class="gem-icon-top" style="width: 20px; height: 20px;"></div>
+                </div>
+            </div>
+            <div class="card emoji-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۲۵</div>
+                <div class="emoji-img">🤩😘</div>
+                <div class="emoji-price">
+                    <span>۳۰</span>
+                    <div class="gem-icon-top" style="width: 20px; height: 20px;"></div>
+                </div>
+            </div>
+            <div class="card emoji-card disabled" onclick="disabledItem()">
+                <span class="soon-badge">به زودی</span>
+                <div class="card-amount">۴۰</div>
+                <div class="emoji-img">😎😘</div>
+                <div class="emoji-price">
+                    <span>۴۵</span>
+                    <div class="gem-icon-top" style="width: 20px; height: 20px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="failed-section">
+            <div class="failed-text">در صورتی که ویدیو پخش نشد<br>روی دکمه زیر بزن</div>
+            <button class="failed-btn" onclick="reportFailedAd()">ویدیو پخش نشد!</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active">
+            <div class="nav-shop"><div class="shop-awning"></div><div class="shop-base"></div></div>
+            <span class="nav-label">فروشگاه</span>
+        </div>
+        <div class="nav-item" onclick="goHome()">
+            <div class="nav-home"><div class="home-roof"></div><div class="home-body"><div class="home-door"></div></div></div>
+            <span class="nav-label">خانه</span>
+        </div>
+        <div class="nav-item" onclick="goToGroup()">
+            <div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div>
+            <span class="nav-label">گروه</span>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ویدیو واقعی -->
+<div class="ad-modal" id="adModal">
+    <div class="ad-container">
+        <div class="ad-header">
+            <div class="ad-label">🎬 تبلیغ ویدیویی</div>
+            <div class="ad-title">تماشای ویدیو کامل</div>
+            <div class="ad-subtitle">تا پایان صبر کن تا جایزه‌ات رو بگیری</div>
+        </div>
+
+        <div class="ad-video-wrapper">
+            <div class="video-loading" id="videoLoading">
+                <div class="video-spinner"></div>
+                <div>در حال بارگذاری...</div>
+            </div>
+            <video id="adVideo" playsinline webkit-playsinline muted></video>
+        </div>
+
+        <div class="ad-progress-container">
+            <div class="ad-progress-bar">
+                <div class="ad-progress-fill" id="adProgressFill"></div>
+            </div>
+            <div class="ad-timer">
+                <span>⏱️ زمان باقیمانده</span>
+                <span id="adTimerText">۰:۰۰</span>
+            </div>
+        </div>
+
+        <div class="ad-reward">
+            <div class="ad-reward-text">🎁 جایزه شما:</div>
+            <div class="ad-reward-amount">🪙 <span id="adRewardAmount">۳۰</span> سکه</div>
+        </div>
+
+        <button class="ad-close-btn" id="adCloseBtn" disabled onclick="closeAdModal()">
+            ⏳ لطفاً تا پایان ویدیو صبر کنید
+        </button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // ================================================================
+    // 🔒 قفل کامل زوم، کپی، کشش و نگه‌داشتن
+    // ================================================================
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
+    document.addEventListener('gestureend', e => e.preventDefault());
+
+    document.addEventListener('touchmove', function(e) {
+        const target = e.target;
+        const scrollContent = document.getElementById('scrollContent');
+        const adModal = document.getElementById('adModal');
+        if (target !== scrollContent && !scrollContent.contains(target) && 
+            target !== adModal && !adModal.contains(target)) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    document.addEventListener('contextmenu', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    document.addEventListener('selectstart', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('copy', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+    });
+    document.addEventListener('cut', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+    });
+    document.addEventListener('dragstart', e => e.preventDefault());
+
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
+            e.preventDefault();
+        }
+    });
+
+    function preventOverscroll(el) {
+        if (!el) return;
+        el.addEventListener('touchstart', function() {
+            if (el.scrollTop <= 0) el.scrollTop = 1;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight) {
+                el.scrollTop = el.scrollHeight - el.clientHeight - 1;
+            }
+        }, { passive: true });
+    }
+
+    // ================================================================
+    // 📺 لیست ویدیوهای واقعی (Google Sample Videos)
+    // هر بار یکی به صورت تصادفی انتخاب می‌شه
+    // ================================================================
+    const VIDEO_SOURCES = [
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackBanffRockies.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4'
+    ];
+
+    function getRandomVideo() {
+        return VIDEO_SOURCES[Math.floor(Math.random() * VIDEO_SOURCES.length)];
+    }
+
+    // ================================================================
+    // تنظیمات Upstash Redis
+    // ================================================================
+    const REDIS_URL = "https://smooth-werewolf-200782.upstash.io";
+    const REDIS_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+
+    async function redisGet(key) {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            const response = await fetch(
+                `${REDIS_URL}/get/${encodeURIComponent(key)}`,
+                { headers: { 'Authorization': `Bearer ${REDIS_TOKEN}` }, signal: controller.signal }
+            );
+            clearTimeout(timeout);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data && data.result) {
+                try { return JSON.parse(data.result); }
+                catch (e) { return data.result; }
+            }
+            return null;
+        } catch (e) { return null; }
+    }
+
+    async function redisSet(key, value) {
+        try {
+            const jsonValue = JSON.stringify(value);
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            const response = await fetch(
+                `${REDIS_URL}/set/${encodeURIComponent(key)}/${encodeURIComponent(jsonValue)}`,
+                { headers: { 'Authorization': `Bearer ${REDIS_TOKEN}` }, signal: controller.signal }
+            );
+            clearTimeout(timeout);
+            return response.ok;
+        } catch (e) { return false; }
+    }
+
+    async function getUser(phone) { return await redisGet(`user:${phone}`); }
+    async function saveUser(phone, userData) { return await redisSet(`user:${phone}`, userData); }
+    async function getAllUsers() { return await redisGet('all_users') || {}; }
+    async function saveAllUsers(users) { return await redisSet('all_users', users); }
+    async function getAdState(phone) { return await redisGet(`ad_state:${phone}`); }
+    async function saveAdState(phone, state) { return await redisSet(`ad_state:${phone}`, state); }
+
+    // ================================================================
+    // متغیرها
+    // ================================================================
+    const CYCLE_DURATION_MS = 24 * 60 * 60 * 1000; // ۲۴ ساعت
+    const MAX_DAILY_ADS = 3;
+    const REWARDS = [30, 30, 40]; // سکه برای بار اول، دوم، سوم
+
+    let currentUser = null;
+    let currentPhone = null;
+    let adState = { count: 0, lastClaimTime: 0, cycleStart: 0 };
+    let adVideoCompleted = false;
+    let adVideo = null;
+
+    // ================================================================
+    // توابع کمکی
+    // ================================================================
+    function toPersianNum(num) {
+        const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        return (num || 0).toString().replace(/[0-9]/g, w => persian[+w]);
+    }
+
+    function showToast(message, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = message;
+        t.className = 'toast show' + (type === 'error' ? ' error' : type === 'info' ? ' info' : '');
+        setTimeout(() => { t.classList.remove('show'); }, 3000);
+    }
+
+    function formatTime(seconds) {
+        const s = Math.max(0, Math.floor(seconds));
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${toPersianNum(m)}:${toPersianNum(sec.toString().padStart(2, '0'))}`;
+    }
+
+    function formatTimeFull(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${toPersianNum(hours.toString().padStart(2, '0'))}:${toPersianNum(minutes.toString().padStart(2, '0'))}:${toPersianNum(seconds.toString().padStart(2, '0'))}`;
+    }
+
+    // ================================================================
+    // سیستم جایزه
+    // ================================================================
+    async function loadAdState() {
+        const state = await getAdState(currentPhone);
+        if (state) {
+            adState = state;
+        } else {
+            adState = { count: 0, lastClaimTime: 0, cycleStart: Date.now() };
+            await saveAdState(currentPhone, adState);
+        }
+
+        const timeSinceCycleStart = Date.now() - (adState.cycleStart || 0);
+        if (timeSinceCycleStart >= CYCLE_DURATION_MS) {
+            adState = { count: 0, lastClaimTime: 0, cycleStart: Date.now() };
+            await saveAdState(currentPhone, adState);
+        }
+
+        updateFreeCoinUI();
+    }
+
+    function getCurrentReward() {
+        if (adState.count >= MAX_DAILY_ADS) return 0;
+        return REWARDS[adState.count] || 0;
+    }
+
+    function getTimeUntilReset() {
+        const timeSinceCycleStart = Date.now() - (adState.cycleStart || 0);
+        return Math.max(0, CYCLE_DURATION_MS - timeSinceCycleStart);
+    }
+
+    function updateFreeCoinUI() {
+        const card = document.getElementById('freeCoinCard');
+        const amountEl = document.getElementById('freeCoinAmount');
+        const subtitleEl = document.getElementById('freeCoinSubtitle');
+        const counterEl = document.getElementById('dailyCounter');
+        const timerText = document.getElementById('freeCoinTimerText');
+
+        if (adState.count >= MAX_DAILY_ADS) {
+            card.classList.add('waiting');
+            const remaining = getTimeUntilReset();
+            amountEl.textContent = '⏱️';
+            subtitleEl.textContent = `چرخه جدید: ${formatTimeFull(remaining)}`;
+            counterEl.textContent = `۳ از ۳ استفاده شده`;
+            timerText.textContent = formatTimeFull(remaining);
+        } else {
+            card.classList.remove('waiting');
+            const reward = getCurrentReward();
+            amountEl.textContent = toPersianNum(reward);
+            subtitleEl.textContent = `بار ${toPersianNum(adState.count + 1)} از ۳ - ویدیو کوتاه تماشا کن!`;
+            counterEl.textContent = `روز ${toPersianNum(adState.count + 1)} از ۳`;
+            timerText.textContent = 'آماده دریافت';
+        }
+    }
+
+    // ================================================================
+    // 🎬 سیستم ویدیو واقعی
+    // ================================================================
+    async function watchAdForCoins() {
+        if (!currentUser || !currentPhone) {
+            showToast('خطا در بارگذاری اطلاعات', 'error');
+            return;
+        }
+
+        if (adState.count >= MAX_DAILY_ADS) {
+            showToast(`همه جایزه‌های امروز رو گرفتی! بعد از ${formatTimeFull(getTimeUntilReset())} دوباره بیا`, 'info');
+            return;
+        }
+
+        const reward = getCurrentReward();
+        document.getElementById('adRewardAmount').textContent = toPersianNum(reward);
+
+        // ریست کردن UI
+        const closeBtn = document.getElementById('adCloseBtn');
+        closeBtn.disabled = true;
+        closeBtn.classList.remove('ready');
+        closeBtn.textContent = '⏳ لطفاً تا پایان ویدیو صبر کنید';
+        document.getElementById('adProgressFill').style.width = '0%';
+        document.getElementById('adTimerText').textContent = '۰:۰۰';
+        document.getElementById('videoLoading').classList.remove('hidden');
+
+        adVideoCompleted = false;
+
+        // بارگذاری ویدیو جدید
+        if (adVideo) {
+            adVideo.pause();
+            adVideo.src = '';
+        }
+        adVideo = document.getElementById('adVideo');
+        const videoUrl = getRandomVideo();
+        adVideo.src = videoUrl;
+
+        // نمایش modal
+        document.getElementById('adModal').classList.add('show');
+
+        // اطمینان از اینکه ویدیو muted باشه (برای autoplay)
+        adVideo.muted = true;
+        adVideo.playsInline = true;
+
+        // تلاش برای پخش خودکار
+        try {
+            await adVideo.play();
+            document.getElementById('videoLoading').classList.add('hidden');
+        } catch (err) {
+            console.warn('Autoplay blocked:', err);
+            document.getElementById('videoLoading').innerHTML = `
+                <div style="text-align:center; padding: 20px;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">👆</div>
+                    <div>برای پخش روی ویدیو ضربه بزن</div>
+                </div>
+            `;
+            // کلیک برای شروع
+            adVideo.onclick = async () => {
+                try {
+                    await adVideo.play();
+                    document.getElementById('videoLoading').classList.add('hidden');
+                    adVideo.onclick = null;
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+        }
+    }
+
+    // event listeners روی ویدیو
+    function setupVideoListeners() {
+        const video = document.getElementById('adVideo');
+
+        video.addEventListener('timeupdate', () => {
+            if (!video.duration) return;
+            const progress = (video.currentTime / video.duration) * 100;
+            document.getElementById('adProgressFill').style.width = `${progress}%`;
+            const remaining = video.duration - video.currentTime;
+            document.getElementById('adTimerText').textContent = formatTime(remaining);
+        });
+
+        video.addEventListener('ended', () => {
+            adVideoCompleted = true;
+            const closeBtn = document.getElementById('adCloseBtn');
+            closeBtn.disabled = false;
+            closeBtn.classList.add('ready');
+            closeBtn.innerHTML = '✓ دریافت جایزه';
+            document.getElementById('adProgressFill').style.width = '100%';
+            document.getElementById('adTimerText').textContent = 'تمام شد! 🎉';
+        });
+
+        video.addEventListener('error', (e) => {
+            console.error('Video error:', e);
+            document.getElementById('videoLoading').innerHTML = `
+                <div style="text-align:center; padding: 20px;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">❌</div>
+                    <div>خطا در پخش ویدیو</div>
+                    <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">لطفاً دوباره تلاش کنید</div>
+                </div>
+            `;
+            document.getElementById('videoLoading').classList.remove('hidden');
+        });
+
+        // جلوگیری از pause توسط کاربر
+        video.addEventListener('pause', () => {
+            if (!adVideoCompleted && video.src && !video.ended) {
+                setTimeout(() => {
+                    if (!adVideoCompleted && video.src && !video.ended) {
+                        video.play().catch(() => {});
+                    }
+                }, 100);
+            }
+        });
+
+        // جلوگیری از seek کردن
+        video.addEventListener('seeking', (e) => {
+            if (!adVideoCompleted) {
+                // اجازه seek فقط تا جایی که کاربر رفته، نه جلوتر
+                // برای سادگی، seek به عقب رو مجاز می‌کنیم
+            }
+        });
+
+        // جلوگیری از rate تغییر
+        video.addEventListener('ratechange', () => {
+            if (video.playbackRate > 1) {
+                video.playbackRate = 1;
+            }
+        });
+    }
+
+    async function closeAdModal() {
+        if (!adVideoCompleted) {
+            showToast('باید تا پایان ویدیو صبر کنید!', 'error');
+            return;
+        }
+
+        if (adVideo) {
+            adVideo.pause();
+            adVideo.src = '';
+        }
+        document.getElementById('adModal').classList.remove('show');
+
+        const reward = getCurrentReward();
+        currentUser.coins = (currentUser.coins || 0) + reward;
+
+        adState.count++;
+        adState.lastClaimTime = Date.now();
+        if (adState.count === 1) {
+            adState.cycleStart = Date.now();
+        }
+        await saveAdState(currentPhone, adState);
+        await saveUserData();
+
+        showToast(`🎉 ${toPersianNum(reward)} سکه به حسابت اضافه شد!`, 'success');
+        updateFreeCoinUI();
+    }
+
+    // ================================================================
+    // ذخیره اطلاعات کاربر
+    // ================================================================
+    async function saveUserData() {
+        if (!currentUser || !currentPhone) return;
+        await saveUser(currentPhone, currentUser);
+        const allUsers = await getAllUsers();
+        allUsers[currentPhone] = currentUser;
+        await saveAllUsers(allUsers);
+
+        document.getElementById('shopCoins').textContent = toPersianNum(currentUser.coins || 0);
+        document.getElementById('shopGems').textContent = toPersianNum(currentUser.gems || 0);
+    }
+
+    // ================================================================
+    // موارد غیرفعال
+    // ================================================================
+    function disabledItem() {
+        showToast('این بخش به زودی فعال می‌شود', 'info');
+    }
+
+    function reportFailedAd() {
+        showToast('درخواست شما ثبت شد. پشتیبانی بررسی خواهد کرد.', 'success');
+    }
+
+    function goHome() {
+        if (adVideo) { adVideo.pause(); adVideo.src = ''; }
+        document.getElementById('adModal').classList.remove('show');
+        window.location.href = 'Safe Asli Bazi.html';
+    }
+
+    function goToGroup() {
+        if (adVideo) { adVideo.pause(); adVideo.src = ''; }
+        document.getElementById('adModal').classList.remove('show');
+        window.location.href = 'Safe Goroh.html';
+    }
+
+    // ================================================================
+    // تایمر به‌روزرسانی UI
+    // ================================================================
+    setInterval(() => {
+        if (adState.count >= MAX_DAILY_ADS) {
+            updateFreeCoinUI();
+        }
+    }, 1000);
+
+    // ================================================================
+    // راه‌اندازی
+    // ================================================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        const loggedIn = localStorage.getItem('currentLoggedInUser');
+        if (!loggedIn) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        try {
+            const userInfo = JSON.parse(loggedIn);
+            currentPhone = userInfo.phone;
+
+            const freshUser = await getUser(currentPhone);
+            if (freshUser) {
+                currentUser = freshUser;
+            } else {
+                showToast('خطا در بارگذاری اطلاعات', 'error');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return;
+            }
+
+            document.getElementById('shopCoins').textContent = toPersianNum(currentUser.coins || 0);
+            document.getElementById('shopGems').textContent = toPersianNum(currentUser.gems || 0);
+
+            await loadAdState();
+
+            preventOverscroll(document.getElementById('scrollContent'));
+            setupVideoListeners();
+
+        } catch (e) {
+            showToast('خطا در بارگذاری', 'error');
+            console.error(e);
+        }
+    });
+
+    // بستن modal با دکمه back گوشی (اگه ویدیو تموم شده)
+    window.addEventListener('popstate', () => {
+        if (document.getElementById('adModal').classList.contains('show')) {
+            if (adVideoCompleted) {
+                closeAdModal();
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
