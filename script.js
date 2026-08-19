@@ -75,16 +75,25 @@ async function loadAllData(){
         const [u, r, s, a] = await Promise.all([
             dbGet(USERS_KEY), dbGet(REQUESTS_KEY), dbGet(SETTINGS_KEY), dbGet(ANNOUNCE_KEY)
         ]);
-        if(u && Array.isArray(u)) usersCache = u;
-        else usersCache = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        
+        // ✅ اصلاح حیاتی: اگر به دلیل خطای شبکه u نال بود، دیتابیس را بازنویسی نمی‌کنیم تا اطلاعات کاربران پاک نشود.
+        if(u && Array.isArray(u)) {
+            usersCache = u;
+        } else {
+            usersCache = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        }
+        
         if(r && Array.isArray(r)) requestsCache = r; else requestsCache = [];
         if(s && typeof s === 'object') formSettings = s;
         else formSettings = {nazer:true,nazerArshad:true,admin:true,adminArshad:true,gardanandeh:true,poshtibani:true};
         if(a && Array.isArray(a)) announcements = a; else announcements = [];
 
-        // ✅ همیشه اکانت‌های پیش‌فرض رو تضمین کن و ذخیره کن
-        if(ensureDefaultUsers()){ await dbSet(USERS_KEY, usersCache); }
-        else if(!u){ await dbSet(USERS_KEY, usersCache); }
+        // ✅ فقط در صورتی تغییرات را ذخیره کن که داده‌ها از دیتابیس خوانده شده باشند (u !== null) و نیاز به آپدیت دیفالت‌ها باشد.
+        if(u !== null && ensureDefaultUsers()){ 
+            await dbSet(USERS_KEY, usersCache); 
+        }
+        
+        // مقداردهی اولیه سایر کلیدها فقط در صورتی که واقعاً خالی باشند
         if(!r){ await dbSet(REQUESTS_KEY, requestsCache); }
         if(!s){ await dbSet(SETTINGS_KEY, formSettings); }
         if(!a){ await dbSet(ANNOUNCE_KEY, announcements); }
@@ -493,14 +502,17 @@ $('#aMedia').addEventListener('change', ev=>{
     mediaEl.onerror=()=>{toast('فایل معتبر نیست','err');ev.target.value='';$('#mediaName').textContent='';URL.revokeObjectURL(url);};
 });
 
+// ✅ ثبت نام و ورود مستقیم به حساب کاربری
 $('#registerForm').addEventListener('submit', async e=>{
     e.preventDefault();
     const mobile=$('#rMobile').value.trim();
     if(!/^09\d{9}$/.test(mobile)){toast('شماره موبایل معتبر نیست','err');return;}
     if(usersCache.some(u=>u.mobile===mobile)){toast('این شماره قبلا ثبت نام شده است','err');return;}
+    
     let avatar=null;
     const af=$('#rAvatar').files[0];
     if(af){ try{avatar=await compressImage(af,400,0.6);}catch(err){avatar=await readAsDataURL(af);} }
+    
     const nu={
         id:'u'+Date.now(),
         firstName:$('#rFirst').value.trim(),
@@ -509,32 +521,43 @@ $('#registerForm').addEventListener('submit', async e=>{
         mobile, email:$('#rEmail').value.trim(), password:$('#rPass').value,
         role:'user', avatar
     };
+    
     usersCache.push(nu);
     const ok=await saveUsers();
     if(!ok){toast('خطا در ثبت نام','err');usersCache.pop();return;}
+    
+    // ✅ تنظیم نشست (Session) و ورود خودکار
     currentSession=nu.id;
     localStorage.setItem('ms_session',nu.id);
+    
     $('#modalRegister').classList.remove('show');
     e.target.reset();
     $('#rAvatarPrev').classList.add('hidden');
+    
     toast('ثبت نام با موفقیت انجام شد، خوش آمدید');
-    showPage('forms');
+    showPage('forms'); // هدایت مستقیم به بخش کاربری
 });
 
-// ✅ ورود - با تضمین وجود اکانت‌های پیش‌فرد
 $('#loginForm').addEventListener('submit', async e=>{
     e.preventDefault();
     const mobile=$('#lMobile').value.trim();
     const pass=$('#lPass').value;
-    // اول مطمئن شو اکانت‌های پیش‌فرد هستن
+    
+    // اطمینان از وجود اکانت‌های پیش‌فرض
     if(ensureDefaultUsers()){ await saveUsers(); }
+    
     const u=usersCache.find(x=>x.mobile===mobile && x.password===pass);
     if(!u){toast('شماره موبایل یا رمز عبور اشتباه است','err');return;}
+    
+    // ✅ تنظیم نشست (Session) و ورود مستقیم
     currentSession=u.id;
     localStorage.setItem('ms_session',u.id);
+    
     $('#modalLogin').classList.remove('show');
     e.target.reset();
+    
     toast('خوش آمدید '+u.firstName+' '+badge(u));
+    // ✅ هدایت هوشمند: پشتیبانی به پنل، کاربر ساده به فرم‌ها
     showPage(isStaff(u)?'panel':'forms');
 });
 
@@ -548,17 +571,20 @@ $('#applyForm').addEventListener('submit', async e=>{
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('ایمیل معتبر نیست','err');return;}
     const sh=$('#aShenas').files[0], md=$('#aMedia').files[0], phf=$('#aPhoto').files[0];
     if(!sh||!md||!phf){toast('همه فایل‌ها الزامی است','err');return;}
+    
     const mediaUrl=URL.createObjectURL(md);
     const mediaEl=document.createElement(md.type.startsWith('video')?'video':'audio');
     mediaEl.preload='metadata';mediaEl.src=mediaUrl;
     await new Promise((res,rej)=>{mediaEl.onloadedmetadata=res;mediaEl.onerror=rej;});
     const dur=mediaEl.duration;URL.revokeObjectURL(mediaUrl);
     if(dur>120){toast('مدت زمان نباید بیشتر از ۲ دقیقه باشد','err');return;}
+    
     let shData, phData, mdData;
     try{
         [shData, phData] = await Promise.all([compressImage(sh,800,0.7), compressImage(phf,800,0.7)]);
         mdData = await readAsDataURL(md);
     }catch(err){toast('خطا در پردازش فایل‌ها','err');return;}
+    
     const req={
         id:'r'+Date.now(), userId:u.id, role:currentRole,
         firstName:$('#aFirst').value.trim(), lastName:$('#aLast').value.trim(),
@@ -569,6 +595,7 @@ $('#applyForm').addEventListener('submit', async e=>{
     requestsCache.unshift(req);
     const ok=await saveRequests();
     if(!ok){toast('خطا در ارسال درخواست','err');requestsCache.shift();return;}
+    
     e.target.reset();
     $('#prevShenas').classList.add('hidden');
     $('#prevPhoto').classList.add('hidden');
