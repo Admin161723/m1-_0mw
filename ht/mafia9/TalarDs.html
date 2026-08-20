@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d2135">
 <title>بازی مافیا | تالار دوستانه</title>
-<script src="https://cdn.jsdelivr.net/npm/livekit-client@2.8.1/dist/livekit-client.umd.min.js"></script>
+<!-- ✅ اضافه کردن SDK رسمی Agora برای وب -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent!important;}
@@ -148,64 +149,59 @@
   .bot-face{font-size:28px;}
   .seat-num{position:absolute;bottom:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);border:2px solid #0d2135;color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:3;}
 
-  /* ✅ مستطیل روی پایین دایره - نصف روی دایره، نصف بیرون */
-  .seat-tag-layer{
-    position:relative;
-    margin-top:-10px;
-    z-index:10;
-    max-width:90px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .seat-tag-badge{
-    background:linear-gradient(180deg,#2a2a2a,#1a1a1a);
-    color:#fff;
-    border-radius:10px;
-    padding:3px 8px;
-    font-size:10px;
-    font-weight:900;
-    display:inline-flex;
-    align-items:center;
-    gap:3px;
-    max-width:90px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    border:1px solid rgba(255,255,255,.2);
-    box-shadow:0 2px 4px rgba(0,0,0,.5);
-    line-height:1.4;
-  }
-  .seat-tag-badge.staff-badge{
-    background:linear-gradient(180deg,#6a1b9a,#4a148c);
-    border-color:#9c27b0;
-    box-shadow:0 0 6px rgba(156,39,176,.5);
-  }
-  .seat-tag-badge .tag-color-text{
-    font-weight:900;
-    padding:1px 4px;
-    border-radius:4px;
-    font-size:9px;
-  }
-  .seat-tag-badge .rank-text{
-    color:#ffd700;
-    font-size:9px;
-  }
+  .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
+  .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
+  .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
+  .seat-tag-badge .tag-color-text{font-weight:900;padding:1px 4px;border-radius:4px;font-size:9px;}
+  .seat-tag-badge .rank-text{color:#ffd700;font-size:9px;}
 
   .seat-name{margin-top:2px;font-size:11px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:3px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;}
   .manager-tag{color:#ffd700;}
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  .mic-badge{position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg,#ffd700,#ff9800);display:none;align-items:center;justify-content:center;z-index:4;box-shadow:0 0 8px rgba(255,215,0,.8);}
-  .mic-badge::before{content:'';width:6px;height:10px;background:#5a3a00;border-radius:3px 3px 1px 1px;}
-  @keyframes speakPulse{0%,100%{box-shadow:0 0 6px rgba(255,215,0,.7);}50%{box-shadow:0 0 18px rgba(255,215,0,1);}}
-  .seat-circle.speaking,.super-circle.speaking{border-color:#ffd700!important;animation:speakPulse 1s infinite;}
-  .speaking .mic-badge{display:flex;}
+  /* ✅ استایل جدید دایره میکروفون با انیمیشن صدا */
+  .voice-indicator {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #00ff88, #00cc6a);
+    border: 2px solid #fff;
+    display: none; /* پیش‌فرض مخفی */
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  /* اگر آیتم در ستون چپ باشد، دایره سمت راست آواتار باز می‌شود */
+  .col-left-item .voice-indicator {
+    right: -6px;
+  }
+  /* اگر آیتم در ستون راست باشد، دایره سمت چپ آواتار باز می‌شود */
+  .col-right-item .voice-indicator {
+    left: -6px;
+  }
+  /* انیمیشن ضربان‌دار هنگام صحبت کردن (حالت رفت و آمد صدا) */
+  .voice-indicator.speaking {
+    display: flex !important;
+    animation: voicePulse 0.6s infinite alternate;
+  }
+  @keyframes voicePulse {
+    0% { transform: translateY(-50%) scale(1); box-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
+    100% { transform: translateY(-50%) scale(1.25); box-shadow: 0 0 20px rgba(0, 255, 136, 1); }
+  }
+  .voice-indicator::after {
+    content: '🎙️';
+    font-size: 13px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+  }
 
   .room-bottombar{position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-top:3px solid #3f8fd4;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:20;}
-  .mic-btn{width:54px;height:54px;border-radius:14px;border:2px solid #6ac4ff;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .mic-btn.on{border-color:#ff4444;box-shadow:0 0 12px rgba(255,68,68,.7);}
+  .mic-btn{width:54px;height:54px;border-radius:14px;border:2px solid #6ac4ff;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;}
+  .mic-btn.on{border-color:#00ff88;background:linear-gradient(180deg,#00cc6a,#00994d);box-shadow:0 0 15px rgba(0, 255, 136, 0.5);}
   .ready-btn{min-width:130px;padding:14px 16px;border:none;border-radius:12px;font-family:'Vazirmatn';font-size:14px;font-weight:900;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
   .ready-btn.not{background:linear-gradient(180deg,#f44336,#d32f2f);}
   .ready-btn.yes{background:linear-gradient(180deg,#55b055,#3f8f3f);}
@@ -302,7 +298,7 @@
       <div class="seats-cols"><div class="seat-col" id="colLeft"></div><div class="seat-col" id="colRight"></div></div>
     </div>
     <div class="room-bottombar">
-      <div class="mic-btn" id="micBtn"><div class="mic-ico"></div></div>
+      <div class="mic-btn" id="micBtn" onclick="toggleMic()"><div class="mic-ico"></div></div>
       <button class="ready-btn not" id="readyBtn">آماده نیستم</button>
     </div>
 
@@ -426,9 +422,13 @@
   const namesKey=p=>'talar_names:'+p;
   const WORKER_URL="";
 
-  const LiveKit = window.LivekitClient || window.LiveKit;
-  let lkRoom=null, localAudioTrack=null, micOnState=false;
-  let speakingPhones={};
+  // ✅ متغیرهای Agora Voice Chat
+  const APP_ID = "562fb91f42ae4cfc8490c54e4db1fa46";
+  let agoraClient = null;
+  let localAudioTrack = null;
+  let remoteTracks = {};
+  let isMicOn = false;
+  let speakingUids = new Set();
 
   async function upstashGet(url, token, k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(url+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+token},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result);}catch(e){return d.result;}}return null;}catch(e){return null;}}
   async function upstashSet(url, token, k, v){try{const jsonValue=JSON.stringify(v);const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(url+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(jsonValue),{headers:{'Authorization':'Bearer '+token},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
@@ -611,51 +611,123 @@
     return html;
   }
 
-  async function getLiveKitToken(roomName, identity){
-    if(!WORKER_URL) return null;
-    try{const r=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:roomName, identity:identity})});if(!r.ok)return null;return await r.json();}catch(e){return null;}
-  }
-  async function connectVoice(){
-    if(!currentRoomId||!me||!LiveKit||!WORKER_URL)return;
-    if(lkRoom)return;
-    try{
-      const data=await getLiveKitToken('room_'+currentRoomId, me.phone);
-      if(!data||!data.token)return;
-      lkRoom=new LiveKit.Room({adaptiveStream:true,dynacast:true,audioCaptureDefaults:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-      lkRoom.on(LiveKit.RoomEvent.TrackSubscribed,(track,publication,participant)=>{
-        if(track.kind===LiveKit.Track.Kind.Audio){const el=track.attach();el.autoplay=true;el.playsInline=true;el.style.display='none';document.body.appendChild(el);el.play().catch(()=>{});}
+  // ✅ توابع مدیریت صدا با Agora
+  async function connectVoice() {
+    if (!currentRoomId || !me || !window.AgoraRTC) return;
+    if (agoraClient) return;
+
+    try {
+      showVoiceStatus('connecting', 'در حال اتصال به صدا...');
+      agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+      const channelName = "mafia_room_" + currentRoomId;
+      const uid = me.phone;
+
+      await agoraClient.join(APP_ID, channelName, null, uid);
+
+      localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+        encoderConfig: "music_standard"
       });
-      lkRoom.on(LiveKit.RoomEvent.TrackUnsubscribed,(track)=>{const el=track.attachedElements[0];if(el)el.remove();});
-      lkRoom.on(LiveKit.RoomEvent.ActiveSpeakersChanged,(speakers)=>{speakingPhones={};const now=Date.now();speakers.forEach(p=>{if(p.identity!==me.phone)speakingPhones[p.identity]=now+1500;});});
-      lkRoom.on(LiveKit.RoomEvent.Connected,()=>{showVoiceStatus('connected','متصل');});
-      await lkRoom.connect(data.url,data.token);
-      localAudioTrack=await LiveKit.createLocalAudioTrack({echoCancellation:true,noiseSuppression:true,autoGainControl:true});
-      await lkRoom.localParticipant.publishTrack(localAudioTrack);
-      micOnState=true;$('micBtn').classList.add('on');
-    }catch(e){console.log('Voice failed:',e.message);}
+      await agoraClient.publish(localAudioTrack);
+      isMicOn = true;
+      updateMicButtonUI();
+
+      agoraClient.on("user-published", async (user, mediaType) => {
+        await agoraClient.subscribe(user, mediaType);
+        if (mediaType === "audio") {
+          remoteTracks[user.uid] = user.audioTrack;
+          user.audioTrack.play();
+        }
+      });
+
+      agoraClient.on("user-unpublished", (user, mediaType) => {
+        if (mediaType === "audio" && remoteTracks[user.uid]) {
+          remoteTracks[user.uid].stop();
+          delete remoteTracks[user.uid];
+          speakingUids.delete(String(user.uid));
+        }
+      });
+
+      agoraClient.enableAudioVolumeIndicator();
+      agoraClient.on("volume-indicator", (volumes) => {
+        speakingUids.clear();
+        volumes.forEach(volume => {
+          if (volume.level > 10) {
+            speakingUids.add(String(volume.uid));
+          }
+        });
+        updateSpeakingUI();
+      });
+
+      showVoiceStatus('connected', 'متصل');
+    } catch (error) {
+      console.error("Agora connection failed:", error);
+      showVoiceStatus('error', 'خطا در اتصال');
+    }
   }
-  async function disconnectVoice(){
-    if(lkRoom){try{await lkRoom.disconnect();}catch(e){}lkRoom=null;}
-    localAudioTrack=null;micOnState=false;speakingPhones={};
-    const mb=$('micBtn');if(mb)mb.classList.remove('on');hideVoiceStatus();
+
+  async function disconnectVoice() {
+    if (localAudioTrack) {
+      localAudioTrack.close();
+      localAudioTrack = null;
+    }
+    if (agoraClient) {
+      await agoraClient.leave();
+      agoraClient = null;
+    }
+    remoteTracks = {};
+    speakingUids.clear();
+    isMicOn = false;
+    updateMicButtonUI();
+    hideVoiceStatus();
   }
-  async function toggleMic(){
-    if(!localAudioTrack){showToast('صدا فعال نیست','error');return;}
-    try{
-      if(micOnState){localAudioTrack.mute();micOnState=false;$('micBtn').classList.remove('on');}
-      else{localAudioTrack.unmute();micOnState=true;$('micBtn').classList.add('on');}
-    }catch(e){}
+
+  async function toggleMic() {
+    if (!localAudioTrack || !agoraClient) return;
+    try {
+      if (isMicOn) {
+        await localAudioTrack.setMuted(true);
+        isMicOn = false;
+      } else {
+        await localAudioTrack.setMuted(false);
+        isMicOn = true;
+      }
+      updateMicButtonUI();
+    } catch (e) {
+      console.error("Mic toggle error:", e);
+    }
   }
-  function showVoiceStatus(state,text){const s=$('voiceStatus');if(!s)return;s.classList.add('show');const d=$('voiceDot');const l=$('voiceLabel');if(d)d.className='voice-dot '+state;if(l)l.textContent=text;setTimeout(()=>{s.classList.remove('show');},3000);}
-  function hideVoiceStatus(){const s=$('voiceStatus');if(s)s.classList.remove('show');}
-  function updateSpeakingUI(){
-    const now=Date.now();
-    document.querySelectorAll('[data-phone]').forEach(el=>{
-      const ph=el.getAttribute('data-phone');
-      const isSpeaking=ph===me.phone?micOnState:(speakingPhones[ph]||0)>now;
-      el.classList.toggle('speaking',isSpeaking);
+
+  function updateMicButtonUI() {
+    const btn = $('micBtn');
+    if (!btn) return;
+    if (isMicOn) {
+      btn.classList.add('on');
+    } else {
+      btn.classList.remove('on');
+    }
+  }
+
+  function updateSpeakingUI() {
+    document.querySelectorAll('[data-phone]').forEach(el => {
+      const phone = el.getAttribute('data-phone');
+      const isSpeaking = (phone === me.phone && isMicOn) || speakingUids.has(phone);
+
+      const indicator = el.querySelector('.voice-indicator');
+      if (indicator) {
+        if (isSpeaking) {
+          indicator.style.display = 'flex';
+          indicator.classList.add('speaking');
+        } else {
+          indicator.style.display = 'none';
+          indicator.classList.remove('speaking');
+        }
+      }
     });
   }
+
+  function showVoiceStatus(state,text){const s=$('voiceStatus');if(!s)return;s.classList.add('show');const d=$('voiceDot');const l=$('voiceLabel');if(d)d.className='voice-dot '+state;if(l)l.textContent=text;setTimeout(()=>{s.classList.remove('show');},3000);}
+  function hideVoiceStatus(){const s=$('voiceStatus');if(s)s.classList.remove('show');}
 
   let isRedirecting=false;
   function go(u){if(!isRedirecting){isRedirecting=true;window.location.href=u;}}
@@ -848,7 +920,6 @@
       $('kickOverlay').classList.add('show');
       return;
     }
-    // ✅ اگه کاربر از لابی خارج شده (صندلیش خالی شده)، برگرد به لیست
     if(!mySeat(room)){
       stopTimers();disconnectVoice();
       startListView();
@@ -899,7 +970,6 @@
     }
     await Promise.all(groupPromises);
 
-    // ✅ ساخت ناظر با تیک و badge (مثل بازیکن)
     async function buildSuper(i){
       const ph=room.supers[i];
       const u=ph?allUsers[ph]:null;
@@ -912,7 +982,16 @@
         inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
       }
       const labelHtml='ناظر'+toFa(i)+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
-      return '<div class="super-slot" data-super="'+i+'"><div class="super-circle '+(u?'filled':'')+'" '+(ph?'data-phone="'+ph+'"':'')+'>'+inner+'<div class="mic-badge"></div></div>'+tagLayer+'<div class="super-label '+nameClass+'">'+labelHtml+'</div></div>';
+      // ✅ اضافه کردن کلاس col-left-item یا col-right-item برای موقعیت‌دهی دایره میکروفون
+      const sideClass = (i === 1) ? 'col-left-item' : 'col-right-item';
+      return `<div class="super-slot ${sideClass}" data-super="${i}">
+        <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
+          ${inner}
+          <div class="voice-indicator"></div>
+        </div>
+        ${tagLayer}
+        <div class="super-label ${nameClass}">${labelHtml}</div>
+      </div>`;
     }
     const superSlots=await Promise.all([1,2].map(buildSuper));
     $('supersRow').innerHTML=superSlots.join('');
@@ -943,7 +1022,17 @@
         inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
       }
-      return '<div class="seat" data-seat="'+i+'"><div class="'+cls+'"'+dp+'>'+inner+'<div class="seat-num">'+toFa(i)+'</div><div class="mic-badge"></div></div>'+tagLayer+tag+'</div>';
+      // ✅ اضافه کردن کلاس col-left-item یا col-right-item برای موقعیت‌دهی دایره میکروفون
+      const sideClass = ([1,3,5,7,9].includes(i)) ? 'col-left-item' : 'col-right-item';
+      return `<div class="seat ${sideClass}" data-seat="${i}">
+        <div class="${cls}" ${dp}>
+          ${inner}
+          <div class="seat-num">${toFa(i)}</div>
+          <div class="voice-indicator"></div>
+        </div>
+        ${tagLayer}
+        ${tag}
+      </div>`;
     }
     const leftSeats=await Promise.all([1,3,5,7,9].map(buildSeat));
     const rightSeats=await Promise.all([2,4,6,8,10].map(buildSeat));
@@ -982,7 +1071,6 @@
     fn(room);await saveRooms(rooms);
   }
 
-  // ✅ کلیک روی صندلی - جابجایی ممنوع
   async function tapSeat(i){
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
     const ph=room.seats[i],bot=room.bots[i],my=mySeat(room);
@@ -990,7 +1078,6 @@
     const isCreator=me.phone===CREATOR_PHONE;
     const myLevel=RANK_LEVEL[me.rank]||0;
 
-    // اگه بات هست
     if(bot){
       if(isManager||isCreator||myLevel>=RANK_LEVEL['گرداننده']){
         if(confirm('بات حذف شود؟')){delete room.bots[i];await saveRooms(rooms);showToast('بات حذف شد');refreshRoom();}
@@ -998,7 +1085,6 @@
       return;
     }
 
-    // اگه کاربر در لابی هست (player یا super)، جابجایی ممنوع
     if(my){
       if(ph){
         openUserMenu({phone:ph});
@@ -1008,30 +1094,25 @@
       return;
     }
 
-    // کاربر هنوز در لابی نیست
     if(ph){
       const ghostHidden=(room.ghost||[]).includes(ph)&&ph!==me.phone;
       if(ghostHidden){showToast('این صندلی پر است','error');return;}
       openUserMenu({phone:ph});
       return;
     }
-    // صندلی خالی - کاربر هنوز در لابی نیست، بشینه
     room.seats[i]=me.phone;
     await saveRooms(rooms);
     refreshRoom();
   }
 
-  // ✅ کلیک روی ناظر - جابجایی ممنوع، فقط مدیر می‌تونه تعیین کنه
   async function tapSuper(i){
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
     const ph=room.supers[i],my=mySeat(room);
     const isManager=room.managerPhone===me.phone;
     const isCreator=me.phone===CREATOR_PHONE;
 
-    // اگه کاربر در لابی هست، فقط منو باز بشه (هیچ جابجایی نیست)
     if(my){
       if(ph){
-        // اگه مدیر روی خودش کلیک کرد، خارجش کن
         if(isManager && ph===me.phone){
           delete room.supers[i];
           let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!room.seats[x]&&!room.bots[x]){free=x;break;}}
@@ -1048,13 +1129,11 @@
       return;
     }
 
-    // کاربر هنوز در لابی نیست
     if(ph){
       openUserMenu({phone:ph});
       return;
     }
 
-    // ناظر خالی - فقط مدیر یا سازنده می‌تونه تعیین کنه
     if(!isManager && !isCreator){
       showToast('فقط مدیر می‌تواند ناظر تعیین کند','error');
       return;
@@ -1088,7 +1167,6 @@
     refreshRoom();
   }
 
-  // ✅ خروج مدیر = حذف کامل لابی
   async function leaveRoom(toMain){
     if(!currentRoomId)return;
     stopTimers();disconnectVoice();overlayShown=true;
@@ -1104,7 +1182,6 @@
       if(room.ghost&&room.ghost.includes(me.phone))room.ghost=room.ghost.filter(x=>x!==me.phone);
 
       if(wasManager){
-        // ✅ مدیر خارج شد - حذف کامل لابی
         room.status='deleted';
         room.deleteReason='مدیر لابی خارج شد';
         await saveRooms(rooms);
@@ -1114,7 +1191,6 @@
           await redisSet(ROOMS_KEY,r2);
         },2000);
       } else {
-        // کاربر عادی خارج شد
         const left=Object.keys(room.seats||{}).length+Object.keys(room.bots||{}).length+Object.values(room.supers||{}).filter(Boolean).length;
         if(left===0){
           room.status='deleted';
@@ -1664,6 +1740,7 @@
     $('btnManagerSettings').onclick=openManager;
     $('closeManager').onclick=()=>$('managerModal').classList.remove('active');
     $('btnGhost').onclick=toggleGhost;
+    // ✅ تابع toggleMic دیگر نیازی به onclick در HTML ندارد چون در بالا تعریف شده، اما برای اطمینان:
     $('micBtn').onclick=toggleMic;
     $('closeUserMenu').onclick=closeUm;
     $('closeProfile').onclick=()=>$('profileModal').classList.remove('active');
