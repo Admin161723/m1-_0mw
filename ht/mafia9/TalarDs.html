@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d2135">
 <title>بازی مافیا | تالار دوستانه</title>
-<!-- SDK رسمی Agora -->
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
@@ -135,7 +134,7 @@
   .super-circle{width:90px;height:90px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;}
   .super-circle.filled{border-style:solid;background:#173a5e;overflow:hidden;}
   .super-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-  .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;}
+  .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;position:relative;}
 
   .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:stretch;padding:10px 8px;direction:ltr;}
   .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;flex:1;}
@@ -155,42 +154,64 @@
   .seat-tag-badge .tag-color-text{font-weight:900;padding:1px 4px;border-radius:4px;font-size:9px;}
   .seat-tag-badge .rank-text{color:#ffd700;font-size:9px;}
 
-  .seat-name{margin-top:2px;font-size:11px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:3px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;}
+  .seat-name{margin-top:2px;font-size:11px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:3px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;position:relative;}
   .manager-tag{color:#ffd700;}
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* ✅ استایل دقیق دایره میکروفون با انیمیشن */
+  /* ✅ آیکون میکروفون خفن کنار اسم - مثل تصویرت */
   .voice-indicator {
     position: absolute;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #00ff88, #00cc6a);
-    border: 2px solid #fff;
+    width: 20px;
+    height: 20px;
+    right: -24px;
+    top: 50%;
+    transform: translateY(-50%);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 20;
-    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
-    top: 50%;
-    transform: translateY(-50%);
+    z-index: 30;
   }
-  .col-left-item .voice-indicator { right: -8px; }
-  .col-right-item .voice-indicator { left: -8px; }
   
   .voice-indicator.speaking {
     display: flex !important;
-    animation: voicePulse 0.5s infinite alternate;
   }
-  @keyframes voicePulse {
-    0% { transform: translateY(-50%) scale(1); box-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
-    100% { transform: translateY(-50%) scale(1.3); box-shadow: 0 0 20px rgba(0, 255, 136, 1); }
+  
+  .voice-indicator::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #4a9eff 0%, #00ffff 100%);
+    border-radius: 50%;
+    animation: voiceWave 0.8s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(74,158,255,0.8);
   }
+  
   .voice-indicator::after {
-    content: '🎙️';
-    font-size: 14px;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+    content: '🔊';
+    font-size: 11px;
+    z-index: 2;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    animation: voicePulse 0.8s ease-in-out infinite;
+  }
+  
+  @keyframes voiceWave {
+    0%, 100% { 
+      transform: scale(1); 
+      opacity: 1;
+      box-shadow: 0 0 10px rgba(74,158,255,0.8);
+    }
+    50% { 
+      transform: scale(1.5); 
+      opacity: 0.6;
+      box-shadow: 0 0 20px rgba(74,158,255,1), 0 0 30px rgba(0,255,255,0.6);
+    }
+  }
+  
+  @keyframes voicePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
   }
 
   .room-bottombar{position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-top:3px solid #3f8fd4;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:20;}
@@ -312,12 +333,12 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن + ۲ ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۰ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
   <div class="overlay" id="namesModal"><div class="modal">
-    <div class="close-x" id="closeNamesBtn">✕</div>
+    <div class="close-x" id="closeNamesBtn"></div>
     <div class="modal-title-y">نام لابی</div>
     <div id="namesList"></div>
     <button class="green-btn" id="addNameBtn">+ نام جدید (حداکثر ۴)</button>
@@ -388,7 +409,7 @@
   <div class="toast" id="toast"></div>
 
   <div class="server-down-overlay" id="serverDownOverlay">
-    <div class="server-down-icon">🔌</div>
+    <div class="server-down-icon"></div>
     <div class="server-down-title">سرور قطع است</div>
     <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
   </div>
@@ -416,7 +437,6 @@
   const ROOMS_KEY='talar_rooms', REQ_KEY='talar_name_requests', REPORT_KEY='talar_reports';
   const namesKey=p=>'talar_names:'+p;
 
-  // ✅ تنظیمات ساده و مستقیم Agora
   const APP_ID = "562fb91f42ae4cfc8490c54e4db1fa46";
   let agoraClient = null;
   let localAudioTrack = null;
@@ -525,10 +545,10 @@
     {v:'1h',l:'۱ ساعت',ms:3600000},
     {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
-    {v:'2w',l:'۲ هفته',ms:1209600000},
+    {v:'2w',l:' هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
-    {v:'8m',l:'۸ ماه',ms:20736000000},
+    {v:'8m',l:' ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -541,7 +561,7 @@
   function getPanelTabs(rank){
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
-      tabs.push({id:'users',label:'👥 کاربران'});
+      tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'reports',label:'📋 گزارش‌ها'});
       tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
@@ -592,31 +612,29 @@
     return html;
   }
 
-  // ✅ سیستم صدای ساده، مستقیم و بدون باگ
   async function initVoice() {
     if (agoraClient || !window.AgoraRTC || !currentRoomId || !me) return;
     try {
-      showVoiceStatus('connecting', 'در حال اتصال...');
       agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-      
-      // اتصال به کانال (بدون توکن برای حالت تست)
       await agoraClient.join(APP_ID, "mafia_room_" + currentRoomId, null, me.phone);
 
-      // شنیدن صدای دیگران
       agoraClient.on("user-published", async (user, mediaType) => {
-        await agoraClient.subscribe(user, mediaType);
-        if (mediaType === "audio") {
-          user.audioTrack.play();
+        try {
+          await agoraClient.subscribe(user, mediaType);
+          if (mediaType === "audio" && user.audioTrack) {
+            user.audioTrack.play();
+          }
+        } catch (e) {
+          console.log("Subscribe error:", e);
         }
       });
 
       agoraClient.on("user-unpublished", (user, mediaType) => {
         if (mediaType === "audio" && user.audioTrack) {
-          user.audioTrack.stop();
+          try { user.audioTrack.stop(); } catch(e) {}
         }
       });
 
-      // تشخیص صحبت کردن برای انیمیشن
       agoraClient.enableAudioVolumeIndicator();
       agoraClient.on("volume-indicator", (volumes) => {
         speakingUids.clear();
@@ -625,35 +643,31 @@
         });
         updateSpeakingUI();
       });
-
-      showVoiceStatus('connected', 'متصل');
     } catch (err) {
-      console.error("Voice init error:", err);
-      showVoiceStatus('error', 'خطا در اتصال');
+      console.log("Voice init failed:", err.message);
     }
   }
 
-  // ✅ این تابع دقیقاً با کلیک کاربر اجرا می‌شود (الزامی برای موبایل)
   async function toggleMic() {
     if (!agoraClient) {
-      showToast("در حال اتصال به صدا، لحظه‌ای صبر کنید...", "info");
-      return;
+      await initVoice();
+      if (!agoraClient) {
+        showToast("لطفاً چند لحظه صبر کنید", "info");
+        return;
+      }
     }
     try {
       if (!localAudioTrack) {
-        // بار اول: ساخت ترک صدا (نیاز به اجازه کاربر دارد)
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         await agoraClient.publish(localAudioTrack);
         isMicOn = true;
       } else {
-        // دفعات بعد: فقط خاموش/روشن کردن
         isMicOn = !isMicOn;
         await localAudioTrack.setMuted(!isMicOn);
       }
       updateMicUI();
     } catch (err) {
-      console.error("Mic error:", err);
-      showToast("دسترسی به میکروفون داده نشد یا مسدود است", "error");
+      showToast("لطفاً دسترسی میکروفون را فعال کنید", "error");
     }
   }
 
@@ -668,21 +682,28 @@
     document.querySelectorAll('[data-phone]').forEach(el => {
       const phone = el.getAttribute('data-phone');
       const isSpeaking = (phone === me.phone && isMicOn) || speakingUids.has(phone);
-      const indicator = el.querySelector('.voice-indicator');
-      if (indicator) {
-        if (isSpeaking) {
-          indicator.style.display = 'flex';
-          indicator.classList.add('speaking');
-        } else {
-          indicator.style.display = 'none';
-          indicator.classList.remove('speaking');
+      
+      // پیدا کردن المنت اسم کاربر
+      const seatEl = el.closest('.seat, .super-slot');
+      if (seatEl) {
+        const nameEl = seatEl.querySelector('.seat-name, .super-label');
+        if (nameEl) {
+          let indicator = nameEl.querySelector('.voice-indicator');
+          if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.className = 'voice-indicator';
+            nameEl.appendChild(indicator);
+          }
+          
+          if (isSpeaking) {
+            indicator.classList.add('speaking');
+          } else {
+            indicator.classList.remove('speaking');
+          }
         }
       }
     });
   }
-
-  function showVoiceStatus(state,text){const s=$('voiceStatus');if(!s)return;s.classList.add('show');const d=$('voiceDot');const l=$('voiceLabel');if(d)d.className='voice-dot '+state;if(l)l.textContent=text;setTimeout(()=>{s.classList.remove('show');},3000);}
-  function hideVoiceStatus(){const s=$('voiceStatus');if(s)s.classList.remove('show');}
 
   async function disconnectVoice() {
     if (localAudioTrack) {
@@ -696,7 +717,6 @@
     speakingUids.clear();
     isMicOn = false;
     updateMicUI();
-    hideVoiceStatus();
   }
 
   let isRedirecting=false;
@@ -759,7 +779,7 @@
       const sc=Object.values(r.supers||{}).filter(Boolean).length;
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>'+toFa(pc)+' / '+toFa(MAX_PLAYERS)+'</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(sc)+' / ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>'+toFa(pc)+' / '+toFa(MAX_PLAYERS)+'</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(sc)+' / </div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
@@ -825,20 +845,30 @@
     if(passOn&&!pass){showToast('رمز را وارد کنید','error');return;}
     const id='R'+Date.now();
 
+    const names = await getNames(me.phone);
+    const selectedNameObj = names.find(n => n.name === selectedName);
+    const isNameApproved = selectedNameObj && selectedNameObj.status === 'active';
+
     const isStaffUser = RANK_LEVEL[me.rank] >= RANK_LEVEL['پشتیبانی'] || me.phone === CREATOR_PHONE;
 
     rooms[id]={
       id:id, name:selectedName, managerPhone:me.phone, creatorName:me.name, creatorRank:me.rank,
       scenario:'mafiasan', password:pass, seats:{1:me.phone}, bots:{}, supers:{}, ready:{},
       ghost:[], blocked:[], kicked:{},
-      status: isStaffUser ? 'waiting' : 'pending',
-      approvalRequired: !isStaffUser, createdAt:Date.now()
+      status: (isStaffUser || isNameApproved) ? 'waiting' : 'pending',
+      approvalRequired: !(isStaffUser || isNameApproved),
+      createdAt:Date.now()
     };
     await saveRooms(rooms);
     $('createModal').classList.remove('active');
 
-    if(isStaffUser){ showToast('لابی ایجاد شد'); openRoom(id,rooms[id]); } 
-    else { showToast('لابی در انتظار تأیید مقام‌دارها'); openRoom(id,rooms[id]); }
+    if(isStaffUser || isNameApproved){ 
+      showToast('لابی ایجاد شد'); 
+      openRoom(id,rooms[id]); 
+    } else { 
+      showToast('لابی در انتظار تأیید مقام‌دارها'); 
+      openRoom(id,rooms[id]); 
+    }
   }
 
   function openRoom(id,roomData){
@@ -853,7 +883,7 @@
     if(roomData)renderRoom(roomData,usersCache.data||{});
     refreshRoom();
     if(!roomTimer)roomTimer=setInterval(refreshRoom,2000);
-    initVoice(); // ✅ اتصال صدا به محض ورود
+    initVoice();
   }
 
   async function refreshRoom(){
@@ -925,13 +955,12 @@
       let inner='';
       if(u) inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
       const labelHtml='ناظر'+toFa(i)+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
-      const sideClass = (i === 1) ? 'col-left-item' : 'col-right-item';
-      return `<div class="super-slot ${sideClass}" data-super="${i}">
-        <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
-          ${inner}<div class="voice-indicator"></div>
+      return `<div class="super-slot" data-super="${i}" data-phone="${ph||''}">
+        <div class="super-circle ${u ? 'filled' : ''}">
+          ${inner}
         </div>
-        ${tagLayer}
         <div class="super-label ${nameClass}">${labelHtml}</div>
+        ${tagLayer}
       </div>`;
     }
     const superSlots=await Promise.all([1,2].map(buildSuper));
@@ -963,10 +992,9 @@
         inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
       }
-      const sideClass = ([1,3,5,7,9].includes(i)) ? 'col-left-item' : 'col-right-item';
-      return `<div class="seat ${sideClass}" data-seat="${i}">
+      return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
-          ${inner}<div class="seat-num">${toFa(i)}</div><div class="voice-indicator"></div>
+          ${inner}<div class="seat-num">${toFa(i)}</div>
         </div>
         ${tagLayer}${tag}
       </div>`;
@@ -988,7 +1016,7 @@
       const total=humans.length+bots;
       const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
       if(total<MAX_PLAYERS){rb.className='ready-btn disabled';rb.innerHTML='شروع بازی ('+toFa(total)+'/۱۰ نفر)';rb.onclick=null;}
-      else if(!allReady){rb.className='ready-btn disabled';rb.innerHTML='همه آماده نیستند (۱۰/۱۰)';rb.onclick=null;}
+      else if(!allReady){rb.className='ready-btn disabled';rb.innerHTML='همه آماده نیستند (۱/۱۰)';rb.onclick=null;}
       else{rb.className='ready-btn start';rb.innerHTML='شروع بازی (۱۰/۱۰)';rb.onclick=startGame;}
     }else{
       const ready=(room.ready||{})[me.phone]===true;
@@ -1331,7 +1359,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     $('editWarn').style.display=(isCreator||isStaffUser)?'none':'block';
     $('editStaff').style.display=(isCreator||isStaffUser)?'block':'none';
-    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید (۵۰ سکه)';
+    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۰ سکه)':'ذخیره و ارسال برای تأیید (۵۰ سکه)';
     $('editModal').classList.add('active');
   }
   async function saveEdit(){
@@ -1342,7 +1370,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     if(!isCreator&&!isStaffUser){
       const allUsers=await getUsersCached(true);const u=allUsers[me.phone];
-      if(!u||((u.coins||0)<NAME_COST)){showToast('سکه کافی ندارید (۵۰ سکه لازم است)','error');return;}
+      if(!u||((u.coins||0)<NAME_COST)){showToast('سکه کافی ندارید (۵ سکه لازم است)','error');return;}
       u.coins=(u.coins||0)-NAME_COST;allUsers[me.phone]=u;
       await saveUser(me.phone,u);await saveAllUsers(allUsers);usersCache={ts:0,data:{}};
     }else if(isCreator||isStaffUser){
@@ -1637,7 +1665,7 @@
     $('btnManagerSettings').onclick=openManager;
     $('closeManager').onclick=()=>$('managerModal').classList.remove('active');
     $('btnGhost').onclick=toggleGhost;
-    $('micBtn').onclick=toggleMic; // ✅ اتصال مستقیم دکمه به تابع
+    $('micBtn').onclick=toggleMic;
     $('closeUserMenu').onclick=closeUm;
     $('closeProfile').onclick=()=>$('profileModal').classList.remove('active');
     $('closeReport').onclick=()=>$('reportModal').classList.remove('active');
