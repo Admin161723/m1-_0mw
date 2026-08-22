@@ -157,6 +157,7 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
+  /* دایره شماره صندلی - اعداد ۱ تا ۱۰ */
   .seat-num{
     position:absolute;
     bottom:-4px;
@@ -832,7 +833,10 @@
         });
         updateSpeakingUI();
       });
-    } catch (err) { console.log("Voice init failed:", err.message); }
+    } catch (err) {
+      console.error("Voice init error:", err);
+      showToast("خطا در اتصال به صدا: " + err.message, "error");
+    }
   }
 
   async function toggleMic() {
@@ -852,17 +856,21 @@
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         await agoraClient.publish(localAudioTrack);
         isMicOn = true;
+        showToast("میکروفون روشن شد");
       } else {
         isMicOn = !isMicOn;
         await localAudioTrack.setMuted(!isMicOn);
+        showToast(isMicOn ? "میکروفون روشن شد" : "میکروفون خاموش شد");
       }
       updateMicUI();
     } catch (err) {
       console.error("Mic error:", err);
       if (err.message && err.message.includes("NotAllowedError")) {
         showToast("لطفاً دسترسی میکروفون را در مرورگر اجازه دهید", "error");
+      } else if (err.message && err.message.includes("NotFoundError")) {
+        showToast("میکروفونی یافت نشد", "error");
       } else {
-        showToast("خطا در فعال‌سازی میکروفون", "error");
+        showToast("خطا در فعال‌سازی میکروفون: " + err.message, "error");
       }
       isMicOn = false;
       updateMicUI();
@@ -912,7 +920,6 @@
       return false;
     }
     
-    // Find profile element with data-phone of current user
     const targetPhone = me.phone;
     const profileEl = document.querySelector(`[data-phone="${targetPhone}"]`);
     if (!profileEl) {
@@ -920,7 +927,6 @@
       return false;
     }
     
-    // Remove existing reaction overlay
     const existing = profileEl.querySelector('.reaction-overlay');
     if (existing) existing.remove();
     
