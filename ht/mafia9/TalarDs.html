@@ -44,7 +44,19 @@
   .room-badges{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
   .badge-count{display:flex;align-items:center;gap:6px;background:#0e2238;border:1px solid #3f8fd4;border-radius:8px;padding:3px 9px;font-size:13px;font-weight:900;}
   .badge-count .dot{width:13px;height:13px;border-radius:50%;background:#4aa3e0;}
-  .badge-super{background:rgba(255,215,0,.12);border:1px solid #d4b42a;color:#ffd700;border-radius:8px;padding:3px 9px;font-size:11px;font-weight:700;}
+  .badge-super{
+    background:rgba(255,215,0,.12);
+    border:1px solid #d4b42a;
+    color:#ffd700;
+    border-radius:8px;
+    padding:3px 9px;
+    font-size:11px;
+    font-weight:700;
+    max-width:90px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
   .room-bottom{display:flex;align-items:center;gap:10px;}
   .creator-box{flex:1;background:#0e2238;border-radius:12px;padding:7px 10px;text-align:center;}
   .creator-label{font-size:10px;color:rgba(255,255,255,.6);}
@@ -145,7 +157,6 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* دایره شماره صندلی - مثل قبل */
   .seat-num{
     position:absolute;
     bottom:-4px;
@@ -180,8 +191,8 @@
     position: absolute;
     width: 34px;
     height: 34px;
-    top: -10px;
-    right: -10px;
+    top: -18px;
+    right: -18px;
     display: none;
     align-items: center;
     justify-content: center;
@@ -619,6 +630,7 @@
   
   let lastDislikeTime = 0;
   let lastLikeTime = 0;
+  let reactionTimeoutId = null;
   const REACTION_COOLDOWN = 3000;
   let chatMessages = [];
 
@@ -854,6 +866,10 @@
       }
       isMicOn = false;
       updateMicUI();
+      if (localAudioTrack) {
+        try { localAudioTrack.close(); } catch(e) {}
+        localAudioTrack = null;
+      }
     }
   }
 
@@ -896,10 +912,15 @@
       return false;
     }
     
-    const targetPhone = me.phone; 
-    const profileEl = document.querySelector(`[data-phone="${targetPhone}"] .super-circle, [data-phone="${targetPhone}"].seat-circle`);
-    if (!profileEl) return false;
+    // Find profile element with data-phone of current user
+    const targetPhone = me.phone;
+    const profileEl = document.querySelector(`[data-phone="${targetPhone}"]`);
+    if (!profileEl) {
+      showToast('پروفایل یافت نشد', 'error');
+      return false;
+    }
     
+    // Remove existing reaction overlay
     const existing = profileEl.querySelector('.reaction-overlay');
     if (existing) existing.remove();
     
@@ -914,8 +935,10 @@
       overlay.appendChild(img);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
-      setTimeout(() => {
+      if (reactionTimeoutId) clearTimeout(reactionTimeoutId);
+      reactionTimeoutId = setTimeout(() => {
         $('dislikeBtn').classList.remove('disabled');
+        reactionTimeoutId = null;
       }, REACTION_COOLDOWN);
     } else {
       const img = document.createElement('img');
@@ -925,8 +948,10 @@
       overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
-      setTimeout(() => {
+      if (reactionTimeoutId) clearTimeout(reactionTimeoutId);
+      reactionTimeoutId = setTimeout(() => {
         $('likeBtn').classList.remove('disabled');
+        reactionTimeoutId = null;
       }, REACTION_COOLDOWN);
     }
     
