@@ -145,6 +145,15 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
+  /* شماره صندلی - فقط متن ساده بدون دایره */
+  .seat-num-text{
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 900;
+    color: #7ec3f0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,.8);
+  }
+
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
   .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
@@ -156,7 +165,7 @@
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* نشانگر صدا: کاملاً بیرون از دایره - بالا سمت راست */
+  /* نشانگر صدا: کاملاً بیرون از دایره پروفایل - گوشه بالا راست */
   .voice-indicator {
     position: absolute;
     width: 34px;
@@ -187,11 +196,11 @@
   
   .voice-indicator::after {
     content: '';
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     background: white;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
     z-index: 2;
     animation: voicePulse 0.8s ease-in-out infinite;
   }
@@ -432,7 +441,7 @@
 
   <div class="view" id="viewRoom">
     <div class="room-topbar">
-      <button class="back-btn" id="backRoomBtn"></button>
+      <button class="back-btn" id="backRoomBtn">❯</button>
       <div class="home-btn" id="homeRoomBtn"><div class="home-ico"></div></div>
       <div class="room-top-name" id="roomNameTop">-</div>
       <div class="tool-btn tool-ghost" id="btnGhost"><div class="ghost-ico"></div></div>
@@ -488,7 +497,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن +  ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -500,16 +509,16 @@
   </div></div>
 
   <div class="overlay" id="editModal"><div class="modal">
-    <div class="close-x" id="closeEditBtn">✕</div>
+    <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
-    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
+    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵ سکه</div>
     <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
 
   <div class="overlay" id="userMenuModal"><div class="modal">
-    <div class="close-x" id="closeUserMenu"></div>
+    <div class="close-x" id="closeUserMenu">✕</div>
     <div class="modal-title-y" id="userMenuTitle">کاربر</div>
     <div id="userMenuBody"></div>
   </div></div>
@@ -682,7 +691,7 @@
   let overlayShown=false;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۴۵۶۷۸'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function showToast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t==='error'?' error':'');setTimeout(()=>e.classList.remove('show'),2600);}
   const isStaff=r=>r&&r!=='کاربر';
@@ -723,10 +732,10 @@
     if(rank==='ناظر'||rank==='ناظر ارشد'){
       tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'reports',label:'📋 گزارش‌ها'});
-      tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
+      tabs.push({id:'lobby_approvals',label:' تأیید لابی'});
     }else{
       tabs.push({id:'names',label:'📝 تأیید نام'});
-      tabs.push({id:'users',label:' کاربران'});
+      tabs.push({id:'users',label:'👥 کاربران'});
       tabs.push({id:'lobbies',label:'🏛 لابی‌ها'});
       tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
       tabs.push({id:'reports',label:' گزارش‌ها'});
@@ -891,6 +900,8 @@
       // دیس‌لایک: like3.gif
       const img = document.createElement('img');
       img.src = 'like3.gif';
+      img.alt = 'دیس‌لایک';
+      img.onerror = function() { this.style.display = 'none'; };
       overlay.appendChild(img);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
@@ -898,9 +909,11 @@
         $('dislikeBtn').classList.remove('disabled');
       }, REACTION_COOLDOWN);
     } else {
-      // لایک: like2.gif (دست نخورده)
+      // لایک: like1.gif
       const img = document.createElement('img');
-      img.src = 'like2.gif';
+      img.src = 'like1.gif';
+      img.alt = 'لایک';
+      img.onerror = function() { this.style.display = 'none'; };
       overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
@@ -911,6 +924,7 @@
     
     profileEl.appendChild(overlay);
     
+    // حذف بعد از ۳ ثانیه کامل
     setTimeout(() => {
       if (overlay && overlay.parentNode) {
         overlay.classList.remove('show');
@@ -1046,7 +1060,7 @@
       
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از </div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
@@ -1229,7 +1243,7 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
+        inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;></span>\'">';
       }else if(ph&&ph===me.phone&&(room.ghost||[]).includes(ph)){
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
@@ -1245,6 +1259,7 @@
           ${inner}
           <div class="voice-indicator"></div>
         </div>
+        <div class="seat-num-text">${toFa(i)}</div>
         ${tagLayer}${tag}
       </div>`;
     }
@@ -1431,11 +1446,11 @@
         html+='<button class="menu-item-b mi-red" id="umKick">اخراج از لابی</button>';
         html+=((room.blocked||[]).includes(t.phone))?'<button class="menu-item-b mi-green" id="umUnblock">رفع مسدودی</button>':'<button class="menu-item-b mi-red" id="umBlock">مسدود کردن</button>';
       }else{
-        html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
+        html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">⚠️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
       }
       if(isManager&&!targetStaff)html+='<button class="menu-item-b mi-purple" id="umTransfer">انتقال مالکیت</button>';
       html+='<button class="menu-item-b mi-blue" id="umSuper1">دادن ناظر ۱</button>';
-      html+='<button class="menu-item-b mi-blue" id="umSuper2">دادن ناظر </button>';
+      html+='<button class="menu-item-b mi-blue" id="umSuper2">دادن ناظر ۲</button>';
       let inSuper=false;for(const p of Object.values(room.supers||{}))if(p===t.phone)inSuper=true;
       if(inSuper)html+='<button class="menu-item-b mi-red" id="umUnsuper">درآوردن از ناظری</button>';
     }
@@ -1779,7 +1794,7 @@
       if(!pending.length){ body.innerHTML = '<div class="empty-list">درخواستی وجود ندارد</div>'; return; }
       let html = '';
       pending.forEach(r => {
-        html += '<div class="row-item"><b>'+esc(r.creatorName)+'</b> ('+esc(r.creatorRank)+') لابی: <b style="color:#ffd700">'+esc(r.name)+'</b>'+(r.password?'  رمزدار':'')+'<div class="acts"><button style="background:#3f8f3f" data-apl="'+r.id+'">✅ تأیید و فعال‌سازی</button><button style="background:#d32f2f" data-rjl="'+r.id+'">❌ رد و حذف</button></div></div>';
+        html += '<div class="row-item"><b>'+esc(r.creatorName)+'</b> ('+esc(r.creatorRank)+') لابی: <b style="color:#ffd700">'+esc(r.name)+'</b>'+(r.password?' 🔒 رمزدار':'')+'<div class="acts"><button style="background:#3f8f3f" data-apl="'+r.id+'">✅ تأیید و فعال‌سازی</button><button style="background:#d32f2f" data-rjl="'+r.id+'">❌ رد و حذف</button></div></div>';
       });
       body.innerHTML = html;
       body.querySelectorAll('[data-apl]').forEach(b => {
