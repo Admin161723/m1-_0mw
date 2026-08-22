@@ -145,13 +145,23 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* شماره صندلی - فقط متن ساده بدون دایره */
-  .seat-num-text{
-    margin-top: 4px;
-    font-size: 12px;
-    font-weight: 900;
-    color: #7ec3f0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,.8);
+  /* دایره شماره صندلی - مثل قبل */
+  .seat-num{
+    position:absolute;
+    bottom:-4px;
+    left:-4px;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:linear-gradient(180deg,#4aa3e0,#2a7fb8);
+    border:2px solid #0d2135;
+    color:white;
+    font-size:11px;
+    font-weight:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:3;
   }
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
@@ -691,7 +701,7 @@
   let overlayShown=false;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۴۵۶۷۸'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۶۷۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function showToast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t==='error'?' error':'');setTimeout(()=>e.classList.remove('show'),2600);}
   const isStaff=r=>r&&r!=='کاربر';
@@ -711,13 +721,13 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:'۱ ساعت',ms:3600000},
-    {v:'1d',l:'۱ روز',ms:86400000},
+    {v:'1h',l:' ساعت',ms:3600000},
+    {v:'1d',l:' روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
-    {v:'8m',l:'۸ ماه',ms:20736000000},
+    {v:'8m',l:' ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -732,7 +742,7 @@
     if(rank==='ناظر'||rank==='ناظر ارشد'){
       tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'reports',label:'📋 گزارش‌ها'});
-      tabs.push({id:'lobby_approvals',label:' تأیید لابی'});
+      tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
       tabs.push({id:'names',label:'📝 تأیید نام'});
       tabs.push({id:'users',label:'👥 کاربران'});
@@ -897,7 +907,6 @@
     overlay.className = 'reaction-overlay show';
     
     if (type === 'dislike') {
-      // دیس‌لایک: like3.gif
       const img = document.createElement('img');
       img.src = 'like3.gif';
       img.alt = 'دیس‌لایک';
@@ -909,7 +918,6 @@
         $('dislikeBtn').classList.remove('disabled');
       }, REACTION_COOLDOWN);
     } else {
-      // لایک: like1.gif
       const img = document.createElement('img');
       img.src = 'like1.gif';
       img.alt = 'لایک';
@@ -924,7 +932,6 @@
     
     profileEl.appendChild(overlay);
     
-    // حذف بعد از ۳ ثانیه کامل
     setTimeout(() => {
       if (overlay && overlay.parentNode) {
         overlay.classList.remove('show');
@@ -1111,7 +1118,7 @@
   async function createRoom(){
     const rooms=await getRooms();
     if(myRoom(rooms)){showToast('داخل یک لابی هستید','error');return;}
-    if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){showToast('حداکثر ۴ لابی برای هر اکانت','error');return;}
+    if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){showToast('حداکثر  لابی برای هر اکانت','error');return;}
     if(!selectedName){showToast('ابتدا یک نام فعال انتخاب کنید','error');return;}
     const pass=passOn?$('lobbyPassInput').value.trim():null;
     if(passOn&&!pass){showToast('رمز را وارد کنید','error');return;}
@@ -1243,7 +1250,7 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;></span>\'">';
+        inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
       }else if(ph&&ph===me.phone&&(room.ghost||[]).includes(ph)){
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
@@ -1257,9 +1264,9 @@
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
+          <div class="seat-num">${toFa(i)}</div>
           <div class="voice-indicator"></div>
         </div>
-        <div class="seat-num-text">${toFa(i)}</div>
         ${tagLayer}${tag}
       </div>`;
     }
@@ -1557,7 +1564,7 @@
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
     
-    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot"> افزودن بات</button>';
+    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot">🤖 افزودن بات</button>';
     const blocked=room.blocked||[];
     if(blocked.length){
       html+='<div class="row-item" style="margin-top:10px"><b style="color:#ffd700">مسدودها:</b>';
