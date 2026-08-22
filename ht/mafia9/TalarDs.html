@@ -144,7 +144,6 @@
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
-  .seat-num{position:absolute;bottom:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);border:2px solid #0d2135;color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:3;}
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
@@ -157,13 +156,13 @@
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* نشانگر صدا: بیرون از دایره پروفایل - بالا سمت چپ */
+  /* نشانگر صدا: کاملاً بیرون از دایره - بالا سمت راست */
   .voice-indicator {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    top: -6px;
-    left: -6px;
+    width: 34px;
+    height: 34px;
+    top: -10px;
+    right: -10px;
     display: none;
     align-items: center;
     justify-content: center;
@@ -182,28 +181,30 @@
     background: linear-gradient(135deg, #4a9eff 0%, #00ffff 100%);
     border-radius: 50%;
     animation: voiceWave 0.8s ease-in-out infinite;
-    box-shadow: 0 0 10px rgba(74,158,255,0.8);
+    box-shadow: 0 0 12px rgba(74,158,255,0.9);
     border: 2px solid #0d2135;
   }
   
   .voice-indicator::after {
     content: '';
-    font-size: 14px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
     z-index: 2;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
     animation: voicePulse 0.8s ease-in-out infinite;
   }
   
   @keyframes voiceWave {
-    0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 10px rgba(74,158,255,0.8); }
-    50% { transform: scale(1.4); opacity: 0.7; box-shadow: 0 0 18px rgba(74,158,255,1), 0 0 28px rgba(0,255,255,0.5); }
+    0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 12px rgba(74,158,255,0.9); }
+    50% { transform: scale(1.5); opacity: 0.6; box-shadow: 0 0 22px rgba(74,158,255,1), 0 0 32px rgba(0,255,255,0.6); }
   }
   @keyframes voicePulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+    50% { transform: scale(1.2); }
   }
 
-  /* نوار پایین جمع و جور */
   .room-bottombar{
     position:absolute;bottom:0;left:0;right:0;
     height:65px;
@@ -257,7 +258,6 @@
     height: 36px;
   }
 
-  /* آیکون چت کوچک */
   .chat-ico {
     width: 20px;
     height: 20px;
@@ -285,7 +285,6 @@
     box-shadow: 0 3px 0 #2a5a8a, 0 6px 0 #2a5a8a;
   }
 
-  /* انیمیشن ری‌اکشن: روی پروفایل (نه وسط صفحه) */
   .reaction-overlay {
     position: absolute;
     top: 50%;
@@ -386,7 +385,6 @@
 
   .pending-banner{background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;padding:8px 14px;text-align:center;font-size:12px;font-weight:900;flex-shrink:0;}
 
-  /* استایل‌های چت */
   .chat-menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.85); z-index: 300; display: none; flex-direction: column; }
   .chat-menu-overlay.show { display: flex; }
   .chat-header { padding: 15px; background: linear-gradient(180deg, #2a5a8a, #1a3a5f); border-bottom: 2px solid #3f8fd4; display: flex; align-items: center; justify-content: space-between; }
@@ -434,7 +432,7 @@
 
   <div class="view" id="viewRoom">
     <div class="room-topbar">
-      <button class="back-btn" id="backRoomBtn">❯</button>
+      <button class="back-btn" id="backRoomBtn"></button>
       <div class="home-btn" id="homeRoomBtn"><div class="home-ico"></div></div>
       <div class="room-top-name" id="roomNameTop">-</div>
       <div class="tool-btn tool-ghost" id="btnGhost"><div class="ghost-ico"></div></div>
@@ -447,10 +445,8 @@
       <div class="seats-cols"><div class="seat-col" id="colLeft"></div><div class="seat-col" id="colRight"></div></div>
     </div>
     
-    <!-- نوار پایین -->
     <div class="room-bottombar">
-      <div class="bottom-left" id="bottomLeftArea">
-      </div>
+      <div class="bottom-left" id="bottomLeftArea"></div>
       <div class="bottom-right">
         <button class="action-btn small" id="dislikeBtn"><img src="dislike2.png" alt="دیس‌لایک"></button>
         <button class="action-btn small" id="likeBtn"><img src="like2.png" alt="لایک"></button>
@@ -482,7 +478,6 @@
     </div>
   </div>
 
-  <!-- مودال‌ها -->
   <div class="overlay" id="createModal"><div class="modal">
     <div class="close-x" id="closeCreateBtn"></div>
     <div class="modal-title-y">ایجاد لابی مافیاسان</div>
@@ -514,7 +509,7 @@
   </div></div>
 
   <div class="overlay" id="userMenuModal"><div class="modal">
-    <div class="close-x" id="closeUserMenu">✕</div>
+    <div class="close-x" id="closeUserMenu"></div>
     <div class="modal-title-y" id="userMenuTitle">کاربر</div>
     <div id="userMenuBody"></div>
   </div></div>
@@ -538,7 +533,7 @@
   </div></div>
 
   <div class="overlay" id="managerModal"><div class="modal">
-    <div class="close-x" id="closeManager"></div>
+    <div class="close-x" id="closeManager">✕</div>
     <div class="modal-title-y">مدیریت لابی</div>
     <div id="managerBody"></div>
   </div></div>
@@ -709,7 +704,7 @@
   const DURATIONS=[
     {v:'1h',l:'۱ ساعت',ms:3600000},
     {v:'1d',l:'۱ روز',ms:86400000},
-    {v:'7d',l:' روز',ms:604800000},
+    {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
@@ -726,12 +721,12 @@
   function getPanelTabs(rank){
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
-      tabs.push({id:'users',label:'کاربران'});
+      tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'reports',label:'📋 گزارش‌ها'});
       tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
       tabs.push({id:'names',label:'📝 تأیید نام'});
-      tabs.push({id:'users',label:'👥 کاربران'});
+      tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'lobbies',label:'🏛 لابی‌ها'});
       tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
       tabs.push({id:'reports',label:' گزارش‌ها'});
@@ -893,21 +888,19 @@
     overlay.className = 'reaction-overlay show';
     
     if (type === 'dislike') {
-      const video = document.createElement('video');
-      video.src = 'like3.gif';
-      video.autoplay = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.loop = true;
-      overlay.appendChild(video);
+      // دیس‌لایک: like3.gif
+      const img = document.createElement('img');
+      img.src = 'like3.gif';
+      overlay.appendChild(img);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
       setTimeout(() => {
         $('dislikeBtn').classList.remove('disabled');
       }, REACTION_COOLDOWN);
     } else {
+      // لایک: like2.gif (دست نخورده)
       const img = document.createElement('img');
-      img.src = 'like3.gif';
+      img.src = 'like2.gif';
       overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
@@ -918,7 +911,6 @@
     
     profileEl.appendChild(overlay);
     
-    // حذف بعد از ۳ ثانیه کامل
     setTimeout(() => {
       if (overlay && overlay.parentNode) {
         overlay.classList.remove('show');
@@ -1053,8 +1045,8 @@
       const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
       
       const tk=getRoleTick(r.creatorRank);
-      const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی"></button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از </div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
@@ -1209,7 +1201,7 @@
       const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
       let inner='';
       if(u) inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
-      const labelHtml='ناظر '+(i===1?'':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
+      const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
           ${inner}
@@ -1245,12 +1237,12 @@
         inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.style.display=\'none\'">';
         tag='<div class="seat-name normal-tag">روح (شما)</div>';
       }else if(bot){
-        inner='<span class="bot-face"></span>';cls+=' filled glow-green';
+        inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
-          ${inner}<div class="seat-num">${toFa(i)}</div>
+          ${inner}
           <div class="voice-indicator"></div>
         </div>
         ${tagLayer}${tag}
@@ -1370,7 +1362,7 @@
       if(room.status === 'pending'){showToast('لابی هنوز تأیید نشده','error');return;}
       const humans=Object.values(room.seats||{}).filter(Boolean);
       const bots=Object.keys(room.bots||{}).length;
-      if(humans.length+bots<MAX_PLAYERS){showToast('لابی باید ۱۰ نفر کامل باشد','error');return;}
+      if(humans.length+bots<MAX_PLAYERS){showToast('لابی باید ۰ نفر کامل باشد','error');return;}
       for(const p of humans){if(p!==room.managerPhone&&!((room.ready||{})[p]===true)){showToast('همه باید آماده باشند','error');return;}}
       room.status='playing';
     });
@@ -1439,11 +1431,11 @@
         html+='<button class="menu-item-b mi-red" id="umKick">اخراج از لابی</button>';
         html+=((room.blocked||[]).includes(t.phone))?'<button class="menu-item-b mi-green" id="umUnblock">رفع مسدودی</button>':'<button class="menu-item-b mi-red" id="umBlock">مسدود کردن</button>';
       }else{
-        html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">⚠️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
+        html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
       }
       if(isManager&&!targetStaff)html+='<button class="menu-item-b mi-purple" id="umTransfer">انتقال مالکیت</button>';
       html+='<button class="menu-item-b mi-blue" id="umSuper1">دادن ناظر ۱</button>';
-      html+='<button class="menu-item-b mi-blue" id="umSuper2">دادن ناظر ۲</button>';
+      html+='<button class="menu-item-b mi-blue" id="umSuper2">دادن ناظر </button>';
       let inSuper=false;for(const p of Object.values(room.supers||{}))if(p===t.phone)inSuper=true;
       if(inSuper)html+='<button class="menu-item-b mi-red" id="umUnsuper">درآوردن از ناظری</button>';
     }
@@ -1489,7 +1481,7 @@
       const old=r.supers[n];r.supers[n]=t.phone;
       if(old&&old!==t.phone){let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){free=x;break;}}if(free)r.seats[free]=old;}
     });
-    showToast('ناظر '+(n===1?'':'۲')+' شد');refreshRoom();
+    showToast('ناظر '+(n===1?'۱':'۲')+' شد');refreshRoom();
   }
 
   async function openProfile(t){
@@ -1545,12 +1537,12 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
     
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۰/۱۰)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
     } else {
-      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱) - همه باید آماده باشند</button>';
+      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
     
-    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot">🤖 افزودن بات</button>';
+    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot"> افزودن بات</button>';
     const blocked=room.blocked||[];
     if(blocked.length){
       html+='<div class="row-item" style="margin-top:10px"><b style="color:#ffd700">مسدودها:</b>';
@@ -1787,7 +1779,7 @@
       if(!pending.length){ body.innerHTML = '<div class="empty-list">درخواستی وجود ندارد</div>'; return; }
       let html = '';
       pending.forEach(r => {
-        html += '<div class="row-item"><b>'+esc(r.creatorName)+'</b> ('+esc(r.creatorRank)+') لابی: <b style="color:#ffd700">'+esc(r.name)+'</b>'+(r.password?' 🔒 رمزدار':'')+'<div class="acts"><button style="background:#3f8f3f" data-apl="'+r.id+'">✅ تأیید و فعال‌سازی</button><button style="background:#d32f2f" data-rjl="'+r.id+'">❌ رد و حذف</button></div></div>';
+        html += '<div class="row-item"><b>'+esc(r.creatorName)+'</b> ('+esc(r.creatorRank)+') لابی: <b style="color:#ffd700">'+esc(r.name)+'</b>'+(r.password?'  رمزدار':'')+'<div class="acts"><button style="background:#3f8f3f" data-apl="'+r.id+'">✅ تأیید و فعال‌سازی</button><button style="background:#d32f2f" data-rjl="'+r.id+'">❌ رد و حذف</button></div></div>';
       });
       body.innerHTML = html;
       body.querySelectorAll('[data-apl]').forEach(b => {
