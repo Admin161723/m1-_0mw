@@ -804,6 +804,7 @@
     return html;
   }
 
+  // Voice functions with proper error handling
   async function initVoice() {
     if (agoraClient || !window.AgoraRTC || !currentRoomId || !me) return;
     try {
@@ -845,26 +846,34 @@
         showToast("کتابخانه صوتی بارگذاری نشده است", "error");
         return;
       }
+      
+      // اگر کلاینت وجود ندارد، آن را مقداردهی کن
       if (!agoraClient) {
         await initVoice();
-        if (!agoraClient) { 
-          showToast("لطفاً چند لحظه صبر کنید", "error"); 
-          return; 
+        if (!agoraClient) {
+          showToast("امکان اتصال به صدا وجود ندارد", "error");
+          return;
         }
       }
+      
+      // اگر ترک صوتی وجود ندارد، بساز
       if (!localAudioTrack) {
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         await agoraClient.publish(localAudioTrack);
         isMicOn = true;
         showToast("میکروفون روشن شد");
-      } else {
-        isMicOn = !isMicOn;
-        await localAudioTrack.setMuted(!isMicOn);
-        showToast(isMicOn ? "میکروفون روشن شد" : "میکروفون خاموش شد");
+        updateMicUI();
+        return;
       }
+      
+      // اگر ترک وجود دارد، mute/unmute کن
+      isMicOn = !isMicOn;
+      await localAudioTrack.setMuted(!isMicOn);
+      showToast(isMicOn ? "میکروفون روشن شد" : "میکروفون خاموش شد");
       updateMicUI();
+      
     } catch (err) {
-      console.error("Mic error:", err);
+      console.error("Mic toggle error:", err);
       if (err.message && err.message.includes("NotAllowedError")) {
         showToast("لطفاً دسترسی میکروفون را در مرورگر اجازه دهید", "error");
       } else if (err.message && err.message.includes("NotFoundError")) {
@@ -872,12 +881,13 @@
       } else {
         showToast("خطا در فعال‌سازی میکروفون: " + err.message, "error");
       }
+      // در صورت خطا، وضعیت را ریست کن
       isMicOn = false;
-      updateMicUI();
       if (localAudioTrack) {
         try { localAudioTrack.close(); } catch(e) {}
         localAudioTrack = null;
       }
+      updateMicUI();
     }
   }
 
