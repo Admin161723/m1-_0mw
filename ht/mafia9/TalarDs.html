@@ -157,21 +157,23 @@
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* نشانگر صدا: کنار دایره پروفایل (مثل عکس ارسالی) */
+  /* نشانگر صدا: وسط دایره پروفایل */
   .voice-indicator {
     position: absolute;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     top: 50%;
-    right: -14px;
-    transform: translateY(-50%);
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 30;
   }
   
-  .voice-indicator.speaking { display: flex !important; }
+  .voice-indicator.speaking { 
+    display: flex !important; 
+  }
   
   .voice-indicator::before {
     content: '';
@@ -185,8 +187,8 @@
   }
   
   .voice-indicator::after {
-    content: '';
-    font-size: 12px;
+    content: '🎤';
+    font-size: 14px;
     z-index: 2;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
     animation: voicePulse 0.8s ease-in-out infinite;
@@ -283,14 +285,14 @@
     box-shadow: 0 3px 0 #2a5a8a, 0 6px 0 #2a5a8a;
   }
 
-  /* انیمیشن ری‌اکشن: دقیقاً وسط پروفایل */
+  /* انیمیشن ری‌اکشن: دقیقاً وسط پروفایل - ۳ ثانیه کامل */
   .reaction-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     display: none;
     align-items: center;
@@ -301,16 +303,16 @@
   }
   .reaction-overlay.show { display: flex; }
   .reaction-overlay img, .reaction-overlay video {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     object-fit: contain;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
   }
   @keyframes reactionFade {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
   }
 
   .ready-btn{
@@ -488,7 +490,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن + ۲ ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -503,7 +505,7 @@
     <div class="close-x" id="closeEditBtn">✕</div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
     <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
-    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
+    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه:  سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
@@ -682,7 +684,7 @@
   let overlayShown=false;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۲۳۴۵۶۷۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function showToast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t==='error'?' error':'');setTimeout(()=>e.classList.remove('show'),2600);}
   const isStaff=r=>r&&r!=='کاربر';
@@ -702,13 +704,13 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:'۱ ساعت',ms:3600000},
-    {v:'1d',l:'۱ روز',ms:86400000},
+    {v:'1h',l:' ساعت',ms:3600000},
+    {v:'1d',l:' روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
-    {v:'3m',l:'۳ ماه',ms:7776000000},
-    {v:'8m',l:' ماه',ms:20736000000},
+    {v:'3m',l:' ماه',ms:7776000000},
+    {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -721,12 +723,12 @@
   function getPanelTabs(rank){
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
-      tabs.push({id:'users',label:' کاربران'});
+      tabs.push({id:'users',label:'کاربران'});
       tabs.push({id:'reports',label:'📋 گزارش‌ها'});
       tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
       tabs.push({id:'names',label:'📝 تأیید نام'});
-      tabs.push({id:'users',label:'👥 کاربران'});
+      tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'lobbies',label:'🏛 لابی‌ها'});
       tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
       tabs.push({id:'reports',label:' گزارش‌ها'});
@@ -912,8 +914,14 @@
     
     profileEl.appendChild(overlay);
     
+    // حذف بعد از ۳ ثانیه کامل
     setTimeout(() => {
-      if (overlay.parentNode) overlay.remove();
+      if (overlay && overlay.parentNode) {
+        overlay.classList.remove('show');
+        setTimeout(() => {
+          if (overlay.parentNode) overlay.remove();
+        }, 300);
+      }
     }, 3000);
     
     return true;
@@ -1037,7 +1045,7 @@
     const myLevel=RANK_LEVEL[me.rank]||0;
     const canDelete=isCreator||myLevel>=RANK_LEVEL['گرداننده'];
     rooms.forEach(r=>{
-      const playersCount = Object.keys(r.seats || {}).length + Object.keys(r.bots || {}).length;
+      const playersCount = Object.keys(r.seats || {}).length;
       const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
       
       const tk=getRoleTick(r.creatorRank);
@@ -1081,7 +1089,7 @@
     }
     if(!mySeat(room)){
       let seat=null;
-      for(let i=1;i<=MAX_PLAYERS;i++){if(!room.seats[i]&&!room.bots[i]){seat=i;break;}}
+      for(let i=1;i<=MAX_PLAYERS;i++){if(!room.seats[i]){seat=i;break;}}
       if(!seat){showToast('لابی پر است','error');return;}
       room.seats[seat]=me.phone;
     }
@@ -1106,7 +1114,7 @@
 
     rooms[id]={
       id:id, name:selectedName, managerPhone:me.phone, creatorName:me.name, creatorRank:me.rank,
-      scenario:'mafiasan', password:pass, seats:{1:me.phone}, bots:{}, supers:{}, ready:{},
+      scenario:'mafiasan', password:pass, seats:{1:me.phone}, supers:{}, ready:{},
       ghost:[], blocked:[], kicked:{},
       status: (isStaffUser || isNameApproved) ? 'waiting' : 'pending',
       approvalRequired: !(isStaffUser || isNameApproved),
@@ -1196,7 +1204,7 @@
       const tagLayer = u ? await buildTagLayer(ph,u,groupCache[ph]||null) : '';
       const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
       let inner='';
-      if(u) inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
+      if(u) inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;></span>\'">';
       const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
@@ -1212,7 +1220,7 @@
     document.querySelectorAll('[data-super]').forEach(el=>{el.onclick=()=>tapSuper(+el.dataset.super);});
 
     async function buildSeat(i){
-      const ph=room.seats[i],bot=room.bots[i];
+      const ph=room.seats[i];
       const ghostHidden=ph&&(room.ghost||[]).includes(ph)&&ph!==me.phone;
       let inner='',cls='seat-circle',tag='',tagLayer='',dp='';
       if(ph&&!ghostHidden){
@@ -1225,16 +1233,13 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
+        inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;></span>\'">';
       }else if(ph&&ph===me.phone&&(room.ghost||[]).includes(ph)){
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
         inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.style.display=\'none\'">';
         tag='<div class="seat-name normal-tag">روح (شما)</div>';
-      }else if(bot){
-        inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
-        tag='<div class="seat-name bot-tag">بات</div>';
       }
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
@@ -1286,17 +1291,11 @@
 
   async function tapSeat(i){
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
-    const ph=room.seats[i],bot=room.bots[i],my=mySeat(room);
+    const ph=room.seats[i],my=mySeat(room);
     const isManager=room.managerPhone===me.phone;
     const isCreator=me.phone===CREATOR_PHONE;
     const myLevel=RANK_LEVEL[me.rank]||0;
 
-    if(bot){
-      if(isManager||isCreator||myLevel>=RANK_LEVEL['گرداننده']){
-        if(confirm('بات حذف شود؟')){delete room.bots[i];await saveRooms(rooms);showToast('بات حذف شد');refreshRoom();}
-      }
-      return;
-    }
     if(my){
       if(ph) openUserMenu({phone:ph});
       else showToast('شما در لابی هستید و نمی‌توانید جابجا شوید','error');
@@ -1323,7 +1322,7 @@
       if(ph){
         if(isManager && ph===me.phone){
           delete room.supers[i];
-          let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!room.seats[x]&&!room.bots[x]){free=x;break;}}
+          let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!room.seats[x]){free=x;break;}}
           if(free)room.seats[free]=me.phone;
           await saveRooms(rooms);
           showToast('از ناظری خارج شدید');
@@ -1357,8 +1356,7 @@
     await updateRoom(room=>{
       if(room.status === 'pending'){showToast('لابی هنوز تأیید نشده','error');return;}
       const humans=Object.values(room.seats||{}).filter(Boolean);
-      const bots=Object.keys(room.bots||{}).length;
-      if(humans.length+bots<MAX_PLAYERS){showToast('لابی باید ۱۰ نفر کامل باشد','error');return;}
+      if(humans.length<MAX_PLAYERS){showToast('لابی باید ۱۰ نفر کامل باشد','error');return;}
       for(const p of humans){if(p!==room.managerPhone&&!((room.ready||{})[p]===true)){showToast('همه باید آماده باشند','error');return;}}
       room.status='playing';
     });
@@ -1385,7 +1383,7 @@
         await saveRooms(rooms);
         setTimeout(async()=>{const r2=await getRooms();delete r2[currentRoomId];await redisSet(ROOMS_KEY,r2);},2000);
       } else {
-        const left=Object.keys(room.seats||{}).length+Object.keys(room.bots||{}).length+Object.values(room.supers||{}).filter(Boolean).length;
+        const left=Object.keys(room.seats||{}).length+Object.values(room.supers||{}).filter(Boolean).length;
         if(left===0){
           room.status='deleted'; room.deleteReason='لابی خالی شد';
           await saveRooms(rooms);
@@ -1402,7 +1400,7 @@
     menuTarget=t;
     const allUsers=await getUsersCached();
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
-    const u=t.bot?{name:'بات'}:(allUsers[t.phone]||{name:'کاربر',rank:'کاربر'});
+    const u=allUsers[t.phone]||{name:'کاربر',rank:'کاربر'};
     $('userMenuTitle').textContent=esc(u.name||'کاربر');
     const isManager=room.managerPhone===me.phone;
     const isCreator=me.phone===CREATOR_PHONE;
@@ -1413,16 +1411,16 @@
     const targetStaff=isStaff(targetRank);
 
     let html='<button class="menu-item-b mi-blue" id="umProfile">پروفایل</button>';
-    if(!t.bot)html+='<button class="menu-item-b mi-gold" id="umReport">گزارش</button>';
+    html+='<button class="menu-item-b mi-gold" id="umReport">گزارش</button>';
 
-    const canBan=myLevel>=RANK_LEVEL['ناظر']&&!t.bot&&t.phone!==me.phone&&targetLevel<myLevel;
+    const canBan=myLevel>=RANK_LEVEL['ناظر']&&t.phone!==me.phone&&targetLevel<myLevel;
     if(canBan){
-      html+='<button class="menu-item-b mi-red" id="umBan">🚫 بن کردن</button>';
+      html+='<button class="menu-item-b mi-red" id="umBan"> بن کردن</button>';
       const ban=await getBan(t.phone);
       if(ban)html+='<button class="menu-item-b mi-green" id="umUnban">✅ رفع بن</button>';
     }
 
-    if((isManager||isCreator)&&!t.bot&&t.phone!==me.phone){
+    if((isManager||isCreator)&&t.phone!==me.phone){
       if(!targetStaff){
         html+='<button class="menu-item-b mi-red" id="umKick">اخراج از لابی</button>';
         html+=((room.blocked||[]).includes(t.phone))?'<button class="menu-item-b mi-green" id="umUnblock">رفع مسدودی</button>':'<button class="menu-item-b mi-red" id="umBlock">مسدود کردن</button>';
@@ -1467,7 +1465,7 @@
     };
     const s1=$('umSuper1');if(s1)s1.onclick=async()=>{closeUm();await setSuper(t,1);};
     const s2=$('umSuper2');if(s2)s2.onclick=async()=>{closeUm();await setSuper(t,2);};
-    const us=$('umUnsuper');if(us)us.onclick=async()=>{closeUm();await updateRoom(r=>{for(const[i,p]of Object.entries(r.supers)){if(p===t.phone){delete r.supers[i];let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){free=x;break;}}if(free)r.seats[free]=t.phone;}}});showToast('از ناظری خارج شد');};
+    const us=$('umUnsuper');if(us)us.onclick=async()=>{closeUm();await updateRoom(r=>{for(const[i,p]of Object.entries(r.supers)){if(p===t.phone){delete r.supers[i];let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]){free=x;break;}}if(free)r.seats[free]=t.phone;}}});showToast('از ناظری خارج شد');};
   }
   function closeUm(){$('userMenuModal').classList.remove('active');}
   async function setSuper(t,n){
@@ -1475,7 +1473,7 @@
       for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];
       for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];
       const old=r.supers[n];r.supers[n]=t.phone;
-      if(old&&old!==t.phone){let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){free=x;break;}}if(free)r.seats[free]=old;}
+      if(old&&old!==t.phone){let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]){free=x;break;}}if(free)r.seats[free]=old;}
     });
     showToast('ناظر '+(n===1?'۱':'۲')+' شد');refreshRoom();
   }
@@ -1522,14 +1520,12 @@
     const allUsers=await getUsersCached();
     const isCreator=me.phone===CREATOR_PHONE;
     const myLevel=RANK_LEVEL[me.rank]||0;
-    const canAddBot=isCreator||myLevel>=RANK_LEVEL['پشتیبانی'];
     const canDelete=isCreator||myLevel>=RANK_LEVEL['گرداننده'];
     
     let html='';
     
     const humans=Object.values(room.seats||{}).filter(Boolean);
-    const bots=Object.keys(room.bots||{}).length;
-    const total=humans.length+bots;
+    const total=humans.length;
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
     
     if(total >= MAX_PLAYERS && allReady) {
@@ -1538,7 +1534,6 @@
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
     
-    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot"> افزودن بات</button>';
     const blocked=room.blocked||[];
     if(blocked.length){
       html+='<div class="row-item" style="margin-top:10px"><b style="color:#ffd700">مسدودها:</b>';
@@ -1556,11 +1551,6 @@
       $('managerModal').classList.remove('active');
     };
     
-    const addBot=$('mgAddBot');
-    if(addBot)addBot.onclick=async()=>{
-      await updateRoom(r=>{let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){free=x;break;}}if(!free){showToast('جای خالی نیست','error');return;}r.bots[free]={name:'بات'};showToast('بات اضافه شد');});
-      $('managerModal').classList.remove('active');refreshRoom();
-    };
     const delBtn=$('mgDelete');
     if(delBtn)delBtn.onclick=async()=>{
       const reason=prompt('دلیل حذف لابی:');if(reason===null)return;
@@ -1635,7 +1625,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     if(!isCreator&&!isStaffUser){
       const allUsers=await getUsersCached(true);const u=allUsers[me.phone];
-      if(!u||((u.coins||0)<NAME_COST)){showToast('سکه کافی ندارید (۵ سکه لازم است)','error');return;}
+      if(!u||((u.coins||0)<NAME_COST)){showToast('سکه کافی ندارید (۵۰ سکه لازم است)','error');return;}
       u.coins=(u.coins||0)-NAME_COST;allUsers[me.phone]=u;
       await saveUser(me.phone,u);await saveAllUsers(allUsers);usersCache={ts:0,data:{}};
     }else if(isCreator||isStaffUser){
@@ -1722,10 +1712,10 @@
         let html='<div style="color:#7ec3f0;font-size:11px;margin-bottom:8px;">کل کاربران: '+toFa(allEntries.length)+'</div>';
         for(const[p,u]of res){
           const isOnline=activePhones.has(p);
-          const dotClass=isOnline?'on':'off';
+          const dotClass=isOnline?'connected':'off';
           const statusText=isOnline?'آنلاین':'آفلاین';
           const banned=bansCache[p];
-          html+='<div class="row-item"><b>'+esc(u.name||'کاربر')+'</b> <span class="online-dot '+dotClass+'"></span><span style="color:'+(isOnline?'#4CAF50':'#aaa')+';font-size:10px;">'+statusText+'</span><br><span style="direction:ltr;display:inline-block;font-size:10px;">'+esc(u.userCode||'----')+'</span> · <span style="direction:ltr;display:inline-block;font-size:10px;">'+esc(p)+'</span><br>'+esc(u.rank||'کاربر')+(banned?' · <span style="color:#ff8a8a">بن شده</span>':'')+'<div class="acts"><button style="background:#2a7fb8" data-ued="'+p+'">ویرایش</button><button style="background:#d32f2f" data-uban="'+p+'">بن</button>'+(banned?'<button style="background:#3f8f3f" data-uunban="'+p+'">رفع بن</button>':'')+'</div></div>';
+          html+='<div class="row-item"><b>'+esc(u.name||'کاربر')+'</b> <span class="voice-dot '+dotClass+'"></span><span style="color:'+(isOnline?'#4CAF50':'#aaa')+';font-size:10px;">'+statusText+'</span><br><span style="direction:ltr;display:inline-block;font-size:10px;">'+esc(u.userCode||'----')+'</span> · <span style="direction:ltr;display:inline-block;font-size:10px;">'+esc(p)+'</span><br>'+esc(u.rank||'کاربر')+(banned?' · <span style="color:#ff8a8a">بن شده</span>':'')+'<div class="acts"><button style="background:#2a7fb8" data-ued="'+p+'">ویرایش</button><button style="background:#d32f2f" data-uban="'+p+'">بن</button>'+(banned?'<button style="background:#3f8f3f" data-uunban="'+p+'">رفع بن</button>':'')+'</div></div>';
         }
         $('userResults').innerHTML=html||'<div class="empty-list">نتیجه‌ای نیست</div>';
         body.querySelectorAll('[data-ued]').forEach(b=>{b.onclick=()=>openAdminUser(b.dataset.ued);});
