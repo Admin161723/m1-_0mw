@@ -143,7 +143,6 @@
   .seat-circle.glow-red{border:3px solid #f44336;box-shadow:0 0 10px rgba(244,67,54,.6);}
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
-  .bot-face{font-size:28px;}
   .seat-num{position:absolute;bottom:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);border:2px solid #0d2135;color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:3;}
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
@@ -154,17 +153,15 @@
 
   .seat-name{margin-top:2px;font-size:11px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:3px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;}
   .manager-tag{color:#ffd700;}
-  .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* نشانگر صدا: وسط دایره پروفایل */
+  /* نشانگر صدا: بیرون از دایره پروفایل */
   .voice-indicator {
     position: absolute;
-    width: 32px;
-    height: 32px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
+    top: -5px;
+    right: -5px;
     display: none;
     align-items: center;
     justify-content: center;
@@ -188,7 +185,7 @@
   
   .voice-indicator::after {
     content: '🎤';
-    font-size: 14px;
+    font-size: 16px;
     z-index: 2;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
     animation: voicePulse 0.8s ease-in-out infinite;
@@ -285,34 +282,33 @@
     box-shadow: 0 3px 0 #2a5a8a, 0 6px 0 #2a5a8a;
   }
 
-  /* انیمیشن ری‌اکشن: دقیقاً وسط پروفایل - ۳ ثانیه کامل */
+  /* انیمیشن ری‌اکشن: ۳ ثانیه کامل */
   .reaction-overlay {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 1000;
     pointer-events: none;
-    animation: reactionFade 3s ease-out forwards;
   }
-  .reaction-overlay.show { display: flex; }
+  .reaction-overlay.show { display: flex; animation: reactionFade 3s ease-out forwards; }
   .reaction-overlay img, .reaction-overlay video {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
   }
   @keyframes reactionFade {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-    85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    10% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
   }
 
   .ready-btn{
@@ -464,7 +460,7 @@
     <div class="chat-menu-overlay" id="chatMenu">
       <div class="chat-header">
         <h3>چت لابی</h3>
-        <div class="chat-close" id="closeChat">✕</div>
+        <div class="chat-close" id="closeChat"></div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-area">
@@ -490,7 +486,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -505,7 +501,7 @@
     <div class="close-x" id="closeEditBtn">✕</div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
     <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
-    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه:  سکه</div>
+    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
@@ -704,12 +700,12 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:' ساعت',ms:3600000},
-    {v:'1d',l:' روز',ms:86400000},
+    {v:'1h',l:'۱ ساعت',ms:3600000},
+    {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
-    {v:'3m',l:' ماه',ms:7776000000},
+    {v:'3m',l:'۳ ماه',ms:7776000000},
     {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
@@ -724,11 +720,11 @@
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
       tabs.push({id:'users',label:'کاربران'});
-      tabs.push({id:'reports',label:'📋 گزارش‌ها'});
+      tabs.push({id:'reports',label:' گزارش‌ها'});
       tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
-      tabs.push({id:'names',label:'📝 تأیید نام'});
-      tabs.push({id:'users',label:' کاربران'});
+      tabs.push({id:'names',label:' تأیید نام'});
+      tabs.push({id:'users',label:'👥 کاربران'});
       tabs.push({id:'lobbies',label:'🏛 لابی‌ها'});
       tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
       tabs.push({id:'reports',label:' گزارش‌ها'});
@@ -879,11 +875,8 @@
       return false;
     }
     
-    const targetPhone = me.phone; 
-    const profileEl = document.querySelector(`[data-phone="${targetPhone}"] .super-circle, [data-phone="${targetPhone}"].seat-circle`);
-    if (!profileEl) return false;
-    
-    const existing = profileEl.querySelector('.reaction-overlay');
+    // حذف overlayهای قبلی
+    const existing = document.querySelector('.reaction-overlay');
     if (existing) existing.remove();
     
     const overlay = document.createElement('div');
@@ -912,7 +905,7 @@
       }, REACTION_COOLDOWN);
     }
     
-    profileEl.appendChild(overlay);
+    document.body.appendChild(overlay);
     
     // حذف بعد از ۳ ثانیه کامل
     setTimeout(() => {
@@ -1045,6 +1038,7 @@
     const myLevel=RANK_LEVEL[me.rank]||0;
     const canDelete=isCreator||myLevel>=RANK_LEVEL['گرداننده'];
     rooms.forEach(r=>{
+      // شمارش فقط بازیکنان واقعی (بدون بات)
       const playersCount = Object.keys(r.seats || {}).length;
       const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
       
@@ -1415,7 +1409,7 @@
 
     const canBan=myLevel>=RANK_LEVEL['ناظر']&&t.phone!==me.phone&&targetLevel<myLevel;
     if(canBan){
-      html+='<button class="menu-item-b mi-red" id="umBan"> بن کردن</button>';
+      html+='<button class="menu-item-b mi-red" id="umBan">🚫 بن کردن</button>';
       const ban=await getBan(t.phone);
       if(ban)html+='<button class="menu-item-b mi-green" id="umUnban">✅ رفع بن</button>';
     }
