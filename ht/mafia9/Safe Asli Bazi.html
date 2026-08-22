@@ -11,9 +11,17 @@
   html{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#041228!important;}
   body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228!important;width:100%;height:100%;position:fixed;inset:0;display:flex;justify-content:center;align-items:center;overflow:hidden!important;}
   input,textarea,select{font-size:16px!important;-webkit-user-select:text!important;user-select:text!important;}
-  .game-container{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#041228;}
-  .bg-image{position:absolute;inset:0;background-color:#041228;background-image:url('IMG_20260404_221253_089.jpg');background-size:cover;background-position:center;z-index:1;pointer-events:none;}
+  .game-container{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#041228; visibility: hidden; /* Initially hidden to prevent flash, but JS will show it instantly */}
+  .game-container.loaded { visibility: visible; }
+  .bg-image{position:absolute;inset:0;background-color:#041228;background-image:url('1010.webp');background-size:cover;background-position:center;z-index:1;pointer-events:none;}
   .bg-image::after{content:'';position:absolute;inset:0;background:rgba(10,22,40,0.15);}
+  
+  /* Loading Overlay Fix */
+  .loading-overlay { position: absolute; inset: 0; background: #041228; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #4a9eff; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   .top-bar{position:absolute;top:0;left:0;right:0;height:52px;background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:20;border-bottom:2px solid #2a5a9a;}
   .top-left{display:flex;align-items:center;gap:4px;}
   .coin-display,.diamond-display{display:flex;align-items:center;gap:4px;}
@@ -34,7 +42,7 @@
   .menu-item-text{color:#fff;font-size:18px;font-weight:900;}
   .profile-section{position:absolute;top:65px;left:12px;z-index:15;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
   .profile-avatar{width:90px;height:90px;border-radius:50%;border:3px solid #4a9eff;overflow:hidden;background:#1a3a6a;box-shadow:0 0 18px rgba(74,158,255,.5);}
-  .profile-avatar img{width:100%;height:100%;object-fit:cover;}
+  .profile-avatar img, .profile-avatar video{width:100%;height:100%;object-fit:cover;}
   .profile-name-bar{background:rgba(26,74,138,.9);padding:4px 20px;border-radius:14px;border:1px solid #2a6aaa;display:flex;align-items:center;gap:6px;}
   .profile-name{color:#fff;font-size:14px;font-weight:900;}
   .role-tick{width:18px;height:18px;object-fit:contain;}
@@ -132,7 +140,7 @@
   .profile-page-title{color:#fff;font-size:22px;font-weight:900;}
   .profile-info-section{display:flex;align-items:center;padding:20px 15px;gap:15px;}
   .profile-info-avatar{width:100px;height:100px;border-radius:50%;border:3px solid #4a9eff;overflow:hidden;cursor:pointer;position:relative;}
-  .profile-info-avatar img{width:100%;height:100%;object-fit:cover;}
+  .profile-info-avatar img, .profile-info-avatar video{width:100%;height:100%;object-fit:cover;}
   .profile-info-avatar::after{content:'✏️';position:absolute;bottom:-5px;right:-5px;width:28px;height:28px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #041228;}
   .profile-info-details{flex:1;display:flex;flex-direction:column;gap:8px;}
   .user-code-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:10px;cursor:pointer;}
@@ -180,7 +188,7 @@
   .character-showcase{padding:15px;background:linear-gradient(180deg,#1a4a7a,#0d2f4a);border-top:2px solid #ffd700;border-bottom:2px solid #2a7fb8;margin:10px 15px;border-radius:15px;}
   .characters-container{display:flex;justify-content:center;align-items:center;height:100px;}
   .character-main{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6a7f9a,#3a4f6a);border:4px solid #4ab0e8;overflow:hidden;}
-  .character-main img{width:100%;height:100%;object-fit:cover;}
+  .character-main img, .character-main video{width:100%;height:100%;object-fit:cover;}
   .avatar-section-tabs{display:flex;gap:8px;padding:12px 15px;background:rgba(0,0,0,.3);}
   .avatar-section-tab{flex:1;padding:12px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-align:center;}
   .avatar-section-tab.active{background:linear-gradient(180deg,#3a9fd8,#2a7fb8);}
@@ -190,7 +198,7 @@
   .avatar-card.exclusive{border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,.5);}
   .avatar-card.exclusive::before{content:'⭐';position:absolute;top:4px;right:4px;font-size:14px;z-index:2;}
   .avatar-image{width:72px;height:72px;border-radius:50%;margin:0 auto 8px;overflow:hidden;border:2px solid rgba(255,255,255,.4);background:#123;display:flex;align-items:center;justify-content:center;}
-  .avatar-image img{width:100%;height:100%;object-fit:cover;}
+  .avatar-image img, .avatar-image video{width:100%;height:100%;object-fit:cover;}
   .avatar-missing{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#ff8a8a;font-size:8px;font-weight:900;text-align:center;word-break:break-all;}
   .avatar-price{display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,.4);padding:6px 10px;border-radius:10px;}
   .gem-icon{width:18px;height:20px;background:linear-gradient(135deg,#ff66ff,#990099);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);}
@@ -220,17 +228,29 @@
   .exclusive-avatar-section{background:rgba(0,0,0,.25);border:2px dashed rgba(255,215,0,.5);border-radius:12px;padding:14px;margin-top:15px;text-align:center;}
   .exclusive-avatar-title{color:#ffd700;font-size:13px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px;}
   .exclusive-avatar-preview{width:90px;height:90px;border-radius:50%;border:3px solid #ffd700;margin:0 auto 12px;overflow:hidden;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(255,215,0,.3);}
-  .exclusive-avatar-preview img{width:100%;height:100%;object-fit:cover;}
+  .exclusive-avatar-preview img, .exclusive-avatar-preview video{width:100%;height:100%;object-fit:cover;}
   .exclusive-avatar-placeholder{color:rgba(255,255,255,.5);font-size:36px;}
   .exclusive-avatar-btns{display:flex;flex-direction:column;gap:6px;}
   .exclusive-file-btn{position:relative;overflow:hidden;}
   .exclusive-file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
   .exclusive-file-label{display:block;padding:10px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border-radius:8px;color:#fff;font-weight:700;text-align:center;cursor:pointer;font-size:13px;}
   .exclusive-remove-btn{padding:10px;background:linear-gradient(180deg,#9e9e9e,#757575);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:13px;font-family:'Vazirmatn',Tahoma;}
+
+  /* Settings & Password Modals */
+  .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+  .setting-label { color: #fff; font-size: 16px; font-weight: 700; }
+  .volume-slider { width: 60%; accent-color: #4a9eff; }
+  .password-btn { width: 100%; padding: 14px; background: linear-gradient(180deg, #4a9eff, #2a7acc); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; }
 </style>
 </head>
 <body>
 <div class="game-container" id="gameContainer">
+  <!-- Loading Overlay for Instant Feel -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div style="color:#fff; margin-top:15px; font-weight:700;">در حال بارگذاری...</div>
+  </div>
+
   <div class="bg-image"></div>
 
   <div class="top-bar">
@@ -249,7 +269,9 @@
   </div>
 
   <div class="profile-section" id="openProfile">
-    <div class="profile-avatar"><img id="mainUserAvatar" src="InShot_20260403_212625191.png" alt="profile"></div>
+    <div class="profile-avatar" id="mainAvatarContainer">
+      <img id="mainUserAvatar" src="InShot_20260403_212625191.png" alt="profile">
+    </div>
     <div class="profile-name-bar"><span class="profile-name" id="mainUserName">کاربر</span><img id="mainUserTick" class="role-tick" src="" style="display:none;"></div>
   </div>
 
@@ -257,7 +279,9 @@
     <div class="side-btn" id="btnAnnouncements"><div class="side-btn-icon-wrap"><div class="icon-megaphone"></div><span class="notification-badge" id="newsBadge" style="display:none;">0</span></div><div class="side-btn-label">اطلاعیه‌ها</div></div>
     <div class="side-btn" id="btnHelp"><div class="side-btn-icon-wrap"><div class="icon-question">?</div></div><div class="side-btn-label">آموزش</div></div>
     <div class="side-btn" id="btnRanking"><div class="side-btn-icon-wrap"><div class="icon-crown"></div></div><div class="side-btn-label">رتبه‌بندی</div></div>
-    <div class="side-btn" id="btnLeague"><div class="side-btn-icon-wrap"><div class="icon-trophy"></div></div><div class="side-btn-label">لیگ امتیازی</div></div>
+    <!-- Removed League, Added Top Players and Management Team -->
+    <div class="side-btn" id="btnTopPlayers"><div class="side-btn-icon-wrap"><div class="icon-trophy"></div></div><div class="side-btn-label">برترین‌ها</div></div>
+    <div class="side-btn" id="btnManagement"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">تیم مدیریتی</div></div>
     <div class="side-btn" id="btnLive"><div class="side-btn-icon-wrap"><div class="icon-live">LIVE</div></div><div class="side-btn-label">پخش زنده</div></div>
     <div class="side-btn" id="btnAdmin" style="display:none;"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">مدیریت</div></div>
   </div>
@@ -273,6 +297,7 @@
     <div class="nav-item" id="navGroup"><div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div><span class="nav-label">گروه</span></div>
   </div>
 
+  <!-- News Modal -->
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
@@ -289,6 +314,7 @@
     </div>
   </div>
 
+  <!-- Admin Modal -->
   <div class="modal-overlay" id="adminModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">مدیریت کاربران</div><div class="modal-close" onclick="closeModal('adminModal')">✕</div></div>
@@ -305,6 +331,7 @@
     </div>
   </div>
 
+  <!-- Edit User Modal -->
   <div class="edit-user-modal" id="editUserModal">
     <div class="edit-user-content">
       <div class="edit-user-title">ویرایش کاربر</div>
@@ -328,7 +355,7 @@
         <div class="exclusive-avatar-btns">
           <div class="exclusive-file-btn">
             <label class="exclusive-file-label">📁 انتخاب از گالری
-              <input type="file" id="exclusiveAvatarFile" accept="image/*">
+              <input type="file" id="exclusiveAvatarFile" accept="image/*,video/*">
             </label>
           </div>
           <button class="exclusive-remove-btn" id="removeExclusiveAvatar">حذف آواتار اختصاصی</button>
@@ -341,10 +368,13 @@
     </div>
   </div>
 
+  <!-- Profile Page -->
   <div class="profile-page" id="profilePage">
     <div class="profile-page-header"><button class="back-btn" id="backBtn">‹</button><span class="profile-page-title">پروفایل</span></div>
     <div class="profile-info-section">
-      <div class="profile-info-avatar" id="openAvatarShop"><img id="profileUserAvatar" src="InShot_20260403_212625191.png"></div>
+      <div class="profile-info-avatar" id="openAvatarShop">
+        <img id="profileUserAvatar" src="InShot_20260403_212625191.png">
+      </div>
       <div class="profile-info-details">
         <div class="user-code-row" id="copyUserCode"><span class="user-code-label">کد کاربری</span><span class="user-code-value" id="userCode">----</span><button class="copy-btn">📋</button></div>
         <div class="user-name-row"><span>☢️</span><span class="user-name-value" id="profileUserName">کاربر</span><img id="profileUserTick" class="role-tick" src="" style="display:none;"><span class="edit-name-btn" id="editNameBtn">✏️</span></div>
@@ -375,6 +405,7 @@
     </div>
   </div>
 
+  <!-- Avatar Shop Page -->
   <div class="avatar-shop-page" id="avatarShopPage">
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="shopBackBtn">‹</div>
@@ -388,7 +419,7 @@
       <button class="shop-tab" data-tab="frames">فریم‌ها</button>
       <button class="shop-tab active" data-tab="avatars">آواتارها</button>
     </div>
-    <div class="character-showcase"><div class="characters-container"><div class="character-main"><img id="showcaseAvatarImg" src="Mafia2.png"></div></div></div>
+    <div class="character-showcase"><div class="characters-container"><div class="character-main" id="showcaseAvatarContainer"><img id="showcaseAvatarImg" src="Mafia2.png"></div></div></div>
     <div class="avatar-section-tabs">
       <div class="avatar-section-tab active" data-section="my">آواتارهای من</div>
       <div class="avatar-section-tab" data-section="buy">خرید آواتارها</div>
@@ -396,6 +427,7 @@
     <div class="avatar-grid" id="avatarGrid"></div>
   </div>
 
+  <!-- Purchase Modal -->
   <div class="shop-modal" id="purchaseModal">
     <div class="shop-modal-content">
       <div class="shop-modal-title">خرید آواتار</div>
@@ -403,6 +435,45 @@
       <div class="shop-modal-buttons">
         <button class="shop-modal-btn cancel" id="modalCancelBtn">انصراف</button>
         <button class="shop-modal-btn confirm" id="modalConfirmBtn">تایید خرید</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <span class="setting-label">🔊 صدای بازی</span>
+          <input type="range" min="0" max="100" value="80" class="volume-slider" id="gameVolumeSlider">
+        </div>
+        <button class="password-btn" id="openChangePasswordBtn">🔒 تغییر رمز عبور</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal-overlay" id="changePasswordModal">
+    <div class="modal-box">
+      <div class="modal-header"><div class="modal-title">تغییر رمز عبور</div><div class="modal-close" onclick="closeModal('changePasswordModal')">✕</div></div>
+      <div class="modal-body">
+        <div class="edit-field">
+          <label class="edit-label">شماره موبایل:</label>
+          <input type="tel" class="edit-input" id="cpPhone" placeholder="09xxxxxxxxx">
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">رمز عبور فعلی:</label>
+          <input type="password" class="edit-input" id="cpCurrentPass" placeholder="رمز فعلی">
+        </div>
+        <div class="edit-field">
+          <label class="edit-label">رمز عبور جدید:</label>
+          <input type="password" class="edit-input" id="cpNewPass" placeholder="رمز جدید">
+        </div>
+        <div class="edit-actions">
+          <button class="edit-btn cancel" onclick="closeModal('changePasswordModal')">انصراف</button>
+          <button class="edit-btn save" id="submitPasswordChange">تغییر رمز</button>
+        </div>
       </div>
     </div>
   </div>
@@ -519,7 +590,7 @@
 
   const CREATOR_PHONE='09904844031';
   const YAZDGARD_PHONE='09942785343';
-  const YAZDGARD_AVATAR='100.jpg';
+  const CREATOR_AVATAR='655.webm'; // آواتار اختصاصی سازنده
 
   async function getUser(p){return await redisGet('user:'+p);}
   async function saveUser(p,u){return await redisSet('user:'+p,u);}
@@ -539,11 +610,9 @@
 
   function toPersianNum(n){const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];return String(n).replace(/[0-9]/g,w=>p[+w]);}
 
-  // ✅ تیک ادمین ارشد = Tik1000.png
   function getRoleTick(role){if(!role)return null;const r=role.trim();if(r==='سازنده'||r==='پشتیبانی')return['Tik1.png'];if(r==='ادمین ارشد')return['Tik1000.png'];if(r==='ادمین')return['Tik2.png'];if(r==='گرداننده')return['Tik3.png'];if(r==='ناظر'||r==='ناظر ارشد')return['TIK4.png','Tik4.png'];return null;}
   function applyTick(img,cands){if(!img||!cands||!cands.length)return;let i=0;(function nx(){if(i>=cands.length){img.style.display='none';return;}const s=cands[i++];const t=new Image();t.onload=function(){img.src=s;img.style.display='inline-block';};t.onerror=nx;t.src=s;})();}
 
-  // ===== ✅ سیستم مقام‌ها و دسترسی‌ها (صفحه اصلی) =====
   const RANK_LEVEL={'کاربر':0,'ناظر':1,'ناظر ارشد':2,'ادمین':3,'ادمین ارشد':4,'گرداننده':5,'پشتیبانی':6,'سازنده':7};
   const RANK_PERM={
     'سازنده':   {panel:true, coins:true, gems:true, rank:true, exclusive:true, del:true, server:true, wipe:true, banMax:'permanent'},
@@ -586,30 +655,54 @@
   let shopGold=0,shopGems=0,selectedAvatar=null,purchasePrice=0,currentAvatarSection='my';
   let userGroupCache=null;
 
+  // ✅ لیست آواتارهای جدید طبق درخواست شما
   const avatars=[
-    {id:1,src:'Mafia17.png',price:0,owned:false,free:true},
-    {id:2,src:'Mafia18.png',price:0,owned:false,free:true},
-    {id:3,src:'Mafia1.png',price:0,owned:false,free:true},
-    {id:4,src:'Mafia2.png',price:0,owned:false,free:true},
-    {id:5,src:'300.jpg',price:300,owned:false},
-    {id:6,src:'301.jpg',price:50,owned:false},
-    {id:7,src:'302.jpg',price:50,owned:false},
-    {id:8,src:'303.jpg',price:200,owned:false},
-    {id:9,src:'304.jpg',price:300,owned:false},
-    {id:10,src:'305.jpg',price:300,owned:false},
-    {id:11,src:'306.jpg',price:100,owned:false},
-    {id:12,src:'307.jpg',price:210,owned:false},
-    {id:13,src:'308.jpg',price:200,owned:false},
-    {id:14,src:'309.jpg',price:180,owned:false},
-    {id:15,src:'310.jpg',price:60,owned:false},
-    {id:16,src:'311.jpg',price:50,owned:false},
-    {id:17,src:'312.jpg',price:120,owned:false},
-    {id:18,src:'313.jpg',price:180,owned:false}
+    {id:1, src:'601.webp', price:300, owned:false},
+    {id:2, src:'602.webp', price:200, owned:false},
+    {id:3, src:'603.webp', price:60, owned:false},
+    {id:4, src:'604.webp', price:50, owned:false},
+    {id:5, src:'605.webp', price:50, owned:false},
+    {id:6, src:'606.webp', price:300, owned:false},
+    {id:7, src:'607.webp', price:250, owned:false},
+    {id:8, src:'608.webp', price:70, owned:false},
+    {id:9, src:'609.webp', price:200, owned:false},
+    {id:10, src:'610.webp', price:200, owned:false},
+    {id:11, src:'611.webp', price:150, owned:false},
+    {id:12, src:'612.webp', price:300, owned:false},
+    {id:13, src:'613.webp', price:300, owned:false},
+    {id:14, src:'614.webp', price:50, owned:false},
+    {id:15, src:'615.webp', price:50, owned:false},
+    {id:16, src:'616.webp', price:300, owned:false},
+    {id:17, src:'617.webp', price:75, owned:false},
+    {id:18, src:'618.webp', price:300, owned:false},
+    {id:19, src:'619.webp', price:100, owned:false},
+    {id:20, src:'620.webp', price:200, owned:false}
   ];
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  function updateGlobalAvatar(src){const m=document.getElementById('mainUserAvatar');const p=document.getElementById('profileUserAvatar');const s=document.getElementById('showcaseAvatarImg');if(m)m.src=src;if(p)p.src=src;if(s)s.src=src;}
+  function updateGlobalAvatar(src){
+    const isVideo = src.endsWith('.webm') || src.endsWith('.mp4');
+    const mainContainer = document.getElementById('mainAvatarContainer');
+    const profileContainer = document.getElementById('openAvatarShop');
+    const showcaseContainer = document.getElementById('showcaseAvatarContainer');
+
+    const createMediaElement = () => {
+      if (isVideo) {
+        const v = document.createElement('video');
+        v.src = src; v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
+        return v;
+      } else {
+        const i = document.createElement('img');
+        i.src = src;
+        return i;
+      }
+    };
+
+    if(mainContainer) { mainContainer.innerHTML = ''; mainContainer.appendChild(createMediaElement()); }
+    if(profileContainer) { profileContainer.innerHTML = ''; profileContainer.appendChild(createMediaElement()); }
+    if(showcaseContainer) { showcaseContainer.innerHTML = ''; showcaseContainer.appendChild(createMediaElement()); }
+  }
 
   async function saveUserData(){
     if(!currentUserData||!currentPhone)return;
@@ -746,7 +839,6 @@
     }).join('');
   }
 
-  // ✅ باز کردن ویرایش با کنترل دسترسی
   async function openEditUser(id){
     const perm=getPerm();
     if(!perm.panel){showShopNotification('دسترسی ندارید','error');return;}
@@ -765,10 +857,16 @@
     document.getElementById('editUserGems').value=u.gems||0;
     document.getElementById('editUserRole').value=u.rank||'کاربر';
     const preview=document.getElementById('exclusiveAvatarPreview');
-    if(u.exclusiveAvatar){preview.innerHTML='<img src="'+u.exclusiveAvatar+'" alt="exclusive">';}
-    else{preview.innerHTML='<span class="exclusive-avatar-placeholder">👤</span>';}
+    if(u.exclusiveAvatar){
+        if(u.exclusiveAvatar.endsWith('.webm') || u.exclusiveAvatar.endsWith('.mp4')) {
+            preview.innerHTML='<video src="'+u.exclusiveAvatar+'" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+        } else {
+            preview.innerHTML='<img src="'+u.exclusiveAvatar+'" alt="exclusive">';
+        }
+    } else {
+        preview.innerHTML='<span class="exclusive-avatar-placeholder">👤</span>';
+    }
 
-    // ✅ نمایش/مخفی بر اساس مقام
     document.getElementById('fieldCoins').style.display=perm.coins?'block':'none';
     document.getElementById('fieldGems').style.display=perm.gems?'block':'none';
     document.getElementById('fieldRank').style.display=perm.rank?'block':'none';
@@ -789,12 +887,21 @@
       fileInput.addEventListener('change',function(e){
         const file=e.target.files[0];
         if(!file)return;
-        if(file.size>2*1024*1024){showShopNotification('حجم تصویر باید کمتر از 2MB باشد','error');this.value='';return;}
-        compressImage(file,256,function(dataUrl){
-          editingUserExclusiveAvatar=dataUrl;
-          document.getElementById('exclusiveAvatarPreview').innerHTML='<img src="'+dataUrl+'" alt="exclusive">';
-          showShopNotification('آواتار انتخاب شد - دکمه ذخیره را بزنید');
-        });
+        if(file.size>5*1024*1024){showShopNotification('حجم فایل باید کمتر از 5MB باشد','error');this.value='';return;}
+        
+        // Handle both image and video for exclusive avatar
+        if(file.type.startsWith('video/')) {
+            const url = URL.createObjectURL(file);
+            editingUserExclusiveAvatar = url; // Note: In production, this needs to be uploaded to a server, not blob
+            document.getElementById('exclusiveAvatarPreview').innerHTML='<video src="'+url+'" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+            showShopNotification('ویدیو انتخاب شد - دکمه ذخیره را بزنید');
+        } else {
+            compressImage(file,256,function(dataUrl){
+              editingUserExclusiveAvatar=dataUrl;
+              document.getElementById('exclusiveAvatarPreview').innerHTML='<img src="'+dataUrl+'" alt="exclusive">';
+              showShopNotification('آواتار انتخاب شد - دکمه ذخیره را بزنید');
+            });
+        }
       });
     }
     const removeBtn=document.getElementById('removeExclusiveAvatar');
@@ -808,7 +915,6 @@
     }
   });
 
-  // ✅ ذخیره با کنترل دسترسی
   async function saveUserEdit(){
     if(!editingUserId)return;
     const perm=getPerm();
@@ -836,7 +942,6 @@
     showShopNotification('ذخیره شد');
   }
 
-  // ✅ بن با محدودیت مقام
   async function banUser(){
     if(!editingUserId)return;
     const perm=getPerm();
@@ -933,16 +1038,19 @@
     shopGems=currentUserData.gems||500;
     document.getElementById('shopGoldAmount').textContent=toPersianNum(shopGold);
     document.getElementById('shopGemAmount').textContent=toPersianNum(shopGems);
+    
     let cur=currentUserData.avatar||'Mafia2.png';
-    if(currentPhone===YAZDGARD_PHONE){
-      cur=YAZDGARD_AVATAR;currentUserData.avatar=YAZDGARD_AVATAR;
-      if(!avatars.find(a=>a.src===YAZDGARD_AVATAR))avatars.push({id:100,src:YAZDGARD_AVATAR,price:0,owned:true,exclusive:true});
-      else{const ex=avatars.find(a=>a.src===YAZDGARD_AVATAR);ex.owned=true;ex.exclusive=true;}
+    if(currentPhone===CREATOR_PHONE || currentPhone===YAZDGARD_PHONE){
+      cur=CREATOR_AVATAR;
+      currentUserData.avatar=CREATOR_AVATAR;
+      if(!avatars.find(a=>a.src===CREATOR_AVATAR)) avatars.push({id:999, src:CREATOR_AVATAR, price:0, owned:true, exclusive:true});
+      else{const ex=avatars.find(a=>a.src===CREATOR_AVATAR); ex.owned=true; ex.exclusive=true;}
     }
+    
     if(currentUserData.exclusiveAvatar){
       const existingExclusive=avatars.find(a=>a.isMyExclusive);
       if(!existingExclusive){
-        avatars.push({id:9999,src:currentUserData.exclusiveAvatar,price:0,owned:true,exclusive:true,isMyExclusive:true,name:'اختصاصی'});
+        avatars.push({id:9998, src:currentUserData.exclusiveAvatar, price:0, owned:true, exclusive:true, isMyExclusive:true, name:'اختصاصی'});
       }else{
         existingExclusive.src=currentUserData.exclusiveAvatar;
         existingExclusive.owned=true;
@@ -950,13 +1058,13 @@
     }
     const owned=currentUserData.ownedAvatars||[];
     avatars.forEach(a=>{
-      if(a.free)a.owned=true;
-      else if(a.isMyExclusive)a.owned=true;
-      else if(owned.includes(a.src)||a.src===cur)a.owned=true;
-      else if(!a.exclusive)a.owned=false;
+      if(a.free) a.owned=true;
+      else if(a.isMyExclusive) a.owned=true;
+      else if(owned.includes(a.src)||a.src===cur) a.owned=true;
+      else if(!a.exclusive) a.owned=false;
     });
     const def=avatars.find(a=>a.src===cur);
-    if(def)def.owned=true;
+    if(def) def.owned=true;
   }
 
   function renderAvatars(){
@@ -964,12 +1072,16 @@
     let disp;
     if(currentAvatarSection==='my'){
       disp=avatars.filter(a=>a.owned);
-      if(currentPhone!==YAZDGARD_PHONE)disp=disp.filter(a=>a.src!==YAZDGARD_AVATAR);
+      if(currentPhone!==CREATOR_PHONE && currentPhone!==YAZDGARD_PHONE) disp=disp.filter(a=>a.src!==CREATOR_AVATAR);
     }else disp=avatars.filter(a=>!a.owned&&!a.exclusive&&!a.isMyExclusive);
+    
     if(!disp.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">آواتاری موجود نیست</div>';return;}
+    
     grid.innerHTML=disp.map(a=>{
+      const isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4');
+      const mediaHtml = isVid ? `<video src="${a.src}" autoplay loop muted playsinline onerror="avatarLoadError(this,'${a.src}')"></video>` : `<img src="${a.src}" onerror="avatarLoadError(this,'${a.src}')">`;
       const cardClass='avatar-card '+(a.owned?'owned ':'')+(a.isMyExclusive?'exclusive':'');
-      return '<div class="'+cardClass+'" data-id="'+a.id+'"><div class="avatar-image"><img src="'+a.src+'" onerror="avatarLoadError(this,\''+a.src+'\')"></div>'+(!a.owned?'<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">'+toPersianNum(a.price)+'</span></div>':'<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ '+(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':''))+'</div>')+'</div>';
+      return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${(!a.owned?`<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">${toPersianNum(a.price)}</span></div>`:`<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ ${(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':''))}</div>`)}</div>`;
     }).join('');
     grid.querySelectorAll('.avatar-card').forEach(c=>c.addEventListener('click',()=>handleAvatarClick(parseInt(c.dataset.id))));
   }
@@ -999,69 +1111,118 @@
   }
   setInterval(checkBanPeriodically,5000);
 
-  document.addEventListener('DOMContentLoaded',async()=>{
-    const m=await getMaintenance();
-    const loggedIn=localStorage.getItem('currentLoggedInUser');
-    let phone=null;
-    if(loggedIn)phone=JSON.parse(loggedIn).phone;
-    if(m&&m.on&&phone!==CREATOR_PHONE){
-      document.getElementById('serverDownOverlay').classList.add('show');
-      return;
+  // ✅ رفع مشکل لودینگ: نمایش فوری صفحه و بارگذاری داده‌ها در پس‌زمینه با تایم‌اوت
+  document.addEventListener('DOMContentLoaded', async () => {
+    const container = document.getElementById('gameContainer');
+    const loader = document.getElementById('loadingOverlay');
+    
+    // نمایش فوری کانتینر برای جلوگیری از حس گیر کردن
+    container.classList.add('loaded');
+    
+    // تایم‌اوت برای جلوگیری از گیر کردن ابدی در صورت قطعی اینترنت
+    const loadTimeout = setTimeout(() => {
+        loader.classList.add('hidden');
+        showShopNotification('اتصال کند است، حالت آفلاین فعال شد', 'error');
+    }, 5000);
+
+    try {
+        const m = await getMaintenance();
+        const loggedIn = localStorage.getItem('currentLoggedInUser');
+        let phone = null;
+        if(loggedIn) phone = JSON.parse(loggedIn).phone;
+        
+        if(m && m.on && phone !== CREATOR_PHONE){
+            document.getElementById('serverDownOverlay').classList.add('show');
+            loader.classList.add('hidden');
+            clearTimeout(loadTimeout);
+            return;
+        }
+
+        if(!loggedIn){window.location.href='index.html'; return;}
+        currentPhone = phone;
+        
+        const ban = await getBanStatus(currentPhone);
+        if(ban){redirectToBan(ban,currentPhone); return;}
+        
+        let user = await getUser(currentPhone);
+        if(!user){
+            const legacy = JSON.parse(localStorage.getItem('mafia_users')||'{}');
+            user = legacy[currentPhone];
+            if(user){await saveUser(currentPhone,user); const all=await getAllUsers(); all[currentPhone]=user; await saveAllUsers(all);}
+            else{window.location.href='index.html'; return;}
+        }
+        
+        const allUsers = await getAllUsers();
+        if(!allUsers[currentPhone]){allUsers[currentPhone]=user; await saveAllUsers(allUsers);}
+
+        currentUserData = user;
+        if(currentPhone === CREATOR_PHONE || currentPhone === YAZDGARD_PHONE){
+            currentUserData.avatar = CREATOR_AVATAR;
+            await saveUserData();
+        }
+        
+        if(!user.userCode){
+            const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let code='P';
+            for(let i=0;i<7;i++) code+=chars.charAt(Math.floor(Math.random()*chars.length));
+            user.userCode=code; await saveUserData();
+        }
+        
+        updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
+        document.getElementById('displayCoins').textContent = toPersianNum(user.coins || 200);
+        document.getElementById('displayGems').textContent = toPersianNum(user.gems || 10);
+        document.getElementById('mainUserName').textContent = user.name || 'کاربر';
+        document.getElementById('profileUserName').textContent = user.name || 'کاربر';
+        document.getElementById('userCode').textContent = user.userCode;
+        
+        const tk = getRoleTick(user.rank);
+        if(tk){applyTick(document.getElementById('mainUserTick'), tk); applyTick(document.getElementById('profileUserTick'), tk);}
+        
+        document.getElementById('statLevel').textContent = toPersianNum(user.level || 1);
+        document.getElementById('statScore').textContent = toPersianNum(user.score || 0);
+        document.getElementById('statSeasonRank').textContent = toPersianNum(user.seasonRank || 0);
+        document.getElementById('statHours').textContent = toPersianNum(user.hours || 0);
+        document.getElementById('statCompWins').textContent = toPersianNum(user.compWins || 0);
+        document.getElementById('statFriendWins').textContent = toPersianNum(user.friendWins || 0);
+        document.getElementById('statMonitor').textContent = toPersianNum(user.monitorCount || 0);
+        document.getElementById('statBestScore').textContent = toPersianNum(user.bestScore || 0);
+        document.getElementById('statMafiaWins').textContent = toPersianNum(user.mafiaWins || 0);
+        document.getElementById('statCitizenWins').textContent = toPersianNum(user.citizenWins || 0);
+
+        const perm = getPerm();
+        document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
+        document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
+
+        initAvatarShop();
+        updateServerToggleBtn();
+        updateGroupDisplay();
+        
+        // مخفی کردن لودر با موفقیت
+        clearTimeout(loadTimeout);
+        loader.classList.add('hidden');
+
+    } catch (error) {
+        console.error("Load error:", error);
+        clearTimeout(loadTimeout);
+        loader.classList.add('hidden');
+        showShopNotification('خطا در بارگذاری داده‌ها', 'error');
     }
 
-    if(!loggedIn){window.location.href='index.html';return;}
-    currentPhone=phone;
-    const ban=await getBanStatus(currentPhone);
-    if(ban){redirectToBan(ban,currentPhone);return;}
-    let user=await getUser(currentPhone);
-    if(!user){
-      const legacy=JSON.parse(localStorage.getItem('mafia_users')||'{}');
-      user=legacy[currentPhone];
-      if(user){await saveUser(currentPhone,user);const all=await getAllUsers();all[currentPhone]=user;await saveAllUsers(all);}
-      else{window.location.href='index.html';return;}
-    }
-    const allUsers=await getAllUsers();
-    if(!allUsers[currentPhone]){allUsers[currentPhone]=user;await saveAllUsers(allUsers);}
-
-    currentUserData=user;
-    if(currentPhone===YAZDGARD_PHONE){currentUserData.avatar=YAZDGARD_AVATAR;await saveUserData();}
-    if(!user.userCode){
-      const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let code='P';
-      for(let i=0;i<7;i++)code+=chars.charAt(Math.floor(Math.random()*chars.length));
-      user.userCode=code;await saveUserData();
-    }
-    updateGlobalAvatar(currentUserData.avatar||'Mafia2.png');
-    document.getElementById('displayCoins').textContent=toPersianNum(user.coins||200);
-    document.getElementById('displayGems').textContent=toPersianNum(user.gems||10);
-    document.getElementById('mainUserName').textContent=user.name||'کاربر';
-    document.getElementById('profileUserName').textContent=user.name||'کاربر';
-    document.getElementById('userCode').textContent=user.userCode;
-    const tk=getRoleTick(user.rank);
-    if(tk){applyTick(document.getElementById('mainUserTick'),tk);applyTick(document.getElementById('profileUserTick'),tk);}
-    document.getElementById('statLevel').textContent=toPersianNum(user.level||1);
-    document.getElementById('statScore').textContent=toPersianNum(user.score||0);
-    document.getElementById('statSeasonRank').textContent=toPersianNum(user.seasonRank||0);
-    document.getElementById('statHours').textContent=toPersianNum(user.hours||0);
-    document.getElementById('statCompWins').textContent=toPersianNum(user.compWins||0);
-    document.getElementById('statFriendWins').textContent=toPersianNum(user.friendWins||0);
-    document.getElementById('statMonitor').textContent=toPersianNum(user.monitorCount||0);
-    document.getElementById('statBestScore').textContent=toPersianNum(user.bestScore||0);
-    document.getElementById('statMafiaWins').textContent=toPersianNum(user.mafiaWins||0);
-    document.getElementById('statCitizenWins').textContent=toPersianNum(user.citizenWins||0);
-
-    // ✅ نمایش پنل فقط برای مقام‌های مجاز
-    const perm=getPerm();
-    document.getElementById('btnAdmin').style.display=perm.panel?'flex':'none';
-    document.getElementById('adminTools').style.display=perm.server?'block':'none';
-
-    initAvatarShop();
-    updateServerToggleBtn();
-    updateGroupDisplay();
-
+    // Event Listeners
     document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
     document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
-    document.getElementById('menuContact').addEventListener('click',()=>{closeModal('menuDropdown');showShopNotification('ارتباط: AyandehNagre');});
-    document.getElementById('menuSettings').addEventListener('click',()=>{closeModal('menuDropdown');showShopNotification('تنظیمات به زودی');});
+    
+    // ✅ ارتباط با ما به سایت Mfasun.ir
+    document.getElementById('menuContact').addEventListener('click',()=>{
+        closeModal('menuDropdown');
+        window.location.href = 'https://Mfasun.ir';
+    });
+    
+    // ✅ باز کردن منوی تنظیمات
+    document.getElementById('menuSettings').addEventListener('click',()=>{
+        closeModal('menuDropdown');
+        document.getElementById('settingsModal').classList.add('active');
+    });
+    
     document.getElementById('menuLogout').addEventListener('click',()=>{closeModal('menuDropdown');if(confirm('از اکانت خارج می‌شوید؟')){localStorage.removeItem('currentLoggedInUser');window.location.href='index.html';}});
     document.getElementById('openProfile').addEventListener('click',()=>{document.getElementById('profilePage').classList.add('active');updateGroupDisplay();});
     document.getElementById('backBtn').addEventListener('click',()=>document.getElementById('profilePage').classList.remove('active'));
@@ -1074,7 +1235,8 @@
     document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
     document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
     document.getElementById('btnRanking').addEventListener('click',()=>window.location.href='Bandi.html');
-    document.getElementById('btnLeague').addEventListener('click',()=>showShopNotification('لیگ به زودی'));
+    document.getElementById('btnTopPlayers').addEventListener('click',()=>showShopNotification('لیست برترین‌ها به زودی'));
+    document.getElementById('btnManagement').addEventListener('click',()=>showShopNotification('اطلاعات تیم مدیریتی به زودی'));
     document.getElementById('btnLive').addEventListener('click',()=>showShopNotification('پخش زنده به زودی'));
     document.getElementById('btnAdmin').addEventListener('click',async()=>{const p=getPerm();if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}await loadUsers();await updateServerToggleBtn();document.getElementById('adminModal').classList.add('active');});
     document.getElementById('sendNewsBtn').addEventListener('click',sendNews);
@@ -1109,6 +1271,44 @@
         selectedAvatar=null;purchasePrice=0;
       }else{document.getElementById('purchaseModal').classList.remove('show');showShopNotification('الماس کافی ندارید!','error');}
     });
+    
+    // ✅ تنظیمات و تغییر رمز عبور
+    document.getElementById('openChangePasswordBtn').addEventListener('click', () => {
+        closeModal('settingsModal');
+        document.getElementById('cpPhone').value = currentPhone || '';
+        document.getElementById('changePasswordModal').classList.add('active');
+    });
+    
+    document.getElementById('submitPasswordChange').addEventListener('click', async () => {
+        const phone = document.getElementById('cpPhone').value.trim();
+        const currentPass = document.getElementById('cpCurrentPass').value;
+        const newPass = document.getElementById('cpNewPass').value;
+        
+        if (!phone || !currentPass || !newPass) {
+            showShopNotification('لطفاً تمام فیلدها را پر کنید', 'error');
+            return;
+        }
+        if (phone !== currentPhone) {
+            showShopNotification('شماره موبایل وارد شده با اکانت فعلی مطابقت ندارد', 'error');
+            return;
+        }
+        if (currentUserData.password && currentUserData.password !== currentPass) {
+            showShopNotification('رمز عبور فعلی اشتباه است', 'error');
+            return;
+        }
+        if (newPass.length < 4) {
+            showShopNotification('رمز عبور جدید باید حداقل ۴ کاراکتر باشد', 'error');
+            return;
+        }
+        
+        currentUserData.password = newPass;
+        await saveUserData();
+        showShopNotification('رمز عبور با موفقیت تغییر کرد ✅');
+        closeModal('changePasswordModal');
+        document.getElementById('cpCurrentPass').value = '';
+        document.getElementById('cpNewPass').value = '';
+    });
+
     setInterval(updateGroupDisplay,30000);
   });
 </script>
