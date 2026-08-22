@@ -157,13 +157,13 @@
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* نشانگر صدا: بیرون دایره و کنار آن */
+  /* نشانگر صدا: کنار دایره پروفایل (مثل عکس ارسالی) */
   .voice-indicator {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     top: 50%;
-    right: -12px;
+    right: -14px;
     transform: translateY(-50%);
     display: none;
     align-items: center;
@@ -185,8 +185,8 @@
   }
   
   .voice-indicator::after {
-    content: '🔊';
-    font-size: 11px;
+    content: '';
+    font-size: 12px;
     z-index: 2;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
     animation: voicePulse 0.8s ease-in-out infinite;
@@ -201,10 +201,10 @@
     50% { transform: scale(1.2); }
   }
 
-  /* نوار پایین جمع و جور و استاندارد */
+  /* نوار پایین جمع و جور */
   .room-bottombar{
     position:absolute;bottom:0;left:0;right:0;
-    height:65px; /* ارتفاع استاندارد و نه کلفت */
+    height:65px;
     background:linear-gradient(180deg,#2a5a8a,#1a3a5f);
     border-top:2px solid #3f8fd4;
     display:flex;
@@ -255,7 +255,7 @@
     height: 36px;
   }
 
-  /* آیکون چت کوچک‌تر */
+  /* آیکون چت کوچک */
   .chat-ico {
     width: 20px;
     height: 20px;
@@ -442,16 +442,15 @@
       <div class="seats-cols"><div class="seat-col" id="colLeft"></div><div class="seat-col" id="colRight"></div></div>
     </div>
     
-    <!-- نوار پایین استاندارد و جمع‌وجور -->
+    <!-- نوار پایین -->
     <div class="room-bottombar">
       <div class="bottom-left" id="bottomLeftArea">
-        <!-- دکمه آماده یا دست اینجا قرار می‌گیرد -->
       </div>
       <div class="bottom-right">
         <button class="action-btn small" id="dislikeBtn"><img src="dislike2.png" alt="دیس‌لایک"></button>
         <button class="action-btn small" id="likeBtn"><img src="like2.png" alt="لایک"></button>
         <button class="action-btn" id="micBtn"><img src="1008.png" alt="مایک"></button>
-        <button class="action-btn" id="emojiBtn"><img src="imo1.webp" alt="ایموجی"></button>
+        <button class="action-btn" id="emojiBtn"><img src="Imo1.webp" onerror="this.src='lmo1.webp'" alt="ایموجی"></button>
         <button class="action-btn" id="chatBtn"><div class="chat-ico"></div></button>
       </div>
     </div>
@@ -480,7 +479,7 @@
 
   <!-- مودال‌ها -->
   <div class="overlay" id="createModal"><div class="modal">
-    <div class="close-x" id="closeCreateBtn">✕</div>
+    <div class="close-x" id="closeCreateBtn"></div>
     <div class="modal-title-y">ایجاد لابی مافیاسان</div>
     <div class="name-input-wrap">
       <input type="text" id="lobbyNameInput" placeholder="نام لابی" readonly>
@@ -683,7 +682,7 @@
   let overlayShown=false;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۱۲۳۴۵۶۷۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۲۳۴۵۶۷۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function showToast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t==='error'?' error':'');setTimeout(()=>e.classList.remove('show'),2600);}
   const isStaff=r=>r&&r!=='کاربر';
@@ -709,7 +708,7 @@
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
-    {v:'8m',l:'۸ ماه',ms:20736000000},
+    {v:'8m',l:' ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -722,7 +721,7 @@
   function getPanelTabs(rank){
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
-      tabs.push({id:'users',label:'👥 کاربران'});
+      tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'reports',label:'📋 گزارش‌ها'});
       tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
@@ -897,14 +896,18 @@
       overlay.appendChild(video);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
-      setTimeout(() => $('dislikeBtn').classList.remove('disabled'), REACTION_COOLDOWN);
+      setTimeout(() => {
+        $('dislikeBtn').classList.remove('disabled');
+      }, REACTION_COOLDOWN);
     } else {
       const img = document.createElement('img');
       img.src = 'like1.gif';
       overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
-      setTimeout(() => $('likeBtn').classList.remove('disabled'), REACTION_COOLDOWN);
+      setTimeout(() => {
+        $('likeBtn').classList.remove('disabled');
+      }, REACTION_COOLDOWN);
     }
     
     profileEl.appendChild(overlay);
@@ -1034,11 +1037,8 @@
     const myLevel=RANK_LEVEL[me.rank]||0;
     const canDelete=isCreator||myLevel>=RANK_LEVEL['گرداننده'];
     rooms.forEach(r=>{
-      // شمارش دقیق و بدون اشتباه
-      const seatsCount = Object.keys(r.seats || {}).length;
-      const botsCount = Object.keys(r.bots || {}).length;
-      const playersCount = Math.min(seatsCount + botsCount, 10);
-      const supersCount = Math.min(Object.values(r.supers || {}).filter(Boolean).length, 2);
+      const playersCount = Object.keys(r.seats || {}).length + Object.keys(r.bots || {}).length;
+      const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
       
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
@@ -1197,7 +1197,7 @@
       const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
       let inner='';
       if(u) inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
-      const labelHtml='ناظر '+toFa(i)+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
+      const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
           ${inner}
@@ -1251,12 +1251,10 @@
     document.querySelectorAll('.seat').forEach(el=>{el.onclick=()=>tapSeat(+el.dataset.seat);});
     document.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
     
-    // مدیریت دکمه‌های پایین صفحه
     const bottomLeft = $('bottomLeftArea');
     bottomLeft.innerHTML = '';
     
     if (isManager) {
-      // برای مدیر، دکمه دست در سمت چپ قرار می‌گیرد
       const handBtn = document.createElement('button');
       handBtn.className = 'action-btn';
       handBtn.id = 'handBtnManager';
@@ -1264,7 +1262,6 @@
       handBtn.onclick = () => showToast('این دکمه فعلاً غیرفعال است', 'error');
       bottomLeft.appendChild(handBtn);
     } else {
-      // برای بازیکن عادی، دکمه آماده/آماده نیستم در سمت چپ قرار می‌گیرد
       const rb = document.createElement('button');
       rb.className = 'ready-btn not';
       rb.id = 'readyBtn';
@@ -1343,7 +1340,7 @@
     if(!isManager && !isCreator){ showToast('فقط مدیر می‌تواند ناظر تعیین کند','error'); return; }
     room.supers[i]=me.phone;
     await saveRooms(rooms);
-    showToast('ناظر '+toFa(i)+' شدید');
+    showToast('ناظر '+(i===1?'۱':'۲')+' شدید');
     refreshRoom();
   }
 
@@ -1480,7 +1477,7 @@
       const old=r.supers[n];r.supers[n]=t.phone;
       if(old&&old!==t.phone){let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){free=x;break;}}if(free)r.seats[free]=old;}
     });
-    showToast('ناظر '+toFa(n)+' شد');refreshRoom();
+    showToast('ناظر '+(n===1?'۱':'۲')+' شد');refreshRoom();
   }
 
   async function openProfile(t){
@@ -1530,7 +1527,6 @@
     
     let html='';
     
-    // دکمه شروع بازی فقط برای مدیر داخل این منو
     const humans=Object.values(room.seats||{}).filter(Boolean);
     const bots=Object.keys(room.bots||{}).length;
     const total=humans.length+bots;
