@@ -11,17 +11,9 @@
   html{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#041228!important;}
   body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228!important;width:100%;height:100%;position:fixed;inset:0;display:flex;justify-content:center;align-items:center;overflow:hidden!important;}
   input,textarea,select{font-size:16px!important;-webkit-user-select:text!important;user-select:text!important;}
-  .game-container{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#041228; visibility: hidden; /* Initially hidden to prevent flash, but JS will show it instantly */}
-  .game-container.loaded { visibility: visible; }
+  .game-container{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#041228;}
   .bg-image{position:absolute;inset:0;background-color:#041228;background-image:url('1010.webp');background-size:cover;background-position:center;z-index:1;pointer-events:none;}
   .bg-image::after{content:'';position:absolute;inset:0;background:rgba(10,22,40,0.15);}
-  
-  /* Loading Overlay Fix */
-  .loading-overlay { position: absolute; inset: 0; background: #041228; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
-  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
-  .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #4a9eff; border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
   .top-bar{position:absolute;top:0;left:0;right:0;height:52px;background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:20;border-bottom:2px solid #2a5a9a;}
   .top-left{display:flex;align-items:center;gap:4px;}
   .coin-display,.diamond-display{display:flex;align-items:center;gap:4px;}
@@ -245,12 +237,6 @@
 </head>
 <body>
 <div class="game-container" id="gameContainer">
-  <!-- Loading Overlay for Instant Feel -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <div style="color:#fff; margin-top:15px; font-weight:700;">در حال بارگذاری...</div>
-  </div>
-
   <div class="bg-image"></div>
 
   <div class="top-bar">
@@ -278,8 +264,6 @@
   <div class="right-buttons">
     <div class="side-btn" id="btnAnnouncements"><div class="side-btn-icon-wrap"><div class="icon-megaphone"></div><span class="notification-badge" id="newsBadge" style="display:none;">0</span></div><div class="side-btn-label">اطلاعیه‌ها</div></div>
     <div class="side-btn" id="btnHelp"><div class="side-btn-icon-wrap"><div class="icon-question">?</div></div><div class="side-btn-label">آموزش</div></div>
-    <div class="side-btn" id="btnRanking"><div class="side-btn-icon-wrap"><div class="icon-crown"></div></div><div class="side-btn-label">رتبه‌بندی</div></div>
-    <!-- Removed League, Added Top Players and Management Team -->
     <div class="side-btn" id="btnTopPlayers"><div class="side-btn-icon-wrap"><div class="icon-trophy"></div></div><div class="side-btn-label">برترین‌ها</div></div>
     <div class="side-btn" id="btnManagement"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">تیم مدیریتی</div></div>
     <div class="side-btn" id="btnLive"><div class="side-btn-icon-wrap"><div class="icon-live">LIVE</div></div><div class="side-btn-label">پخش زنده</div></div>
@@ -500,7 +484,6 @@
 </div>
 
 <script>
-  // ===== سیستم ۴ لایه Fallback =====
   const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
   const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
   const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
@@ -590,7 +573,7 @@
 
   const CREATOR_PHONE='09904844031';
   const YAZDGARD_PHONE='09942785343';
-  const CREATOR_AVATAR='655.webm'; // آواتار اختصاصی سازنده
+  const CREATOR_AVATAR='655.webm';
 
   async function getUser(p){return await redisGet('user:'+p);}
   async function saveUser(p,u){return await redisSet('user:'+p,u);}
@@ -655,7 +638,6 @@
   let shopGold=0,shopGems=0,selectedAvatar=null,purchasePrice=0,currentAvatarSection='my';
   let userGroupCache=null;
 
-  // ✅ لیست آواتارهای جدید طبق درخواست شما
   const avatars=[
     {id:1, src:'601.webp', price:300, owned:false},
     {id:2, src:'602.webp', price:200, owned:false},
@@ -889,10 +871,9 @@
         if(!file)return;
         if(file.size>5*1024*1024){showShopNotification('حجم فایل باید کمتر از 5MB باشد','error');this.value='';return;}
         
-        // Handle both image and video for exclusive avatar
         if(file.type.startsWith('video/')) {
             const url = URL.createObjectURL(file);
-            editingUserExclusiveAvatar = url; // Note: In production, this needs to be uploaded to a server, not blob
+            editingUserExclusiveAvatar = url;
             document.getElementById('exclusiveAvatarPreview').innerHTML='<video src="'+url+'" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
             showShopNotification('ویدیو انتخاب شد - دکمه ذخیره را بزنید');
         } else {
@@ -1111,20 +1092,7 @@
   }
   setInterval(checkBanPeriodically,5000);
 
-  // ✅ رفع مشکل لودینگ: نمایش فوری صفحه و بارگذاری داده‌ها در پس‌زمینه با تایم‌اوت
   document.addEventListener('DOMContentLoaded', async () => {
-    const container = document.getElementById('gameContainer');
-    const loader = document.getElementById('loadingOverlay');
-    
-    // نمایش فوری کانتینر برای جلوگیری از حس گیر کردن
-    container.classList.add('loaded');
-    
-    // تایم‌اوت برای جلوگیری از گیر کردن ابدی در صورت قطعی اینترنت
-    const loadTimeout = setTimeout(() => {
-        loader.classList.add('hidden');
-        showShopNotification('اتصال کند است، حالت آفلاین فعال شد', 'error');
-    }, 5000);
-
     try {
         const m = await getMaintenance();
         const loggedIn = localStorage.getItem('currentLoggedInUser');
@@ -1133,8 +1101,6 @@
         
         if(m && m.on && phone !== CREATOR_PHONE){
             document.getElementById('serverDownOverlay').classList.add('show');
-            loader.classList.add('hidden');
-            clearTimeout(loadTimeout);
             return;
         }
 
@@ -1195,29 +1161,19 @@
         initAvatarShop();
         updateServerToggleBtn();
         updateGroupDisplay();
-        
-        // مخفی کردن لودر با موفقیت
-        clearTimeout(loadTimeout);
-        loader.classList.add('hidden');
 
     } catch (error) {
         console.error("Load error:", error);
-        clearTimeout(loadTimeout);
-        loader.classList.add('hidden');
-        showShopNotification('خطا در بارگذاری داده‌ها', 'error');
     }
 
-    // Event Listeners
     document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
     document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
     
-    // ✅ ارتباط با ما به سایت Mfasun.ir
     document.getElementById('menuContact').addEventListener('click',()=>{
         closeModal('menuDropdown');
         window.location.href = 'https://Mfasun.ir';
     });
     
-    // ✅ باز کردن منوی تنظیمات
     document.getElementById('menuSettings').addEventListener('click',()=>{
         closeModal('menuDropdown');
         document.getElementById('settingsModal').classList.add('active');
@@ -1234,7 +1190,6 @@
     document.getElementById('navGroup').addEventListener('click',()=>window.location.href='Safe Goroh.html');
     document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
     document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
-    document.getElementById('btnRanking').addEventListener('click',()=>window.location.href='Bandi.html');
     document.getElementById('btnTopPlayers').addEventListener('click',()=>showShopNotification('لیست برترین‌ها به زودی'));
     document.getElementById('btnManagement').addEventListener('click',()=>showShopNotification('اطلاعات تیم مدیریتی به زودی'));
     document.getElementById('btnLive').addEventListener('click',()=>showShopNotification('پخش زنده به زودی'));
@@ -1272,7 +1227,6 @@
       }else{document.getElementById('purchaseModal').classList.remove('show');showShopNotification('الماس کافی ندارید!','error');}
     });
     
-    // ✅ تنظیمات و تغییر رمز عبور
     document.getElementById('openChangePasswordBtn').addEventListener('click', () => {
         closeModal('settingsModal');
         document.getElementById('cpPhone').value = currentPhone || '';
