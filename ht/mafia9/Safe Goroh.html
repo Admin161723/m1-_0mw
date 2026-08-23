@@ -11,7 +11,7 @@
 html { width: 100% !important; height: 100% !important; overflow: hidden !important; position: fixed !important; inset: 0; overscroll-behavior: none !important; background: #f5f0e1 !important; touch-action: none !important; }
 body { font-family: 'Vazirmatn', Tahoma, sans-serif; background: #f5f0e1 !important; width: 100% !important; height: 100% !important; position: fixed !important; inset: 0; display: flex; justify-content: center; overflow: hidden !important; color: #4a3b2a; }
 input, textarea, select { font-size: 16px !important; -webkit-user-select: text !important; user-select: text !important; touch-action: manipulation !important; }
-img { -webkit-user-drag: none !important; }
+img, video { -webkit-user-drag: none !important; }
 
 .game-container { width: 100%; max-width: 420px; height: 100vh; height: 100dvh; background: linear-gradient(180deg, #fdfbf7 0%, #f5f0e1 100%); position: relative; display: flex; flex-direction: column; overflow: hidden !important; }
 
@@ -114,7 +114,7 @@ img { -webkit-user-drag: none !important; }
 .member-card.owner-card { border-color: #ffd700; background: linear-gradient(135deg, #fff8eb, #fffef9); }
 .member-card.deputy-card { border-color: #bc6c25; background: linear-gradient(135deg, #fffaf0, #fffef9); }
 .member-avatar { width: 50px; height: 50px; background: #d4c5a9; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; overflow: hidden; flex-shrink: 0; }
-.member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.member-avatar img, .member-avatar video { width: 100%; height: 100%; object-fit: cover; }
 .member-avatar svg { width: 26px; height: 26px; fill: #8b7355; }
 .member-info { flex: 1; min-width: 0; }
 .member-name { font-size: 15px; font-weight: 900; color: #4a3b2a; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -193,7 +193,7 @@ img { -webkit-user-drag: none !important; }
 
 .creator-user-item { background: #fffef9; border: 2px solid #e6dcc3; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
 .creator-user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #d4c5a9; overflow: hidden; flex-shrink: 0; border: 2px solid #fff; }
-.creator-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.creator-user-avatar img, .creator-user-avatar video { width: 100%; height: 100%; object-fit: cover; }
 .creator-user-info { flex: 1; min-width: 0; }
 .creator-user-name { font-size: 13px; font-weight: 900; color: #4a3b2a; }
 .creator-user-meta { font-size: 10px; color: #8b7355; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
@@ -555,8 +555,19 @@ async function getUsersCached(force = false) {
   }
   return usersCache.data;
 }
+
+// ✅ تابع اصلاح‌شده برای تشخیص ویدیو و پخش خودکار
 function getAvatarHtml(avatarStr) {
   if (!avatarStr) return ICONS.userDefault;
+  
+  // تشخیص فرمت ویدیو
+  const isVideo = avatarStr.endsWith('.webm') || avatarStr.endsWith('.mp4') || avatarStr.endsWith('.mov') || avatarStr.endsWith('.avi');
+  
+  if (isVideo) {
+    // ساخت ویدیو با پخش خودکار، حلقه، بی‌صدا و سازگار با موبایل
+    return '<video src="' + avatarStr + '" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;"></video>';
+  }
+  
   if (avatarStr.includes('.png') || avatarStr.includes('.jpg') || avatarStr.includes('.jpeg') || avatarStr.includes('.webp') || avatarStr.startsWith('data:')) {
     return '<img src="' + avatarStr + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;">';
   }
