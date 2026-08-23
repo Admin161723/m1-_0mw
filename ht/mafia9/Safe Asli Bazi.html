@@ -706,6 +706,11 @@
     updateGlobalAvatar(user.avatar || 'Mafia2.png');
     const tk = getRoleTick(user.rank);
     if(tk){applyTick(document.getElementById('mainUserTick'), tk); applyTick(document.getElementById('profileUserTick'), tk);}
+    
+    // ✅ نمایش پنل مدیریت بر اساس rank
+    const perm = getPerm();
+    document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
+    document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
   }
 
   async function saveUserData(){
@@ -1114,7 +1119,7 @@
   setInterval(checkBanPeriodically,5000);
 
   // ==========================================
-  // سیستم بارگذاری فوری (Local-First)
+  // سیستم بارگذاری فوری (Local-First) - نسخه بهینه‌شده
   // ==========================================
   document.addEventListener('DOMContentLoaded', () => {
     // 1. خواندن فوری از لوکال استوریج (بدون انتظار برای شبکه)
@@ -1156,8 +1161,10 @@
     // 3. به‌روزرسانی فوری UI با داده‌های محلی (صفحه بلافاصله پر می‌شود)
     updateUIWithData(currentUserData);
 
-    // 4. شروع همگام‌سازی با سرور در پس‌زمینه (بدون مسدود کردن صفحه)
-    syncWithServerInBackground();
+    // 4. شروع همگام‌سازی با سرور در پس‌زمینه (فوری و بدون تأخیر)
+    setTimeout(() => {
+        syncWithServerInBackground();
+    }, 0);
 
     // Event Listeners
     document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
