@@ -231,6 +231,12 @@
   .setting-label { color: #fff; font-size: 16px; font-weight: 700; }
   .volume-slider { width: 60%; accent-color: #4a9eff; }
   .password-btn { width: 100%; padding: 14px; background: linear-gradient(180deg, #4a9eff, #2a7acc); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+  
+  /* استایل‌های پنل مسابقات */
+  .tournament-config { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #3a8adc; }
+  .tournament-config h4 { color: #ffd700; margin-bottom: 10px; font-size: 14px; }
+  .prize-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .prize-row select, .prize-row input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2a6ac0; background: rgba(255,255,255,0.1); color: #fff; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -653,9 +659,17 @@
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  // ✅ تابع بهینه‌شده برای پخش دائمی و بدون توقف ویدیو
-  function updateGlobalAvatar(src){
-    const isVideo = src.endsWith('.webm') || src.endsWith('.mp4') || src.endsWith('.mov');
+  // ✅ سیستم پخش ویدیوی ضد قطع و انحصاری برای سازنده
+  function getValidAvatar(src, phone) {
+    if (src === '655.webm' && phone !== CREATOR_PHONE && phone !== YAZDGARD_PHONE) {
+      return 'Mafia2.png'; // بازگشت به حالت پیش‌فرض اگر غیر سازنده باشد
+    }
+    return src;
+  }
+
+  function updateGlobalAvatar(src) {
+    const validSrc = getValidAvatar(src, currentPhone);
+    const isVideo = validSrc.endsWith('.webm') || validSrc.endsWith('.mp4') || validSrc.endsWith('.mov');
     const mainContainer = document.getElementById('mainAvatarContainer');
     const profileContainer = document.getElementById('openAvatarShop');
     const showcaseContainer = document.getElementById('showcaseAvatarContainer');
@@ -663,20 +677,22 @@
     const createMediaElement = () => {
       if (isVideo) {
         const v = document.createElement('video');
-        v.src = src;
+        v.src = validSrc;
         v.autoplay = true;
         v.loop = true;
         v.muted = true;
         v.playsInline = true;
-        v.setAttribute('autoplay', '');
-        v.setAttribute('loop', '');
-        v.setAttribute('muted', '');
-        v.setAttribute('playsinline', '');
-        v.setAttribute('webkit-playsinline', '');
+        v.setAttribute('muted', 'muted');
+        v.setAttribute('playsinline', 'playsinline');
+        v.setAttribute('webkit-playsinline', 'webkit-playsinline');
+        // ✅ سیستم نظارتی برای جلوگیری از توقف ویدیو
+        v.onpause = () => { if(!v.ended) v.play().catch(e=>{}); };
+        v.onended = () => { v.currentTime = 0; v.play().catch(e=>{}); };
+        v.onerror = () => { v.style.display='none'; };
         return v;
       } else {
         const i = document.createElement('img');
-        i.src = src;
+        i.src = validSrc;
         return i;
       }
     };
@@ -714,6 +730,10 @@
 
   async function saveUserData(){
     if(!currentUserData||!currentPhone)return;
+    // پاکسازی آواتار غیرمجاز قبل از ذخیره
+    if(currentUserData.avatar === '655.webm' && currentPhone !== CREATOR_PHONE && currentPhone !== YAZDGARD_PHONE) {
+      currentUserData.avatar = 'Mafia2.png';
+    }
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
     await saveUser(currentPhone,currentUserData);
     const allUsers=await getAllUsers();
@@ -723,9 +743,9 @@
 
   async function saveAvatarToStorage(src){
     if(!currentUserData||!currentPhone)return;
-    currentUserData.avatar=src;
+    currentUserData.avatar = getValidAvatar(src, currentPhone);
     await saveUserData();
-    updateGlobalAvatar(src);
+    updateGlobalAvatar(currentUserData.avatar);
   }
 
   async function changeUsername(){
@@ -842,7 +862,8 @@
     list.innerHTML=users.map(([p,u])=>{
       const rc=u.rank==='سازنده'?'badge-creator':((u.rank==='ادمین'||u.rank==='ادمین ارشد')?'badge-admin':'');
       const exBadge=u.exclusiveAvatar?'<span class="user-badge" style="background:linear-gradient(180deg,#ffd700,#ff8c00);color:#000;">⭐</span>':'';
-      return '<div class="user-item" onclick="openEditUser(\''+p+'\')"><div class="user-avatar"><img src="'+(u.avatar||'Mafia2.png')+'" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div><div class="user-info"><div class="user-name">'+(u.name||'کاربر')+' <small style="color:#aaa;">('+p+')</small></div><div class="user-details"><span>سکه: '+toPersianNum(u.coins||0)+'</span><span>الماس: '+toPersianNum(u.gems||0)+'</span><span class="user-badge '+rc+'">'+(u.rank||'کاربر')+'</span>'+exBadge+(u.banned?'<span class="user-badge badge-banned">بن شده</span>':'')+'</div></div></div>';
+      const validAv = getValidAvatar(u.avatar||'Mafia2.png', p);
+      return '<div class="user-item" onclick="openEditUser(\''+p+'\')"><div class="user-avatar"><img src="'+validAv+'" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div><div class="user-info"><div class="user-name">'+(u.name||'کاربر')+' <small style="color:#aaa;">('+p+')</small></div><div class="user-details"><span>سکه: '+toPersianNum(u.coins||0)+'</span><span>الماس: '+toPersianNum(u.gems||0)+'</span><span class="user-badge '+rc+'">'+(u.rank||'کاربر')+'</span>'+exBadge+(u.banned?'<span class="user-badge badge-banned">بن شده</span>':'')+'</div></div></div>';
     }).join('');
   }
 
@@ -858,7 +879,14 @@
     if(!isCreator && targetLevel>=myLevel){showShopNotification('نمی‌توانید هم‌مقام یا بالاتر را ویرایش کنید','error');return;}
 
     editingUserId=id;
-    editingUserExclusiveAvatar=u.exclusiveAvatar||null;
+    // جلوگیری از اختصاص آواتار سازنده به دیگران
+    if(u.exclusiveAvatar === '655.webm' && id !== CREATOR_PHONE && id !== YAZDGARD_PHONE) {
+      editingUserExclusiveAvatar = null;
+      u.exclusiveAvatar = null;
+    } else {
+      editingUserExclusiveAvatar = u.exclusiveAvatar || null;
+    }
+    
     document.getElementById('editUserName').value=u.name||'';
     document.getElementById('editUserCoins').value=u.coins||0;
     document.getElementById('editUserGems').value=u.gems||0;
@@ -932,6 +960,11 @@
     if(perm.gems)u.gems=parseInt(document.getElementById('editUserGems').value)||0;
     if(perm.rank)u.rank=document.getElementById('editUserRole').value;
     if(perm.exclusive&&editingUserExclusiveAvatar){
+      // بررسی نهایی انحصار آواتار
+      if(editingUserExclusiveAvatar === '655.webm' && editingUserId !== CREATOR_PHONE && editingUserId !== YAZDGARD_PHONE) {
+        showShopNotification('این آواتار فقط مخصوص سازنده است!', 'error');
+        return;
+      }
       u.exclusiveAvatar=editingUserExclusiveAvatar;
       if(!u.ownedAvatars)u.ownedAvatars=[];
       const exKey='exclusive_'+editingUserId;
@@ -1045,7 +1078,7 @@
     document.getElementById('shopGoldAmount').textContent=toPersianNum(shopGold);
     document.getElementById('shopGemAmount').textContent=toPersianNum(shopGems);
 
-    let cur=currentUserData.avatar||'Mafia2.png';
+    let cur=getValidAvatar(currentUserData.avatar||'Mafia2.png', currentPhone);
     if(currentPhone===CREATOR_PHONE || currentPhone===YAZDGARD_PHONE){
       cur=CREATOR_AVATAR;
       currentUserData.avatar=CREATOR_AVATAR;
@@ -1073,7 +1106,6 @@
     if(def) def.owned=true;
   }
 
-  // ✅ رندر آنی و بدون تأخیر فروشگاه آواتار
   function renderAvatars(){
     const grid=document.getElementById('avatarGrid');
     let disp;
@@ -1120,6 +1152,7 @@
   setInterval(checkBanPeriodically,5000);
 
   document.addEventListener('DOMContentLoaded', () => {
+    // ✅ بارگذاری آنی از حافظه محلی (۰ ثانیه تأخیر)
     const loggedIn = localStorage.getItem('currentLoggedInUser');
     if (!loggedIn) {
         window.location.href = 'index.html';
@@ -1153,8 +1186,10 @@
     }
 
     currentUserData = localUser;
+    // به‌روزرسانی فوری UI قبل از هرگونه درخواست شبکه
     updateUIWithData(currentUserData);
 
+    // همگام‌سازی در پس‌زمینه
     setTimeout(() => {
         syncWithServerInBackground();
     }, 0);
@@ -1177,7 +1212,6 @@
     document.getElementById('backBtn').addEventListener('click',()=>document.getElementById('profilePage').classList.remove('active'));
     document.getElementById('copyUserCode').addEventListener('click',()=>copyToClipboard(document.getElementById('userCode').textContent,'کد کاربری کپی شد!'));
     
-    // ✅ باز شدن آنی فروشگاه آواتار
     document.getElementById('openAvatarShop').addEventListener('click',()=>{
         document.getElementById('profilePage').classList.remove('active');
         document.getElementById('avatarShopPage').classList.add('active');
@@ -1191,7 +1225,6 @@
     document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
     document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
     
-    // ✅ هدایت به صفحه Bandi.html
     document.getElementById('btnTopPlayers').addEventListener('click',()=>{
         window.location.href = 'Bandi.html';
     });
