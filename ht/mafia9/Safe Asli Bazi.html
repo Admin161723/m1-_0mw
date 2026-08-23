@@ -348,6 +348,22 @@
           </div>
         </div>
 
+        <div class="admin-tools" id="prizeDistributeTool" style="display:none;">
+          <div class="admin-tools-title">🎁 توزیع جوایز مسابقه به کاربر</div>
+          <div class="edit-field">
+            <input type="text" class="edit-input" id="prizeTargetPhone" placeholder="شماره موبایل کاربر برنده">
+          </div>
+          <div class="edit-field">
+            <select class="edit-input" id="prizeRankSelect">
+              <option value="rank1">رتبه ۱ (قهرمان)</option>
+              <option value="rank2">رتبه ۲</option>
+              <option value="rank3">رتبه ۳</option>
+              <option value="rank4_10">رتبه ۴ تا ۱۰</option>
+            </select>
+          </div>
+          <button class="edit-btn save" onclick="distributePrize()" style="width:100%;">اعمال جایزه به کاربر</button>
+        </div>
+
         <div class="user-list" id="userList"></div>
       </div>
     </div>
@@ -398,6 +414,8 @@
       <div class="profile-info-details">
         <div class="user-code-row" id="copyUserCode"><span class="user-code-label">کد کاربری</span><span class="user-code-value" id="userCode">----</span><button class="copy-btn">📋</button></div>
         <div class="user-name-row"><span>☢️</span><span class="user-name-value" id="profileUserName">کاربر</span><img id="profileUserTick" class="role-tick" src="" style="display:none;"><span class="edit-name-btn" id="editNameBtn">✏️</span></div>
+        <button class="edit-name-btn" id="uploadAvatarBtn" style="background:linear-gradient(180deg,#4a9eff,#2a7acc); color:#fff; border:none; padding:6px 10px; border-radius:8px; font-size:12px; cursor:pointer; text-align:center; margin-top:5px;">📷 تغییر عکس از گالری</button>
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
         <div class="clan-row">
           <div class="clan-badge no-group" id="profileGroupBadge">❌</div>
           <span class="clan-name" id="profileGroupName">بدون گروه</span>
@@ -697,7 +715,6 @@
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  // ✅ سیستم امنیتی آواتار: حذف 655.webm از غیر سازنده
   function sanitizeUserData(user, phone) {
     if (!user) return user;
     const isCreator = (phone === CREATOR_PHONE || phone === YAZDGARD_PHONE);
@@ -726,10 +743,11 @@
     const profileContainer = document.getElementById('openAvatarShop');
     const showcaseContainer = document.getElementById('showcaseAvatarContainer');
 
-    const createMediaElement = () => {
-      if (isVideo) {
+    const createMediaElement = (source) => {
+      const isVid = source.endsWith('.webm') || source.endsWith('.mp4') || source.endsWith('.mov');
+      if (isVid) {
         const v = document.createElement('video');
-        v.src = validSrc;
+        v.src = source;
         v.autoplay = true;
         v.loop = true;
         v.muted = true;
@@ -737,19 +755,24 @@
         v.setAttribute('muted', 'muted');
         v.setAttribute('playsinline', 'playsinline');
         v.setAttribute('webkit-playsinline', 'webkit-playsinline');
-        v.onpause = () => { if(!v.ended) v.play().catch(e=>{}); };
-        v.onended = () => { v.currentTime = 0; v.play().catch(e=>{}); };
+        v.addEventListener('ended', () => {
+          v.currentTime = 0;
+          v.play().catch(e => console.log('Video loop restart', e));
+        });
+        v.addEventListener('pause', () => {
+          if (!v.ended) v.play().catch(e => {});
+        });
         return v;
       } else {
         const i = document.createElement('img');
-        i.src = validSrc;
+        i.src = source;
         return i;
       }
     };
 
-    if(mainContainer) { mainContainer.innerHTML = ''; mainContainer.appendChild(createMediaElement()); }
-    if(profileContainer) { profileContainer.innerHTML = ''; profileContainer.appendChild(createMediaElement()); }
-    if(showcaseContainer) { showcaseContainer.innerHTML = ''; showcaseContainer.appendChild(createMediaElement()); }
+    if(mainContainer) { mainContainer.innerHTML = ''; mainContainer.appendChild(createMediaElement(validSrc)); }
+    if(profileContainer) { profileContainer.innerHTML = ''; profileContainer.appendChild(createMediaElement(validSrc)); }
+    if(showcaseContainer) { showcaseContainer.innerHTML = ''; showcaseContainer.appendChild(createMediaElement(validSrc)); }
   }
 
   function updateUIWithData(user) {
@@ -777,6 +800,7 @@
     document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
     document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
     document.getElementById('tournamentConfig').style.display = (currentPhone === CREATOR_PHONE) ? 'block' : 'none';
+    document.getElementById('prizeDistributeTool').style.display = perm.panel ? 'block' : 'none';
   }
 
   async function saveUserData(){
@@ -839,7 +863,11 @@
       if(group){
         nameEl.textContent=group.name||'گروه';
         badgeEl.className='clan-badge has-group';
-        badgeEl.innerHTML=getGroupIcon(group.logo||'shield');
+        if (group.logo && (group.logo.startsWith('http') || group.logo.startsWith('data:'))) {
+           badgeEl.innerHTML = `<img src="${group.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`;
+        } else {
+           badgeEl.innerHTML=getGroupIcon(group.logo||'shield');
+        }
         userGroupCache=group;
       }else{
         nameEl.textContent='بدون گروه';
@@ -994,6 +1022,28 @@
         showShopNotification('آواتار اختصاصی حذف خواهد شد');
       });
     }
+
+    // User Gallery Avatar Upload Logic
+    document.getElementById('uploadAvatarBtn').addEventListener('click', () => {
+        document.getElementById('avatarFileInput').click();
+    });
+    document.getElementById('avatarFileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            showShopNotification('حجم عکس باید کمتر از ۲ مگابایت باشد', 'error');
+            this.value = '';
+            return;
+        }
+        compressImage(file, 256, function(dataUrl) {
+            currentUserData.avatar = dataUrl;
+            saveUserData().then(() => {
+                updateGlobalAvatar(dataUrl);
+                showShopNotification('آواتار با موفقیت تغییر کرد');
+            });
+        });
+        this.value = '';
+    });
   });
 
   async function saveUserEdit(){
@@ -1129,6 +1179,39 @@
     showShopNotification('✅ تنظیمات مسابقات با موفقیت ذخیره شد');
   }
 
+  async function distributePrize() {
+    const phone = document.getElementById('prizeTargetPhone').value.trim();
+    const rank = document.getElementById('prizeRankSelect').value;
+    if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
+
+    const cfg = await getTournamentConfig();
+    const prize = cfg[rank];
+    if (!prize || !prize.type || !prize.value) {
+        showShopNotification('تنظیمات این رتبه خالی است', 'error');
+        return;
+    }
+    
+    const targetUser = await getUser(phone);
+    if (!targetUser) {
+        showShopNotification('کاربری با این شماره یافت نشد', 'error');
+        return;
+    }
+    
+    if (prize.type === 'coin') targetUser.coins = (targetUser.coins || 0) + parseInt(prize.value);
+    else if (prize.type === 'gem') targetUser.gems = (targetUser.gems || 0) + parseInt(prize.value);
+    else if (prize.type === 'avatar') {
+        if (!targetUser.ownedAvatars) targetUser.ownedAvatars = [];
+        if (!targetUser.ownedAvatars.includes(prize.value)) {
+            targetUser.ownedAvatars.push(prize.value);
+        }
+        targetUser.avatar = prize.value;
+    }
+    
+    await saveUser(phone, targetUser);
+    showShopNotification(`جایزه (${prize.value} ${prize.type === 'coin' ? 'سکه' : prize.type === 'gem' ? 'الماس' : 'آواتار'}) به کاربر اعطا شد.`);
+    document.getElementById('prizeTargetPhone').value = '';
+  }
+
   function initAvatarShop(){
     if(!currentUserData)return;
     shopGold=currentUserData.coins||200;
@@ -1210,7 +1293,6 @@
   setInterval(checkBanPeriodically,5000);
 
   document.addEventListener('DOMContentLoaded', () => {
-    // ✅ بارگذاری آنی از حافظه محلی (۰ ثانیه تأخیر)
     const loggedIn = localStorage.getItem('currentLoggedInUser');
     if (!loggedIn) {
         window.location.href = 'index.html';
@@ -1233,14 +1315,10 @@
         localUser = { name: 'کاربر', coins: 0, gems: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0 };
     }
 
-    // ✅ اعمال فیلتر امنیتی آواتار قبل از نمایش
     currentUserData = sanitizeUserData(localUser, currentPhone);
-    
-    // ✅ به‌روزرسانی فوری UI قبل از هرگونه درخواست شبکه
     updateUIWithData(currentUserData);
     initAvatarShop();
 
-    // همگام‌سازی در پس‌زمینه
     setTimeout(() => {
         syncWithServerInBackground();
     }, 0);
@@ -1266,7 +1344,7 @@
     document.getElementById('openAvatarShop').addEventListener('click',()=>{
         document.getElementById('profilePage').classList.remove('active');
         document.getElementById('avatarShopPage').classList.add('active');
-        renderAvatars(); // رندر آنی
+        renderAvatars();
     });
     
     document.getElementById('shopBackBtn').addEventListener('click',()=>{document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
@@ -1290,7 +1368,6 @@
         if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}
         await loadUsers();
         await updateServerToggleBtn();
-        // بارگذاری تنظیمات مسابقات
         const cfg = await getTournamentConfig();
         if(cfg.rank1) { document.getElementById('prize1Type').value = cfg.rank1.type; document.getElementById('prize1Value').value = cfg.rank1.value; }
         if(cfg.rank2) { document.getElementById('prize2Type').value = cfg.rank2.type; document.getElementById('prize2Value').value = cfg.rank2.value; }
@@ -1398,7 +1475,7 @@
         }
 
         currentUserData = { ...currentUserData, ...serverUser };
-        currentUserData = sanitizeUserData(currentUserData, currentPhone); // اعمال فیلتر نهایی
+        currentUserData = sanitizeUserData(currentUserData, currentPhone);
 
         if(currentPhone === CREATOR_PHONE || currentPhone === YAZDGARD_PHONE){
             currentUserData.avatar = CREATOR_AVATAR;
