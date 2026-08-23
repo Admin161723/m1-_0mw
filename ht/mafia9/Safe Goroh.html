@@ -36,8 +36,8 @@ img { -webkit-user-drag: none !important; }
 .group-card { background: #fffef9; border: 2px solid #e6dcc3; border-radius: 14px; padding: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; position: relative; }
 .group-card.my-group { border-color: #bc6c25; background: #fff8eb; }
 .group-card.verified-card { border-color: #ffd700; box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
-.group-logo { width: 50px; height: 50px; background: linear-gradient(135deg, #d4c5a9, #bc6c25); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
-.group-logo svg { width: 30px; height: 30px; fill: white; }
+.group-logo { width: 50px; height: 50px; background: #fffef9; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border: 1px solid #e6dcc3; }
+.group-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 .group-info { flex: 1; min-width: 0; }
 .group-name { font-size: 16px; font-weight: 900; color: #4a3b2a; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .group-meta { font-size: 12px; color: #8b7355; font-weight: 700; }
@@ -80,8 +80,8 @@ img { -webkit-user-drag: none !important; }
 
 .about-header { text-align: center; padding: 20px; background: #fffef9; border-radius: 16px; border: 2px solid #e6dcc3; margin-bottom: 15px; }
 .about-header.verified-about { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
-.about-logo { width: 80px; height: 80px; background: linear-gradient(135deg, #d4c5a9, #bc6c25); border-radius: 20px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: white; }
-.about-logo svg { width: 50px; height: 50px; fill: white; }
+.about-logo { width: 80px; height: 80px; background: #fffef9; border-radius: 20px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #e6dcc3; overflow: hidden; }
+.about-logo img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
 .about-name { font-size: 22px; font-weight: 900; color: #4a3b2a; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .about-desc { font-size: 13px; color: #8b7355; line-height: 1.6; margin-bottom: 12px; }
 .about-stats { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -141,8 +141,8 @@ img { -webkit-user-drag: none !important; }
 .modal-hint { font-size: 12px; color: #8b7355; text-align: center; font-weight: 700; }
 
 .logo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
-.logo-option { aspect-ratio: 1; background: #e6dcc3; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid transparent; }
-.logo-option svg { width: 32px; height: 32px; fill: #5c4b37; }
+.logo-option { aspect-ratio: 1; background: #e6dcc3; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid transparent; overflow: hidden; padding: 4px; }
+.logo-option img { width: 100%; height: 100%; object-fit: contain; }
 .logo-option.selected { border-color: #bc6c25; background: #fff8eb; }
 
 .btn-primary { width: 100%; padding: 14px; background: linear-gradient(180deg, #bc6c25, #8b5e3c); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 900; font-family: 'Vazirmatn', Tahoma, sans-serif; cursor: pointer; box-shadow: 0 4px 0 #6d462b; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -437,24 +437,18 @@ function getColorByCode(code) {
   return null;
 }
 
+// ✅ لیست دقیق تصاویر لوگو طبق درخواست شما
+const LOGO_IMAGES = [
+  '20.webp', '21.webp', '22.webp', '23.webp',
+  '30.webp', '31.webp', '32.webp', '33.webp', '34.webp', '35.webp', '36.webp', '37.webp', '38.webp', '39.webp',
+  '40.webp', '41.webp', '42.webp', '43.webp', '44.webp', '45.webp', '46.webp', '47.webp', '48.webp', '49.webp'
+];
+
+function getLogoImg(filename) { 
+  return '<img src="' + filename + '" style="width:100%; height:100%; object-fit:contain; display:block;" onerror="this.style.display=\'none\';">'; 
+}
+
 const ICONS = {
-  shield: '<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>',
-  lion: '<svg viewBox="0 0 24 24"><path d="M7 4c-1.1 0-2 .9-2 2v1c-1.1 0-2 .9-2 2v7c0 2.76 2.24 5 5 5h8c2.76 0 5-2.24 5-5V9c0-1.1-.9-2-2-2V6c0-1.1-.9-2-2-2H7z"/></svg>',
-  eagle: '<svg viewBox="0 0 24 24"><path d="M18 4l-2 2H8L6 4H2v2l2.5 1c-.83 1.2-1.5 2.68-1.5 4.5C3 15 5 18 8 19l2 2v1h4v-1l2-2c3-1 5-4 5-7.5 0-1.82-.67-3.3-1.5-4.5L22 6V4h-4z"/></svg>',
-  dragon: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>',
-  skull: '<svg viewBox="0 0 24 24"><path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>',
-  fire: '<svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>',
-  snowflake: '<svg viewBox="0 0 24 24"><path d="M22 11h-4.17l3.24-3.24-1.41-1.42L15 11h-2V9l4.66-4.66-1.42-1.41L13 6.17V2h-2v4.17L7.76 2.93 6.34 4.34 11 9v2H9L4.34 6.34 2.93 7.76 6.17 11H2v2h4.17l-3.24 3.24 1.41 1.42L9 13h2v2l-4.66 4.66 1.42 1.41L11 17.83V22h2v-4.17l3.24 3.24 1.42-1.41L13 15v-2h2l4.66 4.66 1.41-1.42L17.83 13H22z"/></svg>',
-  lightning: '<svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>',
-  wolf: '<svg viewBox="0 0 24 24"><path d="M4.5 9.5C4.5 5.36 7.86 2 12 2s7.5 3.36 7.5 7.5c0 1.92-.72 3.67-1.91 5h1.91v2c0 1.1-.9 2-2 2h-1.09c-.42.6-1.01 1.08-1.69 1.37l-.03.04C14.4 21.11 13.25 22 12 22s-2.4-.89-2.69-2.09l-.03-.04c-.68-.29-1.27-.77-1.69-1.37H6.5c-1.1 0-2-.9-2-2v-2h1.91c-1.19-1.33-1.91-3.08-1.91-5z"/></svg>',
-  scorpion: '<svg viewBox="0 0 24 24"><path d="M20 9l-2-2V3h-2v3.17l-2-2V3h-2v4c-1.1 0-2 .9-2 2v2.17L8 9.17V5H6v3.17L4 6.17V4H2v2c0 1.1.9 2 2 2l2 2 2 2-1 3-3-1v2l2.5.83L8.5 20l1.5-1.5-1-1.5 1-3 2 1 2-1 1 3-1 1.5L15.5 20l2-3.17L20 16v-2l-3 1-1-3 2-2 2-2c1.1 0 2-.9 2-2V4h-2v2.17L18 8.17z"/></svg>',
-  sword: '<svg viewBox="0 0 24 24"><path d="M14.12 4l1.88 1.88-6.07 6.06L8.06 10l6.06-6z"/></svg>',
-  rose: '<svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 .88.23 1.71.63 2.43C5.4 10.69 4 12.95 4 15.5 4 18.54 6.46 21 9.5 21c1.33 0 2.55-.47 3.5-1.27.95.8 2.17 1.27 3.5 1.27C19.54 21 22 18.54 22 15.5c0-2.55-1.4-4.81-3.63-6.07.4-.72.63-1.55.63-2.43 0-2.76-2.24-5-5-5z"/></svg>',
-  fox: '<svg viewBox="0 0 24 24"><path d="M18.65 2.85l-7.72 7.72c-.47-.24-1-.37-1.56-.37-1.93 0-3.5 1.57-3.5 3.5 0 .47.1.92.27 1.33l-3.29 3.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l3.29-3.29c.41.17.86.27 1.33.27 1.93 0 3.5-1.57 3.5-3.5 0-.56-.13-1.09-.37-1.56l7.72-7.72c.39-.39.39-1.02 0-1.41-.38-.36-1.02-.36-1.38.03z"/></svg>',
-  crown: '<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>',
-  mask: '<svg viewBox="0 0 24 24"><path d="M5 8c0-3.31 3.13-6 7-6s7 2.69 7 6c0 2.65-.95 5.11-2.56 7H7.56C5.95 13.11 5 10.65 5 8z"/></svg>',
-  pirateFlag: '<svg viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>',
-  star: '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
   delete: '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
   copy: '<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1z"/></svg>',
   edit: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>',
@@ -462,10 +456,10 @@ const ICONS = {
   inbox: '<svg viewBox="0 0 24 24"><path d="M19 3H4.99c-1.11 0-1.98.89-1.98 2L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2z"/></svg>',
   send: '<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>',
   userDefault: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
-  emptyGroups: '<svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3z"/></svg>'
+  emptyGroups: '<svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3z"/></svg>',
+  star: '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
+  crown: '<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>'
 };
-const LOGO_KEYS = ['shield', 'lion', 'eagle', 'dragon', 'skull', 'fire', 'snowflake', 'lightning', 'wolf', 'scorpion', 'sword', 'rose', 'fox', 'crown', 'mask', 'pirateFlag'];
-function getLogoSvg(key) { return ICONS[key] || ICONS.shield; }
 
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -537,7 +531,7 @@ async function saveGroups(groups) { return await redisSet('police_groups', group
 let currentUser = null;
 let groups = [];
 let currentGroupId = null;
-let selectedLogo = 'shield';
+let selectedLogo = '20.webp';
 let targetUserIdForAction = null;
 let chatSyncInterval = null;
 let usersCache = { ts: 0, data: {} };
@@ -633,7 +627,6 @@ function createGroupCard(group, isMine) {
   const isPending = gp(group).includes(currentUser.id);
   const statusText = isMember ? 'عضو هستید' : (isPending ? 'در انتظار' : toPersianNum(gm(group).length) + '/' + toPersianNum(group.capacity||50));
 
-  // ✅ فقط گروه‌های سازنده می‌توانند رنگی باشند
   const colorData = (group.owner === CREATOR_PHONE) ? getColorByCode(group.colorCode) : null;
 
   let tagStyle = '';
@@ -645,7 +638,7 @@ function createGroupCard(group, isMine) {
     tagNameHtml = '<span style="color:' + colorData.hex + '; text-shadow: 0 1px 2px rgba(0,0,0,0.25);">' + esc(group.name) + '</span>';
   }
   const tickHtml = isVerified ? '<img src="' + CLAN_TICK_IMG + '" class="group-verified-tick" onerror="this.style.display=\'none\'">' : '';
-  div.innerHTML = '<div class="group-logo">' + getLogoSvg(group.logo) + '</div><div class="group-info"><div class="group-name">' + tagNameHtml + ' ' + tickHtml + '</div><div class="group-tag-row"><span class="' + tagClass + '" style="' + tagStyle + '">' + esc(group.tag) + '</span></div><div class="group-meta">' + statusText + '</div></div>';
+  div.innerHTML = '<div class="group-logo">' + getLogoImg(group.logo) + '</div><div class="group-info"><div class="group-name">' + tagNameHtml + ' ' + tickHtml + '</div><div class="group-tag-row"><span class="' + tagClass + '" style="' + tagStyle + '">' + esc(group.tag) + '</span></div><div class="group-meta">' + statusText + '</div></div>';
   return div;
 }
 
@@ -674,10 +667,9 @@ async function renderAbout() {
   const header = document.getElementById('aboutHeader');
   const isVerified = group.verified === true;
   header.className = 'about-header' + (isVerified ? ' verified-about' : '');
-  document.getElementById('aboutLogo').innerHTML = getLogoSvg(group.logo);
+  document.getElementById('aboutLogo').innerHTML = getLogoImg(group.logo);
   const nameEl = document.getElementById('aboutName');
 
-  // ✅ فقط گروه‌های سازنده می‌توانند رنگی باشند
   const colorData = (group.owner === CREATOR_PHONE) ? getColorByCode(group.colorCode) : null;
 
   const tickHtml = isVerified ? ' <img src="' + CLAN_TICK_IMG + '" class="about-verified-tick" onerror="this.style.display=\'none\'">' : '';
@@ -938,11 +930,11 @@ async function kickUser() {
 function initLogoGrid() {
   const grid = document.getElementById('logoGrid');
   grid.innerHTML = '';
-  LOGO_KEYS.forEach(key => {
+  LOGO_IMAGES.forEach(img => {
     const div = document.createElement('div');
-    div.className = 'logo-option' + (key === selectedLogo ? ' selected' : '');
-    div.innerHTML = getLogoSvg(key);
-    div.onclick = () => { selectedLogo = key; document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
+    div.className = 'logo-option' + (img === selectedLogo ? ' selected' : '');
+    div.innerHTML = getLogoImg(img);
+    div.onclick = () => { selectedLogo = img; document.querySelectorAll('.logo-option').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); };
     grid.appendChild(div);
   });
 }
@@ -952,7 +944,6 @@ function openCreateModal() {
   if (!currentUser) { showToast('اول وارد حساب شو', true); return; }
   if ((currentUser.gems || 0) < 150) { showToast('الماس کافی ندارید (۱۵۰ لازمه)', true); return; }
 
-  // ✅ بررسی سازنده بودن - کد رنگی فقط برای سازنده فعال است
   const isCreator = currentUser.id === CREATOR_PHONE;
   const colorSection = document.getElementById('colorCodeSection');
   const colorInput = document.getElementById('createColorCode');
@@ -960,7 +951,6 @@ function openCreateModal() {
   const colorPreview = document.getElementById('createColorPreview');
 
   if (isCreator) {
-    // سازنده: کد رنگی فعال است
     colorSection.style.display = 'block';
     colorSection.style.borderColor = '#bc6c25';
     colorSection.style.background = '#fff8eb';
@@ -971,7 +961,6 @@ function openCreateModal() {
     colorInput.value = '';
     colorPreview.style.display = 'none';
   } else {
-    // کاربر عادی: کد رنگی غیرفعال است
     colorSection.style.display = 'block';
     colorSection.style.borderColor = '#a89f8e';
     colorSection.style.background = '#f0ebe0';
@@ -989,7 +978,6 @@ function openCreateModal() {
   document.getElementById('modalCreate').classList.add('active');
 }
 
-// ✅ ساخت گروه - فقط سازنده می‌تواند گروه رنگی بسازد
 async function createGroup() {
   try {
     if (!currentUser) { showToast('اول وارد حساب شو', true); return; }
@@ -1000,7 +988,6 @@ async function createGroup() {
     if (!tag) { showToast('❌ تگ گروه را بنویس', true); return; }
     if (!/^[A-Z0-9]{1,6}$/.test(tag)) { showToast('❌ تگ فقط حروف انگلیسی/عدد (حداکثر ۶)', true); return; }
 
-    // ✅ فقط سازنده می‌تواند کد رنگی داشته باشد
     let finalColorCode = null;
     if (currentUser.id === CREATOR_PHONE) {
       const cc = (document.getElementById('createColorCode').value || '').trim();
@@ -1177,7 +1164,7 @@ async function renderCreatorGroups() {
     const item = document.createElement('div');
     item.className = 'creator-group-item';
     item.innerHTML = '<div class="creator-group-top">' +
-      '<div class="group-logo" style="width:40px; height:40px; border-radius:10px;">' + getLogoSvg(group.logo) + '</div>' +
+      '<div class="group-logo" style="width:40px; height:40px; border-radius:10px;">' + getLogoImg(group.logo) + '</div>' +
       '<div class="creator-group-info"><div class="creator-group-name">' + esc(group.name) + (isVerified ? ' <img src="' + CLAN_TICK_IMG + '" style="width:26px; height:26px;" onerror="this.style.display=\'none\'">' : '') + '</div>' +
       '<div class="creator-group-meta">[' + esc(group.tag) + '] · 👤 ' + (ownerData.name||'نامشخص') + (colorBadge ? ' · ' + colorBadge : '') + '</div></div></div>' +
       '<div class="creator-group-actions"><button class="creator-action-btn tick ' + (isVerified ? 'active' : '') + '" data-gid="' + group.id + '" data-action="tick">' +
@@ -1403,7 +1390,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const colorInput = document.getElementById('createColorCode');
   if (colorInput) {
     colorInput.addEventListener('input', function() {
-      // ✅ فقط سازنده می‌تواند از input رنگ استفاده کند
       if (currentUser.id !== CREATOR_PHONE) return;
 
       const val = parseInt(this.value);
