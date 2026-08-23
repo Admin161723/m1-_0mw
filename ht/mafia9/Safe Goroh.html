@@ -84,8 +84,25 @@ img { -webkit-user-drag: none !important; }
 .about-logo img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
 .about-name { font-size: 22px; font-weight: 900; color: #4a3b2a; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .about-desc { font-size: 13px; color: #8b7355; line-height: 1.6; margin-bottom: 12px; }
-.about-stats { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+
+/* ✅ استایل‌های جدید برای نوار پیشرفت سطح کلن */
+.clan-level-box {
+  background: rgba(255,255,255,0.6);
+  border: 2px solid #e6dcc3;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+.clan-level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; font-weight: 900; color: #4a3b2a; }
+.clan-level-badge { background: linear-gradient(180deg, #bc6c25, #8b5e3c); color: white; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+.clan-progress-bg { width: 100%; height: 12px; background: #e6dcc3; border-radius: 6px; overflow: hidden; position: relative; }
+.clan-progress-fill { height: 100%; background: linear-gradient(90deg, #bc6c25, #ffd700); border-radius: 6px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.clan-level-footer { font-size: 11px; color: #8b7355; margin-top: 6px; font-weight: 700; display: flex; justify-content: space-between; }
+
+.about-stats { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
 .stat-badge { background: #e6dcc3; padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; color: #5c4b37; display: inline-flex; align-items: center; gap: 4px; }
+
 .action-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .action-btn { padding: 10px 18px; border-radius: 10px; border: 2px solid #d4c5a9; background: #fffef9; color: #4a3b2a; font-size: 13px; font-weight: 700; font-family: 'Vazirmatn', Tahoma, sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .action-btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
@@ -233,10 +250,7 @@ img { -webkit-user-drag: none !important; }
       <div class="about-logo" id="aboutLogo"></div>
       <div class="about-name" id="aboutName">نام گروه</div>
       <div class="about-desc" id="aboutDesc">توضیحات گروه</div>
-      <div class="about-stats">
-        <div class="stat-badge">👥 <span id="aboutMembers">۰</span>/<span id="aboutCapacity">۵۰</span></div>
-        <div class="stat-badge">🏷️ <span id="aboutTag" style="direction:ltr; display:inline-block;">TAG</span></div>
-      </div>
+      <div class="about-stats" id="aboutStats"></div>
       <div class="action-buttons" id="aboutActions"></div>
     </div>
     <h3 class="section-title">👥 اعضای گروه</h3>
@@ -269,6 +283,7 @@ img { -webkit-user-drag: none !important; }
   </div>
 </div>
 
+<!-- Modals remain the same as previous version -->
 <div class="modal-overlay" id="modalCreate">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">ساخت گروه جدید</div><button class="modal-close" id="closeCreate">✕</button></div>
@@ -276,17 +291,14 @@ img { -webkit-user-drag: none !important; }
       <input type="text" class="modal-input" placeholder="نام گروه" id="createName" maxlength="20">
       <input type="text" class="modal-input" placeholder="تگ گروه (حداکثر ۶ کاراکتر)" id="createTag" maxlength="6" style="direction:ltr; text-transform:uppercase;">
       <input type="text" class="modal-input" placeholder="توضیحات (اختیاری)" id="createDesc" maxlength="100">
-
       <div id="colorCodeSection" style="border: 2px dashed #bc6c25; border-radius: 12px; padding: 12px; background: #fff8eb;">
         <div style="font-size:13px; font-weight:900; color:#5c4b37; text-align:center; margin-bottom:8px;">🎨 شمارش رنگ (اختیاری)</div>
         <div class="modal-hint" id="myColorCodeDisplay">عدد رنگ را بزن (۱ تا ۱۰۰) تا اسم و تگ همان رنگ شود</div>
         <input type="number" class="modal-input" id="createColorCode" placeholder="شماره رنگ (اختیاری)" min="1" max="100" style="margin-top:8px;">
         <div class="color-preview" id="createColorPreview" style="display:none;">پیش‌نمایش</div>
       </div>
-
       <div style="font-size:13px; font-weight:700; color:#8b7355; text-align:center;">انتخاب لوگو:</div>
       <div class="logo-grid" id="logoGrid"></div>
-
       <button class="btn-primary" id="btnCreateGroup">
         <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         ساخت گروه (۱۵۰ الماس)
@@ -437,7 +449,7 @@ function getColorByCode(code) {
   return null;
 }
 
-// ✅ لیست دقیق تصاویر لوگو طبق درخواست شما
+// ✅ لیست دقیق تصاویر لوگو (24.webp حذف شد)
 const LOGO_IMAGES = [
   '20.webp', '21.webp', '22.webp', '23.webp',
   '30.webp', '31.webp', '32.webp', '33.webp', '34.webp', '35.webp', '36.webp', '37.webp', '38.webp', '39.webp',
@@ -554,6 +566,30 @@ function getAvatarHtml(avatarStr) {
   return ICONS.userDefault;
 }
 
+// ✅ تابع محاسبه پویای امتیاز و سطح کلن
+function calculateClanStats(members, allUsers) {
+    let totalPoints = 0;
+    members.forEach(memberId => {
+        const u = allUsers[memberId];
+        if (u) {
+            const cups = parseInt(u.cups) || 0;
+            const hours = parseInt(u.hours) || 0;
+            // 1 کاپ = 2 امتیاز، 1 ساعت بازی = 20 امتیاز
+            totalPoints += (cups * 2) + (hours * 20);
+        }
+    });
+    
+    // محاسبه سطح: هر 1000 امتیاز = 1 سطح (حداکثر سطح 1000)
+    let level = Math.floor(totalPoints / 1000) + 1;
+    if (level > 1000) level = 1000;
+    
+    const pointsForNextLevel = level * 1000;
+    const currentLevelPoints = totalPoints - ((level - 1) * 1000);
+    const percentage = Math.min(100, (currentLevelPoints / 1000) * 100);
+    
+    return { totalPoints, level, currentLevelPoints, pointsForNextLevel, percentage };
+}
+
 async function loadUserData() {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) { window.location.href = 'index.html'; return; }
@@ -663,7 +699,10 @@ async function renderAbout() {
   groups = await getGroups();
   const group = groups.find(g => g.id === currentGroupId);
   if (!group) return;
+  
+  // ✅ دریافت اطلاعات به‌روز کاربران برای رفع باگ آپدیت پروفایل
   const allUsers = await getUsersCached(true);
+  
   const header = document.getElementById('aboutHeader');
   const isVerified = group.verified === true;
   header.className = 'about-header' + (isVerified ? ' verified-about' : '');
@@ -679,24 +718,36 @@ async function renderAbout() {
     nameEl.innerHTML = esc(group.name) + tickHtml;
   }
   document.getElementById('aboutDesc').textContent = group.desc || 'بدون توضیحات';
-  document.getElementById('aboutMembers').textContent = toPersianNum(gm(group).length);
-  document.getElementById('aboutCapacity').textContent = toPersianNum(group.capacity||50);
-  const tagEl = document.getElementById('aboutTag');
-  tagEl.textContent = group.tag;
-  if (colorData) {
-    tagEl.style.background = colorData.hex;
-    tagEl.style.color = colorData.text;
-    tagEl.style.fontWeight = '900';
-  } else {
-    tagEl.style.background = '#e6dcc3';
-    tagEl.style.color = '#5c4b37';
-  }
+  
+  // ✅ محاسبه و نمایش نوار پیشرفت سطح کلن
+  const stats = calculateClanStats(gm(group), allUsers);
+  const statsContainer = document.getElementById('aboutStats');
+  statsContainer.innerHTML = `
+    <div class="stat-badge">👥 <span>${toPersianNum(gm(group).length)}</span>/<span>${toPersianNum(group.capacity||50)}</span></div>
+    <div class="stat-badge">🏷️ <span id="aboutTag" style="direction:ltr; display:inline-block; ${colorData ? 'background:'+colorData.hex+';color:'+colorData.text+';font-weight:900;' : ''}">${esc(group.tag)}</span></div>
+    
+    <div class="clan-level-box">
+      <div class="clan-level-header">
+        <span class="clan-level-badge">سطح ${toPersianNum(stats.level)}</span>
+        <span>${toPersianNum(stats.currentLevelPoints)} / ${toPersianNum(1000)}</span>
+      </div>
+      <div class="clan-progress-bg">
+        <div class="clan-progress-fill" style="width: ${stats.percentage}%"></div>
+      </div>
+      <div class="clan-level-footer">
+        <span>مجموع امتیاز: ${toPersianNum(stats.totalPoints)}</span>
+        <span>تا سطح بعدی: ${toPersianNum(1000 - stats.currentLevelPoints)}</span>
+      </div>
+    </div>
+  `;
+
   const actionsDiv = document.getElementById('aboutActions');
   actionsDiv.innerHTML = '';
   const isOwner = group.owner === currentUser.id;
   const isDeputy = gd(group).includes(currentUser.id);
   const isMember = gm(group).includes(currentUser.id);
   const isPending = gp(group).includes(currentUser.id);
+  
   if (isOwner || isDeputy) {
     if (gp(group).length > 0) {
       const btn = document.createElement('button');
@@ -749,6 +800,7 @@ async function renderAbout() {
     };
     actionsDiv.appendChild(reqBtn);
   }
+  
   const listDiv = document.getElementById('membersList');
   listDiv.innerHTML = '';
   const sortedMembers = [...gm(group)].sort((a, b) => {
@@ -758,8 +810,9 @@ async function renderAbout() {
     const bDep = gd(group).includes(b) ? 1 : 0;
     return bDep - aDep;
   });
+  
   sortedMembers.forEach(uid => {
-    const uData = allUsers[uid] || { name: 'کاربر', avatar: null, cups: 0 };
+    const uData = allUsers[uid] || { name: 'کاربر', avatar: null, cups: 0, hours: 0 };
     const isOwnerMember = uid === group.owner;
     const isDeputyMember = gd(group).includes(uid);
     const roleText = isOwnerMember ? '👑 مدیر گروه' : (isDeputyMember ? '⭐ معاون' : '👤 عضو');
@@ -1391,7 +1444,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (colorInput) {
     colorInput.addEventListener('input', function() {
       if (currentUser.id !== CREATOR_PHONE) return;
-
       const val = parseInt(this.value);
       const preview = document.getElementById('createColorPreview');
       if (val >= 1 && val <= 100) {
