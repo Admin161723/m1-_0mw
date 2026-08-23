@@ -227,8 +227,6 @@
   .exclusive-file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
   .exclusive-file-label{display:block;padding:10px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border-radius:8px;color:#fff;font-weight:700;text-align:center;cursor:pointer;font-size:13px;}
   .exclusive-remove-btn{padding:10px;background:linear-gradient(180deg,#9e9e9e,#757575);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:13px;font-family:'Vazirmatn',Tahoma;}
-
-  /* Settings & Password Modals */
   .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; }
   .setting-label { color: #fff; font-size: 16px; font-weight: 700; }
   .volume-slider { width: 60%; accent-color: #4a9eff; }
@@ -281,7 +279,6 @@
     <div class="nav-item" id="navGroup"><div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div><span class="nav-label">گروه</span></div>
   </div>
 
-  <!-- News Modal -->
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
@@ -298,7 +295,6 @@
     </div>
   </div>
 
-  <!-- Admin Modal -->
   <div class="modal-overlay" id="adminModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">مدیریت کاربران</div><div class="modal-close" onclick="closeModal('adminModal')">✕</div></div>
@@ -315,7 +311,6 @@
     </div>
   </div>
 
-  <!-- Edit User Modal -->
   <div class="edit-user-modal" id="editUserModal">
     <div class="edit-user-content">
       <div class="edit-user-title">ویرایش کاربر</div>
@@ -352,7 +347,6 @@
     </div>
   </div>
 
-  <!-- Profile Page -->
   <div class="profile-page" id="profilePage">
     <div class="profile-page-header"><button class="back-btn" id="backBtn">‹</button><span class="profile-page-title">پروفایل</span></div>
     <div class="profile-info-section">
@@ -389,7 +383,6 @@
     </div>
   </div>
 
-  <!-- Avatar Shop Page -->
   <div class="avatar-shop-page" id="avatarShopPage">
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="shopBackBtn">‹</div>
@@ -411,7 +404,6 @@
     <div class="avatar-grid" id="avatarGrid"></div>
   </div>
 
-  <!-- Purchase Modal -->
   <div class="shop-modal" id="purchaseModal">
     <div class="shop-modal-content">
       <div class="shop-modal-title">خرید آواتار</div>
@@ -423,7 +415,6 @@
     </div>
   </div>
 
-  <!-- Settings Modal -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
@@ -437,7 +428,6 @@
     </div>
   </div>
 
-  <!-- Change Password Modal -->
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تغییر رمز عبور</div><div class="modal-close" onclick="closeModal('changePasswordModal')">✕</div></div>
@@ -707,7 +697,6 @@
     const tk = getRoleTick(user.rank);
     if(tk){applyTick(document.getElementById('mainUserTick'), tk); applyTick(document.getElementById('profileUserTick'), tk);}
     
-    // ✅ نمایش پنل مدیریت بر اساس rank
     const perm = getPerm();
     document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
     document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
@@ -1118,11 +1107,7 @@
   }
   setInterval(checkBanPeriodically,5000);
 
-  // ==========================================
-  // سیستم بارگذاری فوری (Local-First) - نسخه بهینه‌شده
-  // ==========================================
   document.addEventListener('DOMContentLoaded', () => {
-    // 1. خواندن فوری از لوکال استوریج (بدون انتظار برای شبکه)
     const loggedIn = localStorage.getItem('currentLoggedInUser');
     if (!loggedIn) {
         window.location.href = 'index.html';
@@ -1139,7 +1124,6 @@
     
     currentPhone = phone;
 
-    // 2. خواندن کش محلی برای نمایش فوری (0.1 ثانیه)
     const localCache = localStorage.getItem('user_cache_' + currentPhone);
     let localUser = localCache ? JSON.parse(localCache) : null;
     
@@ -1157,16 +1141,12 @@
     }
     
     currentUserData = localUser;
-    
-    // 3. به‌روزرسانی فوری UI با داده‌های محلی (صفحه بلافاصله پر می‌شود)
     updateUIWithData(currentUserData);
 
-    // 4. شروع همگام‌سازی با سرور در پس‌زمینه (فوری و بدون تأخیر)
     setTimeout(() => {
         syncWithServerInBackground();
     }, 0);
 
-    // Event Listeners
     document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
     document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
     
@@ -1192,7 +1172,12 @@
     document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
     document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
     document.getElementById('btnTopPlayers').addEventListener('click',()=>showShopNotification('لیست برترین‌ها به زودی'));
-    document.getElementById('btnManagement').addEventListener('click',()=>showShopNotification('اطلاعات تیم مدیریتی به زودی'));
+    
+    // ✅ تغییر کلیدی: دکمه تیم مدیریتی به صفحه Modir.html
+    document.getElementById('btnManagement').addEventListener('click',()=>{
+        window.location.href = 'Modir.html';
+    });
+    
     document.getElementById('btnLive').addEventListener('click',()=>showShopNotification('پخش زنده به زودی'));
     document.getElementById('btnAdmin').addEventListener('click',async()=>{const p=getPerm();if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}await loadUsers();await updateServerToggleBtn();document.getElementById('adminModal').classList.add('active');});
     document.getElementById('sendNewsBtn').addEventListener('click',sendNews);
@@ -1266,7 +1251,6 @@
     setInterval(updateGroupDisplay,30000);
   });
 
-  // تابع همگام‌سازی نامرئی در پس‌زمینه
   async function syncWithServerInBackground() {
     try {
         const m = await getMaintenance();
@@ -1309,7 +1293,6 @@
         localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
         await saveUserData();
         
-        // به‌روزرسانی UI با داده‌های نهایی سرور (اگر تفاوتی بوده باشد)
         updateUIWithData(currentUserData);
         
         initAvatarShop();
@@ -1318,7 +1301,6 @@
         
     } catch (error) {
         console.error("Background sync error:", error);
-        // اگر خطا داد، کاربر همچنان با داده‌های لوکال کار می‌کند و صفحه خراب نمی‌شود
     }
   }
 </script>
