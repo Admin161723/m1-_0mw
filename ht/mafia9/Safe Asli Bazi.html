@@ -653,8 +653,9 @@
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
+  // ✅ تابع بهینه‌شده برای پخش دائمی و بدون توقف ویدیو
   function updateGlobalAvatar(src){
-    const isVideo = src.endsWith('.webm') || src.endsWith('.mp4');
+    const isVideo = src.endsWith('.webm') || src.endsWith('.mp4') || src.endsWith('.mov');
     const mainContainer = document.getElementById('mainAvatarContainer');
     const profileContainer = document.getElementById('openAvatarShop');
     const showcaseContainer = document.getElementById('showcaseAvatarContainer');
@@ -662,7 +663,16 @@
     const createMediaElement = () => {
       if (isVideo) {
         const v = document.createElement('video');
-        v.src = src; v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
+        v.src = src;
+        v.autoplay = true;
+        v.loop = true;
+        v.muted = true;
+        v.playsInline = true;
+        v.setAttribute('autoplay', '');
+        v.setAttribute('loop', '');
+        v.setAttribute('muted', '');
+        v.setAttribute('playsinline', '');
+        v.setAttribute('webkit-playsinline', '');
         return v;
       } else {
         const i = document.createElement('img');
@@ -692,11 +702,11 @@
     document.getElementById('statBestScore').textContent = toPersianNum(user.bestScore || 0);
     document.getElementById('statMafiaWins').textContent = toPersianNum(user.mafiaWins || 0);
     document.getElementById('statCitizenWins').textContent = toPersianNum(user.citizenWins || 0);
-    
+
     updateGlobalAvatar(user.avatar || 'Mafia2.png');
     const tk = getRoleTick(user.rank);
     if(tk){applyTick(document.getElementById('mainUserTick'), tk); applyTick(document.getElementById('profileUserTick'), tk);}
-    
+
     const perm = getPerm();
     document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
     document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
@@ -856,7 +866,7 @@
     const preview=document.getElementById('exclusiveAvatarPreview');
     if(u.exclusiveAvatar){
         if(u.exclusiveAvatar.endsWith('.webm') || u.exclusiveAvatar.endsWith('.mp4')) {
-            preview.innerHTML='<video src="'+u.exclusiveAvatar+'" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+            preview.innerHTML='<video src="'+u.exclusiveAvatar+'" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
         } else {
             preview.innerHTML='<img src="'+u.exclusiveAvatar+'" alt="exclusive">';
         }
@@ -885,11 +895,11 @@
         const file=e.target.files[0];
         if(!file)return;
         if(file.size>5*1024*1024){showShopNotification('حجم فایل باید کمتر از 5MB باشد','error');this.value='';return;}
-        
+
         if(file.type.startsWith('video/')) {
             const url = URL.createObjectURL(file);
             editingUserExclusiveAvatar = url;
-            document.getElementById('exclusiveAvatarPreview').innerHTML='<video src="'+url+'" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+            document.getElementById('exclusiveAvatarPreview').innerHTML='<video src="'+url+'" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
             showShopNotification('ویدیو انتخاب شد - دکمه ذخیره را بزنید');
         } else {
             compressImage(file,256,function(dataUrl){
@@ -1034,7 +1044,7 @@
     shopGems=currentUserData.gems||500;
     document.getElementById('shopGoldAmount').textContent=toPersianNum(shopGold);
     document.getElementById('shopGemAmount').textContent=toPersianNum(shopGems);
-    
+
     let cur=currentUserData.avatar||'Mafia2.png';
     if(currentPhone===CREATOR_PHONE || currentPhone===YAZDGARD_PHONE){
       cur=CREATOR_AVATAR;
@@ -1042,7 +1052,7 @@
       if(!avatars.find(a=>a.src===CREATOR_AVATAR)) avatars.push({id:999, src:CREATOR_AVATAR, price:0, owned:true, exclusive:true});
       else{const ex=avatars.find(a=>a.src===CREATOR_AVATAR); ex.owned=true; ex.exclusive=true;}
     }
-    
+
     if(currentUserData.exclusiveAvatar){
       const existingExclusive=avatars.find(a=>a.isMyExclusive);
       if(!existingExclusive){
@@ -1063,6 +1073,7 @@
     if(def) def.owned=true;
   }
 
+  // ✅ رندر آنی و بدون تأخیر فروشگاه آواتار
   function renderAvatars(){
     const grid=document.getElementById('avatarGrid');
     let disp;
@@ -1070,15 +1081,16 @@
       disp=avatars.filter(a=>a.owned);
       if(currentPhone!==CREATOR_PHONE && currentPhone!==YAZDGARD_PHONE) disp=disp.filter(a=>a.src!==CREATOR_AVATAR);
     }else disp=avatars.filter(a=>!a.owned&&!a.exclusive&&!a.isMyExclusive);
-    
+
     if(!disp.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">آواتاری موجود نیست</div>';return;}
-    
+
     grid.innerHTML=disp.map(a=>{
-      const isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4');
-      const mediaHtml = isVid ? `<video src="${a.src}" autoplay loop muted playsinline onerror="avatarLoadError(this,'${a.src}')"></video>` : `<img src="${a.src}" onerror="avatarLoadError(this,'${a.src}')">`;
+      const isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4') || a.src.endsWith('.mov');
+      const mediaHtml = isVid ? `<video src="${a.src}" autoplay loop muted playsinline webkit-playsinline onerror="avatarLoadError(this,'${a.src}')"></video>` : `<img src="${a.src}" onerror="avatarLoadError(this,'${a.src}')">`;
       const cardClass='avatar-card '+(a.owned?'owned ':'')+(a.isMyExclusive?'exclusive':'');
       return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${(!a.owned?`<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">${toPersianNum(a.price)}</span></div>`:`<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ ${(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':''))}</div>`)}</div>`;
     }).join('');
+    
     grid.querySelectorAll('.avatar-card').forEach(c=>c.addEventListener('click',()=>handleAvatarClick(parseInt(c.dataset.id))));
   }
 
@@ -1113,7 +1125,7 @@
         window.location.href = 'index.html';
         return;
     }
-    
+
     let phone = null;
     try {
         phone = JSON.parse(loggedIn).phone;
@@ -1121,12 +1133,12 @@
         window.location.href = 'index.html';
         return;
     }
-    
+
     currentPhone = phone;
 
     const localCache = localStorage.getItem('user_cache_' + currentPhone);
     let localUser = localCache ? JSON.parse(localCache) : null;
-    
+
     if (!localUser) {
         localUser = {
             name: 'کاربر',
@@ -1139,7 +1151,7 @@
             score: 0
         };
     }
-    
+
     currentUserData = localUser;
     updateUIWithData(currentUserData);
 
@@ -1149,35 +1161,45 @@
 
     document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
     document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
-    
+
     document.getElementById('menuContact').addEventListener('click',()=>{
         closeModal('menuDropdown');
         window.location.href = 'https://Mfasun.ir';
     });
-    
+
     document.getElementById('menuSettings').addEventListener('click',()=>{
         closeModal('menuDropdown');
         document.getElementById('settingsModal').classList.add('active');
     });
-    
+
     document.getElementById('menuLogout').addEventListener('click',()=>{closeModal('menuDropdown');if(confirm('از اکانت خارج می‌شوید؟')){localStorage.removeItem('currentLoggedInUser');window.location.href='index.html';}});
     document.getElementById('openProfile').addEventListener('click',()=>{document.getElementById('profilePage').classList.add('active');updateGroupDisplay();});
     document.getElementById('backBtn').addEventListener('click',()=>document.getElementById('profilePage').classList.remove('active'));
     document.getElementById('copyUserCode').addEventListener('click',()=>copyToClipboard(document.getElementById('userCode').textContent,'کد کاربری کپی شد!'));
-    document.getElementById('openAvatarShop').addEventListener('click',()=>{document.getElementById('profilePage').classList.remove('active');document.getElementById('avatarShopPage').classList.add('active');renderAvatars();});
+    
+    // ✅ باز شدن آنی فروشگاه آواتار
+    document.getElementById('openAvatarShop').addEventListener('click',()=>{
+        document.getElementById('profilePage').classList.remove('active');
+        document.getElementById('avatarShopPage').classList.add('active');
+        renderAvatars();
+    });
+    
     document.getElementById('shopBackBtn').addEventListener('click',()=>{document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
     document.getElementById('editNameBtn').addEventListener('click',changeUsername);
     document.getElementById('navShop').addEventListener('click',()=>window.location.href='Safe Foroshgahe.html');
     document.getElementById('navGroup').addEventListener('click',()=>window.location.href='Safe Goroh.html');
     document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
     document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
-    document.getElementById('btnTopPlayers').addEventListener('click',()=>showShopNotification('لیست برترین‌ها به زودی'));
     
-    // ✅ تغییر کلیدی: دکمه تیم مدیریتی به صفحه Modir.html
+    // ✅ هدایت به صفحه Bandi.html
+    document.getElementById('btnTopPlayers').addEventListener('click',()=>{
+        window.location.href = 'Bandi.html';
+    });
+
     document.getElementById('btnManagement').addEventListener('click',()=>{
         window.location.href = 'Modir.html';
     });
-    
+
     document.getElementById('btnLive').addEventListener('click',()=>showShopNotification('پخش زنده به زودی'));
     document.getElementById('btnAdmin').addEventListener('click',async()=>{const p=getPerm();if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}await loadUsers();await updateServerToggleBtn();document.getElementById('adminModal').classList.add('active');});
     document.getElementById('sendNewsBtn').addEventListener('click',sendNews);
@@ -1211,18 +1233,18 @@
         selectedAvatar=null;purchasePrice=0;
       }else{document.getElementById('purchaseModal').classList.remove('show');showShopNotification('الماس کافی ندارید!','error');}
     });
-    
+
     document.getElementById('openChangePasswordBtn').addEventListener('click', () => {
         closeModal('settingsModal');
         document.getElementById('cpPhone').value = currentPhone || '';
         document.getElementById('changePasswordModal').classList.add('active');
     });
-    
+
     document.getElementById('submitPasswordChange').addEventListener('click', async () => {
         const phone = document.getElementById('cpPhone').value.trim();
         const currentPass = document.getElementById('cpCurrentPass').value;
         const newPass = document.getElementById('cpNewPass').value;
-        
+
         if (!phone || !currentPass || !newPass) {
             showShopNotification('لطفاً تمام فیلدها را پر کنید', 'error');
             return;
@@ -1239,7 +1261,7 @@
             showShopNotification('رمز عبور جدید باید حداقل ۴ کاراکتر باشد', 'error');
             return;
         }
-        
+
         currentUserData.password = newPass;
         await saveUserData();
         showShopNotification('رمز عبور با موفقیت تغییر کرد ✅');
@@ -1261,9 +1283,9 @@
 
         const ban = await getBanStatus(currentPhone);
         if(ban){redirectToBan(ban,currentPhone); return;}
-        
+
         let serverUser = await getUser(currentPhone);
-        
+
         if (!serverUser) {
             const legacy = JSON.parse(localStorage.getItem('mafia_users') || '{}');
             serverUser = legacy[currentPhone];
@@ -1277,28 +1299,28 @@
                 return;
             }
         }
-        
+
         currentUserData = { ...currentUserData, ...serverUser };
-        
+
         if(currentPhone === CREATOR_PHONE || currentPhone === YAZDGARD_PHONE){
             currentUserData.avatar = CREATOR_AVATAR;
         }
-        
+
         if(!currentUserData.userCode){
             const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let code='P';
             for(let i=0;i<7;i++) code+=chars.charAt(Math.floor(Math.random()*chars.length));
             currentUserData.userCode=code;
         }
-        
+
         localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
         await saveUserData();
-        
+
         updateUIWithData(currentUserData);
-        
+
         initAvatarShop();
         updateServerToggleBtn();
         updateGroupDisplay();
-        
+
     } catch (error) {
         console.error("Background sync error:", error);
     }
