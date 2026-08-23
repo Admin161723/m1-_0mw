@@ -143,11 +143,11 @@
   .user-name-value{color:#fff;font-size:18px;font-weight:900;}
   .edit-name-btn{cursor:pointer;background:rgba(255,255,255,.15);border-radius:6px;padding:4px 6px;font-size:16px;}
   .clan-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);padding:6px 12px;border-radius:10px;}
-  .clan-name{font-size:14px;font-weight:900;flex:1;text-align:center;}
-  .clan-badge{width:36px;height:36px;background:linear-gradient(135deg,#8B0000,#cc2222);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #ff4444;flex-shrink:0;overflow:hidden;}
+  .clan-badge{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #ff4444;flex-shrink:0;overflow:hidden;background:#333;}
   .clan-badge svg{width:20px;height:20px;fill:#fff;}
   .clan-badge.has-group{background:linear-gradient(135deg,#bc6c25,#8b5e3c);border-color:#ffd700;box-shadow:0 0 8px rgba(255,215,0,.4);}
   .clan-badge.no-group{background:linear-gradient(135deg,#555,#333);border-color:#777;}
+  .clan-name{font-size:14px;font-weight:900;flex:1;text-align:right;}
   .stats-row{display:flex;gap:8px;padding:0 15px;margin-bottom:15px;}
   .stat-card{flex:1;background:linear-gradient(180deg,#6a3abf,#3d1f80);border-radius:12px;padding:10px 8px;text-align:center;border:1px solid #7a4acf;}
   .stat-card-title{color:#fff;font-size:12px;font-weight:700;margin-bottom:6px;}
@@ -232,11 +232,11 @@
   .volume-slider { width: 60%; accent-color: #4a9eff; }
   .password-btn { width: 100%; padding: 14px; background: linear-gradient(180deg, #4a9eff, #2a7acc); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 10px; }
   
-  /* استایل‌های پنل مسابقات */
   .tournament-config { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #3a8adc; }
-  .tournament-config h4 { color: #ffd700; margin-bottom: 10px; font-size: 14px; }
-  .prize-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
-  .prize-row select, .prize-row input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2a6ac0; background: rgba(255,255,255,0.1); color: #fff; font-size: 13px; }
+  .tournament-config h4 { color: #ffd700; margin-bottom: 10px; font-size: 14px; text-align: center; }
+  .prize-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+  .prize-row label { color: #fff; font-size: 12px; min-width: 60px; }
+  .prize-row select, .prize-row input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2a6ac0; background: rgba(255,255,255,0.1); color: #fff; font-size: 13px; min-width: 80px; }
 </style>
 </head>
 <body>
@@ -309,9 +309,45 @@
           <div class="admin-tools-title">🛠️ ابزارهای سازنده</div>
           <div class="admin-tools-btns">
             <button class="edit-btn ban" id="btnServerToggle">🔌 قطع سرور</button>
-            <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن کل دیتابیس (به جز مقام‌دارها)</button>
+            <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن کل دیتابیس</button>
           </div>
         </div>
+        
+        <div class="admin-tools" id="tournamentConfig" style="display:none;">
+          <div class="admin-tools-title">🏆 تنظیمات جوایز مسابقات کلن‌ها</div>
+          <div class="tournament-config">
+            <h4>رتبه ۱ (قهرمان)</h4>
+            <div class="prize-row">
+              <label>نوع:</label>
+              <select id="prize1Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option></select>
+              <label>مقدار/نام:</label>
+              <input type="text" id="prize1Value" placeholder="مثلا: 500 یا 601.webp">
+            </div>
+            <h4>رتبه ۲</h4>
+            <div class="prize-row">
+              <label>نوع:</label>
+              <select id="prize2Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option></select>
+              <label>مقدار/نام:</label>
+              <input type="text" id="prize2Value" placeholder="مثلا: 300">
+            </div>
+            <h4>رتبه ۳</h4>
+            <div class="prize-row">
+              <label>نوع:</label>
+              <select id="prize3Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option></select>
+              <label>مقدار/نام:</label>
+              <input type="text" id="prize3Value" placeholder="مثلا: 100">
+            </div>
+            <h4>رتبه ۴ تا ۱۰</h4>
+            <div class="prize-row">
+              <label>نوع:</label>
+              <select id="prize4Type"><option value="gem">الماس</option><option value="coin">سکه</option></select>
+              <label>مقدار:</label>
+              <input type="text" id="prize4Value" placeholder="مثلا: 50">
+            </div>
+            <button class="edit-btn save" onclick="saveTournamentConfig()" style="width:100%; margin-top:10px;">💾 ذخیره تنظیمات مسابقه</button>
+          </div>
+        </div>
+
         <div class="user-list" id="userList"></div>
       </div>
     </div>
@@ -363,8 +399,8 @@
         <div class="user-code-row" id="copyUserCode"><span class="user-code-label">کد کاربری</span><span class="user-code-value" id="userCode">----</span><button class="copy-btn">📋</button></div>
         <div class="user-name-row"><span>☢️</span><span class="user-name-value" id="profileUserName">کاربر</span><img id="profileUserTick" class="role-tick" src="" style="display:none;"><span class="edit-name-btn" id="editNameBtn">✏️</span></div>
         <div class="clan-row">
-          <span class="clan-name" id="profileGroupName">در حال بارگذاری...</span>
           <div class="clan-badge no-group" id="profileGroupBadge">❌</div>
+          <span class="clan-name" id="profileGroupName">بدون گروه</span>
         </div>
       </div>
     </div>
@@ -581,6 +617,8 @@
   async function saveNews(n){return await redisSet('game_news',n);}
   async function getMaintenance(){return await redisGet('server_maintenance');}
   async function setMaintenance(on){return await redisSet('server_maintenance',{on:on,at:Date.now()});}
+  async function getTournamentConfig(){return await redisGet('tournament_config')||{};}
+  async function saveTournamentConfigData(cfg){return await redisSet('tournament_config',cfg);}
 
   let isRedirecting=false;
   function redirectToOffline(){if(isRedirecting)return;isRedirecting=true;window.location.href='off.html';}
@@ -659,11 +697,25 @@
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  // ✅ سیستم پخش ویدیوی ضد قطع و انحصاری برای سازنده
-  function getValidAvatar(src, phone) {
-    if (src === '655.webm' && phone !== CREATOR_PHONE && phone !== YAZDGARD_PHONE) {
-      return 'Mafia2.png'; // بازگشت به حالت پیش‌فرض اگر غیر سازنده باشد
+  // ✅ سیستم امنیتی آواتار: حذف 655.webm از غیر سازنده
+  function sanitizeUserData(user, phone) {
+    if (!user) return user;
+    const isCreator = (phone === CREATOR_PHONE || phone === YAZDGARD_PHONE);
+    if (user.avatar === '655.webm' && !isCreator) {
+      user.avatar = 'Mafia2.png';
     }
+    if (user.exclusiveAvatar === '655.webm' && !isCreator) {
+      delete user.exclusiveAvatar;
+      if (user.ownedAvatars) {
+        user.ownedAvatars = user.ownedAvatars.filter(a => a !== 'exclusive_' + phone);
+      }
+    }
+    return user;
+  }
+
+  function getValidAvatar(src, phone) {
+    const isCreator = (phone === CREATOR_PHONE || phone === YAZDGARD_PHONE);
+    if (src === '655.webm' && !isCreator) return 'Mafia2.png';
     return src;
   }
 
@@ -685,10 +737,8 @@
         v.setAttribute('muted', 'muted');
         v.setAttribute('playsinline', 'playsinline');
         v.setAttribute('webkit-playsinline', 'webkit-playsinline');
-        // ✅ سیستم نظارتی برای جلوگیری از توقف ویدیو
         v.onpause = () => { if(!v.ended) v.play().catch(e=>{}); };
         v.onended = () => { v.currentTime = 0; v.play().catch(e=>{}); };
-        v.onerror = () => { v.style.display='none'; };
         return v;
       } else {
         const i = document.createElement('img');
@@ -726,14 +776,12 @@
     const perm = getPerm();
     document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
     document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
+    document.getElementById('tournamentConfig').style.display = (currentPhone === CREATOR_PHONE) ? 'block' : 'none';
   }
 
   async function saveUserData(){
     if(!currentUserData||!currentPhone)return;
-    // پاکسازی آواتار غیرمجاز قبل از ذخیره
-    if(currentUserData.avatar === '655.webm' && currentPhone !== CREATOR_PHONE && currentPhone !== YAZDGARD_PHONE) {
-      currentUserData.avatar = 'Mafia2.png';
-    }
+    currentUserData = sanitizeUserData(currentUserData, currentPhone);
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
     await saveUser(currentPhone,currentUserData);
     const allUsers=await getAllUsers();
@@ -879,7 +927,6 @@
     if(!isCreator && targetLevel>=myLevel){showShopNotification('نمی‌توانید هم‌مقام یا بالاتر را ویرایش کنید','error');return;}
 
     editingUserId=id;
-    // جلوگیری از اختصاص آواتار سازنده به دیگران
     if(u.exclusiveAvatar === '655.webm' && id !== CREATOR_PHONE && id !== YAZDGARD_PHONE) {
       editingUserExclusiveAvatar = null;
       u.exclusiveAvatar = null;
@@ -960,7 +1007,6 @@
     if(perm.gems)u.gems=parseInt(document.getElementById('editUserGems').value)||0;
     if(perm.rank)u.rank=document.getElementById('editUserRole').value;
     if(perm.exclusive&&editingUserExclusiveAvatar){
-      // بررسی نهایی انحصار آواتار
       if(editingUserExclusiveAvatar === '655.webm' && editingUserId !== CREATOR_PHONE && editingUserId !== YAZDGARD_PHONE) {
         showShopNotification('این آواتار فقط مخصوص سازنده است!', 'error');
         return;
@@ -1071,6 +1117,18 @@
     else{btn.textContent='🔌 قطع سرور';btn.className='edit-btn ban';}
   }
 
+  async function saveTournamentConfig() {
+    if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
+    const cfg = {
+      rank1: { type: document.getElementById('prize1Type').value, value: document.getElementById('prize1Value').value },
+      rank2: { type: document.getElementById('prize2Type').value, value: document.getElementById('prize2Value').value },
+      rank3: { type: document.getElementById('prize3Type').value, value: document.getElementById('prize3Value').value },
+      rank4_10: { type: document.getElementById('prize4Type').value, value: document.getElementById('prize4Value').value }
+    };
+    await saveTournamentConfigData(cfg);
+    showShopNotification('✅ تنظیمات مسابقات با موفقیت ذخیره شد');
+  }
+
   function initAvatarShop(){
     if(!currentUserData)return;
     shopGold=currentUserData.coins||200;
@@ -1168,26 +1226,19 @@
     }
 
     currentPhone = phone;
-
     const localCache = localStorage.getItem('user_cache_' + currentPhone);
     let localUser = localCache ? JSON.parse(localCache) : null;
 
     if (!localUser) {
-        localUser = {
-            name: 'کاربر',
-            coins: 0,
-            gems: 0,
-            avatar: 'Mafia2.png',
-            rank: 'کاربر',
-            userCode: '----',
-            level: 1,
-            score: 0
-        };
+        localUser = { name: 'کاربر', coins: 0, gems: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0 };
     }
 
-    currentUserData = localUser;
-    // به‌روزرسانی فوری UI قبل از هرگونه درخواست شبکه
+    // ✅ اعمال فیلتر امنیتی آواتار قبل از نمایش
+    currentUserData = sanitizeUserData(localUser, currentPhone);
+    
+    // ✅ به‌روزرسانی فوری UI قبل از هرگونه درخواست شبکه
     updateUIWithData(currentUserData);
+    initAvatarShop();
 
     // همگام‌سازی در پس‌زمینه
     setTimeout(() => {
@@ -1215,7 +1266,7 @@
     document.getElementById('openAvatarShop').addEventListener('click',()=>{
         document.getElementById('profilePage').classList.remove('active');
         document.getElementById('avatarShopPage').classList.add('active');
-        renderAvatars();
+        renderAvatars(); // رندر آنی
     });
     
     document.getElementById('shopBackBtn').addEventListener('click',()=>{document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
@@ -1234,7 +1285,20 @@
     });
 
     document.getElementById('btnLive').addEventListener('click',()=>showShopNotification('پخش زنده به زودی'));
-    document.getElementById('btnAdmin').addEventListener('click',async()=>{const p=getPerm();if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}await loadUsers();await updateServerToggleBtn();document.getElementById('adminModal').classList.add('active');});
+    document.getElementById('btnAdmin').addEventListener('click',async()=>{
+        const p=getPerm();
+        if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}
+        await loadUsers();
+        await updateServerToggleBtn();
+        // بارگذاری تنظیمات مسابقات
+        const cfg = await getTournamentConfig();
+        if(cfg.rank1) { document.getElementById('prize1Type').value = cfg.rank1.type; document.getElementById('prize1Value').value = cfg.rank1.value; }
+        if(cfg.rank2) { document.getElementById('prize2Type').value = cfg.rank2.type; document.getElementById('prize2Value').value = cfg.rank2.value; }
+        if(cfg.rank3) { document.getElementById('prize3Type').value = cfg.rank3.type; document.getElementById('prize3Value').value = cfg.rank3.value; }
+        if(cfg.rank4_10) { document.getElementById('prize4Type').value = cfg.rank4_10.type; document.getElementById('prize4Value').value = cfg.rank4_10.value; }
+        
+        document.getElementById('adminModal').classList.add('active');
+    });
     document.getElementById('sendNewsBtn').addEventListener('click',sendNews);
     document.getElementById('btnBanUser').addEventListener('click',banUser);
     document.getElementById('btnUnbanUser').addEventListener('click',unbanUser);
@@ -1334,6 +1398,7 @@
         }
 
         currentUserData = { ...currentUserData, ...serverUser };
+        currentUserData = sanitizeUserData(currentUserData, currentPhone); // اعمال فیلتر نهایی
 
         if(currentPhone === CREATOR_PHONE || currentPhone === YAZDGARD_PHONE){
             currentUserData.avatar = CREATOR_AVATAR;
@@ -1349,8 +1414,6 @@
         await saveUserData();
 
         updateUIWithData(currentUserData);
-
-        initAvatarShop();
         updateServerToggleBtn();
         updateGroupDisplay();
 
