@@ -85,7 +85,6 @@ img { -webkit-user-drag: none !important; }
 .about-name { font-size: 22px; font-weight: 900; color: #4a3b2a; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .about-desc { font-size: 13px; color: #8b7355; line-height: 1.6; margin-bottom: 12px; }
 
-/* ✅ استایل‌های جدید برای نوار پیشرفت سطح کلن */
 .clan-level-box {
   background: rgba(255,255,255,0.6);
   border: 2px solid #e6dcc3;
@@ -283,7 +282,6 @@ img { -webkit-user-drag: none !important; }
   </div>
 </div>
 
-<!-- Modals remain the same as previous version -->
 <div class="modal-overlay" id="modalCreate">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">ساخت گروه جدید</div><button class="modal-close" id="closeCreate">✕</button></div>
@@ -449,7 +447,6 @@ function getColorByCode(code) {
   return null;
 }
 
-// ✅ لیست دقیق تصاویر لوگو (24.webp حذف شد)
 const LOGO_IMAGES = [
   '20.webp', '21.webp', '22.webp', '23.webp',
   '30.webp', '31.webp', '32.webp', '33.webp', '34.webp', '35.webp', '36.webp', '37.webp', '38.webp', '39.webp',
@@ -566,28 +563,25 @@ function getAvatarHtml(avatarStr) {
   return ICONS.userDefault;
 }
 
-// ✅ تابع محاسبه پویای امتیاز و سطح کلن
-function calculateClanStats(members, allUsers) {
-    let totalPoints = 0;
+function calculateClanStats(group, allUsers) {
+    let totalPoints = parseInt(group.extraPoints) || 0;
+    const members = gm(group);
     members.forEach(memberId => {
         const u = allUsers[memberId];
         if (u) {
             const cups = parseInt(u.cups) || 0;
             const hours = parseInt(u.hours) || 0;
-            // 1 کاپ = 2 امتیاز، 1 ساعت بازی = 20 امتیاز
             totalPoints += (cups * 2) + (hours * 20);
         }
     });
     
-    // محاسبه سطح: هر 1000 امتیاز = 1 سطح (حداکثر سطح 1000)
     let level = Math.floor(totalPoints / 1000) + 1;
     if (level > 1000) level = 1000;
     
-    const pointsForNextLevel = level * 1000;
     const currentLevelPoints = totalPoints - ((level - 1) * 1000);
     const percentage = Math.min(100, (currentLevelPoints / 1000) * 100);
     
-    return { totalPoints, level, currentLevelPoints, pointsForNextLevel, percentage };
+    return { totalPoints, level, currentLevelPoints, percentage };
 }
 
 async function loadUserData() {
@@ -700,7 +694,6 @@ async function renderAbout() {
   const group = groups.find(g => g.id === currentGroupId);
   if (!group) return;
   
-  // ✅ دریافت اطلاعات به‌روز کاربران برای رفع باگ آپدیت پروفایل
   const allUsers = await getUsersCached(true);
   
   const header = document.getElementById('aboutHeader');
@@ -719,8 +712,7 @@ async function renderAbout() {
   }
   document.getElementById('aboutDesc').textContent = group.desc || 'بدون توضیحات';
   
-  // ✅ محاسبه و نمایش نوار پیشرفت سطح کلن
-  const stats = calculateClanStats(gm(group), allUsers);
+  const stats = calculateClanStats(group, allUsers);
   const statsContainer = document.getElementById('aboutStats');
   statsContainer.innerHTML = `
     <div class="stat-badge">👥 <span>${toPersianNum(gm(group).length)}</span>/<span>${toPersianNum(group.capacity||50)}</span></div>
@@ -769,6 +761,28 @@ async function renderAbout() {
     upBtn.onclick = upgradeCapacity;
     actionsDiv.appendChild(upBtn);
   }
+  if (isMember) {
+    const upgradeBtn = document.createElement('button');
+    upgradeBtn.className = 'action-btn primary';
+    upgradeBtn.innerHTML = '⚡ ارتقا امتیاز کلن (۲۰ الماس)';
+    upgradeBtn.onclick = async () => {
+      if ((currentUser.gems || 0) < 20) {
+        showToast('الماس کافی ندارید (۲۰ الماس لازم است)', true);
+        return;
+      }
+      if (!confirm('آیا مطمئن هستید که می‌خواهید با پرداخت ۲۰ الماس، ۲۰۰ امتیاز به کلن اضافه کنید؟')) return;
+      
+      currentUser.gems -= 20;
+      group.extraPoints = (group.extraPoints || 0) + 200;
+      
+      await saveData();
+      showToast('✅ ۲۰۰ امتیاز به کلن اضافه شد!');
+      await renderAbout();
+      updateUI();
+    };
+    actionsDiv.appendChild(upgradeBtn);
+  }
+  
   if (isMember && !isOwner) {
     const leaveBtn = document.createElement('button');
     leaveBtn.className = 'action-btn danger';
