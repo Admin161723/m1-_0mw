@@ -21,315 +21,159 @@
   }
 
   html {
-    width: 100% !important;
-    height: 100% !important;
-    overflow: hidden !important;
-    position: fixed !important;
+    width: 100% !important; height: 100% !important;
+    overflow: hidden !important; position: fixed !important;
     top: 0; left: 0; right: 0; bottom: 0;
     overscroll-behavior: none !important;
-    background: #061a3a !important;
-    touch-action: none !important;
+    background: #061a3a !important; touch-action: none !important;
   }
 
   body {
     font-family: 'Vazirmatn', Tahoma, sans-serif;
     background: linear-gradient(180deg, #0a2a5a 0%, #061a3a 100%) !important;
-    width: 100% !important;
-    height: 100% !important;
-    position: fixed !important;
-    top: 0; left: 0;
-    margin: 0 !important; padding: 0 !important;
-    display: flex;
-    justify-content: center;
-    overflow: hidden !important;
-    overscroll-behavior: none !important;
-    touch-action: none !important;
+    width: 100% !important; height: 100% !important;
+    position: fixed !important; top: 0; left: 0;
+    display: flex; justify-content: center;
+    overflow: hidden !important; touch-action: none !important;
     color: white;
   }
 
   .page-wrapper {
-    width: 100%;
-    max-width: 420px;
-    height: 100vh;
-    height: 100dvh;
+    width: 100%; max-width: 420px; height: 100vh; height: 100dvh;
     background: linear-gradient(180deg, #0a2a5a 0%, #061a3a 100%);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden !important;
-    overscroll-behavior: none !important;
-    touch-action: none !important;
+    position: relative; display: flex; flex-direction: column;
+    overflow: hidden !important; touch-action: none !important;
   }
 
   .header {
     background: linear-gradient(180deg, #1e4a8a 0%, #163d75 100%);
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border-bottom: 2px solid #2a5a9a;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    flex-shrink: 0;
-    z-index: 10;
+    padding: 15px; display: flex; align-items: center; justify-content: center;
+    position: relative; border-bottom: 2px solid #2a5a9a;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; z-index: 10;
   }
 
-  .back-btn {
-    position: absolute;
-    left: 15px;
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: white;
-    font-size: 24px;
-    border: 2px solid rgba(255,255,255,0.2);
-    transition: all 0.2s;
-    touch-action: manipulation;
+  .back-btn, .refresh-btn {
+    position: absolute; width: 40px; height: 40px;
+    background: rgba(255,255,255,0.15); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: white; font-size: 24px;
+    border: 2px solid rgba(255,255,255,0.2); transition: all 0.2s;
   }
-  .back-btn:active {
-    background: rgba(255,255,255,0.3);
-    transform: scale(0.95);
-  }
-
-  .header-title {
-    color: white;
-    font-size: 20px;
-    font-weight: 900;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-
-  .refresh-btn {
-    position: absolute;
-    right: 15px;
-    width: 40px;
-    height: 40px;
-    background: rgba(74,158,255,0.25);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: white;
-    font-size: 20px;
-    border: 2px solid rgba(74,158,255,0.4);
-    transition: all 0.2s;
-    touch-action: manipulation;
-  }
-  .refresh-btn:active {
-    background: rgba(74,158,255,0.4);
-    transform: scale(0.95);
-  }
+  .back-btn { left: 15px; }
+  .refresh-btn { right: 15px; font-size: 20px; }
+  .back-btn:active, .refresh-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
   .refresh-btn.spinning { animation: spin 1s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+  .header-title {
+    color: white; font-size: 20px; font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
   .tournament-timer {
-    background: rgba(0,0,0,0.4);
-    padding: 12px;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 900;
-    color: #ffd700;
+    background: rgba(0,0,0,0.4); padding: 12px; text-align: center;
+    font-size: 15px; font-weight: 900; color: #ffd700;
     border-bottom: 1px solid rgba(255,215,0,0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    flex-shrink: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
 
   .leaderboard {
-    padding: 15px;
-    padding-bottom: 30px;
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+    padding: 15px; padding-bottom: 30px; flex: 1;
+    overflow-y: auto; overflow-x: hidden;
     overscroll-behavior: contain !important;
-    -webkit-overflow-scrolling: auto;
-    touch-action: pan-y;
+    -webkit-overflow-scrolling: auto; touch-action: pan-y;
   }
 
   .rank-item {
     background: linear-gradient(180deg, #2a7acc, #1a5aaa);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border: 2px solid #3a8adc;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: transform 0.2s;
-    touch-action: manipulation;
-    cursor: pointer;
+    border-radius: 12px; padding: 12px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 12px;
+    border: 2px solid #3a8adc; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s; cursor: pointer;
   }
   .rank-item:active { transform: scale(0.98); }
 
-  .rank-item.top-1 {
-    background: linear-gradient(180deg, #ffd700, #ff8c00);
-    border-color: #ffd700;
-  }
-  .rank-item.top-2 {
-    background: linear-gradient(180deg, #c0c0c0, #808080);
-    border-color: #c0c0c0;
-  }
-  .rank-item.top-3 {
-    background: linear-gradient(180deg, #cd7f32, #8b4513);
-    border-color: #cd7f32;
-  }
+  .rank-item.top-1 { background: linear-gradient(180deg, #ffd700, #ff8c00); border-color: #ffd700; }
+  .rank-item.top-2 { background: linear-gradient(180deg, #c0c0c0, #808080); border-color: #c0c0c0; }
+  .rank-item.top-3 { background: linear-gradient(180deg, #cd7f32, #8b4513); border-color: #cd7f32; }
   .rank-item.current-user {
     border: 3px solid #4a9eff !important;
     box-shadow: 0 0 20px rgba(74,158,255,0.6);
-    background: linear-gradient(180deg, #3a8adc, #2a7acc);
   }
 
   .rank-number {
-    width: 40px;
-    height: 40px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 900;
-    color: white;
-    flex-shrink: 0;
+    width: 40px; height: 40px; background: rgba(0,0,0,0.3);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: white; flex-shrink: 0;
   }
-  .rank-item.top-1 .rank-number,
-  .rank-item.top-2 .rank-number,
-  .rank-item.top-3 .rank-number {
-    background: rgba(255,255,255,0.3);
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  .rank-item.top-1 .rank-number, .rank-item.top-2 .rank-number, .rank-item.top-3 .rank-number {
+    background: rgba(255,255,255,0.3); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
 
-  .user-avatar {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    border: 3px solid white;
-    overflow: hidden;
-    flex-shrink: 0;
+  .clan-logo-box {
+    width: 55px; height: 55px; border-radius: 50%;
+    border: 3px solid white; overflow: hidden; flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    background: #1a3a6a;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: linear-gradient(135deg, #d4c5a9, #bc6c25);
+    display: flex; align-items: center; justify-content: center;
   }
-  .user-avatar img {
-    width: 100%; height: 100%; object-fit: cover;
-    pointer-events: none;
-  }
-  .clan-logo svg {
-    width: 32px;
-    height: 32px;
-    fill: #fff;
-    pointer-events: none;
-  }
+  .clan-logo-box svg { width: 32px; height: 32px; fill: #fff; }
 
-  .user-info {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
+  .user-info { flex: 1; min-width: 0; overflow: hidden; }
 
   .user-name-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 4px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 4px; flex-wrap: wrap;
   }
 
   .user-name {
-    color: white;
-    font-weight: 900;
-    word-break: break-word;
-    white-space: normal;
-    line-height: 1.3;
+    color: white; font-weight: 900; word-break: break-word;
+    white-space: normal; line-height: 1.3;
     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    max-width: 100%;
-    font-size: 15px;
+    max-width: 100%; font-size: 15px;
   }
 
   .clan-tick {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    flex-shrink: 0;
+    width: 20px; height: 20px; object-fit: contain; flex-shrink: 0;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
   }
 
   .user-level {
-    color: rgba(255,255,255,0.9);
-    font-size: 12px;
-    font-weight: 700;
+    color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 700;
   }
 
   .rank-medal {
-    width: 45px;
-    height: 45px;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    flex-shrink: 0;
+    width: 45px; height: 45px; object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); flex-shrink: 0;
   }
 
   .rank-badge {
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 900;
-    color: white;
-    flex-shrink: 0;
+    width: 40px; height: 40px; background: rgba(255,255,255,0.15);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 900; color: white; flex-shrink: 0;
     border: 2px solid rgba(255,255,255,0.2);
   }
 
   .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: rgba(255,255,255,0.6);
-    font-size: 16px;
+    text-align: center; padding: 60px 20px;
+    color: rgba(255,255,255,0.6); font-size: 16px;
   }
 
   .loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
-    margin-left: 8px;
+    display: inline-block; width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.3); border-top-color: white;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    vertical-align: middle; margin-left: 8px;
   }
 
   .toast {
-    position: fixed;
-    top: 70px;
-    left: 50%;
+    position: fixed; top: 70px; left: 50%;
     transform: translateX(-50%) translateY(-100px);
     background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 14px;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 2000;
-    pointer-events: none;
-    white-space: nowrap;
+    padding: 12px 24px; border-radius: 10px;
+    font-weight: 700; font-size: 14px; opacity: 0;
+    transition: all 0.3s; z-index: 2000; pointer-events: none; white-space: nowrap;
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .toast.error { background: linear-gradient(180deg, #f44336 0%, #da190b 100%); }
@@ -339,59 +183,55 @@
 
   /* Modal Styles */
   .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(4px);
   }
   .modal-overlay.active { display: flex; }
   .modal-box {
-    background: linear-gradient(180deg, #2a7acc, #1a5aaa);
-    border-radius: 20px;
-    width: 100%;
-    max-width: 360px;
-    max-height: 85vh;
-    overflow: hidden;
-    border: 3px solid #3a8adc;
-    display: flex;
-    flex-direction: column;
+    background: linear-gradient(180deg, #1a3a6a, #0f2545);
+    border-radius: 20px; width: 100%; max-width: 380px;
+    max-height: 85vh; overflow: hidden;
+    border: 2px solid #3a8adc; display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
   .modal-header {
-    background: linear-gradient(180deg, #3a8adc, #2a7acc);
-    padding: 16px;
-    text-align: center;
-    position: relative;
+    background: linear-gradient(180deg, #2a5a9a, #1a3a6a);
+    padding: 16px; text-align: center; position: relative;
+    border-bottom: 1px solid #3a8adc;
   }
-  .modal-title {
-    color: white;
-    font-size: 18px;
-    font-weight: 900;
-  }
+  .modal-title { color: white; font-size: 16px; font-weight: 900; }
   .modal-close {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 32px;
-    height: 32px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    color: white;
-    border: none;
+    position: absolute; top: 12px; left: 12px;
+    width: 32px; height: 32px; background: rgba(255,255,255,0.15);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 20px; color: white; border: none;
   }
-  .modal-body {
-    padding: 15px;
-    overflow-y: auto;
-    flex: 1;
+  .modal-body { padding: 15px; overflow-y: auto; flex: 1; }
+
+  /* Member Card in Modal */
+  .member-card-modal {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px; background: rgba(255,255,255,0.05);
+    border-radius: 12px; margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.2s;
   }
+  .member-card-modal:active { background: rgba(255,255,255,0.1); }
+  .member-avatar-modal {
+    width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
+    border: 2px solid #fff; flex-shrink: 0; background: #1a3a6a;
+  }
+  .member-avatar-modal img, .member-avatar-modal video {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .member-info-modal { flex: 1; min-width: 0; }
+  .member-name-modal {
+    color: #fff; font-weight: 900; font-size: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .member-role-modal { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .member-stats-modal { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -577,7 +417,8 @@
     3:{name:'قرمز',hex:'#FF0000',text:'#fff'}, 4:{name:'سبز',hex:'#008000',text:'#fff'},
     5:{name:'آبی',hex:'#0000FF',text:'#fff'}, 6:{name:'زرد',hex:'#FFD700',text:'#000'},
     7:{name:'نارنجی',hex:'#FFA500',text:'#000'}, 8:{name:'صورتی',hex:'#FF69B4',text:'#fff'},
-    9:{name:'بنفش',hex:'#800080',text:'#fff'}, 10:{name:'قهوه‌ای',hex:'#8B4513',text:'#fff'}
+    9:{name:'بنفش',hex:'#800080',text:'#fff'}, 10:{name:'قهوه‌ای',hex:'#8B4513',text:'#fff'},
+    11:{name:'خاکستری',hex:'#808080',text:'#fff'}, 12:{name:'طلایی',hex:'#FFD700',text:'#000'}
   };
   function getColorByCode(code) {
     if (!code) return null;
@@ -604,6 +445,7 @@
       });
     }
     
+    // اولویت با level ذخیره شده در گروه، در غیر این صورت محاسبه میانگین
     const clanLevel = group.level || Math.max(1, Math.floor(totalLevel / (memberCount || 1)));
     return { totalScore, clanLevel, memberCount };
   }
@@ -641,12 +483,12 @@
 
     const [allUsers, groups] = await Promise.all([getAllUsers(), getGroups()]);
     
-    // محاسبه آمار هر کلن و مرتب‌سازی
     const clansWithStats = groups.map(group => ({
       group,
       stats: getClanStats(group, allUsers)
     }));
 
+    // مرتب‌سازی: اول سطح کلن، بعد امتیاز کل
     clansWithStats.sort((a, b) => {
       if (b.stats.clanLevel !== a.stats.clanLevel) {
         return b.stats.clanLevel - a.stats.clanLevel;
@@ -669,7 +511,6 @@
   function createClanItem(group, stats, rank, allUsers) {
     const isCurrentUserClan = currentUserGroup && currentUserGroup.id === group.id;
     
-    // رنگ نام کلن
     let nameStyle = '';
     if (group.colorCode) {
       const colorData = getColorByCode(group.colorCode);
@@ -678,13 +519,9 @@
       }
     }
     
-    // تیک کلن
     const tickHtml = group.verified ? '<img src="TikK2.png" class="clan-tick" onerror="this.style.display=\'none\'">' : '';
-    
-    // لوگو کلن
     const logoHtml = group.logo ? getGroupIcon(group.logo) : getGroupIcon('shield');
     
-    // نشان رتبه
     let rankHtml = '';
     if (rank === 1) rankHtml = '<img src="26.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
     else if (rank === 2) rankHtml = '<img src="27.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
@@ -694,7 +531,7 @@
     return `
       <div class="rank-item ${rank <= 3 ? 'top-' + rank : ''} ${isCurrentUserClan ? 'current-user' : ''}" onclick="showClanMembers('${group.id}')">
         <div class="rank-number">${toPersianNum(rank)}</div>
-        <div class="user-avatar clan-logo">
+        <div class="clan-logo-box">
           ${logoHtml}
         </div>
         <div class="user-info">
@@ -709,8 +546,10 @@
     `;
   }
 
+  // ✅ نمایش اعضای کلن با به‌روزرسانی زنده اطلاعات
   async function showClanMembers(groupId) {
-    const groups = await getGroups();
+    // دریافت اطلاعات تازه برای اطمینان از نمایش آخرین تغییرات نام و آواتار
+    const [groups, allUsers] = await Promise.all([getGroups(), getAllUsers()]);
     const group = groups.find(g => g.id === groupId);
     if (!group) return;
     
@@ -719,10 +558,10 @@
     list.innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.7);">در حال بارگذاری...<div class="loading-spinner"></div></div>';
     document.getElementById('clanMembersModal').classList.add('active');
     
-    const allUsers = await getAllUsers();
     let membersHtml = '';
     
     if (group.members && group.members.length > 0) {
+      // مرتب‌سازی: مدیر اول، بعد معاون‌ها، بعد اعضا
       const sortedMembers = [...group.members].sort((a, b) => {
         if (a === group.owner) return -1;
         if (b === group.owner) return 1;
@@ -732,23 +571,36 @@
       });
       
       for (const phone of sortedMembers) {
-        const u = allUsers[phone] || { name: 'کاربر', avatar: 'Mafia2.png', level: 1 };
+        const u = allUsers[phone] || { name: 'کاربر', avatar: 'Mafia2.png', level: 1, score: 0 };
         const isOwner = phone === group.owner;
         const isDeputy = (group.deputies || []).includes(phone);
+        
         let roleText = '👤 عضو';
-        let roleColor = 'rgba(255,255,255,0.7)';
+        let roleColor = '#a0aec0';
         
-        if (isOwner) { roleText = '👑 مدیر کلن'; roleColor = '#ffd700'; }
-        else if (isDeputy) { roleText = '⭐ معاون'; roleColor = '#4a9eff'; }
-        
+        if (isOwner) {
+          roleText = '👑 مدیر کلن';
+          roleColor = '#ffd700';
+        } else if (isDeputy) {
+          roleText = '⭐ معاون';
+          roleColor = '#4a9eff';
+        }
+
+        // پشتیبانی از آواتار ویدیویی برای اعضا (در صورتی که مدیر/معاون آواتار ویدیویی داشته باشد)
+        const isVideo = u.avatar && (u.avatar.endsWith('.webm') || u.avatar.endsWith('.mp4'));
+        const avatarHtml = isVideo
+          ? `<video src="${u.avatar}" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+          : `<img src="${u.avatar || 'Mafia2.png'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='Mafia2.png'">`;
+
         membersHtml += `
-          <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.1);">
-            <div style="width:45px;height:45px;border-radius:50%;overflow:hidden;border:2px solid #fff;flex-shrink:0;background:#1a3a6a;">
-              <img src="${u.avatar || 'Mafia2.png'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='Mafia2.png'">
+          <div class="member-card-modal">
+            <div class="member-avatar-modal">
+              ${avatarHtml}
             </div>
-            <div style="flex:1; min-width:0;">
-              <div style="color:#fff; font-weight:900; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name || 'کاربر'}</div>
-              <div style="color:${roleColor}; font-size:12px; font-weight:700;">${roleText} • سطح ${toPersianNum(u.level || 1)}</div>
+            <div class="member-info-modal">
+              <div class="member-name-modal">${u.name || 'کاربر'}</div>
+              <div class="member-role-modal" style="color:${roleColor}">${roleText}</div>
+              <div class="member-stats-modal">سطح: ${toPersianNum(u.level || 1)} • امتیاز: ${toPersianNum(u.score || 0)}</div>
             </div>
           </div>
         `;
@@ -787,7 +639,6 @@
       const userInfo = JSON.parse(loggedIn);
       currentUserPhone = userInfo.phone;
 
-      // پیدا کردن کلن کاربر فعلی
       const groups = await getGroups();
       currentUserGroup = groups.find(g => g.members && g.members.includes(currentUserPhone)) || null;
 
