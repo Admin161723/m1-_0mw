@@ -111,19 +111,22 @@
     background: rgba(255,255,255,0.3); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
 
+  /* ✅ لوگو کلن دقیقاً مثل بخش گروه‌ها (عکس واقعی) */
   .clan-logo-box {
-    width: 55px; height: 55px; border-radius: 50%;
-    border: 3px solid white; overflow: hidden; flex-shrink: 0;
+    width: 55px; height: 55px; border-radius: 12px;
+    background: #fffef9; border: 1px solid rgba(255,255,255,0.3);
+    overflow: hidden; flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    background: linear-gradient(135deg, #d4c5a9, #bc6c25);
     display: flex; align-items: center; justify-content: center;
   }
-  .clan-logo-box svg { width: 32px; height: 32px; fill: #fff; }
+  .clan-logo-box img {
+    width: 100%; height: 100%; object-fit: contain; padding: 4px;
+  }
 
   .user-info { flex: 1; min-width: 0; overflow: hidden; }
 
   .user-name-row {
-    display: flex; align-items: center; gap: 4px;
+    display: flex; align-items: center; gap: 6px;
     margin-bottom: 4px; flex-wrap: wrap;
   }
 
@@ -134,14 +137,32 @@
     max-width: 100%; font-size: 15px;
   }
 
+  /* ✅ تیک بزرگ (۳۶ پیکسل) دقیقاً مثل بخش گروه‌ها */
   .clan-tick {
-    width: 20px; height: 20px; object-fit: contain; flex-shrink: 0;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    width: 36px; height: 36px; object-fit: contain; flex-shrink: 0;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
   }
 
   .user-level {
     color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 700;
+    margin-bottom: 4px;
   }
+
+  /* ✅ نوار پیشرفت سطح دقیقاً مثل بخش گروه‌ها */
+  .clan-level-box {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 8px;
+  }
+  .clan-level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 11px; font-weight: 900; color: rgba(255,255,255,0.9); }
+  .clan-level-badge { background: linear-gradient(180deg, #bc6c25, #8b5e3c); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; }
+  .clan-progress-bg { width: 100%; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; position: relative; }
+  .clan-progress-fill { height: 100%; background: linear-gradient(90deg, #bc6c25, #ffd700); border-radius: 4px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+  .rank-item.top-1 .clan-progress-fill, .rank-item.top-2 .clan-progress-fill, .rank-item.top-3 .clan-progress-fill {
+    background: linear-gradient(90deg, #fff, #ffd700);
+  }
+  .clan-level-footer { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 4px; font-weight: 700; display: flex; justify-content: space-between; }
 
   .rank-medal {
     width: 45px; height: 45px; object-fit: contain;
@@ -209,7 +230,6 @@
   }
   .modal-body { padding: 15px; overflow-y: auto; flex: 1; }
 
-  /* Member Card in Modal */
   .member-card-modal {
     display: flex; align-items: center; gap: 12px;
     padding: 10px; background: rgba(255,255,255,0.05);
@@ -232,6 +252,11 @@
   }
   .member-role-modal { font-size: 12px; font-weight: 700; margin-top: 2px; }
   .member-stats-modal { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 2px; }
+  .member-cups-badge {
+    background: rgba(255,215,0,0.2); color: #ffd700;
+    padding: 3px 8px; border-radius: 8px; font-size: 11px;
+    font-weight: 900; margin-right: 4px;
+  }
 </style>
 </head>
 <body>
@@ -261,7 +286,6 @@
       <button class="modal-close" onclick="closeModal('clanMembersModal')">✕</button>
     </div>
     <div class="modal-body" id="modalClanMembersList">
-      <!-- Members will be injected here -->
     </div>
   </div>
 </div>
@@ -269,9 +293,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ================================================================
-  // 🔒 قفل کامل زوم، کپی، کشش و نگه‌داشتن
-  // ================================================================
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('gesturechange', e => e.preventDefault());
   document.addEventListener('gestureend', e => e.preventDefault());
@@ -297,8 +318,7 @@
 
   document.addEventListener('contextmenu', function(e) {
     if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-      e.preventDefault();
-      return false;
+      e.preventDefault(); return false;
     }
   });
 
@@ -326,9 +346,6 @@
     }, { passive: true });
   }
 
-  // ================================================================
-  // نوتیفیکیشن
-  // ================================================================
   function showToast(message, type = 'success') {
     const t = document.getElementById('toast');
     t.textContent = message;
@@ -340,9 +357,6 @@
     document.getElementById(id).classList.remove('active');
   }
 
-  // ================================================================
-  // 🔥 سیستم ۴ لایه Fallback دیتابیس
-  // ================================================================
   const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
   const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
   const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
@@ -392,62 +406,52 @@
   async function getGroups() { return await redisGet('police_groups') || []; }
   async function getTournamentConfig() { return await redisGet('tournament_config') || {}; }
 
-  // ================================================================
-  // توابع کمکی
-  // ================================================================
   function toPersianNum(num) {
     const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return (num || 0).toString().replace(/[0-9]/g, w => persian[+w]);
   }
 
-  const GROUP_ICONS = {
-    shield: '<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>',
-    lion: '<svg viewBox="0 0 24 24"><path d="M7 4c-1.1 0-2 .9-2 2v1c-1.1 0-2 .9-2 2v7c0 2.76 2.24 5 5 5h8c2.76 0 5-2.24 5-5V9c0-1.1-.9-2-2-2V6c0-1.1-.9-2-2-2H7z"/></svg>',
-    eagle: '<svg viewBox="0 0 24 24"><path d="M18 4l-2 2H8L6 4H2v2l2.5 1c-.83 1.2-1.5 2.68-1.5 4.5C3 15 5 18 8 19l2 2v1h4v-1l2-2c3-1 5-4 5-7.5 0-1.82-.67-3.3-1.5-4.5L22 6V4h-4z"/></svg>',
-    dragon: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>',
-    skull: '<svg viewBox="0 0 24 24"><path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>',
-    fire: '<svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>',
-    crown: '<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>',
-    star: '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
-  };
-  function getGroupIcon(key) { return GROUP_ICONS[key] || GROUP_ICONS.shield; }
-
   const COLOR_CODES = {
-    1:{name:'سفید',hex:'#FFFFFF',text:'#000'}, 2:{name:'مشکی',hex:'#000000',text:'#fff'},
-    3:{name:'قرمز',hex:'#FF0000',text:'#fff'}, 4:{name:'سبز',hex:'#008000',text:'#fff'},
-    5:{name:'آبی',hex:'#0000FF',text:'#fff'}, 6:{name:'زرد',hex:'#FFD700',text:'#000'},
-    7:{name:'نارنجی',hex:'#FFA500',text:'#000'}, 8:{name:'صورتی',hex:'#FF69B4',text:'#fff'},
-    9:{name:'بنفش',hex:'#800080',text:'#fff'}, 10:{name:'قهوه‌ای',hex:'#8B4513',text:'#fff'},
-    11:{name:'خاکستری',hex:'#808080',text:'#fff'}, 12:{name:'طلایی',hex:'#FFD700',text:'#000'}
+    1:{name:'سفید',hex:'#FFFFFF',text:'#000'},2:{name:'مشکی',hex:'#000000',text:'#fff'},
+    3:{name:'قرمز',hex:'#FF0000',text:'#fff'},4:{name:'سبز',hex:'#008000',text:'#fff'},
+    5:{name:'آبی',hex:'#0000FF',text:'#fff'},6:{name:'زرد',hex:'#FFD700',text:'#000'},
+    7:{name:'نارنجی',hex:'#FFA500',text:'#000'},8:{name:'صورتی',hex:'#FF69B4',text:'#fff'},
+    9:{name:'بنفش',hex:'#800080',text:'#fff'},10:{name:'قهوه‌ای',hex:'#8B4513',text:'#fff'},
+    11:{name:'خاکستری',hex:'#808080',text:'#fff'},12:{name:'طلایی',hex:'#FFD700',text:'#000'}
   };
   function getColorByCode(code) {
     if (!code) return null;
     const n = parseInt(code);
-    return COLOR_CODES[n] || null;
+    if (n >= 1 && n <= 100) return COLOR_CODES[n] || null;
+    return null;
   }
+
+  const CREATOR_PHONE = '09904844031';
+  const CLAN_TICK_IMG = 'TikK2.png';
 
   let currentUserPhone = null;
   let currentUserGroup = null;
 
-  function getClanStats(group, allUsers) {
-    let totalScore = 0;
-    let totalLevel = 0;
-    let memberCount = 0;
-    
-    if (group.members) {
-      memberCount = group.members.length;
-      group.members.forEach(phone => {
-        const u = allUsers[phone];
-        if (u) {
-          totalScore += (u.score || 0);
-          totalLevel += (u.level || 1);
-        }
-      });
-    }
-    
-    // اولویت با level ذخیره شده در گروه، در غیر این صورت محاسبه میانگین
-    const clanLevel = group.level || Math.max(1, Math.floor(totalLevel / (memberCount || 1)));
-    return { totalScore, clanLevel, memberCount };
+  // ✅ تابع دقیقاً مطابق Safe Goroh.html برای محاسبه سطح کلن
+  function calculateClanStats(group, allUsers) {
+    let totalPoints = parseInt(group.extraPoints) || 0;
+    const members = group.members || [];
+    members.forEach(memberId => {
+      const u = allUsers[memberId];
+      if (u) {
+        const cups = parseInt(u.cups) || 0;
+        const hours = parseInt(u.hours) || 0;
+        totalPoints += (cups * 2) + (hours * 20);
+      }
+    });
+
+    let level = Math.floor(totalPoints / 1000) + 1;
+    if (level > 1000) level = 1000;
+
+    const currentLevelPoints = totalPoints - ((level - 1) * 1000);
+    const percentage = Math.min(100, (currentLevelPoints / 1000) * 100);
+
+    return { totalPoints, level, currentLevelPoints, percentage };
   }
 
   async function updateTimer() {
@@ -463,7 +467,7 @@
     const end = config.endTime;
     
     if (now >= end) {
-      countdownEl.textContent = '🎉 مسابقه پایان یافت! در حال اهدای جوایز...';
+      countdownEl.textContent = '🎉 مسابقه پایان یافت!';
       countdownEl.style.color = '#4CAF50';
       return;
     }
@@ -485,18 +489,18 @@
     
     const clansWithStats = groups.map(group => ({
       group,
-      stats: getClanStats(group, allUsers)
+      stats: calculateClanStats(group, allUsers)
     }));
 
-    // مرتب‌سازی: اول سطح کلن، بعد امتیاز کل
+    // مرتب‌سازی دقیقاً همون منطق گروه‌ها: سطح بالاتر، بعد امتیاز بالاتر
     clansWithStats.sort((a, b) => {
-      if (b.stats.clanLevel !== a.stats.clanLevel) {
-        return b.stats.clanLevel - a.stats.clanLevel;
+      if (b.stats.level !== a.stats.level) {
+        return b.stats.level - a.stats.level;
       }
-      return b.stats.totalScore - a.stats.totalScore;
+      return b.stats.totalPoints - a.stats.totalPoints;
     });
 
-    // محدود به ۲۰۰ کلن برتر
+    // ✅ محدود به ۲۰۰ کلن برتر
     const topClans = clansWithStats.slice(0, 200);
 
     if (topClans.length === 0) {
@@ -511,17 +515,22 @@
   function createClanItem(group, stats, rank, allUsers) {
     const isCurrentUserClan = currentUserGroup && currentUserGroup.id === group.id;
     
+    // ✅ رنگ نام کلن (مطابق Safe Goroh - فقط اگر مالک سازنده باشه)
     let nameStyle = '';
-    if (group.colorCode) {
-      const colorData = getColorByCode(group.colorCode);
-      if (colorData) {
-        nameStyle = `color: ${colorData.hex}; text-shadow: 0 1px 2px rgba(0,0,0,0.5);`;
-      }
+    const isOwnerCreator = (group.owner === CREATOR_PHONE);
+    const colorData = isOwnerCreator ? getColorByCode(group.colorCode) : null;
+    if (colorData) {
+      nameStyle = `color: ${colorData.hex}; text-shadow: 0 1px 3px rgba(0,0,0,0.4);`;
     }
     
-    const tickHtml = group.verified ? '<img src="TikK2.png" class="clan-tick" onerror="this.style.display=\'none\'">' : '';
-    const logoHtml = group.logo ? getGroupIcon(group.logo) : getGroupIcon('shield');
+    // ✅ تیک بزرگ (۳۶px)
+    const tickHtml = group.verified ? `<img src="${CLAN_TICK_IMG}" class="clan-tick" onerror="this.style.display='none'">` : '';
     
+    // ✅ لوگو واقعی از فایل عکس
+    const logoSrc = group.logo || '20.webp';
+    const logoHtml = `<img src="${logoSrc}" onerror="this.src='20.webp'">`;
+    
+    // ✅ نشان رتبه با 26.webp, 27.webp, 28.webp
     let rankHtml = '';
     if (rank === 1) rankHtml = '<img src="26.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
     else if (rank === 2) rankHtml = '<img src="27.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
@@ -539,16 +548,27 @@
             <span class="user-name" style="${nameStyle}">${group.name || 'بدون نام'}</span>
             ${tickHtml}
           </div>
-          <div class="user-level">سطح: ${toPersianNum(stats.clanLevel)} • امتیاز: ${toPersianNum(stats.totalScore)} • اعضا: ${toPersianNum(stats.memberCount)}</div>
+          <div class="clan-level-box">
+            <div class="clan-level-header">
+              <span class="clan-level-badge">سطح ${toPersianNum(stats.level)}</span>
+              <span>${toPersianNum(stats.currentLevelPoints)} / ${toPersianNum(1000)}</span>
+            </div>
+            <div class="clan-progress-bg">
+              <div class="clan-progress-fill" style="width: ${stats.percentage}%"></div>
+            </div>
+            <div class="clan-level-footer">
+              <span>مجموع امتیاز: ${toPersianNum(stats.totalPoints)}</span>
+              <span>تا سطح بعدی: ${toPersianNum(1000 - stats.currentLevelPoints)}</span>
+            </div>
+          </div>
         </div>
         ${rankHtml}
       </div>
     `;
   }
 
-  // ✅ نمایش اعضای کلن با به‌روزرسانی زنده اطلاعات
+  // ✅ نمایش اعضای کلن با به‌روزرسانی زنده اطلاعات (دریافت تازه از دیتابیس)
   async function showClanMembers(groupId) {
-    // دریافت اطلاعات تازه برای اطمینان از نمایش آخرین تغییرات نام و آواتار
     const [groups, allUsers] = await Promise.all([getGroups(), getAllUsers()]);
     const group = groups.find(g => g.id === groupId);
     if (!group) return;
@@ -561,7 +581,6 @@
     let membersHtml = '';
     
     if (group.members && group.members.length > 0) {
-      // مرتب‌سازی: مدیر اول، بعد معاون‌ها، بعد اعضا
       const sortedMembers = [...group.members].sort((a, b) => {
         if (a === group.owner) return -1;
         if (b === group.owner) return 1;
@@ -571,22 +590,17 @@
       });
       
       for (const phone of sortedMembers) {
-        const u = allUsers[phone] || { name: 'کاربر', avatar: 'Mafia2.png', level: 1, score: 0 };
+        const u = allUsers[phone] || { name: 'کاربر', avatar: 'Mafia2.png', level: 1, score: 0, cups: 0, hours: 0 };
         const isOwner = phone === group.owner;
         const isDeputy = (group.deputies || []).includes(phone);
         
         let roleText = '👤 عضو';
         let roleColor = '#a0aec0';
         
-        if (isOwner) {
-          roleText = '👑 مدیر کلن';
-          roleColor = '#ffd700';
-        } else if (isDeputy) {
-          roleText = '⭐ معاون';
-          roleColor = '#4a9eff';
-        }
+        if (isOwner) { roleText = '👑 مدیر کلن'; roleColor = '#ffd700'; }
+        else if (isDeputy) { roleText = '⭐ معاون'; roleColor = '#4a9eff'; }
 
-        // پشتیبانی از آواتار ویدیویی برای اعضا (در صورتی که مدیر/معاون آواتار ویدیویی داشته باشد)
+        // ✅ پشتیبانی از آواتار ویدیویی برای اعضا
         const isVideo = u.avatar && (u.avatar.endsWith('.webm') || u.avatar.endsWith('.mp4'));
         const avatarHtml = isVideo
           ? `<video src="${u.avatar}" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
@@ -600,7 +614,11 @@
             <div class="member-info-modal">
               <div class="member-name-modal">${u.name || 'کاربر'}</div>
               <div class="member-role-modal" style="color:${roleColor}">${roleText}</div>
-              <div class="member-stats-modal">سطح: ${toPersianNum(u.level || 1)} • امتیاز: ${toPersianNum(u.score || 0)}</div>
+              <div class="member-stats-modal">
+                <span class="member-cups-badge">🏆 ${toPersianNum(u.cups || 0)}</span>
+                ⏱ ${toPersianNum(u.hours || 0)} ساعت • 
+                ⭐ سطح ${toPersianNum(u.level || 1)}
+              </div>
             </div>
           </div>
         `;
@@ -624,9 +642,6 @@
     window.location.href = 'Safe Asli Bazi.html';
   }
 
-  // ================================================================
-  // راه‌اندازی
-  // ================================================================
   document.addEventListener('DOMContentLoaded', async () => {
     const loggedIn = localStorage.getItem('currentLoggedInUser');
     if (!loggedIn) {
