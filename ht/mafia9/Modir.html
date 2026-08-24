@@ -9,31 +9,31 @@
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none!important;user-select:none!important;}
   body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228;width:100%;min-height:100vh;overflow-x:hidden;}
-  
+
   .bg-image{position:fixed;inset:0;background-image:url('53.jpg');background-size:cover;background-position:center;z-index:-1;}
   .bg-image::after{content:'';position:absolute;inset:0;background:rgba(4,18,40,0.7);}
-  
+
   .header{background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));padding:15px;text-align:center;border-bottom:2px solid #2a5a9a;backdrop-filter:blur(10px);}
   .header h1{color:#fff;font-size:24px;font-weight:900;margin-bottom:5px;}
   .header p{color:rgba(255,255,255,.8);font-size:14px;}
-  
+
   .back-btn{position:fixed;top:15px;left:15px;width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;cursor:pointer;z-index:100;border:none;}
-  
+
   .management-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
-  
+
   .member-card{position:relative;transition:transform .3s;}
   .member-card:hover{transform:translateY(-5px);}
-  
+
   .card-template{width:100%;position:relative;}
   .card-template img{width:100%;height:auto;display:block;}
-  
+
   .avatar-circle{position:absolute;top:15%;left:50%;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.4);z-index:10;}
   .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
-  
+
   .member-info{position:absolute;bottom:0;left:0;right:0;padding:15px 10px 10px;text-align:center;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.8));z-index:5;}
   .member-name{color:#fff;font-size:14px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:5px;text-shadow:0 2px 4px rgba(0,0,0,0.8);}
   .member-role{display:inline-block;padding:3px 12px;border-radius:15px;font-size:10px;font-weight:700;margin-bottom:8px;}
-  
+
   .role-creator{background:linear-gradient(180deg,#ffd700,#ff8c00);color:#000;}
   .role-support{background:linear-gradient(180deg,#4a9eff,#2a7acc);color:#fff;}
   .role-supervisor{background:linear-gradient(180deg,#9c27b0,#7b1fa2);color:#fff;}
@@ -41,13 +41,13 @@
   .role-admin{background:linear-gradient(180deg,#f44336,#d32f2f);color:#fff;}
   .role-observer-senior{background:linear-gradient(180deg,#00bcd4,#0097a7);color:#fff;}
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
-  
-  .role-tick{width:16px;height:16px;object-fit:contain;}
-  
+
+  .role-tick{width:20px;height:20px;object-fit:contain;}
+
   .loading{text-align:center;padding:40px;color:rgba(255,255,255,.6);font-size:16px;grid-column:1/-1;}
   .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);grid-column:1/-1;}
   .empty-state-icon{font-size:60px;margin-bottom:15px;}
-  
+
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:10px;padding:15px;}
     .avatar-circle{width:60px;height:60px;}
@@ -172,33 +172,33 @@
     try{
       const allUsers=await getAllUsers();
       const users=Object.entries(allUsers);
-      
+
       const managementRoles=['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
       const managementUsers=users.filter(([p,u])=>u&&u.rank&&managementRoles.includes(u.rank.trim()));
-      
+
       if(managementUsers.length===0){
         grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">👥</div><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
         return;
       }
-      
+
       grid.innerHTML='';
-      
+
       for(const [phone,user] of managementUsers){
         const card=document.createElement('div');
         card.className='member-card';
         card.dataset.phone=phone;
-        
+
         let avatarSrc=user.avatar||'Mafia2.png';
         if(phone===CREATOR_PHONE||phone===YAZDGARD_PHONE){
           avatarSrc=CREATOR_AVATAR;
         }
-        
-        const isVideo=avatarSrc.endsWith('.webm')||avatarSrc.endsWith('.mp4');
-        const avatarHtml=isVideo?`<video src="${avatarSrc}" autoplay loop muted playsinline></video>`:`<img src="${avatarSrc}" onerror="this.style.display='none';">`;
-        
+
+        const isVideo=avatarSrc.endsWith('.webm')||avatarSrc.endsWith('.mp4')||avatarSrc.endsWith('.mov');
+        const avatarHtml=isVideo?`<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`:`<img src="${avatarSrc}" onerror="this.style.display='none';">`;
+
         const tick=getRoleTick(user.rank);
         const tickHtml=tick?'<img class="role-tick" src="" data-ticks="'+tick.join(',')+'">':'';
-        
+
         card.innerHTML=`
           <div class="card-template">
             <img src="${getTemplate(user.rank)}" alt="template">
@@ -212,9 +212,9 @@
             <div class="member-role ${getRoleClass(user.rank)}">${user.rank||'کاربر'}</div>
           </div>
         `;
-        
+
         grid.appendChild(card);
-        
+
         if(tick){
           const tickImg=card.querySelector('.role-tick');
           if(tickImg){
@@ -223,31 +223,32 @@
           }
         }
       }
-      
+
     }catch(error){
       console.error('Error loading management team:',error);
       grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>خطا در بارگذاری اطلاعات</div></div>';
     }
   }
 
+  // ✅ به‌روزرسانی دقیق و کامل کارت کاربر (آواتار، نام، تیک، مقام، قالب)
   async function updateMemberCard(phone,userData){
     const card=document.querySelector(`.member-card[data-phone="${phone}"]`);
     if(!card)return;
-    
+
     let avatarSrc=userData.avatar||'Mafia2.png';
     if(phone===CREATOR_PHONE||phone===YAZDGARD_PHONE){
       avatarSrc=CREATOR_AVATAR;
     }
-    
+
     const avatarCircle=card.querySelector('.avatar-circle');
-    const isVideo=avatarSrc.endsWith('.webm')||avatarSrc.endsWith('.mp4');
-    avatarCircle.innerHTML=isVideo?`<video src="${avatarSrc}" autoplay loop muted playsinline></video>`:`<img src="${avatarSrc}" onerror="this.style.display='none';">`;
-    
+    const isVideo=avatarSrc.endsWith('.webm')||avatarSrc.endsWith('.mp4')||avatarSrc.endsWith('.mov');
+    avatarCircle.innerHTML=isVideo?`<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`:`<img src="${avatarSrc}" onerror="this.style.display='none';">`;
+
     const nameEl=card.querySelector('.member-name');
     const tick=getRoleTick(userData.rank);
     const tickHtml=tick?'<img class="role-tick" src="" data-ticks="'+tick.join(',')+'">':'';
-    nameEl.innerHTML=`${userData.name||'کاربر'}${tickHtml}`;
-    
+    nameEl.innerHTML=`${userData.name||'کاربر'} ${tickHtml}`;
+
     if(tick){
       const tickImg=card.querySelector('.role-tick');
       if(tickImg){
@@ -255,11 +256,11 @@
         applyTick(tickImg,ticks);
       }
     }
-    
+
     const roleEl=card.querySelector('.member-role');
     roleEl.textContent=userData.rank||'کاربر';
     roleEl.className=`member-role ${getRoleClass(userData.rank)}`;
-    
+
     const templateImg=card.querySelector('.card-template img');
     if(templateImg){
       templateImg.src=getTemplate(userData.rank);
@@ -267,47 +268,54 @@
   }
 
   function addNewMember(phone,userData){
-    const grid=document.getElementById('managementGrid');
     const managementRoles=['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-    
     if(!userData.rank||!managementRoles.includes(userData.rank.trim()))return;
     
-    const existingCard=grid.querySelector(`.member-card[data-phone="${phone}"]`);
+    const existingCard=document.querySelector(`.member-card[data-phone="${phone}"]`);
     if(existingCard)return;
-    
-    loadManagementTeam();
+
+    loadManagementTeam(); // بارگذاری مجدد برای حفظ ترتیب صحیح
   }
 
+  // ✅ سیستم نظارت هوشمند برای تغییرات آنی
   async function monitorChanges(){
     let lastUsers=JSON.stringify(await getAllUsers());
-    
+    const managementRoles=['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+
     setInterval(async ()=>{
       try{
         const currentUsers=await getAllUsers();
         const currentStr=JSON.stringify(currentUsers);
-        
+
         if(currentStr!==lastUsers){
           const oldUsers=JSON.parse(lastUsers);
-          
+
           for(const [phone,user] of Object.entries(currentUsers)){
             if(!user)continue;
+            const isManagement = user.rank && managementRoles.includes(user.rank.trim());
             
             if(oldUsers[phone]){
               if(JSON.stringify(oldUsers[phone])!==JSON.stringify(user)){
-                await updateMemberCard(phone,user);
+                if(isManagement) {
+                  await updateMemberCard(phone,user);
+                } else {
+                  // اگر مقام کاربر به "کاربر" تغییر کرد، کارت او حذف شود
+                  const card=document.querySelector(`.member-card[data-phone="${phone}"]`);
+                  if(card)card.remove();
+                }
               }
             }else{
-              addNewMember(phone,user);
+              if(isManagement) addNewMember(phone,user);
             }
           }
-          
+
           for(const phone of Object.keys(oldUsers)){
             if(!currentUsers[phone]){
               const card=document.querySelector(`.member-card[data-phone="${phone}"]`);
               if(card)card.remove();
             }
           }
-          
+
           lastUsers=currentStr;
         }
       }catch(e){
@@ -322,4 +330,4 @@
   });
 </script>
 </body>
-</html> 
+</html>
