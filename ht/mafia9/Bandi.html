@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#061a3a">
-<title>رتبه‌بندی شما</title>
+<title>برترین کلن‌ها</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
 
@@ -45,18 +45,6 @@
     overscroll-behavior: none !important;
     touch-action: none !important;
     color: white;
-  }
-
-  input, textarea, select {
-    font-size: 16px !important;
-    -webkit-user-select: text !important;
-    user-select: text !important;
-    touch-action: manipulation !important;
-  }
-
-  img, a, button, div {
-    -webkit-user-drag: none !important;
-    user-drag: none !important;
   }
 
   .page-wrapper {
@@ -139,34 +127,20 @@
   .refresh-btn.spinning { animation: spin 1s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  .tabs {
-    display: flex;
-    gap: 10px;
-    padding: 15px;
-    background: rgba(0,0,0,0.2);
-    flex-shrink: 0;
-  }
-
-  .tab {
-    flex: 1;
-    padding: 15px;
-    background: linear-gradient(180deg, #1e4a8a, #163d75);
-    border: 2px solid #2a5a9a;
-    border-radius: 12px;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
+  .tournament-timer {
+    background: rgba(0,0,0,0.4);
+    padding: 12px;
     text-align: center;
-    font-family: 'Vazirmatn', sans-serif;
-    touch-action: manipulation;
-  }
-
-  .tab.active {
-    background: linear-gradient(180deg, #3a8adc, #2a7acc);
-    border-color: #4a9eff;
-    box-shadow: 0 4px 15px rgba(58,138,220,0.4);
+    font-size: 15px;
+    font-weight: 900;
+    color: #ffd700;
+    border-bottom: 1px solid rgba(255,215,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
 
   .leaderboard {
@@ -192,6 +166,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     transition: transform 0.2s;
     touch-action: manipulation;
+    cursor: pointer;
   }
   .rank-item:active { transform: scale(0.98); }
 
@@ -244,9 +219,18 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     background: #1a3a6a;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .user-avatar img {
     width: 100%; height: 100%; object-fit: cover;
+    pointer-events: none;
+  }
+  .clan-logo svg {
+    width: 32px;
+    height: 32px;
+    fill: #fff;
     pointer-events: none;
   }
 
@@ -259,7 +243,7 @@
   .user-name-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     margin-bottom: 4px;
     flex-wrap: wrap;
   }
@@ -272,26 +256,16 @@
     line-height: 1.3;
     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     max-width: 100%;
-    transition: font-size 0.2s;
+    font-size: 15px;
   }
-  .user-name.short { font-size: 17px; }
-  .user-name.medium { font-size: 15px; }
-  .user-name.long { font-size: 13px; }
-  .user-name.very-long { font-size: 11px; }
 
-  .user-badge {
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 9px;
-    font-weight: 700;
-    white-space: nowrap;
+  .clan-tick {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
     flex-shrink: 0;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
   }
-  .badge-creator { background: linear-gradient(180deg, #ffd700, #ff8c00); color: #000; }
-  .badge-admin { background: linear-gradient(180deg, #9c27b0, #7b1fa2); color: white; }
-  .badge-moderator { background: linear-gradient(180deg, #f44336, #d32f2f); color: white; }
-  .badge-support { background: linear-gradient(180deg, #4caf50, #388e3c); color: white; }
-  .badge-banned { background: linear-gradient(180deg, #757575, #616161); color: white; }
 
   .user-level {
     color: rgba(255,255,255,0.9);
@@ -299,35 +273,12 @@
     font-weight: 700;
   }
 
-  .level-star {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,0,0,0.3);
-    padding: 6px 12px;
-    border-radius: 20px;
+  .rank-medal {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     flex-shrink: 0;
-  }
-  .star-icon {
-    width: 24px; height: 24px;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-    pointer-events: none;
-  }
-  .level-value {
-    color: white;
-    font-size: 18px;
-    font-weight: 900;
-  }
-
-  .medal { width: 45px; height: 45px; flex-shrink: 0; }
-  .medal.gold {
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23ffd700" stroke="%23ff8c00" stroke-width="3"/><text x="50" y="65" font-size="40" text-anchor="middle" fill="%23b8860b" font-weight="900">1</text></svg>') center/contain no-repeat;
-  }
-  .medal.silver {
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23c0c0c0" stroke="%23808080" stroke-width="3"/><text x="50" y="65" font-size="40" text-anchor="middle" fill="%23696969" font-weight="900">2</text></svg>') center/contain no-repeat;
-  }
-  .medal.bronze {
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23cd7f32" stroke="%238b4513" stroke-width="3"/><text x="50" y="65" font-size="40" text-anchor="middle" fill="%23654321" font-weight="900">3</text></svg>') center/contain no-repeat;
   }
 
   .rank-badge {
@@ -385,6 +336,62 @@
 
   .leaderboard::-webkit-scrollbar { width: 4px; }
   .leaderboard::-webkit-scrollbar-thumb { background: rgba(74,158,255,0.4); border-radius: 2px; }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: linear-gradient(180deg, #2a7acc, #1a5aaa);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 360px;
+    max-height: 85vh;
+    overflow: hidden;
+    border: 3px solid #3a8adc;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    background: linear-gradient(180deg, #3a8adc, #2a7acc);
+    padding: 16px;
+    text-align: center;
+    position: relative;
+  }
+  .modal-title {
+    color: white;
+    font-size: 18px;
+    font-weight: 900;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    color: white;
+    border: none;
+  }
+  .modal-body {
+    padding: 15px;
+    overflow-y: auto;
+    flex: 1;
+  }
 </style>
 </head>
 <body>
@@ -392,17 +399,30 @@
 <div class="page-wrapper">
   <div class="header">
     <button class="back-btn" onclick="goBack()">‹</button>
-    <div class="header-title">رتبه‌بندی شما</div>
+    <div class="header-title">🏆 برترین کلن‌ها</div>
     <button class="refresh-btn" id="refreshBtn" onclick="refreshLeaderboard()">↻</button>
   </div>
 
-  <div class="tabs">
-    <button class="tab" onclick="switchTab('nearby')" id="tabNearby">نزدیک من</button>
-    <button class="tab active" onclick="switchTab('top')" id="tabTop">برترین‌ها</button>
+  <div class="tournament-timer" id="tournamentTimer">
+    <span>⏳ پایان مسابقه:</span>
+    <span id="countdown">--:--:--</span>
   </div>
 
   <div class="leaderboard" id="leaderboard">
     <div class="empty-state">در حال بارگذاری از سرور...<div class="loading-spinner"></div></div>
+  </div>
+</div>
+
+<!-- Modal for Clan Members -->
+<div class="modal-overlay" id="clanMembersModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modalClanName">اعضای کلن</div>
+      <button class="modal-close" onclick="closeModal('clanMembersModal')">✕</button>
+    </div>
+    <div class="modal-body" id="modalClanMembersList">
+      <!-- Members will be injected here -->
+    </div>
   </div>
 </div>
 
@@ -466,12 +486,6 @@
     }, { passive: true });
   }
 
-  document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
-      e.preventDefault();
-    }
-  });
-
   // ================================================================
   // نوتیفیکیشن
   // ================================================================
@@ -480,6 +494,10 @@
     t.textContent = message;
     t.className = 'toast show' + (type === 'error' ? ' error' : '');
     setTimeout(() => { t.classList.remove('show'); }, 3000);
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
   }
 
   // ================================================================
@@ -493,62 +511,24 @@
   const JSONBIN_ID1 = "6a310a04da38895dfec86661";
   const JSONBIN_ID2 = "6a53f4c8f5f4af5e298541fe";
 
-  // ===== توابع Upstash =====
   async function upstashGet(url, token, k) {
     try {
       const c = new AbortController();
       const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch(url + '/get/' + encodeURIComponent(k), {
-        headers: { 'Authorization': 'Bearer ' + token },
-        signal: c.signal
-      });
+      const r = await fetch(url + '/get/' + encodeURIComponent(k), { headers: { 'Authorization': 'Bearer ' + token }, signal: c.signal });
       clearTimeout(t);
       if (!r.ok) return null;
       const d = await r.json();
-      if (d && d.result) {
-        try { return JSON.parse(d.result); } catch (e) { return d.result; }
-      }
+      if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
       return null;
     } catch (e) { return null; }
   }
 
-  async function upstashSet(url, token, k, v) {
-    try {
-      const jsonValue = JSON.stringify(v);
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch(url + '/set/' + encodeURIComponent(k) + '/' + encodeURIComponent(jsonValue), {
-        headers: { 'Authorization': 'Bearer ' + token },
-        signal: c.signal
-      });
-      clearTimeout(t);
-      return r.ok;
-    } catch (e) { return false; }
-  }
-
-  async function upstashDel(url, token, k) {
-    try {
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch(url + '/del/' + encodeURIComponent(k), {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
-        signal: c.signal
-      });
-      clearTimeout(t);
-      return r.ok;
-    } catch (e) { return false; }
-  }
-
-  // ===== توابع JSONBin =====
   async function jsonbinRead(binId) {
     try {
       const c = new AbortController();
       const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
-        headers: { 'X-Master-Key': JSONBIN_KEY },
-        signal: c.signal
-      });
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY }, signal: c.signal });
       clearTimeout(t);
       if (!r.ok) return null;
       const d = await r.json();
@@ -556,94 +536,21 @@
     } catch (e) { return null; }
   }
 
-  async function jsonbinWrite(binId, data) {
-    try {
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': JSONBIN_KEY
-        },
-        body: JSON.stringify(data),
-        signal: c.signal
-      });
-      clearTimeout(t);
-      return r.ok;
-    } catch (e) { return false; }
-  }
-
-  // ===== تابع اصلی GET (۴ لایه) =====
   async function redisGet(key) {
-    // ۱. اول Upstash قدیمی
     let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
     if (v !== null) return v;
-
-    // ۲. Upstash جدید
     v = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
     if (v !== null) return v;
-
-    // ۳. JSONBin1
     const b1 = await jsonbinRead(JSONBIN_ID1);
     if (b1 && b1[key] !== undefined) return b1[key];
-
-    // ۴. JSONBin2
     const b2 = await jsonbinRead(JSONBIN_ID2);
     if (b2 && b2[key] !== undefined) return b2[key];
-
     return null;
   }
 
-  // ===== تابع اصلی SET (۴ لایه) =====
-  async function redisSet(key, value) {
-    const p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
-    const p2 = upstashSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key, value);
-
-    const p3 = (async function() {
-      const b = await jsonbinRead(JSONBIN_ID1) || {};
-      b[key] = value;
-      return jsonbinWrite(JSONBIN_ID1, b);
-    })();
-
-    const p4 = (async function() {
-      const b = await jsonbinRead(JSONBIN_ID2) || {};
-      b[key] = value;
-      return jsonbinWrite(JSONBIN_ID2, b);
-    })();
-
-    const results = await Promise.allSettled([p1, p2, p3, p4]);
-    return results.some(r => r.status === 'fulfilled' && r.value === true);
-  }
-
-  // ===== تابع اصلی DEL (۴ لایه) =====
-  async function redisDel(key) {
-    const p1 = upstashDel(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
-    const p2 = upstashDel(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
-
-    const p3 = (async function() {
-      const b = await jsonbinRead(JSONBIN_ID1) || {};
-      delete b[key];
-      return jsonbinWrite(JSONBIN_ID1, b);
-    })();
-
-    const p4 = (async function() {
-      const b = await jsonbinRead(JSONBIN_ID2) || {};
-      delete b[key];
-      return jsonbinWrite(JSONBIN_ID2, b);
-    })();
-
-    await Promise.allSettled([p1, p2, p3, p4]);
-    return true;
-  }
-
-  async function getAllUsers() {
-    return await redisGet('all_users') || {};
-  }
-
-  async function getUser(phone) {
-    return await redisGet('user:' + phone);
-  }
+  async function getAllUsers() { return await redisGet('all_users') || {}; }
+  async function getGroups() { return await redisGet('police_groups') || []; }
+  async function getTournamentConfig() { return await redisGet('tournament_config') || {}; }
 
   // ================================================================
   // توابع کمکی
@@ -653,130 +560,204 @@
     return (num || 0).toString().replace(/[0-9]/g, w => persian[+w]);
   }
 
-  function getNameSizeClass(name) {
-    if (!name) return 'medium';
-    const len = name.length;
-    if (len <= 10) return 'short';
-    if (len <= 16) return 'medium';
-    if (len <= 22) return 'long';
-    return 'very-long';
+  const GROUP_ICONS = {
+    shield: '<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>',
+    lion: '<svg viewBox="0 0 24 24"><path d="M7 4c-1.1 0-2 .9-2 2v1c-1.1 0-2 .9-2 2v7c0 2.76 2.24 5 5 5h8c2.76 0 5-2.24 5-5V9c0-1.1-.9-2-2-2V6c0-1.1-.9-2-2-2H7z"/></svg>',
+    eagle: '<svg viewBox="0 0 24 24"><path d="M18 4l-2 2H8L6 4H2v2l2.5 1c-.83 1.2-1.5 2.68-1.5 4.5C3 15 5 18 8 19l2 2v1h4v-1l2-2c3-1 5-4 5-7.5 0-1.82-.67-3.3-1.5-4.5L22 6V4h-4z"/></svg>',
+    dragon: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>',
+    skull: '<svg viewBox="0 0 24 24"><path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>',
+    fire: '<svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>',
+    crown: '<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
+  };
+  function getGroupIcon(key) { return GROUP_ICONS[key] || GROUP_ICONS.shield; }
+
+  const COLOR_CODES = {
+    1:{name:'سفید',hex:'#FFFFFF',text:'#000'}, 2:{name:'مشکی',hex:'#000000',text:'#fff'},
+    3:{name:'قرمز',hex:'#FF0000',text:'#fff'}, 4:{name:'سبز',hex:'#008000',text:'#fff'},
+    5:{name:'آبی',hex:'#0000FF',text:'#fff'}, 6:{name:'زرد',hex:'#FFD700',text:'#000'},
+    7:{name:'نارنجی',hex:'#FFA500',text:'#000'}, 8:{name:'صورتی',hex:'#FF69B4',text:'#fff'},
+    9:{name:'بنفش',hex:'#800080',text:'#fff'}, 10:{name:'قهوه‌ای',hex:'#8B4513',text:'#fff'}
+  };
+  function getColorByCode(code) {
+    if (!code) return null;
+    const n = parseInt(code);
+    return COLOR_CODES[n] || null;
   }
 
-  function getRoleBadge(rank) {
-    if (!rank) return '';
-    const r = rank.trim();
-    if (r === 'سازنده') return '<span class="user-badge badge-creator">سازنده</span>';
-    if (r === 'پشتیبانی') return '<span class="user-badge badge-support">پشتیبانی</span>';
-    if (r === 'ادمین' || r === 'ادمین ارشد') return '<span class="user-badge badge-admin">' + r + '</span>';
-    if (r === 'گرداننده') return '<span class="user-badge badge-moderator">گرداننده</span>';
-    if (r === 'ناظر' || r === 'ناظر ارشد') return '<span class="user-badge badge-moderator">' + r + '</span>';
-    return '';
-  }
+  let currentUserPhone = null;
+  let currentUserGroup = null;
 
-  let currentTab = 'top';
-  let currentUserData = null;
-  let currentPhone = null;
-  let currentUsersCache = {};
-
-  function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if (tab === 'top') {
-      document.getElementById('tabTop').classList.add('active');
-    } else {
-      document.getElementById('tabNearby').classList.add('active');
+  function getClanStats(group, allUsers) {
+    let totalScore = 0;
+    let totalLevel = 0;
+    let memberCount = 0;
+    
+    if (group.members) {
+      memberCount = group.members.length;
+      group.members.forEach(phone => {
+        const u = allUsers[phone];
+        if (u) {
+          totalScore += (u.score || 0);
+          totalLevel += (u.level || 1);
+        }
+      });
     }
-    loadLeaderboard();
+    
+    const clanLevel = group.level || Math.max(1, Math.floor(totalLevel / (memberCount || 1)));
+    return { totalScore, clanLevel, memberCount };
   }
 
-  function getMedalClass(rank) {
-    if (rank === 1) return 'gold';
-    if (rank === 2) return 'silver';
-    if (rank === 3) return 'bronze';
-    return '';
+  async function updateTimer() {
+    const config = await getTournamentConfig();
+    const countdownEl = document.getElementById('countdown');
+    
+    if (!config || !config.endTime) {
+      countdownEl.textContent = 'مسابقه‌ای تنظیم نشده است';
+      return;
+    }
+    
+    const now = Date.now();
+    const end = config.endTime;
+    
+    if (now >= end) {
+      countdownEl.textContent = '🎉 مسابقه پایان یافت! در حال اهدای جوایز...';
+      countdownEl.style.color = '#4CAF50';
+      return;
+    }
+    
+    const diff = end - now;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    countdownEl.textContent = `${days}روز ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
   }
 
   async function loadLeaderboard() {
     const leaderboard = document.getElementById('leaderboard');
     leaderboard.innerHTML = '<div class="empty-state">در حال بارگذاری از سرور...<div class="loading-spinner"></div></div>';
 
-    const allUsers = await getAllUsers();
-    currentUsersCache = allUsers;
-    let users = Object.values(allUsers).filter(u => u && u.fullProfile);
+    const [allUsers, groups] = await Promise.all([getAllUsers(), getGroups()]);
+    
+    // محاسبه آمار هر کلن و مرتب‌سازی
+    const clansWithStats = groups.map(group => ({
+      group,
+      stats: getClanStats(group, allUsers)
+    }));
 
-    users.sort((a, b) => {
-      const levelA = a.level || 1;
-      const levelB = b.level || 1;
-      if (levelB !== levelA) return levelB - levelA;
-      return (b.score || 0) - (a.score || 0);
+    clansWithStats.sort((a, b) => {
+      if (b.stats.clanLevel !== a.stats.clanLevel) {
+        return b.stats.clanLevel - a.stats.clanLevel;
+      }
+      return b.stats.totalScore - a.stats.totalScore;
     });
 
-    if (users.length === 0) {
-      leaderboard.innerHTML = '<div class="empty-state">هنوز کاربری ثبت‌نام نکرده است</div>';
+    // محدود به ۲۰۰ کلن برتر
+    const topClans = clansWithStats.slice(0, 200);
+
+    if (topClans.length === 0) {
+      leaderboard.innerHTML = '<div class="empty-state">هنوز کلنی ثبت‌نام نکرده است</div>';
       return;
     }
 
-    if (currentTab === 'top') {
-      leaderboard.innerHTML = users.map((user, index) => createRankItem(user, index + 1)).join('');
-    } else {
-      const currentUserIndex = users.findIndex(u => 
-        (currentPhone && allUsers[currentPhone] && u.name === allUsers[currentPhone].name) ||
-        u.name === currentUserData?.name
-      );
-
-      if (currentUserIndex === -1) {
-        leaderboard.innerHTML = '<div class="empty-state">شما در رتبه‌بندی نیستید</div>';
-        return;
-      }
-
-      let startIndex = Math.max(0, currentUserIndex - 4);
-      let endIndex = Math.min(users.length, currentUserIndex + 5);
-
-      const nearbyUsers = users.slice(startIndex, endIndex);
-      leaderboard.innerHTML = nearbyUsers.map((user, index) => {
-        const actualRank = startIndex + index + 1;
-        return createRankItem(user, actualRank);
-      }).join('');
-    }
-
+    leaderboard.innerHTML = topClans.map((item, index) => createClanItem(item.group, item.stats, index + 1, allUsers)).join('');
     preventOverscroll(leaderboard);
   }
 
-  function createRankItem(user, rank) {
-    const medalClass = getMedalClass(rank);
-    const isCurrentUser = currentPhone && currentUsersCache[currentPhone] && 
-                          user.name === currentUsersCache[currentPhone].name;
-    const avatarSrc = user.avatar || 'InShot_20260403_212625191.png';
-    const userName = user.name || 'کاربر';
-    const userLevel = user.level || 1;
-    const roleBadge = getRoleBadge(user.rank);
-    const bannedBadge = user.banned ? '<span class="user-badge badge-banned">بن شده</span>' : '';
-
-    const nameSizeClass = getNameSizeClass(userName);
+  function createClanItem(group, stats, rank, allUsers) {
+    const isCurrentUserClan = currentUserGroup && currentUserGroup.id === group.id;
+    
+    // رنگ نام کلن
+    let nameStyle = '';
+    if (group.colorCode) {
+      const colorData = getColorByCode(group.colorCode);
+      if (colorData) {
+        nameStyle = `color: ${colorData.hex}; text-shadow: 0 1px 2px rgba(0,0,0,0.5);`;
+      }
+    }
+    
+    // تیک کلن
+    const tickHtml = group.verified ? '<img src="TikK2.png" class="clan-tick" onerror="this.style.display=\'none\'">' : '';
+    
+    // لوگو کلن
+    const logoHtml = group.logo ? getGroupIcon(group.logo) : getGroupIcon('shield');
+    
+    // نشان رتبه
+    let rankHtml = '';
+    if (rank === 1) rankHtml = '<img src="26.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
+    else if (rank === 2) rankHtml = '<img src="27.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
+    else if (rank === 3) rankHtml = '<img src="28.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
+    else rankHtml = `<div class="rank-badge">${toPersianNum(rank)}</div>`;
 
     return `
-      <div class="rank-item ${rank <= 3 ? 'top-' + rank : ''} ${isCurrentUser ? 'current-user' : ''}">
+      <div class="rank-item ${rank <= 3 ? 'top-' + rank : ''} ${isCurrentUserClan ? 'current-user' : ''}" onclick="showClanMembers('${group.id}')">
         <div class="rank-number">${toPersianNum(rank)}</div>
-        <div class="user-avatar">
-          <img src="${avatarSrc}" alt="${userName}" onerror="this.src='InShot_20260403_212625191.png'">
+        <div class="user-avatar clan-logo">
+          ${logoHtml}
         </div>
         <div class="user-info">
           <div class="user-name-row">
-            <span class="user-name ${nameSizeClass}">${userName}${isCurrentUser ? ' (شما)' : ''}</span>
-            ${roleBadge}
-            ${bannedBadge}
+            <span class="user-name" style="${nameStyle}">${group.name || 'بدون نام'}</span>
+            ${tickHtml}
           </div>
-          <div class="user-level">سطح ${toPersianNum(userLevel)} • امتیاز ${toPersianNum(user.score || 0)}</div>
+          <div class="user-level">سطح: ${toPersianNum(stats.clanLevel)} • امتیاز: ${toPersianNum(stats.totalScore)} • اعضا: ${toPersianNum(stats.memberCount)}</div>
         </div>
-        <div class="level-star">
-          <svg class="star-icon" viewBox="0 0 24 24" fill="#ffd700">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-          <span class="level-value">${toPersianNum(userLevel)}</span>
-        </div>
-        ${rank <= 3 ? `<div class="medal ${medalClass}"></div>` : `<div class="rank-badge">${toPersianNum(rank)}</div>`}
+        ${rankHtml}
       </div>
     `;
+  }
+
+  async function showClanMembers(groupId) {
+    const groups = await getGroups();
+    const group = groups.find(g => g.id === groupId);
+    if (!group) return;
+    
+    document.getElementById('modalClanName').textContent = `👥 اعضای کلن: ${group.name}`;
+    const list = document.getElementById('modalClanMembersList');
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:rgba(255,255,255,0.7);">در حال بارگذاری...<div class="loading-spinner"></div></div>';
+    document.getElementById('clanMembersModal').classList.add('active');
+    
+    const allUsers = await getAllUsers();
+    let membersHtml = '';
+    
+    if (group.members && group.members.length > 0) {
+      const sortedMembers = [...group.members].sort((a, b) => {
+        if (a === group.owner) return -1;
+        if (b === group.owner) return 1;
+        const aDep = (group.deputies || []).includes(a) ? 1 : 0;
+        const bDep = (group.deputies || []).includes(b) ? 1 : 0;
+        return bDep - aDep;
+      });
+      
+      for (const phone of sortedMembers) {
+        const u = allUsers[phone] || { name: 'کاربر', avatar: 'Mafia2.png', level: 1 };
+        const isOwner = phone === group.owner;
+        const isDeputy = (group.deputies || []).includes(phone);
+        let roleText = '👤 عضو';
+        let roleColor = 'rgba(255,255,255,0.7)';
+        
+        if (isOwner) { roleText = '👑 مدیر کلن'; roleColor = '#ffd700'; }
+        else if (isDeputy) { roleText = '⭐ معاون'; roleColor = '#4a9eff'; }
+        
+        membersHtml += `
+          <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="width:45px;height:45px;border-radius:50%;overflow:hidden;border:2px solid #fff;flex-shrink:0;background:#1a3a6a;">
+              <img src="${u.avatar || 'Mafia2.png'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='Mafia2.png'">
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="color:#fff; font-weight:900; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name || 'کاربر'}</div>
+              <div style="color:${roleColor}; font-size:12px; font-weight:700;">${roleText} • سطح ${toPersianNum(u.level || 1)}</div>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      membersHtml = '<div style="text-align:center; color:rgba(255,255,255,0.6); padding:20px;">عضوی یافت نشد</div>';
+    }
+    
+    list.innerHTML = membersHtml;
   }
 
   async function refreshLeaderboard() {
@@ -804,25 +785,20 @@
 
     try {
       const userInfo = JSON.parse(loggedIn);
-      currentPhone = userInfo.phone;
+      currentUserPhone = userInfo.phone;
 
-      const freshUser = await getUser(currentPhone);
-      if (freshUser) {
-        currentUserData = freshUser;
-      } else {
-        currentUserData = { name: userInfo.name || 'کاربر', level: 1, avatar: 'InShot_20260403_212625191.png' };
-      }
+      // پیدا کردن کلن کاربر فعلی
+      const groups = await getGroups();
+      currentUserGroup = groups.find(g => g.members && g.members.includes(currentUserPhone)) || null;
 
-      currentUsersCache = await getAllUsers();
       await loadLeaderboard();
+      updateTimer();
 
-      // به‌روزرسانی خودکار هر 30 ثانیه
+      // به‌روزرسانی خودکار تایمر هر ثانیه و لیست هر ۳۰ ثانیه
+      setInterval(updateTimer, 1000);
       setInterval(async () => {
-        currentUsersCache = await getAllUsers();
-        const freshMe = await getUser(currentPhone);
-        if (freshMe) currentUserData = freshMe;
         if (document.visibilityState === 'visible') {
-          loadLeaderboard();
+          await loadLeaderboard();
         }
       }, 30000);
 
@@ -833,11 +809,9 @@
   });
 
   document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible' && currentPhone) {
-      const freshMe = await getUser(currentPhone);
-      if (freshMe) currentUserData = freshMe;
-      currentUsersCache = await getAllUsers();
-      loadLeaderboard();
+    if (document.visibilityState === 'visible') {
+      await loadLeaderboard();
+      updateTimer();
     }
   });
 </script>
