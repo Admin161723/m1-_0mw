@@ -117,214 +117,224 @@
     return null;
   }
 
-  async function getAllUsers(){return await redisGet('all_users')||{};}
+  async function getAllUsers(){ return await redisGet('all_users') || {}; }
 
-  const CREATOR_PHONE='09904844031';
-  const YAZDGARD_PHONE='09942785343';
-  const CREATOR_AVATAR='655.webm';
+  const CREATOR_PHONE = '09904844031';
+  const YAZDGARD_PHONE = '09942785343';
+  const CREATOR_AVATAR = '655.webm';
 
-  function toPersianNum(n){const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];return String(n).replace(/[0-9]/g,w=>p[+w]);}
+  function toPersianNum(n){
+    const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return String(n).replace(/[0-9]/g,w=>p[+w]);
+  }
 
   function getRoleTick(role){
-    if(!role)return null;
-    const r=role.trim();
-    if(r==='سازنده'||r==='پشتیبانی')return['Tik1.png'];
-    if(r==='ادمین ارشد')return['Tik1000.png'];
-    if(r==='ادمین')return['Tik2.png'];
-    if(r==='گرداننده')return['Tik3.png'];
-    if(r==='ناظر'||r==='ناظر ارشد')return['TIK4.png','Tik4.png'];
+    if(!role) return null;
+    const r = role.trim();
+    if(r==='سازنده' || r==='پشتیبانی') return ['Tik1.png'];
+    if(r==='ادمین ارشد') return ['Tik1000.png'];
+    if(r==='ادمین') return ['Tik2.png'];
+    if(r==='گرداننده') return ['Tik3.png'];
+    if(r==='ناظر' || r==='ناظر ارشد') return ['TIK4.png','Tik4.png'];
     return null;
   }
 
   function getRoleClass(role){
-    const r=role?role.trim():'';
-    if(r==='سازنده')return'role-creator';
-    if(r==='پشتیبانی')return'role-support';
-    if(r==='گرداننده')return'role-supervisor';
-    if(r==='ادمین ارشد')return'role-admin-senior';
-    if(r==='ادمین')return'role-admin';
-    if(r==='ناظر ارشد')return'role-observer-senior';
-    if(r==='ناظر')return'role-observer';
-    return'role-observer';
+    const r = role ? role.trim() : '';
+    if(r==='سازنده') return 'role-creator';
+    if(r==='پشتیبانی') return 'role-support';
+    if(r==='گرداننده') return 'role-supervisor';
+    if(r==='ادمین ارشد') return 'role-admin-senior';
+    if(r==='ادمین') return 'role-admin';
+    if(r==='ناظر ارشد') return 'role-observer-senior';
+    if(r==='ناظر') return 'role-observer';
+    return 'role-observer';
   }
 
   function getTemplate(role){
-    const r=role?role.trim():'';
-    if(['سازنده','پشتیبانی','گرداننده'].includes(r))return'50.webp';
-    return'51.webp';
+    const r = role ? role.trim() : '';
+    if(['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp';
+    return '51.webp';
   }
 
-  function applyTick(img,cands){
-    if(!img||!cands||!cands.length)return;
-    let i=0;
+  function applyTick(img, cands){
+    if(!img || !cands || !cands.length) return;
+    let i = 0;
     (function nx(){
-      if(i>=cands.length){img.style.display='none';return;}
-      const s=cands[i++];
-      const t=new Image();
-      t.onload=function(){img.src=s;img.style.display='inline-block';};
-      t.onerror=nx;
-      t.src=s;
+      if(i >= cands.length){ img.style.display = 'none'; return; }
+      const s = cands[i++];
+      const t = new Image();
+      t.onload = function(){ img.src = s; img.style.display = 'inline-block'; };
+      t.onerror = nx;
+      t.src = s;
     })();
   }
 
   async function loadManagementTeam(){
-    const grid=document.getElementById('managementGrid');
+    const grid = document.getElementById('managementGrid');
     try{
-      const allUsers=await getAllUsers();
-      const users=Object.entries(allUsers);
+      const allUsers = await getAllUsers();
+      const users = Object.entries(allUsers);
 
-      const managementRoles=['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-      const managementUsers=users.filter(([p,u])=>u&&u.rank&&managementRoles.includes(u.rank.trim()));
+      const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+      const managementUsers = users.filter(([p,u]) => u && u.rank && managementRoles.includes(u.rank.trim()));
 
-      if(managementUsers.length===0){
-        grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">👥</div><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
+      if(managementUsers.length === 0){
+        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
         return;
       }
 
-      grid.innerHTML='';
+      grid.innerHTML = '';
 
-      for(const [phone,user] of managementUsers){
-        const card=document.createElement('div');
-        card.className='member-card';
-        card.dataset.phone=phone;
+      for(const [phone, user] of managementUsers){
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.dataset.phone = phone;
 
-        let avatarSrc=user.avatar||'Mafia2.png';
-        if(phone===CREATOR_PHONE||phone===YAZDGARD_PHONE){
-          avatarSrc=CREATOR_AVATAR;
+        let avatarSrc = user.avatar || 'Mafia2.png';
+        // فقط برای شماره سازنده اصلی، آواتار ثابت می‌ماند
+        if(phone === CREATOR_PHONE){
+          avatarSrc = CREATOR_AVATAR;
         }
 
-        const isVideo=avatarSrc.endsWith('.webm')||avatarSrc.endsWith('.mp4')||avatarSrc.endsWith('.mov');
-        const avatarHtml=isVideo?`<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`:`<img src="${avatarSrc}" onerror="this.style.display='none';">`;
+        const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
+        const avatarHtml = isVideo ? `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>` : `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
 
-        const tick=getRoleTick(user.rank);
-        const tickHtml=tick?'<img class="role-tick" src="" data-ticks="'+tick.join(',')+'">':'';
+        const tick = getRoleTick(user.rank);
+        const tickHtml = tick ? '<img class="role-tick" src="" data-ticks="' + tick.join(',') + '">' : '';
 
-        card.innerHTML=`
+        card.innerHTML = `
           <div class="card-template">
             <img src="${getTemplate(user.rank)}" alt="template">
           </div>
           <div class="avatar-circle">${avatarHtml}</div>
           <div class="member-info">
             <div class="member-name">
-              ${user.name||'کاربر'}
+              ${user.name || 'کاربر'}
               ${tickHtml}
             </div>
-            <div class="member-role ${getRoleClass(user.rank)}">${user.rank||'کاربر'}</div>
+            <div class="member-role ${getRoleClass(user.rank)}">${user.rank || 'کاربر'}</div>
           </div>
         `;
 
         grid.appendChild(card);
 
         if(tick){
-          const tickImg=card.querySelector('.role-tick');
+          const tickImg = card.querySelector('.role-tick');
           if(tickImg){
-            const ticks=tickImg.dataset.ticks.split(',');
-            applyTick(tickImg,ticks);
+            const ticks = tickImg.dataset.ticks.split(',');
+            applyTick(tickImg, ticks);
           }
         }
       }
 
     }catch(error){
-      console.error('Error loading management team:',error);
-      grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>خطا در بارگذاری اطلاعات</div></div>';
+      console.error('Error loading management team:', error);
+      grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>خطا در بارگذاری اطلاعات</div></div>';
     }
   }
 
   // ✅ به‌روزرسانی دقیق و کامل کارت کاربر (آواتار، نام، تیک، مقام، قالب)
-  async function updateMemberCard(phone,userData){
-    const card=document.querySelector(`.member-card[data-phone="${phone}"]`);
-    if(!card)return;
+  async function updateMemberCard(phone, userData){
+    const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
+    if(!card) return;
 
-    let avatarSrc=userData.avatar||'Mafia2.png';
-    if(phone===CREATOR_PHONE||phone===YAZDGARD_PHONE){
-      avatarSrc=CREATOR_AVATAR;
+    let avatarSrc = userData.avatar || 'Mafia2.png';
+    if(phone === CREATOR_PHONE){
+      avatarSrc = CREATOR_AVATAR;
     }
 
-    const avatarCircle=card.querySelector('.avatar-circle');
-    const isVideo=avatarSrc.endsWith('.webm')||avatarSrc.endsWith('.mp4')||avatarSrc.endsWith('.mov');
-    avatarCircle.innerHTML=isVideo?`<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`:`<img src="${avatarSrc}" onerror="this.style.display='none';">`;
+    const avatarCircle = card.querySelector('.avatar-circle');
+    const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
+    avatarCircle.innerHTML = isVideo ? `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>` : `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
 
-    const nameEl=card.querySelector('.member-name');
-    const tick=getRoleTick(userData.rank);
-    const tickHtml=tick?'<img class="role-tick" src="" data-ticks="'+tick.join(',')+'">':'';
-    nameEl.innerHTML=`${userData.name||'کاربر'} ${tickHtml}`;
+    const nameEl = card.querySelector('.member-name');
+    const tick = getRoleTick(userData.rank);
+    const tickHtml = tick ? '<img class="role-tick" src="" data-ticks="' + tick.join(',') + '">' : '';
+    nameEl.innerHTML = `${userData.name || 'کاربر'} ${tickHtml}`;
 
     if(tick){
-      const tickImg=card.querySelector('.role-tick');
+      const tickImg = card.querySelector('.role-tick');
       if(tickImg){
-        const ticks=tickImg.dataset.ticks.split(',');
-        applyTick(tickImg,ticks);
+        const ticks = tickImg.dataset.ticks.split(',');
+        applyTick(tickImg, ticks);
       }
     }
 
-    const roleEl=card.querySelector('.member-role');
-    roleEl.textContent=userData.rank||'کاربر';
-    roleEl.className=`member-role ${getRoleClass(userData.rank)}`;
+    const roleEl = card.querySelector('.member-role');
+    roleEl.textContent = userData.rank || 'کاربر';
+    roleEl.className = `member-role ${getRoleClass(userData.rank)}`;
 
-    const templateImg=card.querySelector('.card-template img');
+    const templateImg = card.querySelector('.card-template img');
     if(templateImg){
-      templateImg.src=getTemplate(userData.rank);
+      templateImg.src = getTemplate(userData.rank);
     }
   }
 
-  function addNewMember(phone,userData){
-    const managementRoles=['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-    if(!userData.rank||!managementRoles.includes(userData.rank.trim()))return;
+  function addNewMember(phone, userData){
+    const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+    if(!userData.rank || !managementRoles.includes(userData.rank.trim())) return;
     
-    const existingCard=document.querySelector(`.member-card[data-phone="${phone}"]`);
-    if(existingCard)return;
+    const existingCard = document.querySelector(`.member-card[data-phone="${phone}"]`);
+    if(existingCard) return;
 
     loadManagementTeam(); // بارگذاری مجدد برای حفظ ترتیب صحیح
   }
 
-  // ✅ سیستم نظارت هوشمند برای تغییرات آنی
+  // ✅ سیستم نظارت هوشمند و ضد باگ برای تغییرات آنی (فیلد به فیلد)
   async function monitorChanges(){
-    let lastUsers=JSON.stringify(await getAllUsers());
-    const managementRoles=['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+    let lastUsers = await getAllUsers();
+    const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 
     setInterval(async ()=>{
       try{
-        const currentUsers=await getAllUsers();
-        const currentStr=JSON.stringify(currentUsers);
+        const currentUsers = await getAllUsers();
+        let hasChanges = false;
 
-        if(currentStr!==lastUsers){
-          const oldUsers=JSON.parse(lastUsers);
+        for(const [phone, user] of Object.entries(currentUsers)){
+          if(!user) continue;
+          const isManagement = user.rank && managementRoles.includes(user.rank.trim());
+          const oldUser = lastUsers[phone];
 
-          for(const [phone,user] of Object.entries(currentUsers)){
-            if(!user)continue;
-            const isManagement = user.rank && managementRoles.includes(user.rank.trim());
-            
-            if(oldUsers[phone]){
-              if(JSON.stringify(oldUsers[phone])!==JSON.stringify(user)){
-                if(isManagement) {
-                  await updateMemberCard(phone,user);
-                } else {
-                  // اگر مقام کاربر به "کاربر" تغییر کرد، کارت او حذف شود
-                  const card=document.querySelector(`.member-card[data-phone="${phone}"]`);
-                  if(card)card.remove();
-                }
+          if(oldUser){
+            // ✅ بررسی دقیق تغییرات فیلدهای کلیدی به جای JSON.stringify
+            if(oldUser.avatar !== user.avatar || oldUser.name !== user.name || oldUser.rank !== user.rank){
+              hasChanges = true;
+              if(isManagement){
+                await updateMemberCard(phone, user);
+              } else {
+                // اگر مقام کاربر به "کاربر" تغییر کرد، کارت او حذف شود
+                const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
+                if(card) card.remove();
               }
-            }else{
-              if(isManagement) addNewMember(phone,user);
+            }
+          } else {
+            if(isManagement){
+              hasChanges = true;
+              addNewMember(phone, user);
             }
           }
+        }
 
-          for(const phone of Object.keys(oldUsers)){
-            if(!currentUsers[phone]){
-              const card=document.querySelector(`.member-card[data-phone="${phone}"]`);
-              if(card)card.remove();
-            }
+        // بررسی حذف شدن کاربران
+        for(const phone of Object.keys(lastUsers)){
+          if(!currentUsers[phone]){
+            hasChanges = true;
+            const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
+            if(card) card.remove();
           }
+        }
 
-          lastUsers=currentStr;
+        if(hasChanges){
+          lastUsers = currentUsers; // به‌روزرسانی مرجع فقط در صورت وجود تغییر
         }
       }catch(e){
-        console.error('Monitor error:',e);
+        console.error('Monitor error:', e);
       }
-    },3000);
+    }, 3000);
   }
 
-  document.addEventListener('DOMContentLoaded',()=>{
+  document.addEventListener('DOMContentLoaded', ()=>{
     loadManagementTeam();
     monitorChanges();
   });
