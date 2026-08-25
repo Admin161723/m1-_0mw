@@ -132,7 +132,7 @@
   .profile-page-title{color:#fff;font-size:22px;font-weight:900;}
   .profile-info-section{display:flex;align-items:center;padding:20px 15px;gap:15px;}
   .profile-info-avatar{width:100px;height:100px;border-radius:50%;border:3px solid #4a9eff;overflow:hidden;cursor:pointer;position:relative;}
-  .profile-info-avatar img,.profile-info-avatar video{width:100%;height:100%;object-fit:cover;}
+  .profile-info-avatar img, .profile-info-avatar video{width:100%;height:100%;object-fit:cover;}
   .profile-info-avatar::after{content:'✏️';position:absolute;bottom:-5px;right:-5px;width:28px;height:28px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #041228;}
   .profile-info-details{flex:1;display:flex;flex-direction:column;gap:8px;}
   .user-code-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:10px;cursor:pointer;}
@@ -144,6 +144,7 @@
   .edit-name-btn{cursor:pointer;background:rgba(255,255,255,.15);border-radius:6px;padding:4px 6px;font-size:16px;}
   .clan-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);padding:8px 12px;border-radius:10px;}
   .clan-badge{width:36px;height:36px;background:linear-gradient(135deg,#8B0000,#cc2222);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #ff4444;flex-shrink:0;overflow:hidden;}
+  .clan-badge img{width:100%;height:100%;object-fit:contain;padding:4px;}
   .clan-badge svg{width:22px;height:22px;fill:#fff;}
   .clan-badge.has-group{background:linear-gradient(135deg,#bc6c25,#8b5e3c);border-color:#ffd700;box-shadow:0 0 8px rgba(255,215,0,.4);}
   .clan-badge.no-group{background:linear-gradient(135deg,#555,#333);border-color:#777;}
@@ -180,7 +181,7 @@
   .character-showcase{padding:15px;background:linear-gradient(180deg,#1a4a7a,#0d2f4a);border-top:2px solid #ffd700;border-bottom:2px solid #2a7fb8;margin:10px 15px;border-radius:15px;}
   .characters-container{display:flex;justify-content:center;align-items:center;height:100px;}
   .character-main{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6a7f9a,#3a4f6a);border:4px solid #4ab0e8;overflow:hidden;}
-  .character-main img,.character-main video{width:100%;height:100%;object-fit:cover;}
+  .character-main img, .character-main video{width:100%;height:100%;object-fit:cover;}
   .avatar-section-tabs{display:flex;gap:8px;padding:12px 15px;background:rgba(0,0,0,.3);}
   .avatar-section-tab{flex:1;padding:12px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-align:center;}
   .avatar-section-tab.active{background:linear-gradient(180deg,#3a9fd8,#2a7fb8);}
@@ -190,7 +191,7 @@
   .avatar-card.exclusive{border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,.5);}
   .avatar-card.exclusive::before{content:'⭐';position:absolute;top:4px;right:4px;font-size:14px;z-index:2;}
   .avatar-image{width:72px;height:72px;border-radius:50%;margin:0 auto 8px;overflow:hidden;border:2px solid rgba(255,255,255,.4);background:#123;display:flex;align-items:center;justify-content:center;}
-  .avatar-image img,.avatar-image video{width:100%;height:100%;object-fit:cover;}
+  .avatar-image img, .avatar-image video{width:100%;height:100%;object-fit:cover;}
   .avatar-missing{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#ff8a8a;font-size:8px;font-weight:900;text-align:center;word-break:break-all;}
   .avatar-price{display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,.4);padding:6px 10px;border-radius:10px;}
   .gem-icon{width:18px;height:20px;background:linear-gradient(135deg,#ff66ff,#990099);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);}
@@ -220,7 +221,7 @@
   .exclusive-avatar-section{background:rgba(0,0,0,.25);border:2px dashed rgba(255,215,0,.5);border-radius:12px;padding:14px;margin-top:15px;text-align:center;}
   .exclusive-avatar-title{color:#ffd700;font-size:13px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px;}
   .exclusive-avatar-preview{width:90px;height:90px;border-radius:50%;border:3px solid #ffd700;margin:0 auto 12px;overflow:hidden;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(255,215,0,.3);}
-  .exclusive-avatar-preview img,.exclusive-avatar-preview video{width:100%;height:100%;object-fit:cover;}
+  .exclusive-avatar-preview img, .exclusive-avatar-preview video{width:100%;height:100%;object-fit:cover;}
   .exclusive-avatar-placeholder{color:rgba(255,255,255,.5);font-size:36px;}
   .exclusive-avatar-btns{display:flex;flex-direction:column;gap:6px;}
   .exclusive-file-btn{position:relative;overflow:hidden;}
@@ -231,7 +232,7 @@
   .setting-label{color:#fff;font-size:16px;font-weight:700;}
   .volume-slider{width:60%;accent-color:#4a9eff;}
   .password-btn{width:100%;padding:14px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:900;cursor:pointer;margin-top:10px;}
-  
+
   .tournament-section{background:rgba(0,0,0,.3);border:2px solid #ffd700;border-radius:12px;padding:14px;margin-bottom:15px;}
   .tournament-section h4{color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;}
   .prize-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap;}
@@ -319,7 +320,7 @@
             <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن دیتابیس</button>
           </div>
         </div>
-        
+
         <div class="tournament-section" id="tournamentConfig" style="display:none;">
           <h4>🏆 تنظیمات مسابقات کلن‌ها</h4>
           <div style="margin-bottom:10px;">
@@ -330,7 +331,7 @@
               <option value="seasonal">فصلی</option>
             </select>
           </div>
-          
+
           <h4 style="color:#ffd700;font-size:13px;margin:10px 0 8px;">🥇 جایزه رتبه ۱</h4>
           <div class="prize-row">
             <label>نوع:</label>
@@ -347,7 +348,7 @@
               </label>
             </div>
           </div>
-          
+
           <h4 style="color:#c0c0c0;font-size:13px;margin:10px 0 8px;">🥈 جایزه رتبه ۲</h4>
           <div class="prize-row">
             <label>نوع:</label>
@@ -364,7 +365,7 @@
               </label>
             </div>
           </div>
-          
+
           <h4 style="color:#cd7f32;font-size:13px;margin:10px 0 8px;">🥉 جایزه رتبه ۳</h4>
           <div class="prize-row">
             <label>نوع:</label>
@@ -381,7 +382,7 @@
               </label>
             </div>
           </div>
-          
+
           <h4 style="color:#4a9eff;font-size:13px;margin:10px 0 8px;">🎖️ جایزه رتبه ۴ تا ۱۰</h4>
           <div class="prize-row">
             <label>نوع:</label>
@@ -391,9 +392,9 @@
             <label>مقدار:</label>
             <input type="number" id="prize4Value" placeholder="مثلا: 50" min="0">
           </div>
-          
+
           <button class="edit-btn save" onclick="saveTournamentConfig()" style="width:100%;margin-top:12px;">💾 ذخیره تنظیمات مسابقه</button>
-          
+
           <div class="clan-blacklist" id="clanBlacklist">
             <h4 style="color:#f44336;font-size:12px;margin-bottom:8px;">🚫 لیست سیاه کلن‌ها</h4>
             <div id="blacklistItems"></div>
@@ -657,7 +658,6 @@
   }
 
   const CREATOR_PHONE='09904844031';
-  const YAZDGARD_PHONE='09942785343';
   const CREATOR_AVATAR='655.webm';
 
   async function getUser(p){return await redisGet('user:'+p);}
@@ -746,15 +746,21 @@
     {id:17, src:'617.webp', price:75, owned:false},
     {id:18, src:'618.webp', price:300, owned:false},
     {id:19, src:'619.webp', price:100, owned:false},
-    {id:20, src:'620.webp', price:200, owned:false}
+    {id:20, src:'620.webp', price:200, owned:false},
+    // ✅ آواتارهای اختصاصی مقام‌ها
+    {id:901, src:'655.webm', price:0, owned:false, exclusive:true, name:'اختصاصی سازنده'},
+    {id:902, src:'2000.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت'},
+    {id:903, src:'2003.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت'},
+    {id:904, src:'2001.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'},
+    {id:905, src:'2002.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'}
   ];
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  // ✅ فقط در ذخیره اعمال می‌شود، نه در بارگذاری
+  // ✅ فقط آواتار 655.webm برای غیر سازنده مسدود است. بقیه آواتارها آزادانه تغییر می‌کنند و برنمی‌گردند.
   function sanitizeUserData(user, phone) {
     if (!user) return user;
-    const isCreator = (phone === CREATOR_PHONE || phone === YAZDGARD_PHONE);
+    const isCreator = (phone === CREATOR_PHONE);
     if (user.avatar === '655.webm' && !isCreator) {
       user.avatar = user.previousAvatar || 'Mafia2.png';
     }
@@ -770,7 +776,7 @@
   }
 
   function getValidAvatar(src, phone) {
-    const isCreator = (phone === CREATOR_PHONE || phone === YAZDGARD_PHONE);
+    const isCreator = (phone === CREATOR_PHONE);
     if (src === '655.webm' && !isCreator) return 'Mafia2.png';
     return src;
   }
@@ -858,11 +864,18 @@
     updateGlobalAvatar(currentUserData.avatar);
   }
 
+  // ✅ محدودیت ۲۰ کاراکتر برای نام کاربری
   async function changeUsername(){
-    const nn=prompt("نام کاربری جدید را وارد کنید:");
-    if(nn&&nn.trim()!==""){
+    const nn=prompt("نام کاربری جدید را وارد کنید (حداکثر ۲۰ کاراکتر):");
+    if(nn && nn.trim()!==""){
+      const trimmedName = nn.trim();
+      if(trimmedName.length > 20) {
+        showShopNotification('نام کاربری نمی‌تواند بیشتر از ۲۰ کاراکتر باشد!', 'error');
+        return;
+      }
       if(currentUserData.coins>=100){
-        currentUserData.coins-=100;currentUserData.name=nn.trim();
+        currentUserData.coins-=100;
+        currentUserData.name=trimmedName;
         await saveUserData();
         updateUIWithData(currentUserData);
         showShopNotification('نام کاربری تغییر کرد و ۱۰۰ سکه کسر شد');
@@ -901,7 +914,12 @@
       if(group){
         nameEl.textContent=group.name||'گروه';
         badgeEl.className='clan-badge has-group';
-        badgeEl.innerHTML=getGroupIcon(group.logo||'shield');
+        // ✅ نمایش تصویر لوگو به جای شکلک
+        if(group.logo && (group.logo.endsWith('.webp') || group.logo.endsWith('.png') || group.logo.endsWith('.jpg') || group.logo.endsWith('.jpeg'))) {
+            badgeEl.innerHTML = `<img src="${group.logo}" style="width:100%;height:100%;object-fit:contain;padding:4px;" onerror="this.style.display='none';this.parentElement.innerHTML='${getGroupIcon('shield').replace(/"/g, "&quot;")}'">`;
+        } else {
+            badgeEl.innerHTML = getGroupIcon(group.logo||'shield');
+        }
         userGroupCache=group;
       }else{
         nameEl.textContent='بدون گروه';
@@ -989,13 +1007,13 @@
     if(!isCreator && targetLevel>=myLevel){showShopNotification('نمی‌توانید هم‌مقام یا بالاتر را ویرایش کنید','error');return;}
 
     editingUserId=id;
-    if(u.exclusiveAvatar === '655.webm' && id !== CREATOR_PHONE && id !== YAZDGARD_PHONE) {
+    if(u.exclusiveAvatar === '655.webm' && id !== CREATOR_PHONE) {
       editingUserExclusiveAvatar = null;
       u.exclusiveAvatar = null;
     } else {
       editingUserExclusiveAvatar = u.exclusiveAvatar || null;
     }
-    
+
     document.getElementById('editUserName').value=u.name||'';
     document.getElementById('editUserCoins').value=u.coins||0;
     document.getElementById('editUserGems').value=u.gems||0;
@@ -1075,7 +1093,7 @@
     }
     if(perm.rank)u.rank=document.getElementById('editUserRole').value;
     if(perm.exclusive&&editingUserExclusiveAvatar){
-      if(editingUserExclusiveAvatar === '655.webm' && editingUserId !== CREATOR_PHONE && editingUserId !== YAZDGARD_PHONE) {
+      if(editingUserExclusiveAvatar === '655.webm' && editingUserId !== CREATOR_PHONE) {
         showShopNotification('این آواتار فقط مخصوص سازنده است!', 'error');
         return;
       }
@@ -1187,17 +1205,17 @@
 
   async function saveTournamentConfig() {
     if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
-    
+
     const prize1Value = parseInt(document.getElementById('prize1Value').value) || 0;
     const prize2Value = parseInt(document.getElementById('prize2Value').value) || 0;
     const prize3Value = parseInt(document.getElementById('prize3Value').value) || 0;
     const prize4Value = parseInt(document.getElementById('prize4Value').value) || 0;
-    
+
     if (prize1Value < 0 || prize2Value < 0 || prize3Value < 0 || prize4Value < 0) {
       showShopNotification('مقادیر نمی‌توانند منفی باشند', 'error');
       return;
     }
-    
+
     const cfg = {
       duration: document.getElementById('tournamentDuration').value,
       rank1: { 
@@ -1221,7 +1239,7 @@
       },
       blacklist: window.clanBlacklist || []
     };
-    
+
     await saveTournamentConfigData(cfg);
     showShopNotification('✅ تنظیمات مسابقات ذخیره شد');
   }
@@ -1321,14 +1339,8 @@
     document.getElementById('shopGoldAmount').textContent=toPersianNum(shopGold);
     document.getElementById('shopGemAmount').textContent=toPersianNum(shopGems);
 
-    let cur=getValidAvatar(currentUserData.avatar||'Mafia2.png', currentPhone);
-    if(currentPhone===CREATOR_PHONE || currentPhone===YAZDGARD_PHONE){
-      cur=CREATOR_AVATAR;
-      currentUserData.avatar=CREATOR_AVATAR;
-      if(!avatars.find(a=>a.src===CREATOR_AVATAR)) avatars.push({id:999, src:CREATOR_AVATAR, price:0, owned:true, exclusive:true});
-      else{const ex=avatars.find(a=>a.src===CREATOR_AVATAR); ex.owned=true; ex.exclusive=true;}
-    }
-
+    let cur = currentUserData.avatar || 'Mafia2.png';
+    
     if(currentUserData.exclusiveAvatar){
       const existingExclusive=avatars.find(a=>a.isMyExclusive);
       if(!existingExclusive){
@@ -1354,7 +1366,7 @@
     let disp;
     if(currentAvatarSection==='my'){
       disp=avatars.filter(a=>a.owned);
-      if(currentPhone!==CREATOR_PHONE && currentPhone!==YAZDGARD_PHONE) disp=disp.filter(a=>a.src!==CREATOR_AVATAR);
+      if(currentPhone!==CREATOR_PHONE) disp=disp.filter(a=>a.src!=='655.webm');
     }else disp=avatars.filter(a=>!a.owned&&!a.exclusive&&!a.isMyExclusive);
 
     if(!disp.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">آواتاری موجود نیست</div>';return;}
@@ -1365,7 +1377,7 @@
       const cardClass='avatar-card '+(a.owned?'owned ':'')+(a.isMyExclusive?'exclusive':'');
       return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${(!a.owned?`<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">${toPersianNum(a.price)}</span></div>`:`<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ ${(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':''))}</div>`)}</div>`;
     }).join('');
-    
+
     grid.querySelectorAll('.avatar-card').forEach(c=>c.addEventListener('click',()=>handleAvatarClick(parseInt(c.dataset.id))));
   }
 
@@ -1410,11 +1422,10 @@
     }
 
     currentPhone = phone;
-    
-    // ✅ بارگذاری مستقیم از localStorage بدون sanitize
+
     const localCache = localStorage.getItem('user_cache_' + currentPhone);
     let localUser = null;
-    
+
     try {
         localUser = localCache ? JSON.parse(localCache) : null;
     } catch(e) {
@@ -1425,14 +1436,11 @@
         localUser = { name: 'کاربر', coins: 0, gems: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0 };
     }
 
-    // ✅ بدون sanitize - فقط مستقیم استفاده کن
     currentUserData = localUser;
-    
-    // ✅ به‌روزرسانی فوری UI
+
     updateUIWithData(currentUserData);
     initAvatarShop();
 
-    // همگام‌سازی در پس‌زمینه
     setTimeout(() => {
         syncWithServerInBackground();
     }, 0);
@@ -1454,20 +1462,20 @@
     document.getElementById('openProfile').addEventListener('click',()=>{document.getElementById('profilePage').classList.add('active');updateGroupDisplay();});
     document.getElementById('backBtn').addEventListener('click',()=>document.getElementById('profilePage').classList.remove('active'));
     document.getElementById('copyUserCode').addEventListener('click',()=>copyToClipboard(document.getElementById('userCode').textContent,'کد کاربری کپی شد!'));
-    
+
     document.getElementById('openAvatarShop').addEventListener('click',()=>{
         document.getElementById('profilePage').classList.remove('active');
         document.getElementById('avatarShopPage').classList.add('active');
         renderAvatars();
     });
-    
+
     document.getElementById('shopBackBtn').addEventListener('click',()=>{document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
     document.getElementById('editNameBtn').addEventListener('click',changeUsername);
     document.getElementById('navShop').addEventListener('click',()=>window.location.href='Safe Foroshgahe.html');
     document.getElementById('navGroup').addEventListener('click',()=>window.location.href='Safe Goroh.html');
     document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
     document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
-    
+
     document.getElementById('btnTopPlayers').addEventListener('click',()=>{
         window.location.href = 'Bandi.html';
     });
@@ -1586,12 +1594,7 @@
             }
         }
 
-        // ✅ فقط در همگام‌سازی sanitize اعمال می‌شود
         currentUserData = sanitizeUserData({ ...currentUserData, ...serverUser }, currentPhone);
-
-        if(currentPhone === CREATOR_PHONE || currentPhone === YAZDGARD_PHONE){
-            currentUserData.avatar = CREATOR_AVATAR;
-        }
 
         if(!currentUserData.userCode){
             const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let code='P';
