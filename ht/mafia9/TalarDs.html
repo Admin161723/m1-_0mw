@@ -333,7 +333,7 @@
 
   <div class="view" id="viewRoom">
     <div class="room-topbar">
-      <button class="back-btn" id="backRoomBtn"></button>
+      <button class="back-btn" id="backRoomBtn">❯</button>
       <div class="home-btn" id="homeRoomBtn"><div class="home-ico"></div></div>
       <div class="room-top-name" id="roomNameTop">-</div>
       <div class="tool-btn tool-ghost" id="btnGhost"><div class="ghost-ico"></div></div>
@@ -403,8 +403,8 @@
   <div class="overlay" id="editModal"><div class="modal">
     <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
-    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵ سکه</div>
-    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
+    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
+    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه:  سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
@@ -483,8 +483,13 @@
   document.addEventListener('cut',e=>{if(e.target.tagName!=='INPUT')e.preventDefault();});
   document.addEventListener('dragstart',e=>e.preventDefault());
 
+  // ============================================================
+  // 🌐 دو دیتابیس: Upstash (دائم) + JSONBin (زنده/موقت)
+  // ============================================================
   const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
   const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+  const JSONBIN_KEY = "$2a$10$G8pgSWnFz4w/.voj3lfBPuJL7luRXAXiR/fIufC3YIB4.qRkZSjSS";
+  const JSONBIN_ID = "6a53f4c8f5f4af5e298541fe"; // مخصوص sync زنده
 
   const CREATOR_PHONE='09904844031';
   const MAX_NAMES=4, MAX_ROOMS_PER_USER=4, MAX_PLAYERS=10, NAME_COST=50;
@@ -505,9 +510,32 @@
   const REACTION_COOLDOWN = 3000;
   let chatMessages = [];
 
+  // Upstash - برای داده‌های دائمی
   async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result);}catch(e){return d.result;}}return null;}catch(e){return null;}}
   async function upstashSet(k, v){try{const jsonValue=JSON.stringify(v);const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(jsonValue),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
   async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
+
+  // JSONBin - برای sync زنده (لایک، دیس‌لایک، صحبت کردن)
+  async function jsonbinGetLive(){
+    try{
+      const c=new AbortController();
+      const t=setTimeout(()=>c.abort(),3000);
+      const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{headers:{'X-Master-Key':JSONBIN_KEY},signal:c.signal});
+      clearTimeout(t);
+      if(!r.ok)return {};
+      const d=await r.json();
+      return d.record||{};
+    }catch(e){return {};}
+  }
+  async function jsonbinSetLive(data){
+    try{
+      const c=new AbortController();
+      const t=setTimeout(()=>c.abort(),3000);
+      const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},body:JSON.stringify(data),signal:c.signal});
+      clearTimeout(t);
+      return r.ok;
+    }catch(e){return false;}
+  }
 
   async function redisGet(key){ return await upstashGet(key); }
   async function redisSet(key, value){ return await upstashSet(key, value); }
@@ -559,14 +587,14 @@
     return bansCache.data;
   }
 
-  let me=null, allRoomsCache={}, currentRoomId=null, listTimer=null, roomTimer=null, speakTimer=null;
+  let me=null, allRoomsCache={}, currentRoomId=null, listTimer=null, roomTimer=null, speakTimer=null, liveSyncTimer=null;
   let selectedName='', passOn=false, editMode='add', editIndex=-1;
   let menuTarget=null, banTarget=null, reportTarget=null, ctab='names';
   let overlayShown=false;
   let offlineTimer = null;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۲۳۴۵۶۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function showToast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t==='error'?' error':'');setTimeout(()=>e.classList.remove('show'),2600);}
   const isStaff=r=>r&&r!=='کاربر';
@@ -656,15 +684,38 @@
     return html;
   }
 
-  // ✅ ساخت تگ media (ویدیو یا تصویر) با پشتیبانی کامل
-  function buildMediaTag(avatarUrl, fallbackHtml) {
+  // ✅ ساخت تگ media با حفظ currentTime برای ویدیوها
+  function buildMediaTag(avatarUrl, fallbackHtml, preserveTime=false) {
     if (!avatarUrl) return fallbackHtml || '';
     const isVideo = avatarUrl.endsWith('.webm') || avatarUrl.endsWith('.mp4') || avatarUrl.endsWith('.mov');
     if (isVideo) {
-      return `<video src="${esc(avatarUrl)}" autoplay loop muted playsinline webkit-playsinline onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;>👤</span>'}'"></video>`;
+      const timeAttr = preserveTime ? ' data-preserve-time="1"' : '';
+      return `<video src="${esc(avatarUrl)}" autoplay loop muted playsinline webkit-playsinline${timeAttr} onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;>👤</span>'}'"></video>`;
     } else {
       return `<img src="${esc(avatarUrl)}" onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;></span>'}'">`;
     }
+  }
+
+  // ✅ حفظ currentTime ویدیوها قبل از رندر
+  function saveVideoTimes() {
+    const times = {};
+    document.querySelectorAll('.seat-circle video, .super-circle video, .pf-avatar video').forEach((v, i) => {
+      const key = v.src + '_' + i;
+      if (!isNaN(v.currentTime)) times[key] = v.currentTime;
+    });
+    return times;
+  }
+
+  // ✅ restore currentTime ویدیوها بعد از رندر
+  function restoreVideoTimes(times) {
+    setTimeout(() => {
+      document.querySelectorAll('.seat-circle video, .super-circle video, .pf-avatar video').forEach((v, i) => {
+        const key = v.src + '_' + i;
+        if (times[key] !== undefined && !isNaN(times[key])) {
+          v.currentTime = times[key];
+        }
+      });
+    }, 100);
   }
 
   async function initVoice() {
@@ -781,8 +832,8 @@
     updateMicUI();
   }
 
-  // ✅ انیمیشن لایک/دیس‌لایک با تایمرهای مستقل
-  function showReactionOnProfile(type) {
+  // ✅ لایک/دیس‌لایک در JSONBin ذخیره می‌شود (پایدار بین رفرش)
+  async function showReactionOnProfile(type) {
     const now = Date.now();
     const cooldown = type === 'dislike' ? lastDislikeTime : lastLikeTime;
 
@@ -834,6 +885,22 @@
 
     circleEl.appendChild(overlay);
 
+    // ✅ ذخیره در JSONBin برای sync بین کاربران
+    try {
+      const liveData = await jsonbinGetLive();
+      if (!liveData.reactions) liveData.reactions = {};
+      const roomKey = 'room_' + currentRoomId;
+      if (!liveData.reactions[roomKey]) liveData.reactions[roomKey] = {};
+      liveData.reactions[roomKey][targetPhone] = { type: type, time: now };
+      // حذف reaction های قدیمی (بیشتر از 10 ثانیه)
+      Object.keys(liveData.reactions[roomKey]).forEach(phone => {
+        if (now - liveData.reactions[roomKey][phone].time > 10000) {
+          delete liveData.reactions[roomKey][phone];
+        }
+      });
+      await jsonbinSetLive(liveData);
+    } catch(e) {}
+
     setTimeout(() => {
       if (overlay && overlay.parentNode) {
         overlay.classList.remove('show');
@@ -844,6 +911,41 @@
     }, 3000);
 
     return true;
+  }
+
+  // ✅ Sync زنده از JSONBin (فقط لایک/دیس‌لایک/صحبت کردن)
+  async function syncLiveState() {
+    if (!currentRoomId || overlayShown) return;
+    try {
+      const liveData = await jsonbinGetLive();
+      if (!liveData.reactions) return;
+      const roomKey = 'room_' + currentRoomId;
+      const reactions = liveData.reactions[roomKey] || {};
+      const now = Date.now();
+      
+      // نمایش reaction های فعال
+      Object.keys(reactions).forEach(phone => {
+        const r = reactions[phone];
+        if (now - r.time < 3000) {
+          const circleEl = document.querySelector(`.seat-circle[data-phone="${phone}"]`) || document.querySelector(`.super-circle[data-phone="${phone}"]`);
+          if (circleEl && !circleEl.querySelector('.reaction-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'reaction-overlay show';
+            const img = document.createElement('img');
+            img.src = r.type === 'dislike' ? 'like3.gif' : 'like1.gif';
+            img.onerror = function() { this.style.display = 'none'; };
+            overlay.appendChild(img);
+            circleEl.appendChild(overlay);
+            setTimeout(() => {
+              if (overlay && overlay.parentNode) {
+                overlay.classList.remove('show');
+                setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
+              }
+            }, 3000);
+          }
+        }
+      });
+    } catch(e) {}
   }
 
   function openChat() {
@@ -929,7 +1031,10 @@
     }
   });
 
-  function stopTimers(){ if(roomTimer){clearInterval(roomTimer);roomTimer=null;} }
+  function stopTimers(){ 
+    if(roomTimer){clearInterval(roomTimer);roomTimer=null;}
+    if(liveSyncTimer){clearInterval(liveSyncTimer);liveSyncTimer=null;}
+  }
 
   async function boot(){
     try{
@@ -983,7 +1088,7 @@
 
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
@@ -1078,8 +1183,10 @@
     $('deletedOverlay').classList.remove('show');
     if(listTimer){clearInterval(listTimer);listTimer=null;}
     if(roomData)renderRoom(roomData,usersCache.data||{});
-    refreshRoom();
-    if(!roomTimer)roomTimer=setInterval(refreshRoom,2000);
+    // ✅ رفرش فقط بعد از اکشن، نه با setInterval
+    if(!roomTimer)roomTimer=setInterval(refreshRoom,3000);
+    // ✅ Sync زنده از JSONBin هر 1.5 ثانیه
+    if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1500);
     initVoice();
   }
 
@@ -1138,6 +1245,9 @@
     for(const ph of allPhones){ if(ph) groupPromises.push((async()=>{groupCache[ph]=await findUserGroup(ph);})()); }
     await Promise.all(groupPromises);
 
+    // ✅ حفظ currentTime ویدیوها قبل از رندر
+    const videoTimes = saveVideoTimes();
+
     async function buildSuper(i){
       const ph=room.supers[i];
       const u=ph?allUsers[ph]:null;
@@ -1146,7 +1256,7 @@
       const tagLayer = u ? await buildTagLayer(ph,u,groupCache[ph]||null) : '';
       const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
       let inner='';
-      if(u) inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
+      if(u) inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>', true);
       const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
@@ -1172,7 +1282,7 @@
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
+        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>', true);
         tag='<div class="seat-name normal-tag">👻 روح (شما)</div>';
       }
       else if(ph && !ghostHidden){
@@ -1185,7 +1295,7 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
+        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>', true);
       }
       else if(bot){
         inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
@@ -1207,6 +1317,9 @@
     $('colRight').innerHTML=rightSeats.join('');
     document.querySelectorAll('.seat').forEach(el=>{el.onclick=()=>tapSeat(+el.dataset.seat);});
     document.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
+
+    // ✅ restore currentTime ویدیوها بعد از رندر
+    restoreVideoTimes(videoTimes);
 
     const bottomLeft = $('bottomLeftArea');
     bottomLeft.innerHTML = '';
@@ -1439,14 +1552,14 @@
     showToast('ناظر '+(n===1?'۱':'۲')+' شد');refreshRoom();
   }
 
-  // ✅ پروفایل با پشتیبانی کامل از آواتار ویدیویی
+  // ✅ پروفایل با پشتیبانی کامل از آواتار ویدیویی + حفظ currentTime
   async function openProfile(t){
     const allUsers=await getUsersCached();const u=allUsers[t.phone]||{};
     const tk=getRoleTick(u.rank);
     const groupInfo=await findUserGroup(t.phone);
     const groupName=groupInfo?groupInfo.group.name:'بدون گروه';
     
-    const avatarHtml = buildMediaTag(u.avatar, '<span style="display:none"></span>');
+    const avatarHtml = buildMediaTag(u.avatar, '<span style="display:none"></span>', true);
     
     $('profileBody').innerHTML='<div class="pf-avatar">'+avatarHtml+'</div>'+
       '<div class="pf-name">'+esc(u.name||'کاربر')+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>'+
