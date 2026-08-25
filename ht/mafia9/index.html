@@ -51,7 +51,7 @@
       document.title = 'Access Denied';
       try { window.stop(); } catch (e) {}
       document.open();
-      document.write('<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>خطا</title><style>@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap");*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;font-family:"Vazirmatn",Tahoma,sans-serif;color:white;display:flex;align-items:center;justify-content:center;padding:20px}.box{max-width:420px;width:100%;background:rgba(244,67,54,0.1);border:2px solid #f44336;border-radius:28px;padding:30px 20px;text-align:center;box-shadow:0 0 30px rgba(244,67,54,0.35)}.ico{font-size:56px;margin-bottom:14px}.title{color:#ff6b6b;font-size:22px;font-weight:900;margin-bottom:12px}.text{color:rgba(255,255,255,0.85);font-size:13px;line-height:2.1}.code{margin-top:14px;color:rgba(255,255,255,0.4);font-size:10px;direction:ltr}</style></head><body><div class="box"><div class="ico">⛔</div><div class="title">خطا! دسترسی غیرمجاز</div><div class="text">اجرای بازی فقط از طریق <b>اپلیکیشن رسمی</b> امکان‌پذیر است.<br>باز کردن لینک در مرورگر مجاز نیست و بازی اجرا نمی‌شود.<br>لطفاً بازی را داخل اپلیکیشن باز کنید.</div><div class="code">ERR_UNAUTHORIZED_CLIENT #403</div></div></body></html>');
+      document.write('<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>خطا</title><style>@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap");*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;font-family:"Vazirmatn",Tahoma,sans-serif;color:white;display:flex;align-items:center;justify-content:center;padding:20px}.box{max-width:420px;width:100%;background:rgba(244,67,54,0.1);border:2px solid #f44336;border-radius:28px;padding:30px 20px;text-align:center;box-shadow:0 0 30px rgba(244,67,54,0.35)}.ico{font-size:56px;margin-bottom:14px}.title{color:#ff6b6b;font-size:22px;font-weight:900;margin-bottom:12px}.text{color:rgba(255,255,255,0.85);font-size:13px;line-height:2.1}.code{margin-top:14px;color:rgba(255,255,255,0.4);font-size:10px;direction:ltr}</style></head><body><div class="box"><div class="ico"></div><div class="title">خطا! دسترسی غیرمجاز</div><div class="text">اجرای بازی فقط از طریق <b>اپلیکیشن رسمی</b> امکان‌پذیر است.<br>باز کردن لینک در مرورگر مجاز نیست و بازی اجرا نمی‌شود.<br>لطفاً بازی را داخل اپلیکیشن باز کنید.</div><div class="code">ERR_UNAUTHORIZED_CLIENT #403</div></div></body></html>');
       document.close();
     });
   }
@@ -110,6 +110,14 @@
 
 <div id="backdrop" class="backdrop"></div>
 <div class="toast" id="toast"></div>
+
+<!-- Audio Elements -->
+<audio id="clickSound" preload="auto">
+    <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
+</audio>
+<audio id="bgMusic" loop preload="auto">
+    <source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg">
+</audio>
 
 <script>
 if (!window.__MAFIA_BLOCKED__) {
