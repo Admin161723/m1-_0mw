@@ -245,7 +245,7 @@
   .clan-blacklist-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:6px;margin-bottom:4px;}
   .clan-blacklist-item span{color:#fff;font-size:12px;}
   .clan-blacklist-item button{background:#f44336;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
-  
+
   .confirm-btn{background:linear-gradient(180deg,#4CAF50,#45a049);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:10px;}
   .confirm-btn:hover{background:linear-gradient(180deg,#45a049,#3d8b40);}
 </style>
@@ -265,8 +265,8 @@
   <div class="menu-overlay" id="menuOverlay"></div>
   <div class="menu-dropdown" id="menuDropdown">
     <div class="menu-item" id="menuContact"><div class="menu-item-icon icon-contact">📞</div><span class="menu-item-text">ارتباط با ما</span></div>
-    <div class="menu-item" id="menuSettings"><div class="menu-item-icon icon-settings">️</div><span class="menu-item-text">تنظیمات</span></div>
-    <div class="menu-item" id="menuLogout"><div class="menu-item-icon icon-logout"></div><span class="menu-item-text">خروج از اکانت</span></div>
+    <div class="menu-item" id="menuSettings"><div class="menu-item-icon icon-settings">⚙️</div><span class="menu-item-text">تنظیمات</span></div>
+    <div class="menu-item" id="menuLogout"><div class="menu-item-icon icon-logout">🚪</div><span class="menu-item-text">خروج از اکانت</span></div>
   </div>
 
   <div class="profile-section" id="openProfile">
@@ -352,7 +352,7 @@
               </label>
             </div>
           </div>
-          <button class="confirm-btn" onclick="confirmPrize(1)" style="width:100%;">✅ تایید جایزه رتبه </button>
+          <button class="confirm-btn" onclick="confirmPrize(1)" style="width:100%;">✅ تایید جایزه رتبه ۱</button>
 
           <h4 style="color:#c0c0c0;font-size:13px;margin:10px 0 8px;">🥈 جایزه رتبه ۲</h4>
           <div class="prize-row">
@@ -401,7 +401,7 @@
           </div>
           <button class="confirm-btn" onclick="confirmPrize(4)" style="width:100%;">✅ تایید جایزه رتبه ۴-۱۰</button>
 
-          <button class="edit-btn save" onclick="saveAllTournamentConfig()" style="width:100%;margin-top:12px;"> ذخیره همه تنظیمات</button>
+          <button class="edit-btn save" onclick="saveAllTournamentConfig()" style="width:100%;margin-top:12px;">💾 ذخیره نهایی و شروع مسابقه</button>
 
           <div class="clan-blacklist" id="clanBlacklist">
             <h4 style="color:#f44336;font-size:12px;margin-bottom:8px;">🚫 لیست سیاه کلن‌ها</h4>
@@ -577,7 +577,6 @@
   </div>
 </div>
 
-<!-- فایل‌های صوتی -->
 <audio id="clickSound" preload="auto">
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
@@ -707,7 +706,7 @@
     'ادمین ارشد':{panel:true, coins:true, gems:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'1m'},
     'گرداننده': {panel:true, coins:true, gems:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'3m'}
   };
-  const BAN_OPTIONS=[['1h','۱ ساعت'],['1d','۱ روز'],['7d','۷ روز'],['2w',' هفته'],['1m','۱ ماه'],['3m','۳ ماه'],['8m',' ماه'],['permanent','دائمی']];
+  const BAN_OPTIONS=[['1h','۱ ساعت'],['1d','۱ روز'],['7d','۷ روز'],['2w','۲ هفته'],['1m','۱ ماه'],['3m','۳ ماه'],['8m','۸ ماه'],['permanent','دائمی']];
   const DUR_MS={'1h':3600000,'1d':86400000,'7d':604800000,'2w':1209600000,'1m':2592000000,'3m':7776000000,'8m':20736000000,'permanent':0};
 
   function getPerm(){
@@ -1234,8 +1233,15 @@
     showShopNotification(`✅ جایزه رتبه ${rank} تایید شد`);
   }
 
+  // ✅ ذخیره نهایی و محاسبه خودکار زمان پایان مسابقه
   async function saveAllTournamentConfig() {
     if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
+
+    const duration = document.getElementById('tournamentDuration').value;
+    let endTime = Date.now();
+    if (duration === 'weekly') endTime += 7 * 24 * 60 * 60 * 1000;
+    else if (duration === 'monthly') endTime += 30 * 24 * 60 * 60 * 1000;
+    else if (duration === 'seasonal') endTime += 90 * 24 * 60 * 60 * 1000;
 
     const prize1Value = parseInt(document.getElementById('prize1Value').value) || 0;
     const prize2Value = parseInt(document.getElementById('prize2Value').value) || 0;
@@ -1248,31 +1254,18 @@
     }
 
     const cfg = {
-      duration: document.getElementById('tournamentDuration').value,
-      rank1: { 
-        type: document.getElementById('prize1Type').value, 
-        value: prize1Value,
-        customFile: document.getElementById('prize1File').dataset.file || null
-      },
-      rank2: { 
-        type: document.getElementById('prize2Type').value, 
-        value: prize2Value,
-        customFile: document.getElementById('prize2File').dataset.file || null
-      },
-      rank3: { 
-        type: document.getElementById('prize3Type').value, 
-        value: prize3Value,
-        customFile: document.getElementById('prize3File').dataset.file || null
-      },
-      rank4_10: { 
-        type: document.getElementById('prize4Type').value, 
-        value: prize4Value 
-      },
+      duration: duration,
+      endTime: endTime,
+      distributed: false,
+      rank1: { type: document.getElementById('prize1Type').value, value: prize1Value, customFile: document.getElementById('prize1File').dataset.file || null },
+      rank2: { type: document.getElementById('prize2Type').value, value: prize2Value, customFile: document.getElementById('prize2File').dataset.file || null },
+      rank3: { type: document.getElementById('prize3Type').value, value: prize3Value, customFile: document.getElementById('prize3File').dataset.file || null },
+      rank4_10: { type: document.getElementById('prize4Type').value, value: prize4Value },
       blacklist: window.clanBlacklist || []
     };
 
     await saveTournamentConfigData(cfg);
-    showShopNotification('✅ همه تنظیمات مسابقات ذخیره شد');
+    showShopNotification('✅ تنظیمات مسابقات ذخیره و زمان شروع شد');
   }
 
   window.clanBlacklist = [];
@@ -1492,6 +1485,99 @@
     }
   }
 
+  // ✅ تابع محاسبه امتیاز کلن (کپی از Bandi.html برای سازگاری کامل)
+  function calculateClanStats(group, allUsers) {
+    let totalPoints = parseInt(group.extraPoints) || 0;
+    const members = group.members || [];
+    members.forEach(memberId => {
+      const u = allUsers[memberId];
+      if (u) {
+        const cups = parseInt(u.cups) || 0;
+        const hours = parseInt(u.hours) || 0;
+        totalPoints += (cups * 2) + (hours * 20);
+      }
+    });
+    let level = Math.floor(totalPoints / 1000) + 1;
+    if (level > 1000) level = 1000;
+    const currentLevelPoints = totalPoints - ((level - 1) * 1000);
+    const percentage = Math.min(100, (currentLevelPoints / 1000) * 100);
+    return { totalPoints, level, currentLevelPoints, percentage };
+  }
+
+  // ✅ سیستم توزیع خودکار جوایز در پایان زمان مسابقه
+  async function checkAndDistributeTournamentPrizes() {
+    try {
+      const cfg = await getTournamentConfig();
+      if (!cfg || !cfg.endTime || cfg.distributed) return;
+
+      const now = Date.now();
+      if (now < cfg.endTime) return;
+
+      const freshCfg = await getTournamentConfig();
+      if (freshCfg.distributed) return;
+
+      const allUsers = await getAllUsers();
+      const groups = await getGroups();
+
+      const clansWithStats = groups.map(group => ({
+        group,
+        stats: calculateClanStats(group, allUsers)
+      }));
+
+      clansWithStats.sort((a, b) => {
+        if (b.stats.level !== a.stats.level) return b.stats.level - a.stats.level;
+        return b.stats.totalPoints - a.stats.totalPoints;
+      });
+
+      const topClans = clansWithStats.slice(0, 10);
+
+      for (let i = 0; i < topClans.length; i++) {
+        const rank = i + 1;
+        const clan = topClans[i].group;
+        let prizeConfig = null;
+
+        if (rank === 1) prizeConfig = cfg.rank1;
+        else if (rank === 2) prizeConfig = cfg.rank2;
+        else if (rank === 3) prizeConfig = cfg.rank3;
+        else if (rank >= 4 && rank <= 10) prizeConfig = cfg.rank4_10;
+
+        if (prizeConfig && prizeConfig.value > 0 && clan.members) {
+          for (const memberPhone of clan.members) {
+            const user = allUsers[memberPhone];
+            if (!user) continue;
+
+            if (prizeConfig.type === 'coin') {
+              user.coins = (user.coins || 0) + parseInt(prizeConfig.value);
+            } else if (prizeConfig.type === 'gem') {
+              user.gems = (user.gems || 0) + parseInt(prizeConfig.value);
+            } else if (prizeConfig.type === 'avatar') {
+              if (!user.ownedAvatars) user.ownedAvatars = [];
+              if (prizeConfig.value && !user.ownedAvatars.includes(prizeConfig.value)) {
+                user.ownedAvatars.push(prizeConfig.value);
+              }
+            } else if (prizeConfig.type === 'frame') {
+              user.frame = prizeConfig.value || 'frame_prize';
+            } else if (prizeConfig.type === 'crown') {
+              user.crown = prizeConfig.value || 'crown_prize';
+            }
+            allUsers[memberPhone] = user;
+          }
+        }
+      }
+
+      await saveAllUsers(allUsers);
+      
+      const finalCfg = await getTournamentConfig();
+      if (!finalCfg.distributed) {
+        finalCfg.distributed = true;
+        await saveTournamentConfigData(finalCfg);
+        console.log("جوایز مسابقات با موفقیت توزیع شد.");
+      }
+    } catch (e) {
+      console.error("خطا در توزیع جوایز:", e);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const loggedIn = localStorage.getItem('currentLoggedInUser');
     if (!loggedIn) {
@@ -1674,6 +1760,9 @@
 
         const ban = await getBanStatus(currentPhone);
         if(ban){redirectToBan(ban,currentPhone); return;}
+
+        // ✅ بررسی و توزیع خودکار جوایز مسابقات در پس‌زمینه
+        await checkAndDistributeTournamentPrizes();
 
         let serverUser = await getUser(currentPhone);
 
