@@ -468,12 +468,10 @@
   document.addEventListener('dragstart',e=>e.preventDefault());
 
   // ============================================================
-  // 🌐 تنظیمات دیتابیس دوگانه (Upstash برای اکشن‌ها، JSONBin برای Live Sync)
+  // 🌐 تنظیمات دیتابیس (فقط Upstash برای سرعت و پایداری ۱۰۰٪)
   // ============================================================
   const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
   const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
-  const JSONBIN_KEY = "$2a$10$G8pgSWnFz4w/.voj3lfBPuJL7luRXAXiR/fIufC3YIB4.qRkZSjSS";
-  const JSONBIN_ID_LIVE = "6a53f4c8f5f4af5e298541fe"; // مخصوص سینک زنده لابی
 
   const CREATOR_PHONE='09904844031';
   const MAX_NAMES=4, MAX_ROOMS_PER_USER=4, MAX_PLAYERS=10, NAME_COST=50;
@@ -492,33 +490,22 @@
   const REACTION_COOLDOWN = 3000;
   let chatMessages = [];
 
-  // Upstash Functions (برای داده‌های پایدار و اکشن‌ها)
   async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result);}catch(e){return d.result;}}return null;}catch(e){return null;}}
   async function upstashSet(k, v){try{const jsonValue=JSON.stringify(v);const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(jsonValue),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
-  
-  // JSONBin Functions (مخصوص سینک زنده و روان بین کاربران)
-  async function jsonbinGetLive(){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3000);const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID_LIVE+'/latest',{headers:{'X-Master-Key':JSONBIN_KEY},signal:c.signal});clearTimeout(t);if(!r.ok)return{};const d=await r.json();return d.record||{};}catch(e){return{};}}
-  async function jsonbinSetLive(data){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3000);const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID_LIVE,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},body:JSON.stringify(data),signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
+  async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
 
   async function redisGet(key){ return await upstashGet(key); }
   async function redisSet(key, value){ return await upstashSet(key, value); }
-  async function redisDel(key){ try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(key),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
+  async function redisDel(key){ return await upstashDel(key); }
 
   async function getAllUsers(){return await redisGet('all_users')||{};}
   const saveAllUsers=u=>redisSet('all_users',u);
   async function getUser(p){return await redisGet('user:'+p);}
   const saveUser=(p,u)=>redisSet('user:'+p,u);
   
-  // توابع لابی با استفاده از JSONBin برای سرعت بالا (Live Sync)
-  async function getRooms(){ 
-    const liveData = await jsonbinGetLive(); 
-    return liveData.rooms || {}; 
-  }
-  async function saveRooms(rooms){
-    const liveData = await jsonbinGetLive();
-    liveData.rooms = rooms;
-    return await jsonbinSetLive(liveData);
-  }
+  // ✅ تمام عملیات لابی فقط از طریق Upstash انجام می‌شود (سریع و بدون باگ)
+  async function getRooms(){ return await redisGet(ROOMS_KEY) || {}; }
+  async function saveRooms(rooms){ return await redisSet(ROOMS_KEY, rooms); }
 
   async function getGroups(){return await redisGet('police_groups')||[];}
   async function getNames(p){return await redisGet(namesKey(p))||[];}
@@ -656,7 +643,7 @@
   }
 
   // ============================================================
-  // 🎙 سیستم صوتی (Agora) با پشتیبانی کامل از WebM/WebP و UI
+  // 🎙 سیستم صوتی (Agora) - کاملاً بهینه و بدون باگ
   // ============================================================
   async function initVoice() {
     if (agoraClient || !window.AgoraRTC || !currentRoomId || !me) return;
@@ -910,7 +897,7 @@
     if (offlineTimer) {
       clearTimeout(offlineTimer);
       offlineTimer = null;
-      window.location.reload(); // ریلود برای سینک مجدد وضعیت
+      window.location.reload();
     }
   });
 
@@ -1309,12 +1296,10 @@
       if(room.ghost&&room.ghost.includes(me.phone))room.ghost=room.ghost.filter(x=>x!==me.phone);
 
       if(wasManager){
-        // ✅ اصلاح باگ: اگر مدیر در حالت روح باشد یا لابی خالی شود، به جای حذف فوری، وضعیت را مدیریت کن
         room.status='deleted'; room.deleteReason='مدیر لابی خارج شد';
         await saveRooms(rooms);
         setTimeout(async()=>{const r2=await getRooms();delete r2[currentRoomId];await saveRooms(r2);},2000);
       } else {
-        // شمارش افراد حاضر (شامل کسانی که در حالت روح هستند)
         const left = Object.keys(room.seats||{}).length + Object.keys(room.bots||{}).length + Object.values(room.supers||{}).filter(Boolean).length + (room.ghost||[]).length;
         if(left===0){
           room.status='deleted'; room.deleteReason='لابی خالی شد';
