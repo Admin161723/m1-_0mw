@@ -371,6 +371,39 @@ img, video { -webkit-user-drag: none !important; }
 <div class="toast" id="toast"></div>
 
 <script>
+// ✅ سیستم صدای کلیک دکمه‌ها (سبک، بدون باگ و بدون نیاز به فایل خارجی)
+let audioCtx;
+function playClickSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    // صدای "پاپ" نرم و حرفه‌ای
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.05);
+    
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+  } catch (e) {}
+}
+
+// شنود رویداد کلیک روی تمام عناصر تعاملی صفحه
+document.addEventListener('click', function(e) {
+  const el = e.target.closest('button, .tab-btn, .group-card, .action-btn, .fab-option, .nav-item, .modal-close, .creator-tab, .msg-action-btn, .logo-option, .creator-action-btn, .member-card, .request-item button, .btn-small');
+  if (el) {
+    playClickSound();
+  }
+}, true);
+
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toPersianNum(num) {
   const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
@@ -556,18 +589,12 @@ async function getUsersCached(force = false) {
   return usersCache.data;
 }
 
-// ✅ تابع اصلاح‌شده برای تشخیص ویدیو و پخش خودکار
 function getAvatarHtml(avatarStr) {
   if (!avatarStr) return ICONS.userDefault;
-  
-  // تشخیص فرمت ویدیو
   const isVideo = avatarStr.endsWith('.webm') || avatarStr.endsWith('.mp4') || avatarStr.endsWith('.mov') || avatarStr.endsWith('.avi');
-  
   if (isVideo) {
-    // ساخت ویدیو با پخش خودکار، حلقه، بی‌صدا و سازگار با موبایل
     return '<video src="' + avatarStr + '" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;"></video>';
   }
-  
   if (avatarStr.includes('.png') || avatarStr.includes('.jpg') || avatarStr.includes('.jpeg') || avatarStr.includes('.webp') || avatarStr.startsWith('data:')) {
     return '<img src="' + avatarStr + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;">';
   }
@@ -585,13 +612,13 @@ function calculateClanStats(group, allUsers) {
             totalPoints += (cups * 2) + (hours * 20);
         }
     });
-    
+
     let level = Math.floor(totalPoints / 1000) + 1;
     if (level > 1000) level = 1000;
-    
+
     const currentLevelPoints = totalPoints - ((level - 1) * 1000);
     const percentage = Math.min(100, (currentLevelPoints / 1000) * 100);
-    
+
     return { totalPoints, level, currentLevelPoints, percentage };
 }
 
@@ -704,9 +731,9 @@ async function renderAbout() {
   groups = await getGroups();
   const group = groups.find(g => g.id === currentGroupId);
   if (!group) return;
-  
+
   const allUsers = await getUsersCached(true);
-  
+
   const header = document.getElementById('aboutHeader');
   const isVerified = group.verified === true;
   header.className = 'about-header' + (isVerified ? ' verified-about' : '');
@@ -722,7 +749,7 @@ async function renderAbout() {
     nameEl.innerHTML = esc(group.name) + tickHtml;
   }
   document.getElementById('aboutDesc').textContent = group.desc || 'بدون توضیحات';
-  
+
   const stats = calculateClanStats(group, allUsers);
   const statsContainer = document.getElementById('aboutStats');
   statsContainer.innerHTML = `
@@ -750,7 +777,7 @@ async function renderAbout() {
   const isDeputy = gd(group).includes(currentUser.id);
   const isMember = gm(group).includes(currentUser.id);
   const isPending = gp(group).includes(currentUser.id);
-  
+
   if (isOwner || isDeputy) {
     if (gp(group).length > 0) {
       const btn = document.createElement('button');
@@ -782,10 +809,10 @@ async function renderAbout() {
         return;
       }
       if (!confirm('آیا مطمئن هستید که می‌خواهید با پرداخت ۲۰ الماس، ۲۰۰ امتیاز به کلن اضافه کنید؟')) return;
-      
+
       currentUser.gems -= 20;
       group.extraPoints = (group.extraPoints || 0) + 200;
-      
+
       await saveData();
       showToast('✅ ۲۰۰ امتیاز به کلن اضافه شد!');
       await renderAbout();
@@ -793,7 +820,7 @@ async function renderAbout() {
     };
     actionsDiv.appendChild(upgradeBtn);
   }
-  
+
   if (isMember && !isOwner) {
     const leaveBtn = document.createElement('button');
     leaveBtn.className = 'action-btn danger';
@@ -825,7 +852,7 @@ async function renderAbout() {
     };
     actionsDiv.appendChild(reqBtn);
   }
-  
+
   const listDiv = document.getElementById('membersList');
   listDiv.innerHTML = '';
   const sortedMembers = [...gm(group)].sort((a, b) => {
@@ -835,7 +862,7 @@ async function renderAbout() {
     const bDep = gd(group).includes(b) ? 1 : 0;
     return bDep - aDep;
   });
-  
+
   sortedMembers.forEach(uid => {
     const uData = allUsers[uid] || { name: 'کاربر', avatar: null, cups: 0, hours: 0 };
     const isOwnerMember = uid === group.owner;
