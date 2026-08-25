@@ -17,7 +17,8 @@
   .header h1{color:#fff;font-size:24px;font-weight:900;margin-bottom:5px;}
   .header p{color:rgba(255,255,255,.8);font-size:14px;}
 
-  .back-btn{position:fixed;top:15px;left:15px;width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;cursor:pointer;z-index:100;border:none;}
+  .back-btn{position:fixed;top:15px;left:15px;width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;cursor:pointer;z-index:100;border:none;transition:all 0.2s;}
+  .back-btn:active{background:rgba(255,255,255,.4);transform:scale(0.92);}
 
   .management-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
 
@@ -60,16 +61,21 @@
 </head>
 <body>
 <div class="bg-image"></div>
-<button class="back-btn" onclick="window.location.href='Safe Asli Bazi.html'">‹</button>
+<button class="back-btn" id="backBtn">‹</button>
 
 <div class="header">
-  <h1>👥 تیم مدیریت</h1>
+  <h1>تیم مدیریت</h1>
   <p>اعضای تیم مدیریت و پشتیبانی بازی</p>
 </div>
 
 <div class="management-grid" id="managementGrid">
   <div class="loading">در حال بارگذاری اطلاعات...</div>
 </div>
+
+<!-- فایل صدای کلیک دکمه‌ها -->
+<audio id="clickSound" preload="auto">
+    <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
+</audio>
 
 <script>
   const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -120,7 +126,6 @@
   async function getAllUsers(){ return await redisGet('all_users') || {}; }
 
   const CREATOR_PHONE = '09904844031';
-  const YAZDGARD_PHONE = '09942785343';
   const CREATOR_AVATAR = '655.webm';
 
   function toPersianNum(n){
@@ -170,6 +175,17 @@
     })();
   }
 
+  function playClickSound() {
+    try {
+      const clickSound = document.getElementById('clickSound');
+      if (clickSound) {
+        clickSound.currentTime = 0;
+        clickSound.volume = 0.3;
+        clickSound.play().catch(() => {});
+      }
+    } catch (e) {}
+  }
+
   async function loadManagementTeam(){
     const grid = document.getElementById('managementGrid');
     try{
@@ -192,7 +208,6 @@
         card.dataset.phone = phone;
 
         let avatarSrc = user.avatar || 'Mafia2.png';
-        // فقط برای شماره سازنده اصلی، آواتار ثابت می‌ماند
         if(phone === CREATOR_PHONE){
           avatarSrc = CREATOR_AVATAR;
         }
@@ -234,7 +249,6 @@
     }
   }
 
-  // ✅ به‌روزرسانی دقیق و کامل کارت کاربر (آواتار، نام، تیک، مقام، قالب)
   async function updateMemberCard(phone, userData){
     const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
     if(!card) return;
@@ -246,7 +260,27 @@
 
     const avatarCircle = card.querySelector('.avatar-circle');
     const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
-    avatarCircle.innerHTML = isVideo ? `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>` : `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
+    
+    // به‌روزرسانی هدفمند بدون بازسازی کامل کارت برای جلوگیری از پرش
+    if (isVideo) {
+      if (avatarCircle.querySelector('img')) {
+        avatarCircle.innerHTML = `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`;
+      } else {
+        const video = avatarCircle.querySelector('video');
+        if (video && video.src !== avatarSrc) {
+          video.src = avatarSrc;
+        }
+      }
+    } else {
+      if (avatarCircle.querySelector('video')) {
+        avatarCircle.innerHTML = `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
+      } else {
+        const img = avatarCircle.querySelector('img');
+        if (img && img.src !== avatarSrc) {
+          img.src = avatarSrc;
+        }
+      }
+    }
 
     const nameEl = card.querySelector('.member-name');
     const tick = getRoleTick(userData.rank);
@@ -274,17 +308,24 @@
   function addNewMember(phone, userData){
     const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
     if(!userData.rank || !managementRoles.includes(userData.rank.trim())) return;
-    
+
     const existingCard = document.querySelector(`.member-card[data-phone="${phone}"]`);
     if(existingCard) return;
 
-    loadManagementTeam(); // بارگذاری مجدد برای حفظ ترتیب صحیح
+    loadManagementTeam();
   }
 
-  // ✅ سیستم نظارت هوشمند و ضد باگ برای تغییرات آنی (فیلد به فیلد)
   async function monitorChanges(){
     let lastUsers = await getAllUsers();
     const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+
+    // ✅ به‌روزرسانی فوری هنگام بازگشت به تب (مثلاً بعد از ویرایش پروفایل)
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        lastUsers = await getAllUsers();
+        loadManagementTeam();
+      }
+    });
 
     setInterval(async ()=>{
       try{
@@ -297,13 +338,11 @@
           const oldUser = lastUsers[phone];
 
           if(oldUser){
-            // ✅ بررسی دقیق تغییرات فیلدهای کلیدی به جای JSON.stringify
             if(oldUser.avatar !== user.avatar || oldUser.name !== user.name || oldUser.rank !== user.rank){
               hasChanges = true;
               if(isManagement){
                 await updateMemberCard(phone, user);
               } else {
-                // اگر مقام کاربر به "کاربر" تغییر کرد، کارت او حذف شود
                 const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
                 if(card) card.remove();
               }
@@ -316,7 +355,6 @@
           }
         }
 
-        // بررسی حذف شدن کاربران
         for(const phone of Object.keys(lastUsers)){
           if(!currentUsers[phone]){
             hasChanges = true;
@@ -326,7 +364,7 @@
         }
 
         if(hasChanges){
-          lastUsers = currentUsers; // به‌روزرسانی مرجع فقط در صورت وجود تغییر
+          lastUsers = currentUsers;
         }
       }catch(e){
         console.error('Monitor error:', e);
@@ -335,6 +373,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('backBtn').addEventListener('click', function() {
+      playClickSound();
+      window.location.href = 'Safe Asli Bazi.html';
+    });
+
     loadManagementTeam();
     monitorChanges();
   });
