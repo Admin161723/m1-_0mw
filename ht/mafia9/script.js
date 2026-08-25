@@ -4,7 +4,17 @@ var CREATOR_PHONE = '09904844031';
 var tempPhone = null;
 var generatedOtp = null;
 var selectedAvatarSrc = "InShot_20260225_191621541.png";
-var avatarList = ["Mafia1.png", "Mafia2.png", "Mafia18.png", "Mafia17.png"];
+// ✅ آواتارهای جدید اضافه شدند
+var avatarList = [
+  "Mafia1.png", 
+  "Mafia2.png", 
+  "Mafia18.png", 
+  "Mafia17.png",
+  "3000.webp",
+  "3001.webp",
+  "3002.webp",
+  "3003.webp"
+];
 var isRedirecting = false;
 var appVerified = true;
 
@@ -102,7 +112,7 @@ async function jsonbinWrite(binId, data) {
 async function redisGet(key) {
   if (!appVerified) return null;
 
-  // ۱. اول Upstash قدیمی
+  // . اول Upstash قدیمی
   var v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
   if (v1 !== null) return v1;
 
@@ -427,6 +437,37 @@ async function redirectToMainPage(userPhone) {
   setTimeout(function(){ try { window.location.replace(PAGES.game); } catch (e) {} }, 500);
 }
 
+// ✅ سیستم پخش صدا
+function playClickSound() {
+  try {
+    var clickSound = document.getElementById('clickSound');
+    if (clickSound) {
+      clickSound.currentTime = 0;
+      clickSound.play().catch(function(e) { /* Ignore autoplay errors */ });
+    }
+  } catch (e) {}
+}
+
+function playBackgroundMusic() {
+  try {
+    var bgMusic = document.getElementById('bgMusic');
+    if (bgMusic) {
+      bgMusic.volume = 0.3; // Volume at 30%
+      bgMusic.play().catch(function(e) { /* Ignore autoplay errors */ });
+    }
+  } catch (e) {}
+}
+
+function stopBackgroundMusic() {
+  try {
+    var bgMusic = document.getElementById('bgMusic');
+    if (bgMusic) {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    }
+  } catch (e) {}
+}
+
 function bindEvents() {
   var checkPhoneBtn = document.getElementById('checkPhoneBtn');
   var verifyOtpBtn = document.getElementById('verifyOtpBtn');
@@ -436,6 +477,7 @@ function bindEvents() {
   var submitProfileBtn = document.getElementById('submitProfileBtn');
 
   if (checkPhoneBtn) checkPhoneBtn.addEventListener('click', async function() {
+    playClickSound();
     if (!appVerified) { killApp(); return; }
     if (!navigator.onLine) { redirectToOffline(); return; }
 
@@ -475,6 +517,7 @@ function bindEvents() {
   });
 
   if (verifyOtpBtn) verifyOtpBtn.addEventListener('click', function() {
+    playClickSound();
     var enteredOtp = document.getElementById('otpInput').value.trim();
     if (enteredOtp === generatedOtp) {
       showPage('profilePage');
@@ -488,11 +531,13 @@ function bindEvents() {
   });
 
   if (resendOtpBtn) resendOtpBtn.addEventListener('click', function() {
+    playClickSound();
     generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     showToast('کد جدید: ' + generatedOtp);
   });
 
   if (loginBtn) loginBtn.addEventListener('click', async function() {
+    playClickSound();
     var pass = document.getElementById('passwordInput').value;
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
@@ -507,6 +552,7 @@ function bindEvents() {
   });
 
   if (forgotPassBtn) forgotPassBtn.addEventListener('click', function() {
+    playClickSound();
     showToast('از طریق پشتیبانی پیگیری کنید');
   });
 
@@ -526,6 +572,7 @@ function bindEvents() {
       img.onerror = function() { img.style.backgroundColor = '#555'; };
       option.appendChild(img);
       option.addEventListener('click', function() {
+        playClickSound();
         var opts = document.querySelectorAll('.avatar-option');
         for (var j = 0; j < opts.length; j++) opts[j].classList.remove('selected');
         option.classList.add('selected');
@@ -538,12 +585,20 @@ function bindEvents() {
     })(avatarList[i]);
   }
 
-  function openAvatarMenu() { avatarMenu.classList.add('open'); backdrop.classList.add('show'); }
-  function closeAvatarMenu() { avatarMenu.classList.remove('open'); backdrop.classList.remove('show'); }
+  function openAvatarMenu() { 
+    playClickSound();
+    avatarMenu.classList.add('open'); 
+    backdrop.classList.add('show'); 
+  }
+  function closeAvatarMenu() { 
+    avatarMenu.classList.remove('open'); 
+    backdrop.classList.remove('show'); 
+  }
   if (avatarCircle) avatarCircle.addEventListener('click', openAvatarMenu);
   if (backdrop) backdrop.addEventListener('click', closeAvatarMenu);
 
   if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function() {
+    playClickSound();
     var gameName = document.getElementById('gameName').value.trim();
     var age = document.getElementById('age').value.trim();
     var newPass = document.getElementById('newPassword').value.trim();
@@ -613,6 +668,7 @@ async function startBoot() {
   }
   window.addEventListener('offline', function() { if (!isRedirecting) redirectToOffline(); });
 
+  // ✅ لودینگ دقیقاً ۳ ثانیه و سپس رفتن به صفحه بعد بدون تاخیر
   setTimeout(async function() {
     var goMain = false;
     try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch (e) {}
@@ -639,14 +695,18 @@ async function startBoot() {
       var lp = document.getElementById('loadingPage');
       if (lp) lp.classList.add('hidden');
       var ap = document.getElementById('authPage');
-      if (ap) ap.classList.remove('hidden');
+      if (ap) {
+        ap.classList.remove('hidden');
+        // ✅ پخش موزیک پس‌زمینه بعد از لودینگ
+        playBackgroundMusic();
+      }
       try {
         document.getElementById('stepPhone').style.display = 'block';
         document.getElementById('stepPassword').style.display = 'none';
         document.getElementById('stepOtp').style.display = 'none';
       } catch (e) {}
     }
-  }, 3000);
+  }, 3000); // ✅ دقیقاً  ثانیه
 }
 
 lockInspect();
