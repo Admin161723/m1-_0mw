@@ -580,9 +580,26 @@ input, textarea {
 
 </div>
 
+<!-- فایل صدای کلیک دکمه‌ها -->
+<audio id="clickSound" preload="auto">
+    <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 (function() {
   'use strict';
+
+  // تابع پخش صدای کلیک
+  function playClickSound() {
+    try {
+      var clickSound = document.getElementById('clickSound');
+      if (clickSound) {
+        clickSound.currentTime = 0;
+        clickSound.volume = 0.3;
+        clickSound.play().catch(function() {});
+      }
+    } catch (e) {}
+  }
 
   // جلوگیری از راست کلیک و منوی کپی
   document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
@@ -730,6 +747,7 @@ input, textarea {
   var tabButtons = document.querySelectorAll('.tab');
   for (var t = 0; t < tabButtons.length; t++) {
     tabButtons[t].addEventListener('click', function(e) {
+      playClickSound();
       e.preventDefault();
       switchTab(this.getAttribute('data-tab'));
     });
@@ -739,27 +757,31 @@ input, textarea {
   var cards = document.querySelectorAll('.role-card');
   for (var c = 0; c < cards.length; c++) {
     cards[c].addEventListener('click', function(e) {
+      playClickSound();
       e.preventDefault();
       var roleKey = this.getAttribute('data-role');
       showRole(roleKey);
     });
   }
 
-  // کلیک روی overlay
+  // کلیک روی overlay برای بستن
   roleModal.addEventListener('click', function(e) {
     if (e.target === roleModal) {
+      playClickSound();
       closeModal();
     }
   });
 
   // دکمه‌های ناوبری
   document.getElementById('nextBtn').addEventListener('click', function(e) {
+    playClickSound();
     e.preventDefault();
     e.stopPropagation();
     nextRole();
   });
 
   document.getElementById('prevBtn').addEventListener('click', function(e) {
+    playClickSound();
     e.preventDefault();
     e.stopPropagation();
     prevRole();
@@ -771,6 +793,7 @@ input, textarea {
 
   // دکمه برگشت
   document.getElementById('backBtn').addEventListener('click', function(e) {
+    playClickSound();
     e.preventDefault();
     goBack();
   });
