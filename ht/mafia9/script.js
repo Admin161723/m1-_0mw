@@ -4,7 +4,6 @@ var CREATOR_PHONE = '09904844031';
 var tempPhone = null;
 var generatedOtp = null;
 
-// ✅ فقط ۴ آواتار جدید (قدیمی‌ها حذف شدند)
 var selectedAvatarSrc = "3000.webp";
 var avatarList = [
   "3000.webp",
@@ -15,9 +14,8 @@ var avatarList = [
 
 var isRedirecting = false;
 var appVerified = true;
-var audioUnlocked = false; // ✅ متغیر کنترل پخش صدا
+var audioUnlocked = false;
 
-// ===== سیستم ۴ لایه Fallback =====
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 var UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
@@ -318,14 +316,16 @@ async function redirectToMainPage(userPhone) {
   setTimeout(function(){ try { window.location.replace(PAGES.game); } catch (e) {} }, 500);
 }
 
-// ✅ سیستم پخش صدا (رفع مشکل Autoplay مرورگر)
+// ✅ سیستم پخش صدا - با اولین کلیک فعال می‌شود
 function unlockAudio() {
   if (!audioUnlocked) {
     var bgMusic = document.getElementById('bgMusic');
     if (bgMusic) {
-      bgMusic.volume = 0.3; // صدای موزیک روی 30 درصد
-      bgMusic.play().catch(function(e) { 
-        console.log("Music autoplay blocked until user interaction"); 
+      bgMusic.volume = 0.3;
+      bgMusic.play().then(function() {
+        console.log("موسیقی پس‌زمینه شروع شد");
+      }).catch(function(e) { 
+        console.log("خطا در پخش موسیقی:", e);
       });
     }
     audioUnlocked = true;
@@ -339,7 +339,6 @@ function playClickSound() {
       clickSound.currentTime = 0;
       clickSound.play().catch(function(e) {});
     }
-    // با اولین کلیک، موزیک پس‌زمینه هم فعال می‌شود
     unlockAudio();
   } catch (e) {}
 }
@@ -562,11 +561,7 @@ async function startBoot() {
       var lp = document.getElementById('loadingPage');
       if (lp) lp.classList.add('hidden');
       var ap = document.getElementById('authPage');
-      if (ap) {
-        ap.classList.remove('hidden');
-        // موزیک اینجا پخش نمی‌شود چون مرورگر اجازه نمی‌دهد. 
-        // با اولین کلیک کاربر روی هر دکمه‌ای، تابع playClickSound() موزیک را فعال می‌کند.
-      }
+      if (ap) ap.classList.remove('hidden');
       try {
         document.getElementById('stepPhone').style.display = 'block';
         document.getElementById('stepPassword').style.display = 'none';
