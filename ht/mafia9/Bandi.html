@@ -47,35 +47,35 @@
 
   .header {
     background: linear-gradient(180deg, #1e4a8a 0%, #163d75 100%);
-    padding: 16px; display: flex; align-items: center; justify-content: center;
+    padding: 15px; display: flex; align-items: center; justify-content: center;
     position: relative; border-bottom: 2px solid #2a5a9a;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4); flex-shrink: 0; z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; z-index: 10;
   }
 
   .back-btn, .refresh-btn {
-    position: absolute; width: 38px; height: 38px;
-    background: rgba(255,255,255,0.1); border-radius: 50%;
+    position: absolute; width: 40px; height: 40px;
+    background: rgba(255,255,255,0.15); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: white; font-size: 20px;
-    border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s;
+    cursor: pointer; color: white; font-size: 24px;
+    border: 2px solid rgba(255,255,255,0.2); transition: all 0.2s;
   }
   .back-btn { left: 15px; }
-  .refresh-btn { right: 15px; }
-  .back-btn:active, .refresh-btn:active { background: rgba(255,255,255,0.25); transform: scale(0.92); }
-  .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
+  .refresh-btn { right: 15px; font-size: 20px; }
+  .back-btn:active, .refresh-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+  .refresh-btn.spinning { animation: spin 1s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
   .header-title {
-    color: white; font-size: 18px; font-weight: 900;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3); letter-spacing: -0.5px;
+    color: white; font-size: 20px; font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
 
   .tournament-timer {
-    background: rgba(0,0,0,0.3); padding: 10px; text-align: center;
-    font-size: 14px; font-weight: 700; color: #ffd700;
-    border-bottom: 1px solid rgba(255,215,0,0.2);
+    background: rgba(0,0,0,0.4); padding: 12px; text-align: center;
+    font-size: 15px; font-weight: 900; color: #ffd700;
+    border-bottom: 1px solid rgba(255,215,0,0.3);
     display: flex; justify-content: center; align-items: center; gap: 8px;
-    flex-shrink: 0; backdrop-filter: blur(4px);
+    flex-shrink: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
 
   .leaderboard {
@@ -86,46 +86,33 @@
   }
 
   .rank-item {
-    background: linear-gradient(135deg, rgba(42,122,204,0.4) 0%, rgba(26,90,170,0.4) 100%);
-    border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    background: linear-gradient(180deg, #2a7acc, #1a5aaa);
+    border-radius: 12px; padding: 12px; margin-bottom: 10px;
     display: flex; align-items: center; gap: 12px;
-    border: 1px solid rgba(58,138,220,0.3); 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.2s, background 0.2s; cursor: pointer;
-    backdrop-filter: blur(8px);
+    border: 2px solid #3a8adc; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s; cursor: pointer;
   }
-  .rank-item:active { transform: scale(0.98); background: rgba(42,122,204,0.6); }
+  .rank-item:active { transform: scale(0.98); }
 
-  .rank-item.top-1 { 
-    background: linear-gradient(135deg, rgba(255,215,0,0.3) 0%, rgba(255,140,0,0.3) 100%); 
-    border-color: rgba(255,215,0,0.5); 
-  }
-  .rank-item.top-2 { 
-    background: linear-gradient(135deg, rgba(192,192,192,0.3) 0%, rgba(128,128,128,0.3) 100%); 
-    border-color: rgba(192,192,192,0.5); 
-  }
-  .rank-item.top-3 { 
-    background: linear-gradient(135deg, rgba(205,127,50,0.3) 0%, rgba(139,69,19,0.3) 100%); 
-    border-color: rgba(205,127,50,0.5); 
-  }
+  .rank-item.top-1 { background: linear-gradient(180deg, #ffd700, #ff8c00); border-color: #ffd700; }
+  .rank-item.top-2 { background: linear-gradient(180deg, #c0c0c0, #808080); border-color: #c0c0c0; }
+  .rank-item.top-3 { background: linear-gradient(180deg, #cd7f32, #8b4513); border-color: #cd7f32; }
   .rank-item.current-user {
-    border: 2px solid #4a9eff !important;
-    box-shadow: 0 0 15px rgba(74,158,255,0.4);
+    border: 3px solid #4a9eff !important;
+    box-shadow: 0 0 20px rgba(74,158,255,0.6);
   }
 
   .rank-number {
-    width: 36px; height: 36px; background: rgba(0,0,0,0.3);
+    width: 40px; height: 40px; background: rgba(0,0,0,0.3);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 900; color: white; flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 20px; font-weight: 900; color: white; flex-shrink: 0;
   }
   .rank-item.top-1 .rank-number, .rank-item.top-2 .rank-number, .rank-item.top-3 .rank-number {
-    background: rgba(255,255,255,0.2); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.3); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
 
   .clan-logo-box {
-    width: 50px; height: 50px; border-radius: 12px;
+    width: 55px; height: 55px; border-radius: 12px;
     background: #fffef9; border: 1px solid rgba(255,255,255,0.3);
     overflow: hidden; flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -139,7 +126,7 @@
 
   .user-name-row {
     display: flex; align-items: center; gap: 6px;
-    margin-bottom: 6px; flex-wrap: wrap;
+    margin-bottom: 4px; flex-wrap: wrap;
   }
 
   .user-name {
@@ -150,45 +137,50 @@
   }
 
   .clan-tick {
-    width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+    width: 36px; height: 36px; object-fit: contain; flex-shrink: 0;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+  }
+
+  .user-level {
+    color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 700;
+    margin-bottom: 4px;
   }
 
   .clan-level-box {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 8px;
     padding: 8px;
   }
-  .clan-level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.8); }
-  .clan-level-badge { background: linear-gradient(180deg, #bc6c25, #8b5e3c); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 900; }
-  .clan-progress-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; position: relative; }
-  .clan-progress-fill { height: 100%; background: linear-gradient(90deg, #4a9eff, #ffd700); border-radius: 3px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+  .clan-level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 11px; font-weight: 900; color: rgba(255,255,255,0.9); }
+  .clan-level-badge { background: linear-gradient(180deg, #bc6c25, #8b5e3c); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; }
+  .clan-progress-bg { width: 100%; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; position: relative; }
+  .clan-progress-fill { height: 100%; background: linear-gradient(90deg, #bc6c25, #ffd700); border-radius: 4px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
   .rank-item.top-1 .clan-progress-fill, .rank-item.top-2 .clan-progress-fill, .rank-item.top-3 .clan-progress-fill {
     background: linear-gradient(90deg, #fff, #ffd700);
   }
-  .clan-level-footer { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 6px; font-weight: 700; display: flex; justify-content: space-between; }
+  .clan-level-footer { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 4px; font-weight: 700; display: flex; justify-content: space-between; }
 
   .rank-medal {
-    width: 40px; height: 40px; object-fit: contain;
+    width: 45px; height: 45px; object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); flex-shrink: 0;
   }
 
   .rank-badge {
-    width: 36px; height: 36px; background: rgba(255,255,255,0.1);
+    width: 40px; height: 40px; background: rgba(255,255,255,0.15);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 900; color: white; flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.2);
+    font-size: 18px; font-weight: 900; color: white; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
   }
 
   .empty-state {
     text-align: center; padding: 60px 20px;
-    color: rgba(255,255,255,0.5); font-size: 15px;
+    color: rgba(255,255,255,0.6); font-size: 16px;
   }
 
   .loading-spinner {
-    display: inline-block; width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.2); border-top-color: white;
+    display: inline-block; width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.3); border-top-color: white;
     border-radius: 50%; animation: spin 0.8s linear infinite;
     vertical-align: middle; margin-left: 8px;
   }
@@ -200,7 +192,6 @@
     padding: 12px 24px; border-radius: 10px;
     font-weight: 700; font-size: 14px; opacity: 0;
     transition: all 0.3s; z-index: 2000; pointer-events: none; white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .toast.error { background: linear-gradient(180deg, #f44336 0%, #da190b 100%); }
@@ -211,42 +202,41 @@
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.85);
     z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
   }
   .modal-overlay.active { display: flex; }
   .modal-box {
     background: linear-gradient(180deg, #1a3a6a, #0f2545);
     border-radius: 20px; width: 100%; max-width: 380px;
     max-height: 85vh; overflow: hidden;
-    border: 1px solid rgba(58,138,220,0.5); display: flex; flex-direction: column;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+    border: 2px solid #3a8adc; display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
   .modal-header {
     background: linear-gradient(180deg, #2a5a9a, #1a3a6a);
     padding: 16px; text-align: center; position: relative;
-    border-bottom: 1px solid rgba(58,138,220,0.3);
+    border-bottom: 1px solid #3a8adc;
   }
   .modal-title { color: white; font-size: 16px; font-weight: 900; }
   .modal-close {
     position: absolute; top: 12px; left: 12px;
-    width: 30px; height: 30px; background: rgba(255,255,255,0.1);
+    width: 32px; height: 32px; background: rgba(255,255,255,0.15);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 18px; color: white; border: 1px solid rgba(255,255,255,0.2);
+    cursor: pointer; font-size: 20px; color: white; border: none;
   }
-  .modal-close:active { background: rgba(255,255,255,0.2); }
   .modal-body { padding: 15px; overflow-y: auto; flex: 1; }
 
   .member-card-modal {
     display: flex; align-items: center; gap: 12px;
-    padding: 12px; background: rgba(255,255,255,0.05);
+    padding: 10px; background: rgba(255,255,255,0.05);
     border-radius: 12px; margin-bottom: 8px;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
     transition: background 0.2s;
   }
   .member-card-modal:active { background: rgba(255,255,255,0.1); }
   .member-avatar-modal {
-    width: 48px; height: 48px; border-radius: 50%; overflow: hidden;
-    border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; background: #1a3a6a;
+    width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
+    border: 2px solid #fff; flex-shrink: 0; background: #1a3a6a;
   }
   .member-avatar-modal img, .member-avatar-modal video {
     width: 100%; height: 100%; object-fit: cover;
@@ -256,12 +246,12 @@
     color: #fff; font-weight: 900; font-size: 14px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .member-role-modal { font-size: 11px; font-weight: 700; margin-top: 2px; }
-  .member-stats-modal { color: rgba(255,255,255,0.6); font-size: 11px; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .member-role-modal { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .member-stats-modal { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 6px; }
   .member-cups-badge {
-    background: rgba(255,215,0,0.15); color: #ffd700;
-    padding: 2px 6px; border-radius: 6px; font-size: 10px;
-    font-weight: 900; border: 1px solid rgba(255,215,0,0.3);
+    background: rgba(255,215,0,0.2); color: #ffd700;
+    padding: 3px 8px; border-radius: 8px; font-size: 11px;
+    font-weight: 900;
   }
 </style>
 </head>
@@ -307,7 +297,7 @@
     try {
       if (clickSound) {
         clickSound.currentTime = 0;
-        clickSound.volume = 0.4;
+        clickSound.volume = 0.3;
         clickSound.play().catch(() => {});
       }
     } catch (e) {}
@@ -628,7 +618,7 @@
               <div class="member-name-modal">${u.name || 'کاربر'}</div>
               <div class="member-role-modal" style="color:${roleColor}">${roleText}</div>
               <div class="member-stats-modal">
-                <span class="member-cups-badge">کاپ: ${toPersianNum(u.cups || 0)}</span>
+                <span class="member-cups-badge">${toPersianNum(u.cups || 0)} کاپ</span>
                 <span>${toPersianNum(u.hours || 0)} ساعت</span>
                 <span>سطح ${toPersianNum(u.level || 1)}</span>
               </div>
@@ -676,11 +666,13 @@
       updateTimer();
 
       setInterval(updateTimer, 1000);
+      
       setInterval(async () => {
         if (document.visibilityState === 'visible') {
           await loadLeaderboard();
+          await updateTimer();
         }
-      }, 30000);
+      }, 10000);
 
     } catch (e) {
       showToast('خطا در بارگذاری', 'error');
@@ -691,7 +683,7 @@
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible') {
       await loadLeaderboard();
-      updateTimer();
+      await updateTimer();
     }
   });
 </script>
