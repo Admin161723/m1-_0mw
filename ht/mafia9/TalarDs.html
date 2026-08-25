@@ -129,8 +129,8 @@
   .room-body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:6px 4px 75px;}
   .supers-row{display:flex;justify-content:center;gap:30px;padding:8px 0;flex-shrink:0;}
   .super-slot{display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer;}
-  .super-circle{width:90px;height:90px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;}
-  .super-circle.filled{border-style:solid;background:#173a5e;overflow:hidden;}
+  .super-circle{width:90px;height:90px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .super-circle.filled{border-style:solid;background:#173a5e;}
   .super-circle img,.super-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
   .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;}
 
@@ -145,7 +145,25 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  .seat-num{position:absolute;bottom:-4px;left:-4px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);border:2px solid #0d2135;color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:3;}
+  /* ✅ شماره صندلی بیرون از دایره */
+  .seat-num{
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(180deg,#4aa3e0,#2a7fb8);
+    border: 2px solid #0d2135;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+  }
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
@@ -315,7 +333,7 @@
 
   <div class="view" id="viewRoom">
     <div class="room-topbar">
-      <button class="back-btn" id="backRoomBtn">❯</button>
+      <button class="back-btn" id="backRoomBtn"></button>
       <div class="home-btn" id="homeRoomBtn"><div class="home-ico"></div></div>
       <div class="room-top-name" id="roomNameTop">-</div>
       <div class="tool-btn tool-ghost" id="btnGhost"><div class="ghost-ico"></div></div>
@@ -371,7 +389,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن +  ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -385,7 +403,7 @@
   <div class="overlay" id="editModal"><div class="modal">
     <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
-    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
+    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵ سکه</div>
     <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
@@ -482,7 +500,8 @@
 
   let lastDislikeTime = 0;
   let lastLikeTime = 0;
-  let reactionTimeoutId = null;
+  let likeTimeoutId = null;
+  let dislikeTimeoutId = null;
   const REACTION_COOLDOWN = 3000;
   let chatMessages = [];
 
@@ -547,7 +566,7 @@
   let offlineTimer = null;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۴۶۷۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۲۳۴۵۶۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   function showToast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t==='error'?' error':'');setTimeout(()=>e.classList.remove('show'),2600);}
   const isStaff=r=>r&&r!=='کاربر';
@@ -587,12 +606,12 @@
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
       tabs.push({id:'users',label:'👥 کاربران'});
-      tabs.push({id:'reports',label:'📋 گزارش‌ها'});
+      tabs.push({id:'reports',label:' گزارش‌ها'});
       tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
     }else{
-      tabs.push({id:'names',label:'📝 تأیید نام'});
+      tabs.push({id:'names',label:' تأیید نام'});
       tabs.push({id:'users',label:'👥 کاربران'});
-      tabs.push({id:'lobbies',label:' لابی‌ها'});
+      tabs.push({id:'lobbies',label:'🏛 لابی‌ها'});
       tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
       tabs.push({id:'reports',label:'📝 گزارش‌ها'});
     }
@@ -637,7 +656,17 @@
     return html;
   }
 
-  // ✅ سیستم صوتی Agora - کاملاً بازنویسی شده
+  // ✅ ساخت تگ media (ویدیو یا تصویر) با پشتیبانی کامل
+  function buildMediaTag(avatarUrl, fallbackHtml) {
+    if (!avatarUrl) return fallbackHtml || '';
+    const isVideo = avatarUrl.endsWith('.webm') || avatarUrl.endsWith('.mp4') || avatarUrl.endsWith('.mov');
+    if (isVideo) {
+      return `<video src="${esc(avatarUrl)}" autoplay loop muted playsinline webkit-playsinline onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;>👤</span>'}'"></video>`;
+    } else {
+      return `<img src="${esc(avatarUrl)}" onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;></span>'}'">`;
+    }
+  }
+
   async function initVoice() {
     if (agoraClient || !window.AgoraRTC || !currentRoomId || !me) return;
     if (micInitAttempted) return;
@@ -752,7 +781,7 @@
     updateMicUI();
   }
 
-  // ✅ انیمیشن لایک/دیس‌لایک داخل دایره
+  // ✅ انیمیشن لایک/دیس‌لایک با تایمرهای مستقل
   function showReactionOnProfile(type) {
     const now = Date.now();
     const cooldown = type === 'dislike' ? lastDislikeTime : lastLikeTime;
@@ -783,10 +812,10 @@
       overlay.appendChild(img);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
-      if (reactionTimeoutId) clearTimeout(reactionTimeoutId);
-      reactionTimeoutId = setTimeout(() => {
+      if (dislikeTimeoutId) clearTimeout(dislikeTimeoutId);
+      dislikeTimeoutId = setTimeout(() => {
         $('dislikeBtn').classList.remove('disabled');
-        reactionTimeoutId = null;
+        dislikeTimeoutId = null;
       }, REACTION_COOLDOWN);
     } else {
       const img = document.createElement('img');
@@ -796,14 +825,13 @@
       overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
-      if (reactionTimeoutId) clearTimeout(reactionTimeoutId);
-      reactionTimeoutId = setTimeout(() => {
+      if (likeTimeoutId) clearTimeout(likeTimeoutId);
+      likeTimeoutId = setTimeout(() => {
         $('likeBtn').classList.remove('disabled');
-        reactionTimeoutId = null;
+        likeTimeoutId = null;
       }, REACTION_COOLDOWN);
     }
 
-    // ✅ اضافه کردن مستقیم به دایره (داخل آن)
     circleEl.appendChild(overlay);
 
     setTimeout(() => {
@@ -976,12 +1004,10 @@
     allRoomsCache=rooms; renderList();
   }
 
-  // ✅ mySeat با پشتیبانی از حالت روح
   function mySeat(room){
     if(!room)return null;
     for(const[i,p]of Object.entries(room.seats||{}))if(p===me.phone)return{type:'player',idx:+i};
     for(const[i,p]of Object.entries(room.supers||{}))if(p===me.phone)return{type:'super',idx:+i};
-    // ✅ بررسی حالت روح
     if(room.ghostSeat && room.ghostSeat.phone === me.phone) return {type:'ghost_player',idx:room.ghostSeat.idx};
     if(room.ghostSuper && room.ghostSuper.phone === me.phone) return {type:'ghost_super',idx:room.ghostSuper.idx};
     return null;
@@ -1120,14 +1146,7 @@
       const tagLayer = u ? await buildTagLayer(ph,u,groupCache[ph]||null) : '';
       const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
       let inner='';
-      if(u) {
-        const isVideo = u.avatar && (u.avatar.endsWith('.webm') || u.avatar.endsWith('.mp4'));
-        if(isVideo) {
-          inner='<video src="'+esc(u.avatar)+'" autoplay loop muted playsinline onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'"></video>';
-        } else {
-          inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
-        }
-      }
+      if(u) inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
       const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
@@ -1144,26 +1163,18 @@
 
     async function buildSeat(i){
       const ph=room.seats[i],bot=room.bots[i];
-      // ✅ حالت روح: اگر کاربر در حالت روح است و برای دیگران است، مخفی شود
       const isGhostMode = (room.ghost||[]).includes(ph);
       const ghostHidden = isGhostMode && ph !== me.phone;
       
       let inner='',cls='seat-circle',tag='',tagLayer='',dp='';
       
-      // ✅ اگر خود کاربر در حالت روح است
       if(ph && ph === me.phone && isGhostMode) {
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
-        const isVideo = u.avatar && (u.avatar.endsWith('.webm') || u.avatar.endsWith('.mp4'));
-        if(isVideo) {
-          inner='<video src="'+esc(u.avatar)+'" autoplay loop muted playsinline onerror="this.style.display=\'none\'"></video>';
-        } else {
-          inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.style.display=\'none\'">';
-        }
+        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
         tag='<div class="seat-name normal-tag">👻 روح (شما)</div>';
       }
-      // ✅ کاربر عادی (نه در حالت روح)
       else if(ph && !ghostHidden){
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{name:'کاربر',avatar:'Mafia2.png',rank:'کاربر'};
@@ -1174,22 +1185,11 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        const isVideo = u.avatar && (u.avatar.endsWith('.webm') || u.avatar.endsWith('.mp4'));
-        if(isVideo) {
-          inner='<video src="'+esc(u.avatar)+'" autoplay loop muted playsinline onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'"></video>';
-        } else {
-          inner='<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.outerHTML=\'<span class=&quot;bot-face&quot;>👤</span>\'">';
-        }
+        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
       }
-      // ✅ بات
       else if(bot){
         inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
-      }
-      // ✅ صندلی خالی
-      else {
-        inner='';cls+='';
-        tag='';
       }
       
       return `<div class="seat" data-seat="${i}">
@@ -1297,7 +1297,7 @@
     if(!isManager && !isCreator){ showToast('فقط مدیر می‌تواند ناظر تعیین کند','error'); return; }
     room.supers[i]=me.phone;
     await saveRooms(rooms);
-    showToast('ناظر '+(i===1?'':'۲')+' شدید');
+    showToast('ناظر '+(i===1?'۱':'۲')+' شدید');
     refreshRoom();
   }
 
@@ -1389,7 +1389,7 @@
         html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">⚠️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
       }
       if(isManager&&!targetStaff)html+='<button class="menu-item-b mi-purple" id="umTransfer">انتقال مالکیت</button>';
-      html+='<button class="menu-item-b mi-blue" id="umSuper1">دادن ناظر </button>';
+      html+='<button class="menu-item-b mi-blue" id="umSuper1">دادن ناظر ۱</button>';
       html+='<button class="menu-item-b mi-blue" id="umSuper2">دادن ناظر ۲</button>';
       let inSuper=false;for(const p of Object.values(room.supers||{}))if(p===t.phone)inSuper=true;
       if(inSuper)html+='<button class="menu-item-b mi-red" id="umUnsuper">درآوردن از ناظری</button>';
@@ -1439,17 +1439,14 @@
     showToast('ناظر '+(n===1?'۱':'۲')+' شد');refreshRoom();
   }
 
-  // ✅ پروفایل با پشتیبانی از آواتار ویدیویی
+  // ✅ پروفایل با پشتیبانی کامل از آواتار ویدیویی
   async function openProfile(t){
     const allUsers=await getUsersCached();const u=allUsers[t.phone]||{};
     const tk=getRoleTick(u.rank);
     const groupInfo=await findUserGroup(t.phone);
     const groupName=groupInfo?groupInfo.group.name:'بدون گروه';
     
-    const isVideo = u.avatar && (u.avatar.endsWith('.webm') || u.avatar.endsWith('.mp4'));
-    const avatarHtml = isVideo 
-      ? '<video src="'+esc(u.avatar)+'" autoplay loop muted playsinline onerror="this.style.display=\'none\'"></video>'
-      : '<img src="'+esc(u.avatar||'Mafia2.png')+'" onerror="this.style.display=\'none\'">';
+    const avatarHtml = buildMediaTag(u.avatar, '<span style="display:none"></span>');
     
     $('profileBody').innerHTML='<div class="pf-avatar">'+avatarHtml+'</div>'+
       '<div class="pf-name">'+esc(u.name||'کاربر')+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>'+
@@ -1499,7 +1496,7 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
 
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۰)</button>';
     } else {
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
@@ -1540,7 +1537,6 @@
     document.querySelectorAll('[data-unb]').forEach(b=>{b.onclick=async()=>{await updateRoom(r=>{r.blocked=(r.blocked||[]).filter(x=>x!==b.dataset.unb);});$('managerModal').classList.remove('active');openManager();};});
   }
 
-  // ✅ حالت روح بازنویسی شده - کاربر از لابی خارج نمی‌شود
   async function toggleGhost(){
     const myLevel=RANK_LEVEL[me.rank]||0;
     if(myLevel<RANK_LEVEL['ناظر']){showToast('فقط مقام‌دارها می‌توانند حالت روح بزنند','error');return;}
@@ -1548,7 +1544,6 @@
     await updateRoom(r=>{
       r.ghost=r.ghost||[];
       if(r.ghost.includes(me.phone)){
-        // ✅ خروج از حالت روح - بازگشت به صندلی
         r.ghost=r.ghost.filter(x=>x!==me.phone);
         if(r.ghostSeat && r.ghostSeat.phone === me.phone) {
           r.seats[r.ghostSeat.idx] = me.phone;
@@ -1559,10 +1554,7 @@
           r.ghostSuper = null;
         }
       } else {
-        // ✅ ورود به حالت روح - ذخیره موقعیت و حذف از صندلی
         r.ghost.push(me.phone);
-        
-        // پیدا کردن صندلی کاربر
         for(const[i,p]of Object.entries(r.seats||{})){
           if(p===me.phone){
             r.ghostSeat = {phone: me.phone, idx: i};
