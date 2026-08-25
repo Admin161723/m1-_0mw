@@ -747,29 +747,31 @@
     {id:18, src:'618.webp', price:300, owned:false},
     {id:19, src:'619.webp', price:100, owned:false},
     {id:20, src:'620.webp', price:200, owned:false},
-    // ✅ آواتارهای اختصاصی مقام‌ها
+    // ✅ آواتارهای اختصاصی تیم مدیریت
     {id:901, src:'655.webm', price:0, owned:false, exclusive:true, name:'اختصاصی سازنده'},
-    {id:902, src:'2000.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت'},
-    {id:903, src:'2003.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت'},
+    {id:902, src:'2000.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت ارشد'},
+    {id:903, src:'2003.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت ارشد'},
     {id:904, src:'2001.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'},
     {id:905, src:'2002.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'}
   ];
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  // ✅ فقط آواتار 655.webm برای غیر سازنده مسدود است. بقیه آواتارها آزادانه تغییر می‌کنند و برنمی‌گردند.
+  // ✅ فقط آواتار 655.webm برای غیر سازنده مسدود است. بقیه آواتارها آزادانه تغییر می‌کنند.
   function sanitizeUserData(user, phone) {
     if (!user) return user;
     const isCreator = (phone === CREATOR_PHONE);
+    
     if (user.avatar === '655.webm' && !isCreator) {
       user.avatar = user.previousAvatar || 'Mafia2.png';
     }
     if (user.exclusiveAvatar === '655.webm' && !isCreator) {
       delete user.exclusiveAvatar;
       if (user.ownedAvatars) {
-        user.ownedAvatars = user.ownedAvatars.filter(a => a !== 'exclusive_' + phone);
+        user.ownedAvatars = user.ownedAvatars.filter(a => a !== 'ex_655.webm');
       }
     }
+    
     if (user.coins < 0) user.coins = 0;
     if (user.gems < 0) user.gems = 0;
     return user;
@@ -856,10 +858,17 @@
 
   async function saveAvatarToStorage(src){
     if(!currentUserData||!currentPhone)return;
+    
+    const isCreator = (currentPhone === CREATOR_PHONE);
+    if (src === '655.webm' && !isCreator) {
+      showShopNotification('این آواتار فقط مخصوص سازنده است!', 'error');
+      return;
+    }
+
     if (currentUserData.avatar && currentUserData.avatar !== src) {
       currentUserData.previousAvatar = currentUserData.avatar;
     }
-    currentUserData.avatar = getValidAvatar(src, currentPhone);
+    currentUserData.avatar = src;
     await saveUserData();
     updateGlobalAvatar(currentUserData.avatar);
   }
@@ -1339,26 +1348,49 @@
     document.getElementById('shopGoldAmount').textContent=toPersianNum(shopGold);
     document.getElementById('shopGemAmount').textContent=toPersianNum(shopGems);
 
-    let cur = currentUserData.avatar || 'Mafia2.png';
-    
-    if(currentUserData.exclusiveAvatar){
-      const existingExclusive=avatars.find(a=>a.isMyExclusive);
-      if(!existingExclusive){
-        avatars.push({id:9998, src:currentUserData.exclusiveAvatar, price:0, owned:true, exclusive:true, isMyExclusive:true, name:'اختصاصی'});
-      }else{
-        existingExclusive.src=currentUserData.exclusiveAvatar;
-        existingExclusive.owned=true;
+    if (!currentUserData.ownedAvatars) currentUserData.ownedAvatars = [];
+
+    // ✅ هماهنگ‌سازی آواتارهای اختصاصی بر اساس مقام کاربر
+    const rank = currentUserData.rank || 'کاربر';
+    const exclusiveList = [
+      { src: '655.webm', allowedRanks: ['سازنده'] },
+      { src: '2000.webm', allowedRanks: ['پشتیبانی', 'گرداننده', 'ادمین ارشد', 'ناظر ارشد'] },
+      { src: '2003.webm', allowedRanks: ['پشتیبانی', 'گرداننده', 'ادمین ارشد', 'ناظر ارشد'] },
+      { src: '2001.webm', allowedRanks: ['ادمین', 'ناظر'] },
+      { src: '2002.webm', allowedRanks: ['ادمین', 'ناظر'] }
+    ];
+
+    exclusiveList.forEach(ex => {
+      const isAllowed = ex.allowedRanks.includes(rank);
+      const key = 'ex_' + ex.src;
+      const avObj = avatars.find(a => a.src === ex.src);
+      
+      if (isAllowed) {
+        if (!currentUserData.ownedAvatars.includes(key)) {
+          currentUserData.ownedAvatars.push(key);
+        }
+        if (avObj) avObj.owned = true;
+      } else {
+        currentUserData.ownedAvatars = currentUserData.ownedAvatars.filter(k => k !== key);
+        if (avObj) avObj.owned = false;
+        if (currentUserData.avatar === ex.src) {
+          currentUserData.avatar = 'Mafia2.png';
+        }
       }
-    }
-    const owned=currentUserData.ownedAvatars||[];
-    avatars.forEach(a=>{
-      if(a.free) a.owned=true;
-      else if(a.isMyExclusive) a.owned=true;
-      else if(owned.includes(a.src)||a.src===cur) a.owned=true;
-      else if(!a.exclusive) a.owned=false;
     });
-    const def=avatars.find(a=>a.src===cur);
-    if(def) def.owned=true;
+
+    const owned = currentUserData.ownedAvatars || [];
+    avatars.forEach(a => {
+      if (a.free) {
+        a.owned = true;
+      } else if (owned.includes('ex_' + a.src) || owned.includes(a.src)) {
+        a.owned = true;
+      } else {
+        a.owned = false;
+      }
+    });
+
+    currentUserData.avatar = getValidAvatar(currentUserData.avatar || 'Mafia2.png', currentPhone);
   }
 
   function renderAvatars(){
@@ -1375,7 +1407,7 @@
       const isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4') || a.src.endsWith('.mov');
       const mediaHtml = isVid ? `<video src="${a.src}" autoplay loop muted playsinline webkit-playsinline onerror="avatarLoadError(this,'${a.src}')"></video>` : `<img src="${a.src}" onerror="avatarLoadError(this,'${a.src}')">`;
       const cardClass='avatar-card '+(a.owned?'owned ':'')+(a.isMyExclusive?'exclusive':'');
-      return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${(!a.owned?`<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">${toPersianNum(a.price)}</span></div>`:`<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ ${(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':''))}</div>`)}</div>`;
+      return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${(!a.owned?`<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">${toPersianNum(a.price)}</span></div>`:`<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ ${(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':'دارید'))}</div>`)}</div>`;
     }).join('');
 
     grid.querySelectorAll('.avatar-card').forEach(c=>c.addEventListener('click',()=>handleAvatarClick(parseInt(c.dataset.id))));
