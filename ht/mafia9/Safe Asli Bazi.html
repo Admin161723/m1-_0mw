@@ -245,6 +245,9 @@
   .clan-blacklist-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:6px;margin-bottom:4px;}
   .clan-blacklist-item span{color:#fff;font-size:12px;}
   .clan-blacklist-item button{background:#f44336;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+  
+  .confirm-btn{background:linear-gradient(180deg,#4CAF50,#45a049);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:10px;}
+  .confirm-btn:hover{background:linear-gradient(180deg,#45a049,#3d8b40);}
 </style>
 </head>
 <body>
@@ -262,8 +265,8 @@
   <div class="menu-overlay" id="menuOverlay"></div>
   <div class="menu-dropdown" id="menuDropdown">
     <div class="menu-item" id="menuContact"><div class="menu-item-icon icon-contact">📞</div><span class="menu-item-text">ارتباط با ما</span></div>
-    <div class="menu-item" id="menuSettings"><div class="menu-item-icon icon-settings">⚙️</div><span class="menu-item-text">تنظیمات</span></div>
-    <div class="menu-item" id="menuLogout"><div class="menu-item-icon icon-logout">🚪</div><span class="menu-item-text">خروج از اکانت</span></div>
+    <div class="menu-item" id="menuSettings"><div class="menu-item-icon icon-settings">️</div><span class="menu-item-text">تنظیمات</span></div>
+    <div class="menu-item" id="menuLogout"><div class="menu-item-icon icon-logout"></div><span class="menu-item-text">خروج از اکانت</span></div>
   </div>
 
   <div class="profile-section" id="openProfile">
@@ -316,7 +319,7 @@
         <div class="admin-tools" id="adminTools" style="display:none;">
           <div class="admin-tools-title">🛠️ ابزارهای سازنده</div>
           <div class="admin-tools-btns">
-            <button class="edit-btn ban" id="btnServerToggle">🔌 قطع سرور</button>
+            <button class="edit-btn ban" id="btnServerToggle"> قطع سرور</button>
             <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن دیتابیس</button>
           </div>
         </div>
@@ -331,6 +334,7 @@
               <option value="seasonal">فصلی</option>
             </select>
           </div>
+          <button class="confirm-btn" onclick="confirmTournamentTime()" style="width:100%;">✅ تایید زمان مسابقه</button>
 
           <h4 style="color:#ffd700;font-size:13px;margin:10px 0 8px;">🥇 جایزه رتبه ۱</h4>
           <div class="prize-row">
@@ -348,6 +352,7 @@
               </label>
             </div>
           </div>
+          <button class="confirm-btn" onclick="confirmPrize(1)" style="width:100%;">✅ تایید جایزه رتبه </button>
 
           <h4 style="color:#c0c0c0;font-size:13px;margin:10px 0 8px;">🥈 جایزه رتبه ۲</h4>
           <div class="prize-row">
@@ -365,6 +370,7 @@
               </label>
             </div>
           </div>
+          <button class="confirm-btn" onclick="confirmPrize(2)" style="width:100%;">✅ تایید جایزه رتبه ۲</button>
 
           <h4 style="color:#cd7f32;font-size:13px;margin:10px 0 8px;">🥉 جایزه رتبه ۳</h4>
           <div class="prize-row">
@@ -382,6 +388,7 @@
               </label>
             </div>
           </div>
+          <button class="confirm-btn" onclick="confirmPrize(3)" style="width:100%;">✅ تایید جایزه رتبه ۳</button>
 
           <h4 style="color:#4a9eff;font-size:13px;margin:10px 0 8px;">🎖️ جایزه رتبه ۴ تا ۱۰</h4>
           <div class="prize-row">
@@ -392,8 +399,9 @@
             <label>مقدار:</label>
             <input type="number" id="prize4Value" placeholder="مثلا: 50" min="0">
           </div>
+          <button class="confirm-btn" onclick="confirmPrize(4)" style="width:100%;">✅ تایید جایزه رتبه ۴-۱۰</button>
 
-          <button class="edit-btn save" onclick="saveTournamentConfig()" style="width:100%;margin-top:12px;">💾 ذخیره تنظیمات مسابقه</button>
+          <button class="edit-btn save" onclick="saveAllTournamentConfig()" style="width:100%;margin-top:12px;"> ذخیره همه تنظیمات</button>
 
           <div class="clan-blacklist" id="clanBlacklist">
             <h4 style="color:#f44336;font-size:12px;margin-bottom:8px;">🚫 لیست سیاه کلن‌ها</h4>
@@ -459,7 +467,7 @@
       </div>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-card-title">امتیاز</div><div class="stat-card-value" id="statScore">۰</div><div class="stat-card-icon">🏆</div></div>
+      <div class="stat-card"><div class="stat-card-title">امتیاز</div><div class="stat-card-value" id="statScore"></div><div class="stat-card-icon">🏆</div></div>
       <div class="stat-card"><div class="stat-card-title">سطح</div><div class="stat-card-value" id="statLevel">۱</div><div class="stat-card-icon">⭐</div></div>
       <div class="stat-card"><div class="stat-card-title">رتبه فصل</div><div class="stat-card-value" id="statSeasonRank">۰</div><div class="stat-card-icon">👑</div></div>
     </div>
@@ -568,6 +576,14 @@
     <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
   </div>
 </div>
+
+<!-- فایل‌های صوتی -->
+<audio id="clickSound" preload="auto">
+    <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
+</audio>
+<audio id="bgMusic" loop preload="auto">
+    <source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg">
+</audio>
 
 <script>
   const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -691,7 +707,7 @@
     'ادمین ارشد':{panel:true, coins:true, gems:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'1m'},
     'گرداننده': {panel:true, coins:true, gems:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'3m'}
   };
-  const BAN_OPTIONS=[['1h','۱ ساعت'],['1d','۱ روز'],['7d','۷ روز'],['2w','۲ هفته'],['1m','۱ ماه'],['3m','۳ ماه'],['8m','۸ ماه'],['permanent','دائمی']];
+  const BAN_OPTIONS=[['1h','۱ ساعت'],['1d','۱ روز'],['7d','۷ روز'],['2w',' هفته'],['1m','۱ ماه'],['3m','۳ ماه'],['8m',' ماه'],['permanent','دائمی']];
   const DUR_MS={'1h':3600000,'1d':86400000,'7d':604800000,'2w':1209600000,'1m':2592000000,'3m':7776000000,'8m':20736000000,'permanent':0};
 
   function getPerm(){
@@ -725,29 +741,34 @@
   let editingUserExclusiveAvatar=null;
   let shopGold=0,shopGems=0,selectedAvatar=null,purchasePrice=0,currentAvatarSection='my';
   let userGroupCache=null;
+  let audioUnlocked = false;
+  let bgMusicElement = null;
 
   const avatars=[
-    {id:1, src:'601.webp', price:300, owned:false},
-    {id:2, src:'602.webp', price:200, owned:false},
-    {id:3, src:'603.webp', price:60, owned:false},
-    {id:4, src:'604.webp', price:50, owned:false},
-    {id:5, src:'605.webp', price:50, owned:false},
-    {id:6, src:'606.webp', price:300, owned:false},
-    {id:7, src:'607.webp', price:250, owned:false},
-    {id:8, src:'608.webp', price:70, owned:false},
-    {id:9, src:'609.webp', price:200, owned:false},
-    {id:10, src:'610.webp', price:200, owned:false},
-    {id:11, src:'611.webp', price:150, owned:false},
-    {id:12, src:'612.webp', price:300, owned:false},
-    {id:13, src:'613.webp', price:300, owned:false},
-    {id:14, src:'614.webp', price:50, owned:false},
-    {id:15, src:'615.webp', price:50, owned:false},
-    {id:16, src:'616.webp', price:300, owned:false},
-    {id:17, src:'617.webp', price:75, owned:false},
-    {id:18, src:'618.webp', price:300, owned:false},
-    {id:19, src:'619.webp', price:100, owned:false},
-    {id:20, src:'620.webp', price:200, owned:false},
-    // ✅ آواتارهای اختصاصی تیم مدیریت
+    {id:1, src:'3000.webp', price:0, owned:false, free:true},
+    {id:2, src:'3001.webp', price:0, owned:false, free:true},
+    {id:3, src:'3002.webp', price:0, owned:false, free:true},
+    {id:4, src:'3003.webp', price:0, owned:false, free:true},
+    {id:5, src:'601.webp', price:300, owned:false},
+    {id:6, src:'602.webp', price:200, owned:false},
+    {id:7, src:'603.webp', price:60, owned:false},
+    {id:8, src:'604.webp', price:50, owned:false},
+    {id:9, src:'605.webp', price:50, owned:false},
+    {id:10, src:'606.webp', price:300, owned:false},
+    {id:11, src:'607.webp', price:250, owned:false},
+    {id:12, src:'608.webp', price:70, owned:false},
+    {id:13, src:'609.webp', price:200, owned:false},
+    {id:14, src:'610.webp', price:200, owned:false},
+    {id:15, src:'611.webp', price:150, owned:false},
+    {id:16, src:'612.webp', price:300, owned:false},
+    {id:17, src:'613.webp', price:300, owned:false},
+    {id:18, src:'614.webp', price:50, owned:false},
+    {id:19, src:'615.webp', price:50, owned:false},
+    {id:20, src:'616.webp', price:300, owned:false},
+    {id:21, src:'617.webp', price:75, owned:false},
+    {id:22, src:'618.webp', price:300, owned:false},
+    {id:23, src:'619.webp', price:100, owned:false},
+    {id:24, src:'620.webp', price:200, owned:false},
     {id:901, src:'655.webm', price:0, owned:false, exclusive:true, name:'اختصاصی سازنده'},
     {id:902, src:'2000.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت ارشد'},
     {id:903, src:'2003.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت ارشد'},
@@ -757,11 +778,9 @@
 
   window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
-  // ✅ فقط آواتار 655.webm برای غیر سازنده مسدود است. بقیه آواتارها آزادانه تغییر می‌کنند.
   function sanitizeUserData(user, phone) {
     if (!user) return user;
     const isCreator = (phone === CREATOR_PHONE);
-    
     if (user.avatar === '655.webm' && !isCreator) {
       user.avatar = user.previousAvatar || 'Mafia2.png';
     }
@@ -771,7 +790,6 @@
         user.ownedAvatars = user.ownedAvatars.filter(a => a !== 'ex_655.webm');
       }
     }
-    
     if (user.coins < 0) user.coins = 0;
     if (user.gems < 0) user.gems = 0;
     return user;
@@ -858,13 +876,11 @@
 
   async function saveAvatarToStorage(src){
     if(!currentUserData||!currentPhone)return;
-    
     const isCreator = (currentPhone === CREATOR_PHONE);
     if (src === '655.webm' && !isCreator) {
       showShopNotification('این آواتار فقط مخصوص سازنده است!', 'error');
       return;
     }
-
     if (currentUserData.avatar && currentUserData.avatar !== src) {
       currentUserData.previousAvatar = currentUserData.avatar;
     }
@@ -873,7 +889,6 @@
     updateGlobalAvatar(currentUserData.avatar);
   }
 
-  // ✅ محدودیت ۲۰ کاراکتر برای نام کاربری
   async function changeUsername(){
     const nn=prompt("نام کاربری جدید را وارد کنید (حداکثر ۲۰ کاراکتر):");
     if(nn && nn.trim()!==""){
@@ -923,7 +938,6 @@
       if(group){
         nameEl.textContent=group.name||'گروه';
         badgeEl.className='clan-badge has-group';
-        // ✅ نمایش تصویر لوگو به جای شکلک
         if(group.logo && (group.logo.endsWith('.webp') || group.logo.endsWith('.png') || group.logo.endsWith('.jpg') || group.logo.endsWith('.jpeg'))) {
             badgeEl.innerHTML = `<img src="${group.logo}" style="width:100%;height:100%;object-fit:contain;padding:4px;" onerror="this.style.display='none';this.parentElement.innerHTML='${getGroupIcon('shield').replace(/"/g, "&quot;")}'">`;
         } else {
@@ -1208,11 +1222,19 @@
   async function updateServerToggleBtn(){
     const m=await getMaintenance();
     const btn=document.getElementById('btnServerToggle');
-    if(m&&m.on){btn.textContent='🔌 وصل کردن سرور';btn.className='edit-btn unban';}
+    if(m&&m.on){btn.textContent=' وصل کردن سرور';btn.className='edit-btn unban';}
     else{btn.textContent='🔌 قطع سرور';btn.className='edit-btn ban';}
   }
 
-  async function saveTournamentConfig() {
+  function confirmTournamentTime(){
+    showShopNotification('✅ زمان مسابقه تایید شد');
+  }
+
+  function confirmPrize(rank){
+    showShopNotification(`✅ جایزه رتبه ${rank} تایید شد`);
+  }
+
+  async function saveAllTournamentConfig() {
     if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
 
     const prize1Value = parseInt(document.getElementById('prize1Value').value) || 0;
@@ -1250,7 +1272,7 @@
     };
 
     await saveTournamentConfigData(cfg);
-    showShopNotification('✅ تنظیمات مسابقات ذخیره شد');
+    showShopNotification('✅ همه تنظیمات مسابقات ذخیره شد');
   }
 
   window.clanBlacklist = [];
@@ -1350,7 +1372,6 @@
 
     if (!currentUserData.ownedAvatars) currentUserData.ownedAvatars = [];
 
-    // ✅ هماهنگ‌سازی آواتارهای اختصاصی بر اساس مقام کاربر
     const rank = currentUserData.rank || 'کاربر';
     const exclusiveList = [
       { src: '655.webm', allowedRanks: ['سازنده'] },
@@ -1364,7 +1385,7 @@
       const isAllowed = ex.allowedRanks.includes(rank);
       const key = 'ex_' + ex.src;
       const avObj = avatars.find(a => a.src === ex.src);
-      
+
       if (isAllowed) {
         if (!currentUserData.ownedAvatars.includes(key)) {
           currentUserData.ownedAvatars.push(key);
@@ -1438,6 +1459,39 @@
   }
   setInterval(checkBanPeriodically,5000);
 
+  function playClickSound() {
+    try {
+      const clickSound = document.getElementById('clickSound');
+      if (clickSound) {
+        clickSound.currentTime = 0;
+        clickSound.play().catch(function(e) {});
+      }
+      unlockAudio();
+    } catch (e) {}
+  }
+
+  function unlockAudio() {
+    if (!audioUnlocked) {
+      bgMusicElement = document.getElementById('bgMusic');
+      if (bgMusicElement) {
+        bgMusicElement.volume = 0.3;
+        bgMusicElement.play().then(function() {
+          console.log("موسیقی پس‌زمینه شروع شد");
+        }).catch(function(e) { 
+          console.log("خطا در پخش موسیقی:", e);
+        });
+      }
+      audioUnlocked = true;
+    }
+  }
+
+  function updateMusicVolume(){
+    const slider = document.getElementById('gameVolumeSlider');
+    if(bgMusicElement && slider){
+      bgMusicElement.volume = slider.value / 100;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const loggedIn = localStorage.getItem('currentLoggedInUser');
     if (!loggedIn) {
@@ -1477,47 +1531,53 @@
         syncWithServerInBackground();
     }, 0);
 
-    document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
+    document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();playClickSound();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
     document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
 
     document.getElementById('menuContact').addEventListener('click',()=>{
+        playClickSound();
         closeModal('menuDropdown');
         window.location.href = 'https://Mfasun.ir';
     });
 
     document.getElementById('menuSettings').addEventListener('click',()=>{
+        playClickSound();
         closeModal('menuDropdown');
         document.getElementById('settingsModal').classList.add('active');
     });
 
-    document.getElementById('menuLogout').addEventListener('click',()=>{closeModal('menuDropdown');if(confirm('از اکانت خارج می‌شوید؟')){localStorage.removeItem('currentLoggedInUser');window.location.href='index.html';}});
-    document.getElementById('openProfile').addEventListener('click',()=>{document.getElementById('profilePage').classList.add('active');updateGroupDisplay();});
-    document.getElementById('backBtn').addEventListener('click',()=>document.getElementById('profilePage').classList.remove('active'));
-    document.getElementById('copyUserCode').addEventListener('click',()=>copyToClipboard(document.getElementById('userCode').textContent,'کد کاربری کپی شد!'));
+    document.getElementById('menuLogout').addEventListener('click',()=>{playClickSound();closeModal('menuDropdown');if(confirm('از اکانت خارج می‌شوید؟')){localStorage.removeItem('currentLoggedInUser');window.location.href='index.html';}});
+    document.getElementById('openProfile').addEventListener('click',()=>{playClickSound();document.getElementById('profilePage').classList.add('active');updateGroupDisplay();});
+    document.getElementById('backBtn').addEventListener('click',()=>{playClickSound();document.getElementById('profilePage').classList.remove('active');});
+    document.getElementById('copyUserCode').addEventListener('click',()=>{playClickSound();copyToClipboard(document.getElementById('userCode').textContent,'کد کاربری کپی شد!');});
 
     document.getElementById('openAvatarShop').addEventListener('click',()=>{
+        playClickSound();
         document.getElementById('profilePage').classList.remove('active');
         document.getElementById('avatarShopPage').classList.add('active');
         renderAvatars();
     });
 
-    document.getElementById('shopBackBtn').addEventListener('click',()=>{document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
+    document.getElementById('shopBackBtn').addEventListener('click',()=>{playClickSound();document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
     document.getElementById('editNameBtn').addEventListener('click',changeUsername);
-    document.getElementById('navShop').addEventListener('click',()=>window.location.href='Safe Foroshgahe.html');
-    document.getElementById('navGroup').addEventListener('click',()=>window.location.href='Safe Goroh.html');
-    document.getElementById('btnAnnouncements').addEventListener('click',async()=>{await loadNews();document.getElementById('newsModal').classList.add('active');});
-    document.getElementById('btnHelp').addEventListener('click',()=>window.location.href='Amozesh.html');
+    document.getElementById('navShop').addEventListener('click',()=>{playClickSound();window.location.href='Safe Foroshgahe.html';});
+    document.getElementById('navGroup').addEventListener('click',()=>{playClickSound();window.location.href='Safe Goroh.html';});
+    document.getElementById('btnAnnouncements').addEventListener('click',async()=>{playClickSound();await loadNews();document.getElementById('newsModal').classList.add('active');});
+    document.getElementById('btnHelp').addEventListener('click',()=>{playClickSound();window.location.href='Amozesh.html';});
 
     document.getElementById('btnTopPlayers').addEventListener('click',()=>{
+        playClickSound();
         window.location.href = 'Bandi.html';
     });
 
     document.getElementById('btnManagement').addEventListener('click',()=>{
+        playClickSound();
         window.location.href = 'Modir.html';
     });
 
-    document.getElementById('btnLive').addEventListener('click',()=>showShopNotification('پخش زنده به زودی'));
+    document.getElementById('btnLive').addEventListener('click',()=>{playClickSound();showShopNotification('پخش زنده به زودی');});
     document.getElementById('btnAdmin').addEventListener('click',async()=>{
+        playClickSound();
         const p=getPerm();
         if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}
         await loadUsers();
@@ -1534,14 +1594,15 @@
     document.getElementById('btnDeleteAccount').addEventListener('click',deleteAccount);
     document.getElementById('btnWipeDB').addEventListener('click',wipeDatabase);
     document.getElementById('btnServerToggle').addEventListener('click',toggleServer);
-    document.getElementById('btnFriendly').addEventListener('click',()=>window.location.href='TalarDs.html');
-    document.getElementById('btnCompetitive').addEventListener('click',startCompetitiveSearch);
+    document.getElementById('btnFriendly').addEventListener('click',()=>{playClickSound();window.location.href='TalarDs.html';});
+    document.getElementById('btnCompetitive').addEventListener('click',()=>{playClickSound();startCompetitiveSearch();});
     document.getElementById('cancelSearchBtn').addEventListener('click',cancelCompetitiveSearch);
     document.getElementById('enterGameBtn').addEventListener('click',enterCompetitiveGame);
-    document.querySelectorAll('.shop-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.shop-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');if(this.dataset.tab!=='avatars')showShopNotification('به زودی');}));
-    document.querySelectorAll('.avatar-section-tab').forEach(t=>t.addEventListener('click',function(){currentAvatarSection=this.dataset.section;document.querySelectorAll('.avatar-section-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');renderAvatars();}));
-    document.getElementById('modalCancelBtn').addEventListener('click',()=>{document.getElementById('purchaseModal').classList.remove('show');selectedAvatar=null;purchasePrice=0;});
+    document.querySelectorAll('.shop-tab').forEach(t=>t.addEventListener('click',function(){playClickSound();document.querySelectorAll('.shop-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');if(this.dataset.tab!=='avatars')showShopNotification('به زودی');}));
+    document.querySelectorAll('.avatar-section-tab').forEach(t=>t.addEventListener('click',function(){playClickSound();currentAvatarSection=this.dataset.section;document.querySelectorAll('.avatar-section-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');renderAvatars();}));
+    document.getElementById('modalCancelBtn').addEventListener('click',()=>{playClickSound();document.getElementById('purchaseModal').classList.remove('show');selectedAvatar=null;purchasePrice=0;});
     document.getElementById('modalConfirmBtn').addEventListener('click',async()=>{
+      playClickSound();
       if(shopGems>=purchasePrice&&selectedAvatar){
         shopGems-=purchasePrice;selectedAvatar.owned=true;
         if(currentUserData){
@@ -1561,12 +1622,14 @@
     });
 
     document.getElementById('openChangePasswordBtn').addEventListener('click', () => {
+        playClickSound();
         closeModal('settingsModal');
         document.getElementById('cpPhone').value = currentPhone || '';
         document.getElementById('changePasswordModal').classList.add('active');
     });
 
     document.getElementById('submitPasswordChange').addEventListener('click', async () => {
+        playClickSound();
         const phone = document.getElementById('cpPhone').value.trim();
         const currentPass = document.getElementById('cpCurrentPass').value;
         const newPass = document.getElementById('cpNewPass').value;
@@ -1595,6 +1658,8 @@
         document.getElementById('cpCurrentPass').value = '';
         document.getElementById('cpNewPass').value = '';
     });
+
+    document.getElementById('gameVolumeSlider').addEventListener('input', updateMusicVolume);
 
     setInterval(updateGroupDisplay,30000);
   });
