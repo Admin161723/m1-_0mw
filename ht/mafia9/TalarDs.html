@@ -129,14 +129,16 @@
   .room-body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:6px 4px 75px;}
   .supers-row{display:flex;justify-content:center;gap:30px;padding:8px 0;flex-shrink:0;}
   .super-slot{display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer;}
-  .super-circle{width:90px;height:90px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .super-circle{width:72px;height:72px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .super-circle.filled{border-style:solid;background:#173a5e;}
   .super-circle img,.super-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
   .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;}
 
   .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:stretch;padding:10px 8px;direction:ltr;}
   .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;flex:1;}
-  .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;min-height:80px;position:relative;}
+  
+  /* ✅ استایل صندلی با فضای کافی برای شماره بیرون دایره */
+  .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;min-height:110px;position:relative;}
   .seat-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .seat-circle.filled{background:#173a5e;}
   .seat-circle img,.seat-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
@@ -145,24 +147,25 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی به انگلیسی (1, 2, 3... 10) */
-  .seat-num{
+  /* ✅ شماره صندلی دقیقاً بیرون از دایره و با اعداد انگلیسی */
+  .seat-num {
     position: absolute;
-    bottom: -28px;
+    bottom: -32px;
     left: 50%;
     transform: translateX(-50%);
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: linear-gradient(180deg,#4aa3e0,#2a7fb8);
+    background: linear-gradient(180deg, #4aa3e0, #2a7fb8);
     border: 2px solid #0d2135;
     color: white;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 900;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 3;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
@@ -202,7 +205,7 @@
     50% { transform: scale(1.2); }
   }
 
-  /* ✅ انیمیشن لایک/دیس‌لایک - مدت زمان بیشتر (5 ثانیه) */
+  /* ✅ انیمیشن لایک/دیس‌لایک با مدت زمان 5 ثانیه */
   .reaction-overlay {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 70px; height: 70px; border-radius: 50%; display: none;
@@ -679,7 +682,6 @@
     return html;
   }
 
-  // ✅ ساخت تگ media با preload="auto" برای لود کامل ویدیو
   function buildMediaTag(avatarUrl, fallbackHtml) {
     if (!avatarUrl) return fallbackHtml || '';
     const isVideo = avatarUrl.endsWith('.webm') || avatarUrl.endsWith('.mp4') || avatarUrl.endsWith('.mov');
@@ -690,7 +692,6 @@
     }
   }
 
-  // ✅ حفظ currentTime ویدیوها قبل از رندر
   function saveVideoTimes() {
     const times = {};
     document.querySelectorAll('.seat-circle video, .super-circle video, .pf-avatar video').forEach((v, i) => {
@@ -700,7 +701,6 @@
     return times;
   }
 
-  // ✅ restore currentTime ویدیوها بعد از رندر
   function restoreVideoTimes(times) {
     setTimeout(() => {
       document.querySelectorAll('.seat-circle video, .super-circle video, .pf-avatar video').forEach((v, i) => {
@@ -715,36 +715,25 @@
   async function initVoice() {
     if (agoraClient || !window.AgoraRTC || !currentRoomId || !me) return;
     if (micInitAttempted) return;
-    
     try {
       micInitAttempted = true;
       agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
       await agoraClient.join(APP_ID, "mafia_room_" + currentRoomId, null, me.phone);
-
       agoraClient.on("user-published", async (user, mediaType) => {
         try {
           await agoraClient.subscribe(user, mediaType);
-          if (mediaType === "audio" && user.audioTrack) {
-            user.audioTrack.play();
-          }
+          if (mediaType === "audio" && user.audioTrack) user.audioTrack.play();
         } catch (e) { console.log("Sub err:", e); }
       });
-
       agoraClient.on("user-unpublished", (user, mediaType) => {
-        if (mediaType === "audio" && user.audioTrack) {
-          try { user.audioTrack.stop(); } catch(e) {}
-        }
+        if (mediaType === "audio" && user.audioTrack) { try { user.audioTrack.stop(); } catch(e) {} }
       });
-
       agoraClient.enableAudioVolumeIndicator();
       agoraClient.on("volume-indicator", (volumes) => {
         speakingUids.clear();
-        volumes.forEach(volume => {
-          if (volume.level > 15) speakingUids.add(String(volume.uid));
-        });
+        volumes.forEach(volume => { if (volume.level > 15) speakingUids.add(String(volume.uid)); });
         updateSpeakingUI();
       });
-      
       showToast("اتصال صوتی برقرار شد");
     } catch (err) {
       console.error("Voice init error:", err);
@@ -756,12 +745,8 @@
     try {
       if (!agoraClient) {
         await initVoice();
-        if (!agoraClient) {
-          showToast("امکان اتصال به صدا وجود ندارد", "error");
-          return;
-        }
+        if (!agoraClient) { showToast("امکان اتصال به صدا وجود ندارد", "error"); return; }
       }
-
       if (!localAudioTrack) {
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         await agoraClient.publish(localAudioTrack);
@@ -770,26 +755,14 @@
         updateMicUI();
         return;
       }
-
       isMicOn = !isMicOn;
       await localAudioTrack.setMuted(!isMicOn);
       showToast(isMicOn ? "میکروفون روشن شد" : "میکروفون خاموش شد");
       updateMicUI();
-
     } catch (err) {
       console.error("Mic toggle error:", err);
-      if (err.message && err.message.includes("NotAllowedError")) {
-        showToast("لطفاً دسترسی میکروفون را در مرورگر اجازه دهید", "error");
-      } else if (err.message && err.message.includes("NotFoundError")) {
-        showToast("میکروفونی یافت نشد", "error");
-      } else {
-        showToast("خطا در فعال‌سازی میکروفون", "error");
-      }
       isMicOn = false;
-      if (localAudioTrack) {
-        try { localAudioTrack.close(); } catch(e) {}
-        localAudioTrack = null;
-      }
+      if (localAudioTrack) { try { localAudioTrack.close(); } catch(e) {} localAudioTrack = null; }
       updateMicUI();
     }
   }
@@ -797,11 +770,8 @@
   function updateMicUI() {
     const btn = $('micBtn');
     if (!btn) return;
-    if (isMicOn) {
-      btn.classList.add('mic-on');
-    } else {
-      btn.classList.remove('mic-on');
-    }
+    if (isMicOn) btn.classList.add('mic-on');
+    else btn.classList.remove('mic-on');
   }
 
   function updateSpeakingUI() {
@@ -826,22 +796,14 @@
     updateMicUI();
   }
 
-  // ✅ لایک/دیس‌لایک با مدت زمان بیشتر (5 ثانیه)
   async function showReactionOnProfile(type) {
     const now = Date.now();
     const cooldown = type === 'dislike' ? lastDislikeTime : lastLikeTime;
-
-    if (now - cooldown < REACTION_COOLDOWN) {
-      showToast('لطفاً صبر کنید', 'error');
-      return false;
-    }
+    if (now - cooldown < REACTION_COOLDOWN) { showToast('لطفاً صبر کنید', 'error'); return false; }
 
     const targetPhone = me.phone;
     const circleEl = document.querySelector(`.seat-circle[data-phone="${targetPhone}"]`) || document.querySelector(`.super-circle[data-phone="${targetPhone}"]`);
-    if (!circleEl) {
-      showToast('پروفایل یافت نشد', 'error');
-      return false;
-    }
+    if (!circleEl) { showToast('پروفایل یافت نشد', 'error'); return false; }
 
     const existing = circleEl.querySelector('.reaction-overlay');
     if (existing) existing.remove();
@@ -852,34 +814,25 @@
     if (type === 'dislike') {
       const img = document.createElement('img');
       img.src = 'like3.gif';
-      img.alt = 'دیس‌لایک';
       img.onerror = function() { this.style.display = 'none'; };
       overlay.appendChild(img);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
       if (dislikeTimeoutId) clearTimeout(dislikeTimeoutId);
-      dislikeTimeoutId = setTimeout(() => {
-        $('dislikeBtn').classList.remove('disabled');
-        dislikeTimeoutId = null;
-      }, REACTION_COOLDOWN);
+      dislikeTimeoutId = setTimeout(() => { $('dislikeBtn').classList.remove('disabled'); dislikeTimeoutId = null; }, REACTION_COOLDOWN);
     } else {
       const img = document.createElement('img');
       img.src = 'like1.gif';
-      img.alt = 'لایک';
       img.onerror = function() { this.style.display = 'none'; };
       overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
       if (likeTimeoutId) clearTimeout(likeTimeoutId);
-      likeTimeoutId = setTimeout(() => {
-        $('likeBtn').classList.remove('disabled');
-        likeTimeoutId = null;
-      }, REACTION_COOLDOWN);
+      likeTimeoutId = setTimeout(() => { $('likeBtn').classList.remove('disabled'); likeTimeoutId = null; }, REACTION_COOLDOWN);
     }
 
     circleEl.appendChild(overlay);
 
-    // ذخیره در JSONBin
     try {
       const liveData = await jsonbinGetLive();
       if (!liveData.reactions) liveData.reactions = {};
@@ -887,9 +840,7 @@
       if (!liveData.reactions[roomKey]) liveData.reactions[roomKey] = {};
       liveData.reactions[roomKey][targetPhone] = { type: type, time: now };
       Object.keys(liveData.reactions[roomKey]).forEach(phone => {
-        if (now - liveData.reactions[roomKey][phone].time > 10000) {
-          delete liveData.reactions[roomKey][phone];
-        }
+        if (now - liveData.reactions[roomKey][phone].time > 10000) delete liveData.reactions[roomKey][phone];
       });
       await jsonbinSetLive(liveData);
     } catch(e) {}
@@ -897,16 +848,12 @@
     setTimeout(() => {
       if (overlay && overlay.parentNode) {
         overlay.classList.remove('show');
-        setTimeout(() => {
-          if (overlay.parentNode) overlay.remove();
-        }, 300);
+        setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
       }
     }, 5000);
-
     return true;
   }
 
-  // Sync زنده از JSONBin
   async function syncLiveState() {
     if (!currentRoomId || overlayShown) return;
     try {
@@ -915,7 +862,6 @@
       const roomKey = 'room_' + currentRoomId;
       const reactions = liveData.reactions[roomKey] || {};
       const now = Date.now();
-      
       Object.keys(reactions).forEach(phone => {
         const r = reactions[phone];
         if (now - r.time < 5000 && phone !== me.phone) {
@@ -940,32 +886,19 @@
     } catch(e) {}
   }
 
-  function openChat() {
-    $('chatMenu').classList.add('show');
-    renderChatMessages();
-  }
-
-  function closeChat() {
-    $('chatMenu').classList.remove('show');
-  }
+  function openChat() { $('chatMenu').classList.add('show'); renderChatMessages(); }
+  function closeChat() { $('chatMenu').classList.remove('show'); }
 
   function renderChatMessages() {
     const container = $('chatMessages');
-    if (chatMessages.length === 0) {
-      container.innerHTML = '<div class="empty-list">هنوز پیامی نیست</div>';
-      return;
-    }
-
+    if (chatMessages.length === 0) { container.innerHTML = '<div class="empty-list">هنوز پیامی نیست</div>'; return; }
     let html = '';
     chatMessages.forEach((msg, idx) => {
       const isSelf = msg.phone === me.phone;
       html += `<div class="chat-message ${isSelf ? 'self' : ''}">
         <div class="sender">${esc(msg.name)}${isSelf ? ' (شما)' : ''}</div>
         <div class="text">${esc(msg.text)}</div>
-        ${isSelf ? `<div class="actions">
-          <button class="copy-btn" onclick="copyChatMessage(${idx})">کپی</button>
-          <button class="delete-btn" onclick="deleteChatMessage(${idx})">حذف</button>
-        </div>` : ''}
+        ${isSelf ? `<div class="actions"><button class="copy-btn" onclick="copyChatMessage(${idx})">کپی</button><button class="delete-btn" onclick="deleteChatMessage(${idx})">حذف</button></div>` : ''}
       </div>`;
     });
     container.innerHTML = html;
@@ -975,16 +908,11 @@
   function sendChatMessage() {
     const input = $('chatInput');
     const text = input.value.trim();
-    if (!text) {
-      showToast('پیام خالی است', 'error');
-      return;
-    }
-
-    const msg = { phone: me.phone, name: me.name, text: text, time: Date.now() };
-    chatMessages.push(msg);
+    if (!text) { showToast('پیام خالی است', 'error'); return; }
+    chatMessages.push({ phone: me.phone, name: me.name, text: text, time: Date.now() });
     input.value = '';
     renderChatMessages();
-    showChatNotification(msg);
+    showChatNotification(chatMessages[chatMessages.length-1]);
   }
 
   function showChatNotification(msg) {
@@ -998,7 +926,6 @@
   window.copyChatMessage = function(idx) {
     navigator.clipboard.writeText(chatMessages[idx].text).then(() => showToast('پیام کپی شد')).catch(() => showToast('کپی خطا داد', 'error'));
   };
-
   window.deleteChatMessage = function(idx) {
     chatMessages.splice(idx, 1);
     renderChatMessages();
@@ -1009,18 +936,10 @@
   function go(u){if(!isRedirecting){isRedirecting=true;window.location.href=u;}}
   
   window.addEventListener('offline', () => {
-    offlineTimer = setTimeout(() => {
-      showToast('اتصال اینترنت قطع شد. در حال بازگشت...', 'error');
-      setTimeout(() => window.location.reload(), 1000);
-    }, 3000);
+    offlineTimer = setTimeout(() => { showToast('اتصال اینترنت قطع شد. در حال بازگشت...', 'error'); setTimeout(() => window.location.reload(), 1000); }, 3000);
   });
-
   window.addEventListener('online', () => {
-    if (offlineTimer) {
-      clearTimeout(offlineTimer);
-      offlineTimer = null;
-      window.location.reload();
-    }
+    if (offlineTimer) { clearTimeout(offlineTimer); offlineTimer = null; window.location.reload(); }
   });
 
   function stopTimers(){ 
@@ -1077,7 +996,6 @@
     rooms.forEach(r=>{
       const playersCount = Object.keys(r.seats || {}).length + Object.keys(r.bots || {}).length;
       const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
-
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
       html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
@@ -1144,7 +1062,6 @@
     const pass=passOn?$('lobbyPassInput').value.trim():null;
     if(passOn&&!pass){showToast('رمز را وارد کنید','error');return;}
     const id='R'+Date.now();
-
     const names = await getNames(me.phone);
     const selectedNameObj = names.find(n => n.name === selectedName);
     const isNameApproved = selectedNameObj && selectedNameObj.status === 'active';
@@ -1153,15 +1070,12 @@
     rooms[id]={
       id:id, name:selectedName, managerPhone:me.phone, creatorName:me.name, creatorRank:me.rank,
       scenario:'mafiasan', password:pass, seats:{1:me.phone}, bots:{}, supers:{}, ready:{},
-      ghost:[], blocked:[], kicked:{},
-      ghostSeat:null, ghostSuper:null,
+      ghost:[], blocked:[], kicked:{}, ghostSeat:null, ghostSuper:null,
       status: (isStaffUser || isNameApproved) ? 'waiting' : 'pending',
-      approvalRequired: !(isStaffUser || isNameApproved),
-      createdAt:Date.now()
+      approvalRequired: !(isStaffUser || isNameApproved), createdAt:Date.now()
     };
     await saveRooms(rooms);
     $('createModal').classList.remove('active');
-
     if(isStaffUser || isNameApproved){ showToast('لابی ایجاد شد'); openRoom(id,rooms[id]); } 
     else { showToast('لابی در انتظار تأیید مقام‌دارها'); openRoom(id,rooms[id]); }
   }
@@ -1175,9 +1089,7 @@
     $('deletedOverlay').classList.remove('show');
     if(listTimer){clearInterval(listTimer);listTimer=null;}
     if(roomData)renderRoom(roomData,usersCache.data||{});
-    // ✅ رفرش فقط هر 10 ثانیه (برای جلوگیری از قطع ویدیو)
     if(!roomTimer)roomTimer=setInterval(refreshRoom,10000);
-    // Sync زنده هر 2 ثانیه
     if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,2000);
     initVoice();
   }
@@ -1237,7 +1149,6 @@
     for(const ph of allPhones){ if(ph) groupPromises.push((async()=>{groupCache[ph]=await findUserGroup(ph);})()); }
     await Promise.all(groupPromises);
 
-    // ✅ حفظ currentTime ویدیوها قبل از رندر
     const videoTimes = saveVideoTimes();
 
     async function buildSuper(i){
@@ -1294,13 +1205,13 @@
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
-      // ✅ شماره صندلی به انگلیسی (1, 2, 3... 10)
+      // ✅ شماره صندلی دقیقاً به انگلیسی (1, 2, 3... 10) و بیرون از دایره
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
-          <div class="seat-num">${i}</div>
           <div class="voice-indicator"></div>
         </div>
+        <div class="seat-num">${i}</div>
         ${tagLayer}${tag}
       </div>`;
     }
@@ -1311,7 +1222,6 @@
     document.querySelectorAll('.seat').forEach(el=>{el.onclick=()=>tapSeat(+el.dataset.seat);});
     document.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
 
-    // ✅ restore currentTime ویدیوها بعد از رندر
     restoreVideoTimes(videoTimes);
 
     const bottomLeft = $('bottomLeftArea');
@@ -1328,7 +1238,6 @@
       const rb = document.createElement('button');
       rb.className = 'ready-btn not';
       rb.id = 'readyBtn';
-
       if(room.status === 'pending'){
         rb.className='ready-btn disabled'; rb.innerHTML='در انتظار تأیید...'; rb.onclick=null;
       } else {
@@ -1550,9 +1459,7 @@
     const tk=getRoleTick(u.rank);
     const groupInfo=await findUserGroup(t.phone);
     const groupName=groupInfo?groupInfo.group.name:'بدون گروه';
-    
     const avatarHtml = buildMediaTag(u.avatar, '<span style="display:none"></span>');
-    
     $('profileBody').innerHTML='<div class="pf-avatar">'+avatarHtml+'</div>'+
       '<div class="pf-name">'+esc(u.name||'کاربر')+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>'+
       '<div class="pf-row"><b>کد کاربری:</b><span style="direction:ltr">'+esc(u.userCode||'----')+'</span></div>'+
@@ -1594,7 +1501,6 @@
     const canDelete=isCreator||myLevel>=RANK_LEVEL['گرداننده'];
 
     let html='';
-
     const humans=Object.values(room.seats||{}).filter(Boolean);
     const bots=Object.keys(room.bots||{}).length;
     const total=humans.length+bots;
@@ -1603,7 +1509,7 @@
     if(total >= MAX_PLAYERS && allReady) {
       html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
     } else {
-      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۰) - همه باید آماده باشند</button>';
+      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
 
     if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot">🤖 افزودن بات</button>';
@@ -1619,10 +1525,7 @@
     $('managerModal').classList.add('active');
 
     const startBtn=$('mgStartGame');
-    if(startBtn) startBtn.onclick = async () => {
-      await startGame();
-      $('managerModal').classList.remove('active');
-    };
+    if(startBtn) startBtn.onclick = async () => { await startGame(); $('managerModal').classList.remove('active'); };
 
     const addBot=$('mgAddBot');
     if(addBot)addBot.onclick=async()=>{
@@ -1645,38 +1548,22 @@
   async function toggleGhost(){
     const myLevel=RANK_LEVEL[me.rank]||0;
     if(myLevel<RANK_LEVEL['ناظر']){showToast('فقط مقام‌دارها می‌توانند حالت روح بزنند','error');return;}
-    
     await updateRoom(r=>{
       r.ghost=r.ghost||[];
       if(r.ghost.includes(me.phone)){
         r.ghost=r.ghost.filter(x=>x!==me.phone);
-        if(r.ghostSeat && r.ghostSeat.phone === me.phone) {
-          r.seats[r.ghostSeat.idx] = me.phone;
-          r.ghostSeat = null;
-        }
-        if(r.ghostSuper && r.ghostSuper.phone === me.phone) {
-          r.supers[r.ghostSuper.idx] = me.phone;
-          r.ghostSuper = null;
-        }
+        if(r.ghostSeat && r.ghostSeat.phone === me.phone) { r.seats[r.ghostSeat.idx] = me.phone; r.ghostSeat = null; }
+        if(r.ghostSuper && r.ghostSuper.phone === me.phone) { r.supers[r.ghostSuper.idx] = me.phone; r.ghostSuper = null; }
       } else {
         r.ghost.push(me.phone);
         for(const[i,p]of Object.entries(r.seats||{})){
-          if(p===me.phone){
-            r.ghostSeat = {phone: me.phone, idx: i};
-            delete r.seats[i];
-            break;
-          }
+          if(p===me.phone){ r.ghostSeat = {phone: me.phone, idx: i}; delete r.seats[i]; break; }
         }
         for(const[i,p]of Object.entries(r.supers||{})){
-          if(p===me.phone){
-            r.ghostSuper = {phone: me.phone, idx: i};
-            delete r.supers[i];
-            break;
-          }
+          if(p===me.phone){ r.ghostSuper = {phone: me.phone, idx: i}; delete r.supers[i]; break; }
         }
       }
     });
-    
     const rooms=await getRooms();
     const isGhost=((rooms[currentRoomId]||{}).ghost||[]).includes(me.phone);
     showToast(isGhost?'حالت روح فعال شد 👻 (در لابی هستید ولی دیده نمی‌شوید)':'از حالت روح خارج شدید');
@@ -1715,7 +1602,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     $('editWarn').style.display=(isCreator||isStaffUser)?'none':'block';
     $('editStaff').style.display=(isCreator||isStaffUser)?'block':'none';
-    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید ( سکه)';
+    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید (۰ سکه)';
     $('editModal').classList.add('active');
   }
   async function saveEdit(){
@@ -1913,13 +1800,10 @@
     const targetUser=allUsers[phone];
     const targetLevel=RANK_LEVEL[(targetUser&&targetUser.rank)||'کاربر']||0;
     const isCreator=me.phone===CREATOR_PHONE;
-
     if(!isCreator&&targetLevel>=myLevel){ showToast('نمی‌توانید هم‌مقام یا بالاتر را ویرایش کنید','error'); return; }
-
     const u=await getUser(phone);if(!u)return;
     const ban=await getBan(phone);
     const canEditAll=isCreator||myLevel>=RANK_LEVEL['گرداننده'];
-
     let html='<label class="edit-label">نام:</label><input class="edit-input" id="auName" value="'+esc(u.name||'')+'">';
     if(canEditAll){
       html+='<label class="edit-label">سکه:</label><input class="edit-input" type="number" id="auCoins" value="'+(u.coins||0)+'">'+
@@ -1928,18 +1812,13 @@
       STAFF_RANKS.forEach(r=>{html+='<option value="'+r+'">'+r+'</option>';});
       html+='</select>';
     }
-    html+='<button class="green-btn" id="auSave" style="margin-top:14px">ذخیره</button>'+
-      (ban?'<button class="red-btn" id="auUnban">رفع بن</button>':'<button class="red-btn" id="auBan">بن کردن</button>');
+    html+='<button class="green-btn" id="auSave" style="margin-top:14px">ذخیره</button>'+(ban?'<button class="red-btn" id="auUnban">رفع بن</button>':'<button class="red-btn" id="auBan">بن کردن</button>');
     $('adminUserBody').innerHTML=html;
     if(canEditAll)$('auRank').value=u.rank||'کاربر';
     $('adminUserModal').classList.add('active');
     $('auSave').onclick=async()=>{
       u.name=$('auName').value.trim()||u.name;
-      if(canEditAll){
-        u.coins=parseInt($('auCoins').value)||0;
-        u.gems=parseInt($('auGems').value)||0;
-        u.rank=$('auRank').value;
-      }
+      if(canEditAll){ u.coins=parseInt($('auCoins').value)||0; u.gems=parseInt($('auGems').value)||0; u.rank=$('auRank').value; }
       await saveUser(phone,u);
       const au=await getAllUsers();au[phone]=u;await saveAllUsers(au);
       usersCache={ts:0,data:{}}; bansCache={ts:0,data:{}};
@@ -2045,10 +1924,7 @@
     $('chatBtn').onclick = openChat;
     $('closeChat').onclick = closeChat;
     $('sendChat').onclick = sendChatMessage;
-    $('chatInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendChatMessage();
-    });
-
+    $('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
     $('emojiBtn').onclick = () => showToast('این دکمه فعلاً غیرفعال است', 'error');
   });
 </script>
