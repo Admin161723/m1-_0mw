@@ -137,7 +137,6 @@
   .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:stretch;padding:10px 8px;direction:ltr;}
   .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;flex:1;}
   
-  /* ✅ دایره‌های بزرگتر */
   .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;min-height:110px;position:relative;}
   .seat-circle{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .seat-circle.filled{background:#173a5e;}
@@ -147,25 +146,24 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی دقیقاً روی لبه چپ دایره */
+  /* ✅ شماره صندلی دقیقاً مثل تصویر نمونه - گوشه پایین چپ دایره */
   .seat-num {
     position: absolute;
-    top: 50%;
-    left: -13px;
-    transform: translateY(-50%);
-    width: 26px;
-    height: 26px;
+    bottom: -8px;
+    left: -8px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #4aa3e0, #2a7fb8);
-    border: 2px solid #0d2135;
+    background: linear-gradient(180deg, #5bb8f0, #3a8fd8);
+    border: 2px solid #0a1628;
     color: white;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 900;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
   }
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
@@ -1008,7 +1006,7 @@
       const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
