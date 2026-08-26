@@ -129,7 +129,7 @@
   .room-body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:6px 4px 75px;}
   .supers-row{display:flex;justify-content:center;gap:30px;padding:8px 0;flex-shrink:0;}
   .super-slot{display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer;}
-  .super-circle{width:72px;height:72px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .super-circle{width:80px;height:80px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .super-circle.filled{border-style:solid;background:#173a5e;}
   .super-circle img,.super-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
   .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;}
@@ -137,9 +137,9 @@
   .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:stretch;padding:10px 8px;direction:ltr;}
   .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;flex:1;}
   
-  /* ✅ صندلی با فضای کافی */
+  /* ✅ دایره‌های بزرگتر */
   .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;min-height:110px;position:relative;}
-  .seat-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .seat-circle{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .seat-circle.filled{background:#173a5e;}
   .seat-circle img,.seat-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
   .seat-circle.glow-red{border:3px solid #f44336;box-shadow:0 0 10px rgba(244,67,54,.6);}
@@ -147,13 +147,13 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی بالا سمت چپ دایره */
+  /* ✅ شماره صندلی گوشه بالا سمت راست دایره */
   .seat-num {
     position: absolute;
-    top: -8px;
-    left: -8px;
-    width: 24px;
-    height: 24px;
+    top: -5px;
+    right: -5px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: linear-gradient(180deg, #4aa3e0, #2a7fb8);
     border: 2px solid #0d2135;
@@ -178,7 +178,6 @@
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
-  /* ✅ نشانگر صحبت کردن بالا سمت چپ */
   .voice-indicator {
     position: absolute;
     width: 34px;
@@ -338,7 +337,7 @@
 
   <div class="view" id="viewRoom">
     <div class="room-topbar">
-      <button class="back-btn" id="backRoomBtn">❯</button>
+      <button class="back-btn" id="backRoomBtn"></button>
       <div class="home-btn" id="homeRoomBtn"><div class="home-ico"></div></div>
       <div class="room-top-name" id="roomNameTop">-</div>
       <div class="tool-btn tool-ghost" id="btnGhost"><div class="ghost-ico"></div></div>
@@ -474,7 +473,6 @@
   </div>
 </div>
 
-<!-- ✅ صدای دکمه‌ها -->
 <audio id="clickSound" preload="auto">
   <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
@@ -515,7 +513,6 @@
   const REACTION_COOLDOWN = 5000;
   let chatMessages = [];
 
-  // ✅ تابع پخش صدای کلیک
   function playClick() {
     try {
       const audio = document.getElementById('clickSound');
@@ -628,13 +625,13 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:'۱ ساعت',ms:3600000},
-    {v:'1d',l:'۱ روز',ms:86400000},
+    {v:'1h',l:' ساعت',ms:3600000},
+    {v:'1d',l:' روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
-    {v:'8m',l:'۸ ماه',ms:20736000000},
+    {v:'8m',l:' ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -1216,7 +1213,6 @@
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
-      // ✅ شماره صندلی بالا سمت چپ دایره
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
@@ -1510,12 +1506,12 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
 
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱/۱۰)</button>';
     } else {
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
 
-    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot">🤖 افزودن بات</button>';
+    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot"> افزودن بات</button>';
     const blocked=room.blocked||[];
     if(blocked.length){
       html+='<div class="row-item" style="margin-top:10px"><b style="color:#ffd700">مسدودها:</b>';
