@@ -145,7 +145,7 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی بیرون از دایره */
+  /* ✅ شماره صندلی به انگلیسی (1, 2, 3... 10) */
   .seat-num{
     position: absolute;
     bottom: -28px;
@@ -202,19 +202,19 @@
     50% { transform: scale(1.2); }
   }
 
-  /* ✅ انیمیشن لایک/دیس‌لایک داخل دایره */
+  /* ✅ انیمیشن لایک/دیس‌لایک - مدت زمان بیشتر (5 ثانیه) */
   .reaction-overlay {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 70px; height: 70px; border-radius: 50%; display: none;
     align-items: center; justify-content: center; z-index: 50; pointer-events: none;
   }
-  .reaction-overlay.show { display: flex; animation: reactionFade 3s ease-out forwards; }
+  .reaction-overlay.show { display: flex; animation: reactionFade 5s ease-out forwards; }
   .reaction-overlay img, .reaction-overlay video { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7)); }
   @keyframes reactionFade {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    10% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-    20% { transform: translate(-50%, -50%) scale(1); }
-    85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    5% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    10% { transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
   }
 
@@ -404,7 +404,7 @@
     <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
     <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
-    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه:  سکه</div>
+    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
@@ -483,13 +483,10 @@
   document.addEventListener('cut',e=>{if(e.target.tagName!=='INPUT')e.preventDefault();});
   document.addEventListener('dragstart',e=>e.preventDefault());
 
-  // ============================================================
-  // 🌐 دو دیتابیس: Upstash (دائم) + JSONBin (زنده/موقت)
-  // ============================================================
   const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
   const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
   const JSONBIN_KEY = "$2a$10$G8pgSWnFz4w/.voj3lfBPuJL7luRXAXiR/fIufC3YIB4.qRkZSjSS";
-  const JSONBIN_ID = "6a53f4c8f5f4af5e298541fe"; // مخصوص sync زنده
+  const JSONBIN_ID = "6a53f4c8f5f4af5e298541fe";
 
   const CREATOR_PHONE='09904844031';
   const MAX_NAMES=4, MAX_ROOMS_PER_USER=4, MAX_PLAYERS=10, NAME_COST=50;
@@ -507,15 +504,13 @@
   let lastLikeTime = 0;
   let likeTimeoutId = null;
   let dislikeTimeoutId = null;
-  const REACTION_COOLDOWN = 3000;
+  const REACTION_COOLDOWN = 5000;
   let chatMessages = [];
 
-  // Upstash - برای داده‌های دائمی
   async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result);}catch(e){return d.result;}}return null;}catch(e){return null;}}
   async function upstashSet(k, v){try{const jsonValue=JSON.stringify(v);const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(jsonValue),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
   async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
 
-  // JSONBin - برای sync زنده (لایک، دیس‌لایک، صحبت کردن)
   async function jsonbinGetLive(){
     try{
       const c=new AbortController();
@@ -614,8 +609,8 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:'۱ ساعت',ms:3600000},
-    {v:'1d',l:'۱ روز',ms:86400000},
+    {v:'1h',l:' ساعت',ms:3600000},
+    {v:'1d',l:' روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
@@ -639,7 +634,7 @@
     }else{
       tabs.push({id:'names',label:' تأیید نام'});
       tabs.push({id:'users',label:'👥 کاربران'});
-      tabs.push({id:'lobbies',label:'🏛 لابی‌ها'});
+      tabs.push({id:'lobbies',label:' لابی‌ها'});
       tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
       tabs.push({id:'reports',label:'📝 گزارش‌ها'});
     }
@@ -684,13 +679,12 @@
     return html;
   }
 
-  // ✅ ساخت تگ media با حفظ currentTime برای ویدیوها
-  function buildMediaTag(avatarUrl, fallbackHtml, preserveTime=false) {
+  // ✅ ساخت تگ media با preload="auto" برای لود کامل ویدیو
+  function buildMediaTag(avatarUrl, fallbackHtml) {
     if (!avatarUrl) return fallbackHtml || '';
     const isVideo = avatarUrl.endsWith('.webm') || avatarUrl.endsWith('.mp4') || avatarUrl.endsWith('.mov');
     if (isVideo) {
-      const timeAttr = preserveTime ? ' data-preserve-time="1"' : '';
-      return `<video src="${esc(avatarUrl)}" autoplay loop muted playsinline webkit-playsinline${timeAttr} onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;>👤</span>'}'"></video>`;
+      return `<video src="${esc(avatarUrl)}" autoplay loop muted playsinline webkit-playsinline preload="auto" onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;>👤</span>'}'"></video>`;
     } else {
       return `<img src="${esc(avatarUrl)}" onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;></span>'}'">`;
     }
@@ -715,7 +709,7 @@
           v.currentTime = times[key];
         }
       });
-    }, 100);
+    }, 50);
   }
 
   async function initVoice() {
@@ -832,7 +826,7 @@
     updateMicUI();
   }
 
-  // ✅ لایک/دیس‌لایک در JSONBin ذخیره می‌شود (پایدار بین رفرش)
+  // ✅ لایک/دیس‌لایک با مدت زمان بیشتر (5 ثانیه)
   async function showReactionOnProfile(type) {
     const now = Date.now();
     const cooldown = type === 'dislike' ? lastDislikeTime : lastLikeTime;
@@ -885,14 +879,13 @@
 
     circleEl.appendChild(overlay);
 
-    // ✅ ذخیره در JSONBin برای sync بین کاربران
+    // ذخیره در JSONBin
     try {
       const liveData = await jsonbinGetLive();
       if (!liveData.reactions) liveData.reactions = {};
       const roomKey = 'room_' + currentRoomId;
       if (!liveData.reactions[roomKey]) liveData.reactions[roomKey] = {};
       liveData.reactions[roomKey][targetPhone] = { type: type, time: now };
-      // حذف reaction های قدیمی (بیشتر از 10 ثانیه)
       Object.keys(liveData.reactions[roomKey]).forEach(phone => {
         if (now - liveData.reactions[roomKey][phone].time > 10000) {
           delete liveData.reactions[roomKey][phone];
@@ -908,12 +901,12 @@
           if (overlay.parentNode) overlay.remove();
         }, 300);
       }
-    }, 3000);
+    }, 5000);
 
     return true;
   }
 
-  // ✅ Sync زنده از JSONBin (فقط لایک/دیس‌لایک/صحبت کردن)
+  // Sync زنده از JSONBin
   async function syncLiveState() {
     if (!currentRoomId || overlayShown) return;
     try {
@@ -923,10 +916,9 @@
       const reactions = liveData.reactions[roomKey] || {};
       const now = Date.now();
       
-      // نمایش reaction های فعال
       Object.keys(reactions).forEach(phone => {
         const r = reactions[phone];
-        if (now - r.time < 3000) {
+        if (now - r.time < 5000 && phone !== me.phone) {
           const circleEl = document.querySelector(`.seat-circle[data-phone="${phone}"]`) || document.querySelector(`.super-circle[data-phone="${phone}"]`);
           if (circleEl && !circleEl.querySelector('.reaction-overlay')) {
             const overlay = document.createElement('div');
@@ -941,7 +933,7 @@
                 overlay.classList.remove('show');
                 setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
               }
-            }, 3000);
+            }, 5000);
           }
         }
       });
@@ -1088,7 +1080,7 @@
 
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
@@ -1183,10 +1175,10 @@
     $('deletedOverlay').classList.remove('show');
     if(listTimer){clearInterval(listTimer);listTimer=null;}
     if(roomData)renderRoom(roomData,usersCache.data||{});
-    // ✅ رفرش فقط بعد از اکشن، نه با setInterval
-    if(!roomTimer)roomTimer=setInterval(refreshRoom,3000);
-    // ✅ Sync زنده از JSONBin هر 1.5 ثانیه
-    if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1500);
+    // ✅ رفرش فقط هر 10 ثانیه (برای جلوگیری از قطع ویدیو)
+    if(!roomTimer)roomTimer=setInterval(refreshRoom,10000);
+    // Sync زنده هر 2 ثانیه
+    if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,2000);
     initVoice();
   }
 
@@ -1220,7 +1212,7 @@
   async function renderRoom(room,allUsers){
     $('roomNameTop').textContent=room.name;
     const pendingBanner=$('pendingBanner');
-    if(room.status==='pending') pendingBanner.innerHTML='<div class="pending-banner">⏳ این لابی در انتظار تأیید مقام‌دارها است</div>';
+    if(room.status==='pending') pendingBanner.innerHTML='<div class="pending-banner"> این لابی در انتظار تأیید مقام‌دارها است</div>';
     else pendingBanner.innerHTML='';
 
     const isManager=room.managerPhone===me.phone;
@@ -1256,7 +1248,7 @@
       const tagLayer = u ? await buildTagLayer(ph,u,groupCache[ph]||null) : '';
       const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
       let inner='';
-      if(u) inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>', true);
+      if(u) inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
       const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
@@ -1282,7 +1274,7 @@
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>', true);
+        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
         tag='<div class="seat-name normal-tag">👻 روح (شما)</div>';
       }
       else if(ph && !ghostHidden){
@@ -1295,17 +1287,18 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>', true);
+        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
       }
       else if(bot){
         inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
+      // ✅ شماره صندلی به انگلیسی (1, 2, 3... 10)
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
-          <div class="seat-num">${toFa(i)}</div>
+          <div class="seat-num">${i}</div>
           <div class="voice-indicator"></div>
         </div>
         ${tagLayer}${tag}
@@ -1552,14 +1545,13 @@
     showToast('ناظر '+(n===1?'۱':'۲')+' شد');refreshRoom();
   }
 
-  // ✅ پروفایل با پشتیبانی کامل از آواتار ویدیویی + حفظ currentTime
   async function openProfile(t){
     const allUsers=await getUsersCached();const u=allUsers[t.phone]||{};
     const tk=getRoleTick(u.rank);
     const groupInfo=await findUserGroup(t.phone);
     const groupName=groupInfo?groupInfo.group.name:'بدون گروه';
     
-    const avatarHtml = buildMediaTag(u.avatar, '<span style="display:none"></span>', true);
+    const avatarHtml = buildMediaTag(u.avatar, '<span style="display:none"></span>');
     
     $('profileBody').innerHTML='<div class="pf-avatar">'+avatarHtml+'</div>'+
       '<div class="pf-name">'+esc(u.name||'کاربر')+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>'+
@@ -1609,9 +1601,9 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
 
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۰)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
     } else {
-      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
+      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۰) - همه باید آماده باشند</button>';
     }
 
     if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot">🤖 افزودن بات</button>';
@@ -1723,7 +1715,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     $('editWarn').style.display=(isCreator||isStaffUser)?'none':'block';
     $('editStaff').style.display=(isCreator||isStaffUser)?'block':'none';
-    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید (۰ سکه)';
+    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید ( سکه)';
     $('editModal').classList.add('active');
   }
   async function saveEdit(){
