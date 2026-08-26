@@ -146,26 +146,7 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی - دقیقاً روی گوشه پایین چپ دایره */
-  .seat-num {
-    position: absolute;
-    bottom: -13px;
-    left: -13px;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #4aa3e0, #2a7fb8);
-    border: 2px solid #0a1628;
-    color: white;
-    font-size: 12px;
-    font-weight: 900;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    line-height: 1;
-  }
+  /* شماره صندلی‌ها حذف شدند */
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
@@ -1213,12 +1194,12 @@
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
+      // شماره صندلی حذف شد
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
           <div class="voice-indicator"></div>
         </div>
-        <div class="seat-num">${i}</div>
         ${tagLayer}${tag}
       </div>`;
     }
