@@ -146,11 +146,11 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی دقیقاً مثل تصویر - گوشه پایین چپ */
+  /* ✅ شماره صندلی - گوشه پایین چپ بیرون از دایره */
   .seat-num {
     position: absolute;
-    bottom: 2px;
-    left: 2px;
+    bottom: 0px;
+    left: 0px;
     width: 26px;
     height: 26px;
     border-radius: 50%;
@@ -1208,7 +1208,7 @@
         inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
       }
       else if(bot){
-        inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
+        inner='<span class="bot-face"></span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
