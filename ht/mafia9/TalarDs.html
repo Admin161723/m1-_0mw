@@ -137,7 +137,7 @@
   .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:stretch;padding:10px 8px;direction:ltr;}
   .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;flex:1;}
   
-  /* ✅ استایل صندلی با فضای کافی برای شماره بیرون دایره */
+  /* ✅ ساختار صندلی دقیقاً مثل کد قبلی */
   .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;min-height:110px;position:relative;}
   .seat-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .seat-circle.filled{background:#173a5e;}
@@ -147,10 +147,10 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی دقیقاً بیرون از دایره و با اعداد انگلیسی */
+  /* ✅ شماره صندلی دقیقاً پایین دایره (اعداد انگلیسی 1-10) */
   .seat-num {
     position: absolute;
-    bottom: -32px;
+    bottom: -30px;
     left: 50%;
     transform: translateX(-50%);
     width: 26px;
@@ -179,9 +179,17 @@
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
 
+  /* ✅ نشانگر صحبت کردن در بالا سمت چپ دایره */
   .voice-indicator {
-    position: absolute; width: 34px; height: 34px; top: -18px; right: -18px;
-    display: none; align-items: center; justify-content: center; z-index: 30;
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    top: -18px;
+    left: -18px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
   }
   .voice-indicator.speaking { display: flex !important; }
   .voice-indicator::before {
@@ -392,7 +400,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن +  ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -612,8 +620,8 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:' ساعت',ms:3600000},
-    {v:'1d',l:' روز',ms:86400000},
+    {v:'1h',l:'۱ ساعت',ms:3600000},
+    {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
@@ -631,9 +639,9 @@
   function getPanelTabs(rank){
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
-      tabs.push({id:'users',label:'👥 کاربران'});
+      tabs.push({id:'users',label:' کاربران'});
       tabs.push({id:'reports',label:' گزارش‌ها'});
-      tabs.push({id:'lobby_approvals',label:'🏛 تأیید لابی'});
+      tabs.push({id:'lobby_approvals',label:' تأیید لابی'});
     }else{
       tabs.push({id:'names',label:' تأیید نام'});
       tabs.push({id:'users',label:'👥 کاربران'});
@@ -1186,7 +1194,7 @@
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
         inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
-        tag='<div class="seat-name normal-tag">👻 روح (شما)</div>';
+        tag='<div class="seat-name normal-tag"> روح (شما)</div>';
       }
       else if(ph && !ghostHidden){
         dp=' data-phone="'+ph+'"';
@@ -1198,14 +1206,14 @@
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
         tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
+        inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
       }
       else if(bot){
         inner='<span class="bot-face">🤖</span>';cls+=' filled glow-green';
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
-      // ✅ شماره صندلی دقیقاً به انگلیسی (1, 2, 3... 10) و بیرون از دایره
+      // ✅ شماره صندلی دقیقاً پایین دایره با اعداد انگلیسی 1-10
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
@@ -1330,7 +1338,7 @@
       if(room.status === 'pending'){showToast('لابی هنوز تأیید نشده','error');return;}
       const humans=Object.values(room.seats||{}).filter(Boolean);
       const bots=Object.keys(room.bots||{}).length;
-      if(humans.length+bots<MAX_PLAYERS){showToast('لابی باید ۱۰ نفر کامل باشد','error');return;}
+      if(humans.length+bots<MAX_PLAYERS){showToast('لابی باید ۰ نفر کامل باشد','error');return;}
       for(const p of humans){if(p!==room.managerPhone&&!((room.ready||{})[p]===true)){showToast('همه باید آماده باشند','error');return;}}
       room.status='playing';
     });
@@ -1391,7 +1399,7 @@
 
     const canBan=myLevel>=RANK_LEVEL['ناظر']&&!t.bot&&t.phone!==me.phone&&targetLevel<myLevel;
     if(canBan){
-      html+='<button class="menu-item-b mi-red" id="umBan">🚫 بن کردن</button>';
+      html+='<button class="menu-item-b mi-red" id="umBan"> بن کردن</button>';
       const ban=await getBan(t.phone);
       if(ban)html+='<button class="menu-item-b mi-green" id="umUnban">✅ رفع بن</button>';
     }
@@ -1401,7 +1409,7 @@
         html+='<button class="menu-item-b mi-red" id="umKick">اخراج از لابی</button>';
         html+=((room.blocked||[]).includes(t.phone))?'<button class="menu-item-b mi-green" id="umUnblock">رفع مسدودی</button>':'<button class="menu-item-b mi-red" id="umBlock">مسدود کردن</button>';
       }else{
-        html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">⚠️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
+        html+='<div style="text-align:center; color:#ffd700; font-size:11px; margin-top:8px;">️ مقام‌دارها قابل اخراج/مسدود نیستند</div>';
       }
       if(isManager&&!targetStaff)html+='<button class="menu-item-b mi-purple" id="umTransfer">انتقال مالکیت</button>';
       html+='<button class="menu-item-b mi-blue" id="umSuper1">دادن ناظر ۱</button>';
@@ -1873,7 +1881,7 @@
       if(me.phone!==CREATOR_PHONE){const m=await getMaintenance();if(m&&m.on){showToast('سرور قطع است','error');return;}}
       const rooms=await getRooms();
       if(myRoom(rooms)){showToast('داخل یک لابی هستید','error');return;}
-      if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){showToast('حداکثر ۴ لابی برای هر اکانت','error');return;}
+      if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){showToast('حداکثر  لابی برای هر اکانت','error');return;}
       selectedName='';$('lobbyNameInput').value='';
       passOn=false;$('passSwitch').classList.remove('on');$('passRow').classList.remove('show');$('lobbyPassInput').value='';
       $('createModal').classList.add('active');
