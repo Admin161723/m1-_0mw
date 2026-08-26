@@ -147,11 +147,12 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی گوشه بالا سمت راست دایره */
+  /* ✅ شماره صندلی دقیقاً روی لبه چپ دایره */
   .seat-num {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: 50%;
+    left: -13px;
+    transform: translateY(-50%);
     width: 26px;
     height: 26px;
     border-radius: 50%;
@@ -407,7 +408,7 @@
   <div class="overlay" id="editModal"><div class="modal">
     <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
-    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
+    <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵ سکه</div>
     <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
@@ -420,7 +421,7 @@
   </div></div>
 
   <div class="overlay" id="profileModal"><div class="modal">
-    <div class="close-x" id="closeProfile">✕</div>
+    <div class="close-x" id="closeProfile"></div>
     <div class="modal-title-y">پروفایل</div>
     <div id="profileBody"></div>
   </div></div>
@@ -1597,7 +1598,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     $('editWarn').style.display=(isCreator||isStaffUser)?'none':'block';
     $('editStaff').style.display=(isCreator||isStaffUser)?'block':'none';
-    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵ سکه)':'ذخیره و ارسال برای تأیید (۰ سکه)';
+    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵ سکه)':'ذخیره و ارسال برای تأیید ( سکه)';
     $('editModal').classList.add('active');
   }
   async function saveEdit(){
