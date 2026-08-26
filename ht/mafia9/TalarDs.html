@@ -146,24 +146,24 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* ✅ شماره صندلی دقیقاً مثل تصویر نمونه - گوشه پایین چپ دایره */
+  /* ✅ شماره صندلی دقیقاً مثل تصویر - گوشه پایین چپ */
   .seat-num {
     position: absolute;
-    bottom: -8px;
-    left: -8px;
-    width: 28px;
-    height: 28px;
+    bottom: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #5bb8f0, #3a8fd8);
+    background: linear-gradient(180deg, #4aa3e0, #2a7fb8);
     border: 2px solid #0a1628;
     color: white;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 900;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
@@ -407,7 +407,7 @@
     <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
     <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵ سکه</div>
-    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
+    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه:  سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
@@ -437,7 +437,7 @@
   </div></div>
 
   <div class="overlay" id="managerModal"><div class="modal">
-    <div class="close-x" id="closeManager">✕</div>
+    <div class="close-x" id="closeManager"></div>
     <div class="modal-title-y">مدیریت لابی</div>
     <div id="managerBody"></div>
   </div></div>
@@ -628,7 +628,7 @@
     {v:'1d',l:' روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
-    {v:'1m',l:'۱ ماه',ms:2592000000},
+    {v:'1m',l:' ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
     {v:'8m',l:' ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
