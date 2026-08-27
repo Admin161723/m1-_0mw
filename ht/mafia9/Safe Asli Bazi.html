@@ -630,7 +630,7 @@ async function redisGet(key) {
   let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
   if (v !== null) return v;
   v = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
-  return v; // اگر null باشه هم برگردونه
+  return v;
 }
 async function redisSet(key, value) {
   const p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
@@ -646,7 +646,6 @@ async function redisDel(key) {
 }
 
 const CREATOR_PHONE='09904844031';
-const CREATOR_AVATAR='655.webm';
 
 async function getUser(p){return await redisGet('user:'+p);}
 async function saveUser(p,u){return await redisSet('user:'+p,u);}
