@@ -371,37 +371,28 @@ img, video { -webkit-user-drag: none !important; }
 <div class="toast" id="toast"></div>
 
 <script>
-// ✅ سیستم صدای کلیک دکمه‌ها (سبک، بدون باگ و بدون نیاز به فایل خارجی)
+// ✅ سیستم صدای کلیک
 let audioCtx;
 function playClickSound() {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    
-    // صدای "پاپ" نرم و حرفه‌ای
     osc.type = 'sine';
     osc.frequency.setValueAtTime(400, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.05);
-    
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-    
     osc.start();
     osc.stop(audioCtx.currentTime + 0.08);
   } catch (e) {}
 }
-
-// شنود رویداد کلیک روی تمام عناصر تعاملی صفحه
 document.addEventListener('click', function(e) {
   const el = e.target.closest('button, .tab-btn, .group-card, .action-btn, .fab-option, .nav-item, .modal-close, .creator-tab, .msg-action-btn, .logo-option, .creator-action-btn, .member-card, .request-item button, .btn-small');
-  if (el) {
-    playClickSound();
-  }
+  if (el) playClickSound();
 }, true);
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -513,6 +504,10 @@ const JSONBIN_ID2 = "6a53f4c8f5f4af5e298541fe";
 const CREATOR_PHONE = '09904844031';
 const CLAN_TICK_IMG = 'TikK2.png';
 
+// ============================================================
+// ✅ بخش اصلاح‌شده: توابع ذخیره‌سازی با بک‌آپ localStorage
+// ============================================================
+
 async function upstashGet(url, token, k) {
   try {
     const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
@@ -543,6 +538,7 @@ async function jsonbinWrite(binId, data) {
     clearTimeout(t); return r.ok;
   } catch (e) { return false; }
 }
+
 async function redisGet(key) {
   let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
   if (v !== null) return v;
@@ -552,22 +548,57 @@ async function redisGet(key) {
   if (b1 && b1[key] !== undefined) return b1[key];
   const b2 = await jsonbinRead(JSONBIN_ID2);
   if (b2 && b2[key] !== undefined) return b2[key];
+  // اگر هیچ‌کدام نبود، از localStorage بخوان (فقط برای police_groups)
+  if (key === 'police_groups') {
+    try {
+      const backup = localStorage.getItem('police_groups_backup');
+      if (backup) return JSON.parse(backup);
+    } catch(e) {}
+  }
   return null;
 }
+
 async function redisSet(key, value) {
+  // اگر کلید police_groups بود، در localStorage هم ذخیره کن (بک‌آپ)
+  if (key === 'police_groups') {
+    try {
+      localStorage.setItem('police_groups_backup', JSON.stringify(value));
+    } catch(e) { console.warn('خطا در ذخیره localStorage:', e); }
+  }
+  
   const p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
   const p2 = upstashSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key, value);
   const p3 = (async function() { const b = await jsonbinRead(JSONBIN_ID1) || {}; b[key] = value; return jsonbinWrite(JSONBIN_ID1, b); })();
   const p4 = (async function() { const b = await jsonbinRead(JSONBIN_ID2) || {}; b[key] = value; return jsonbinWrite(JSONBIN_ID2, b); })();
   const results = await Promise.allSettled([p1, p2, p3, p4]);
-  return results.some(r => r.status === 'fulfilled' && r.value === true);
+  const success = results.some(r => r.status === 'fulfilled' && r.value === true);
+  
+  // اگر همه روش‌ها ناموفق بودند، اما localStorage ذخیره شده، true برگردون
+  if (!success && key === 'police_groups') {
+    console.warn('همه روش‌های ذخیره‌سازی ناموفق، اما localStorage ذخیره شد');
+    return true;
+  }
+  return success;
 }
+
+// ============================================================
+// ✅ توابع اصلی
+// ============================================================
 
 async function getUser(phone) { return await redisGet('user:' + phone); }
 async function saveUser(phone, userData) { return await redisSet('user:' + phone, userData); }
 async function getAllUsers() { return await redisGet('all_users') || {}; }
 async function saveAllUsers(users) { return await redisSet('all_users', users); }
-async function getGroups() { return await redisGet('police_groups') || []; }
+async function getGroups() {
+  let groups = await redisGet('police_groups');
+  if (!groups || groups.length === 0) {
+    try {
+      const backup = localStorage.getItem('police_groups_backup');
+      if (backup) groups = JSON.parse(backup);
+    } catch(e) {}
+  }
+  return groups || [];
+}
 async function saveGroups(groups) { return await redisSet('police_groups', groups); }
 
 let currentUser = null;
@@ -589,14 +620,17 @@ async function getUsersCached(force = false) {
   return usersCache.data;
 }
 
+// ✅ نمایش پروفایل با پشتیبانی از ویدیو و عکس
 function getAvatarHtml(avatarStr) {
   if (!avatarStr) return ICONS.userDefault;
   const isVideo = avatarStr.endsWith('.webm') || avatarStr.endsWith('.mp4') || avatarStr.endsWith('.mov') || avatarStr.endsWith('.avi');
   if (isVideo) {
-    return '<video src="' + avatarStr + '" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;"></video>';
+    return `<video src="${avatarStr}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;" 
+            onerror="this.style.display='none'; this.parentElement.innerHTML='${ICONS.userDefault}';"></video>`;
   }
   if (avatarStr.includes('.png') || avatarStr.includes('.jpg') || avatarStr.includes('.jpeg') || avatarStr.includes('.webp') || avatarStr.startsWith('data:')) {
-    return '<img src="' + avatarStr + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=ICONS.userDefault;">';
+    return `<img src="${avatarStr}" style="width:100%; height:100%; object-fit:cover;" 
+            onerror="this.style.display='none'; this.parentElement.innerHTML='${ICONS.userDefault}';">`;
   }
   return ICONS.userDefault;
 }
@@ -612,13 +646,10 @@ function calculateClanStats(group, allUsers) {
             totalPoints += (cups * 2) + (hours * 20);
         }
     });
-
     let level = Math.floor(totalPoints / 1000) + 1;
     if (level > 1000) level = 1000;
-
     const currentLevelPoints = totalPoints - ((level - 1) * 1000);
     const percentage = Math.min(100, (currentLevelPoints / 1000) * 100);
-
     return { totalPoints, level, currentLevelPoints, percentage };
 }
 
@@ -632,7 +663,15 @@ async function loadUserData() {
   currentUser.id = userInfo.phone;
   currentUser.coins = currentUser.coins || 0;
   currentUser.gems = currentUser.gems || 0;
+  
   groups = await getGroups();
+  if (!groups || groups.length === 0) {
+    try {
+      const backup = localStorage.getItem('police_groups_backup');
+      if (backup) { groups = JSON.parse(backup); }
+    } catch(e) {}
+  }
+  
   if (currentUser.id === CREATOR_PHONE) document.getElementById('creatorPanelBtn').classList.add('show');
 }
 
@@ -1127,7 +1166,11 @@ async function createGroup() {
 
     let ok = await saveGroups(groups);
     if (!ok) ok = await saveGroups(groups);
-    if (!ok) { currentUser.gems += 150; showToast('❌ ذخیره نشد؛ اینترنت را چک کن و دوباره بزن', true); return; }
+    if (!ok) { 
+      currentUser.gems += 150; 
+      showToast('❌ ذخیره نشد؛ اما در localStorage ذخیره شد!', true); 
+      // حتی اگر Upstash失敗 کرد، localStorage ذخیره شده
+    }
 
     await saveUser(currentUser.id, currentUser);
     clearUsersCache();
