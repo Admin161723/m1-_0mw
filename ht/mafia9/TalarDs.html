@@ -372,7 +372,7 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 
 <script>
 // ============================================================
-// 🔥 فقط از Upstash استفاده می‌شود (JSONBin کاملاً حذف شد)
+// 🔥 فقط از Upstash استفاده می‌شود (JSONBin حذف شد)
 // ============================================================
 const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -1194,7 +1194,6 @@ function renderRoom(room,allUsers){
       cls+=' filled glow-green';
       tag='<div class="seat-name bot-tag">بات</div>';
     }
-    // ✅ داخل دایره فقط آواتار - هیچ شکلک اضافی نیست
     return `<div class="seat" data-seat="${i}"><div class="${cls}" ${dp}>${inner}<div class="voice-indicator"></div></div>${tag}</div>`;
   }
   const leftSeats=await Promise.all([1,3,5,7,9].map(buildSeat));
