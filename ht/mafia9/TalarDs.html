@@ -146,8 +146,6 @@
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   .bot-face{font-size:28px;}
 
-  /* شماره صندلی‌ها حذف شدند */
-
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
   .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
@@ -509,7 +507,7 @@
   async function upstashSet(k, v){try{const jsonValue=JSON.stringify(v);const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(jsonValue),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
   async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
 
-  async function jsonbinGetLive(){
+  async function jsonbinGetLive(roomId){
     try{
       const c=new AbortController();
       const t=setTimeout(()=>c.abort(),3000);
@@ -517,16 +515,23 @@
       clearTimeout(t);
       if(!r.ok)return {};
       const d=await r.json();
-      return d.record||{};
+      const record=d.record||{};
+      return record[roomId] || {};
     }catch(e){return {};}
   }
-  async function jsonbinSetLive(data){
+  async function jsonbinSetLive(roomId, data){
     try{
       const c=new AbortController();
       const t=setTimeout(()=>c.abort(),3000);
-      const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},body:JSON.stringify(data),signal:c.signal});
+      const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{headers:{'X-Master-Key':JSONBIN_KEY},signal:c.signal});
       clearTimeout(t);
-      return r.ok;
+      if(!r.ok)return false;
+      const d=await r.json();
+      const record=d.record||{};
+      record[roomId] = data;
+      const r2=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},body:JSON.stringify(record),signal:c.signal});
+      clearTimeout(t);
+      return r2.ok;
     }catch(e){return false;}
   }
 
@@ -793,88 +798,123 @@
     if (now - cooldown < REACTION_COOLDOWN) { return false; }
 
     const targetPhone = me.phone;
-    const circleEl = document.querySelector(`.seat-circle[data-phone="${targetPhone}"]`) || document.querySelector(`.super-circle[data-phone="${targetPhone}"]`);
-    if (!circleEl) { return false; }
-
-    const existing = circleEl.querySelector('.reaction-overlay');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.className = 'reaction-overlay show';
+    const liveData = await jsonbinGetLive(currentRoomId);
+    if (!liveData.reactions) liveData.reactions = {};
+    liveData.reactions[targetPhone] = { type: type, time: now };
+    Object.keys(liveData.reactions).forEach(phone => {
+      if (now - liveData.reactions[phone].time > 10000) delete liveData.reactions[phone];
+    });
+    await jsonbinSetLive(currentRoomId, liveData);
 
     if (type === 'dislike') {
-      const img = document.createElement('img');
-      img.src = 'like3.gif';
-      img.onerror = function() { this.style.display = 'none'; };
-      overlay.appendChild(img);
       lastDislikeTime = now;
       $('dislikeBtn').classList.add('disabled');
       if (dislikeTimeoutId) clearTimeout(dislikeTimeoutId);
       dislikeTimeoutId = setTimeout(() => { $('dislikeBtn').classList.remove('disabled'); dislikeTimeoutId = null; }, REACTION_COOLDOWN);
     } else {
-      const img = document.createElement('img');
-      img.src = 'like1.gif';
-      img.onerror = function() { this.style.display = 'none'; };
-      overlay.appendChild(img);
       lastLikeTime = now;
       $('likeBtn').classList.add('disabled');
       if (likeTimeoutId) clearTimeout(likeTimeoutId);
       likeTimeoutId = setTimeout(() => { $('likeBtn').classList.remove('disabled'); likeTimeoutId = null; }, REACTION_COOLDOWN);
     }
-
-    circleEl.appendChild(overlay);
-
-    try {
-      const liveData = await jsonbinGetLive();
-      if (!liveData.reactions) liveData.reactions = {};
-      const roomKey = 'room_' + currentRoomId;
-      if (!liveData.reactions[roomKey]) liveData.reactions[roomKey] = {};
-      liveData.reactions[roomKey][targetPhone] = { type: type, time: now };
-      Object.keys(liveData.reactions[roomKey]).forEach(phone => {
-        if (now - liveData.reactions[roomKey][phone].time > 10000) delete liveData.reactions[roomKey][phone];
-      });
-      await jsonbinSetLive(liveData);
-    } catch(e) {}
-
-    setTimeout(() => {
-      if (overlay && overlay.parentNode) {
-        overlay.classList.remove('show');
-        setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
-      }
-    }, 5000);
+    const circleEl = document.querySelector(`.seat-circle[data-phone="${targetPhone}"]`) || document.querySelector(`.super-circle[data-phone="${targetPhone}"]`);
+    if (circleEl) {
+      const existing = circleEl.querySelector('.reaction-overlay');
+      if (existing) existing.remove();
+      const overlay = document.createElement('div');
+      overlay.className = 'reaction-overlay show';
+      const img = document.createElement('img');
+      img.src = type === 'dislike' ? 'like3.gif' : 'like1.gif';
+      img.onerror = function() { this.style.display = 'none'; };
+      overlay.appendChild(img);
+      circleEl.appendChild(overlay);
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+          overlay.classList.remove('show');
+          setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
+        }
+      }, 5000);
+    }
     return true;
   }
 
   async function syncLiveState() {
     if (!currentRoomId || overlayShown) return;
     try {
-      const liveData = await jsonbinGetLive();
-      if (!liveData.reactions) return;
-      const roomKey = 'room_' + currentRoomId;
-      const reactions = liveData.reactions[roomKey] || {};
-      const now = Date.now();
-      Object.keys(reactions).forEach(phone => {
-        const r = reactions[phone];
-        if (now - r.time < 5000 && phone !== me.phone) {
-          const circleEl = document.querySelector(`.seat-circle[data-phone="${phone}"]`) || document.querySelector(`.super-circle[data-phone="${phone}"]`);
-          if (circleEl && !circleEl.querySelector('.reaction-overlay')) {
-            const overlay = document.createElement('div');
-            overlay.className = 'reaction-overlay show';
-            const img = document.createElement('img');
-            img.src = r.type === 'dislike' ? 'like3.gif' : 'like1.gif';
-            img.onerror = function() { this.style.display = 'none'; };
-            overlay.appendChild(img);
-            circleEl.appendChild(overlay);
-            setTimeout(() => {
-              if (overlay && overlay.parentNode) {
-                overlay.classList.remove('show');
-                setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
-              }
-            }, 5000);
+      const liveData = await jsonbinGetLive(currentRoomId);
+      if (!liveData) return;
+
+      // update reactions
+      if (liveData.reactions) {
+        const now = Date.now();
+        const circles = document.querySelectorAll('.seat-circle[data-phone], .super-circle[data-phone]');
+        circles.forEach(el => {
+          const phone = el.getAttribute('data-phone');
+          if (!phone) return;
+          const reaction = liveData.reactions[phone];
+          if (reaction && now - reaction.time < 5000) {
+            if (!el.querySelector('.reaction-overlay')) {
+              const overlay = document.createElement('div');
+              overlay.className = 'reaction-overlay show';
+              const img = document.createElement('img');
+              img.src = reaction.type === 'dislike' ? 'like3.gif' : 'like1.gif';
+              img.onerror = function() { this.style.display = 'none'; };
+              overlay.appendChild(img);
+              el.appendChild(overlay);
+              setTimeout(() => {
+                if (overlay && overlay.parentNode) {
+                  overlay.classList.remove('show');
+                  setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 300);
+                }
+              }, 5000);
+            }
+          } else {
+            const existing = el.querySelector('.reaction-overlay');
+            if (existing) existing.remove();
+          }
+        });
+      }
+
+      // update chat
+      if (liveData.chat) {
+        const newMessages = liveData.chat.filter(msg => !chatMessages.some(m => m.time === msg.time && m.phone === msg.phone && m.text === msg.text));
+        if (newMessages.length > 0) {
+          chatMessages.push(...newMessages);
+          if (chatMessages.length > 50) chatMessages.splice(0, chatMessages.length - 50);
+          if ($('chatMenu').classList.contains('show')) {
+            renderChatMessages();
+          }
+          const last = newMessages[newMessages.length - 1];
+          if (last.phone !== me.phone) {
+            showChatNotification(last);
           }
         }
-      });
-    } catch(e) {}
+      }
+
+      // update room state if changed
+      if (liveData.seats || liveData.supers || liveData.ready || liveData.ghost) {
+        if (!window._lastLiveData) window._lastLiveData = {};
+        const last = window._lastLiveData;
+        const changed = (liveData.seats && JSON.stringify(liveData.seats) !== JSON.stringify(last.seats)) ||
+                        (liveData.supers && JSON.stringify(liveData.supers) !== JSON.stringify(last.supers)) ||
+                        (liveData.ready && JSON.stringify(liveData.ready) !== JSON.stringify(last.ready)) ||
+                        (liveData.ghost && JSON.stringify(liveData.ghost) !== JSON.stringify(last.ghost));
+        if (changed) {
+          window._lastLiveData = liveData;
+          const rooms = await getRooms();
+          const room = rooms[currentRoomId];
+          if (room) {
+            if (liveData.seats) room.seats = liveData.seats;
+            if (liveData.supers) room.supers = liveData.supers;
+            if (liveData.ready) room.ready = liveData.ready;
+            if (liveData.ghost) room.ghost = liveData.ghost;
+            const users = await getUsersCached(false);
+            renderRoom(room, users);
+          }
+        }
+        window._lastLiveData = liveData;
+      }
+    } catch(e) { console.error("syncLiveState error:", e); }
   }
 
   function openChat() { $('chatMenu').classList.add('show'); renderChatMessages(); }
@@ -900,10 +940,18 @@
     const input = $('chatInput');
     const text = input.value.trim();
     if (!text) { return; }
-    chatMessages.push({ phone: me.phone, name: me.name, text: text, time: Date.now() });
+    const msg = { phone: me.phone, name: me.name, text: text, time: Date.now() };
+    chatMessages.push(msg);
+    (async () => {
+      const liveData = await jsonbinGetLive(currentRoomId);
+      if (!liveData.chat) liveData.chat = [];
+      liveData.chat.push(msg);
+      if (liveData.chat.length > 50) liveData.chat.splice(0, liveData.chat.length - 50);
+      await jsonbinSetLive(currentRoomId, liveData);
+    })();
     input.value = '';
     renderChatMessages();
-    showChatNotification(chatMessages[chatMessages.length-1]);
+    showChatNotification(msg);
   }
 
   function showChatNotification(msg) {
@@ -1040,6 +1088,11 @@
     }
     if(room.kicked&&room.kicked[me.phone])delete room.kicked[me.phone];
     await saveRooms(rooms);
+    // update live
+    const liveData = await jsonbinGetLive(id);
+    if (!liveData.seats) liveData.seats = {};
+    liveData.seats[seat] = me.phone;
+    await jsonbinSetLive(id, liveData);
     openRoom(id,room);
   }
 
@@ -1064,9 +1117,11 @@
       approvalRequired: !(isStaffUser || isNameApproved), createdAt:Date.now()
     };
     await saveRooms(rooms);
+    // init live data
+    const liveData = { seats:{1:me.phone}, supers:{}, ready:{}, ghost:[], reactions:{}, chat:[] };
+    await jsonbinSetLive(id, liveData);
     $('createModal').classList.remove('active');
-    if(isStaffUser || isNameApproved){ openRoom(id,rooms[id]); } 
-    else { openRoom(id,rooms[id]); }
+    openRoom(id,rooms[id]);
   }
 
   function openRoom(id,roomData){
@@ -1079,7 +1134,7 @@
     if(listTimer){clearInterval(listTimer);listTimer=null;}
     if(roomData)renderRoom(roomData,usersCache.data||{});
     if(!roomTimer)roomTimer=setInterval(refreshRoom,10000);
-    if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,2000);
+    if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1000);
     initVoice();
   }
 
@@ -1106,6 +1161,12 @@
       $('startOverlay').classList.add('show');
       return;
     }
+    // merge live data
+    const liveData = await jsonbinGetLive(currentRoomId);
+    if (liveData.seats) room.seats = liveData.seats;
+    if (liveData.supers) room.supers = liveData.supers;
+    if (liveData.ready) room.ready = liveData.ready;
+    if (liveData.ghost) room.ghost = liveData.ghost;
     const users=await getUsersCached(true);
     renderRoom(room,users);
   }
@@ -1194,7 +1255,7 @@
         tag='<div class="seat-name bot-tag">بات</div>';
       }
       
-      // شماره صندلی حذف شد
+      // شماره صندلی حذف شد - فقط آواتار داخل دایره
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
           ${inner}
@@ -1242,6 +1303,15 @@
     const rooms=await getRooms();const room=rooms[currentRoomId];
     if(!room)return null;
     fn(room);await saveRooms(rooms);
+    // update live
+    const liveData = await jsonbinGetLive(currentRoomId);
+    if (liveData) {
+      if (room.seats) liveData.seats = room.seats;
+      if (room.supers) liveData.supers = room.supers;
+      if (room.ready) liveData.ready = room.ready;
+      if (room.ghost) liveData.ghost = room.ghost;
+      await jsonbinSetLive(currentRoomId, liveData);
+    }
   }
 
   async function tapSeat(i){
@@ -1253,7 +1323,14 @@
 
     if(bot){
       if(isManager||isCreator||myLevel>=RANK_LEVEL['پشتیبانی']){
-        if(confirm('بات حذف شود؟')){delete room.bots[i];await saveRooms(rooms);refreshRoom();}
+        if(confirm('بات حذف شود؟')){
+          delete room.bots[i];
+          await saveRooms(rooms);
+          const liveData = await jsonbinGetLive(currentRoomId);
+          if (liveData.bots) delete liveData.bots[i];
+          await jsonbinSetLive(currentRoomId, liveData);
+          refreshRoom();
+        }
       }
       return;
     }
@@ -1269,6 +1346,10 @@
     }
     room.seats[i]=me.phone;
     await saveRooms(rooms);
+    const liveData = await jsonbinGetLive(currentRoomId);
+    if (!liveData.seats) liveData.seats = {};
+    liveData.seats[i] = me.phone;
+    await jsonbinSetLive(currentRoomId, liveData);
     refreshRoom();
   }
 
@@ -1285,6 +1366,10 @@
           let free=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!room.seats[x]&&!room.bots[x]){free=x;break;}}
           if(free)room.seats[free]=me.phone;
           await saveRooms(rooms);
+          const liveData = await jsonbinGetLive(currentRoomId);
+          if (liveData.supers) delete liveData.supers[i];
+          if (free) liveData.seats[free] = me.phone;
+          await jsonbinSetLive(currentRoomId, liveData);
           refreshRoom();
           return;
         }
@@ -1296,15 +1381,23 @@
     if(!isManager && !isCreator){ return; }
     room.supers[i]=me.phone;
     await saveRooms(rooms);
+    const liveData = await jsonbinGetLive(currentRoomId);
+    if (!liveData.supers) liveData.supers = {};
+    liveData.supers[i] = me.phone;
+    await jsonbinSetLive(currentRoomId, liveData);
     refreshRoom();
   }
 
   async function toggleReady(){
-    await updateRoom(room=>{
-      if(room.managerPhone===me.phone)return;
-      room.ready=room.ready||{};
-      room.ready[me.phone]=!(room.ready[me.phone]===true);
-    });
+    const rooms=await getRooms();const room=rooms[currentRoomId];
+    if(!room||room.managerPhone===me.phone)return;
+    room.ready=room.ready||{};
+    room.ready[me.phone]=!(room.ready[me.phone]===true);
+    await saveRooms(rooms);
+    const liveData = await jsonbinGetLive(currentRoomId);
+    if (!liveData.ready) liveData.ready = {};
+    liveData.ready[me.phone] = room.ready[me.phone];
+    await jsonbinSetLive(currentRoomId, liveData);
     refreshRoom();
   }
 
@@ -1340,14 +1433,33 @@
       if(wasManager){
         room.status='deleted'; room.deleteReason='مدیر لابی خارج شد';
         await saveRooms(rooms);
+        await jsonbinSetLive(currentRoomId, null);
         setTimeout(async()=>{const r2=await getRooms();delete r2[currentRoomId];await saveRooms(r2);},2000);
       } else {
         const left = Object.keys(room.seats||{}).length + Object.keys(room.bots||{}).length + Object.values(room.supers||{}).filter(Boolean).length + (room.ghost||[]).length;
         if(left===0){
           room.status='deleted'; room.deleteReason='لابی خالی شد';
           await saveRooms(rooms);
+          await jsonbinSetLive(currentRoomId, null);
           setTimeout(async()=>{const r2=await getRooms();delete r2[currentRoomId];await saveRooms(r2);},2000);
-        }else{ await saveRooms(rooms); }
+        }else{
+          const liveData = await jsonbinGetLive(currentRoomId);
+          if (liveData.seats) {
+            for (const [i,p] of Object.entries(liveData.seats)) {
+              if (p===me.phone) delete liveData.seats[i];
+            }
+          }
+          if (liveData.supers) {
+            for (const [i,p] of Object.entries(liveData.supers)) {
+              if (p===me.phone) delete liveData.supers[i];
+            }
+          }
+          if (liveData.ghost) {
+            liveData.ghost = liveData.ghost.filter(x=>x!==me.phone);
+          }
+          await jsonbinSetLive(currentRoomId, liveData);
+          await saveRooms(rooms);
+        }
       }
     }
     currentRoomId=null;
