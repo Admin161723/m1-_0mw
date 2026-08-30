@@ -7,6 +7,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>فروشگاه - بازی مافیا</title>
+    
+    <!-- ✅ اضافه کردن کتابخانه رسمی بازارپی برای وب -->
+    <script src="https://pardakht.cafebazaar.ir/bazaarpay/web/v1/bazaarpay.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
 
@@ -160,7 +164,7 @@
         }
         .card.disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(30%); }
         .card:active:not(.disabled):not(.waiting) { transform: scale(0.95); }
-        
+
         .card-amount { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 8px; pointer-events: none; }
         .card-image { width: 60px; height: 60px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 45px; pointer-events: none; }
         .card-price {
@@ -415,36 +419,31 @@
 
         <div class="section-header">💎 بسته‌های جم (الماس)</div>
         <div class="cards-grid">
-            <div class="card diamond-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam1')">
                 <div class="card-amount">۲۰</div>
                 <div class="diamond-img"></div>
                 <div class="card-price">۱۰ هزار تومان</div>
                 <div class="product-code">کد: Jam1</div>
             </div>
-            <div class="card diamond-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam2')">
                 <div class="card-amount">۱۰۰</div>
                 <div class="diamond-img" style="transform: scale(1.2);"></div>
                 <div class="card-price">۵۰ هزار تومان</div>
                 <div class="product-code">کد: Jam2</div>
             </div>
-            <div class="card diamond-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam3')">
                 <div class="card-amount">۳۰۰</div>
                 <div class="diamond-img" style="transform: scale(1.4);"></div>
                 <div class="card-price">۱۵۰ هزار تومان</div>
                 <div class="product-code">کد: Jam3</div>
             </div>
-            <div class="card diamond-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam4')">
                 <div class="card-amount">۱۰۰۰</div>
                 <div class="diamond-img" style="transform: scale(1.6);"></div>
                 <div class="card-price">۵۰۰ هزار تومان</div>
                 <div class="product-code">کد: Jam4</div>
             </div>
-            <div class="card diamond-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam5')">
                 <div class="card-amount">۲۰۰۰</div>
                 <div class="card-image">💎</div>
                 <div class="card-price">۱ میلیون تومان</div>
@@ -454,36 +453,31 @@
 
         <div class="section-header purple">🪙 بسته‌های سکه</div>
         <div class="cards-grid">
-            <div class="card coin-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin1')">
                 <div class="card-amount">۵۰۰</div>
                 <div class="coin-img"></div>
                 <div class="card-price">۲۰ هزار تومان</div>
                 <div class="product-code">کد: Coin1</div>
             </div>
-            <div class="card coin-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin2')">
                 <div class="card-amount">۱۰۰۰</div>
                 <div class="coin-img"></div>
                 <div class="card-price">۴۰ هزار تومان</div>
                 <div class="product-code">کد: Coin2</div>
             </div>
-            <div class="card coin-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin3')">
                 <div class="card-amount">۲۰۰۰</div>
                 <div class="coin-img"></div>
                 <div class="card-price">۸۰ هزار تومان</div>
                 <div class="product-code">کد: Coin3</div>
             </div>
-            <div class="card coin-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin4')">
                 <div class="card-amount">۵۰۰۰</div>
                 <div class="coin-img"></div>
                 <div class="card-price">۲۰۰ هزار تومان</div>
                 <div class="product-code">کد: Coin4</div>
             </div>
-            <div class="card coin-card disabled" onclick="disabledItem()">
-                <span class="soon-badge">به زودی</span>
+            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin5')">
                 <div class="card-amount">۱۰۰۰۰</div>
                 <div class="card-image">💰</div>
                 <div class="card-price">۳۵۰ هزار تومان</div>
@@ -732,6 +726,67 @@
     let adVideo = null;
 
     // ================================================================
+    // 💳 سیستم پرداخت بازارپی (BazaarPay)
+    // ================================================================
+    const BAZAAR_CLIENT_ID = 'b1b9d596614ba90c351df5e9ff032bd3d8a0cc63';
+    let bp;
+
+    const PRODUCTS = {
+        'Jam1':   { toman: 10,    rewardType: 'gem',  rewardAmount: 20 },
+        'Jam2':   { toman: 50,    rewardType: 'gem',  rewardAmount: 100 },
+        'Jam3':   { toman: 150,   rewardType: 'gem',  rewardAmount: 300 },
+        'Jam4':   { toman: 500,   rewardType: 'gem',  rewardAmount: 1000 },
+        'Jam5':   { toman: 1000,  rewardType: 'gem',  rewardAmount: 2000 },
+        'Coin1':  { toman: 20,    rewardType: 'coin', rewardAmount: 500 },
+        'Coin2':  { toman: 40,    rewardType: 'coin', rewardAmount: 1000 },
+        'Coin3':  { toman: 80,    rewardType: 'coin', rewardAmount: 2000 },
+        'Coin4':  { toman: 200,   rewardType: 'coin', rewardAmount: 5000 }, // اصلاح شده به ۵۰۰۰ برای منطق بازی
+        'Coin5':  { toman: 350,   rewardType: 'coin', rewardAmount: 10000 }
+    };
+
+    function initBazaarPay() {
+        try {
+            bp = new BazaarPay({ clientId: BAZAAR_CLIENT_ID });
+        } catch (e) {
+            console.error('خطا در بارگذاری بازارپی:', e);
+        }
+    }
+
+    function initiateBazaarPurchase(productId) {
+        playClickSound();
+        if (!bp) {
+            showToast('درگاه پرداخت در حال بارگذاری است، لطفاً چند لحظه صبر کنید...', 'info');
+            return;
+        }
+        const product = PRODUCTS[productId];
+        if (!product) {
+            showToast('محصول نامعتبر است.', 'error');
+            return;
+        }
+
+        const amountRial = product.toman * 1000;
+        const description = `خرید ${toPersianNum(product.rewardAmount)} ${product.rewardType === 'gem' ? 'الماس' : 'سکه'} در بازی مافیا`;
+        
+        const baseUrl = window.location.href.split('?')[0];
+        const callbackUrl = `${baseUrl}?status=OK&product=${productId}&type=${product.rewardType}&amount=${product.rewardAmount}`;
+
+        showToast('در حال انتقال به درگاه بازار...', 'info');
+
+        bp.requestPayment({
+            amount: amountRial,
+            description: description,
+            callbackUrl: callbackUrl
+        })
+        .then(response => {
+            console.log('BazaarPay Response:', response);
+        })
+        .catch(error => {
+            console.error('BazaarPay Error:', error);
+            showToast('خطا در باز کردن درگاه: ' + (error.message || 'نامشخص'), 'error');
+        });
+    }
+
+    // ================================================================
     // توابع کمکی
     // ================================================================
     function toPersianNum(num) {
@@ -832,7 +887,7 @@
     // ================================================================
     async function watchAdForCoins() {
         playClickSound();
-        
+
         if (!currentUser || !currentPhone) {
             showToast('خطا در بارگذاری اطلاعات', 'error');
             return;
@@ -1023,8 +1078,22 @@
     // راه‌اندازی
     // ================================================================
     document.addEventListener('DOMContentLoaded', async () => {
+        // ۱. راه‌اندازی بازارپی
+        initBazaarPay();
+
+        // ۲. بررسی بازگشت از درگاه پرداخت
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const product = urlParams.get('product');
+        const type = urlParams.get('type');
+        const amount = urlParams.get('amount');
+
         const loggedIn = localStorage.getItem('currentLoggedInUser');
         if (!loggedIn) {
+            if (status === 'OK') {
+                showToast('لطفاً ابتدا وارد حساب کاربری خود شوید.', 'info');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
             window.location.href = 'index.html';
             return;
         }
@@ -1042,11 +1111,24 @@
                 return;
             }
 
+            // ۳. پردازش موفقیت پرداخت و اضافه کردن جایزه
+            if (status === 'OK' && product && type && amount) {
+                if (type === 'gem') {
+                    currentUser.gems = (currentUser.gems || 0) + parseInt(amount);
+                } else if (type === 'coin') {
+                    currentUser.coins = (currentUser.coins || 0) + parseInt(amount);
+                }
+                await saveUserData();
+                showToast(`✅ پرداخت موفق! ${toPersianNum(amount)} ${type === 'gem' ? 'الماس' : 'سکه'} به حساب شما اضافه شد.`, 'success');
+                
+                // پاک کردن پارامترها از URL برای جلوگیری از پردازش مجدد
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             document.getElementById('shopCoins').textContent = toPersianNum(currentUser.coins || 0);
             document.getElementById('shopGems').textContent = toPersianNum(currentUser.gems || 0);
 
             await loadAdState();
-
             preventOverscroll(document.getElementById('scrollContent'));
             setupVideoListeners();
 
