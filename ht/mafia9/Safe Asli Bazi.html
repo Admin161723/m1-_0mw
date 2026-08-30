@@ -227,7 +227,6 @@
   .setting-label{color:#fff;font-size:16px;font-weight:700;}
   .volume-slider{width:60%;accent-color:#4a9eff;}
   .password-btn{width:100%;padding:14px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:900;cursor:pointer;margin-top:10px;}
-
   .tournament-section{background:rgba(0,0,0,.3);border:2px solid #ffd700;border-radius:12px;padding:14px;margin-bottom:15px;}
   .tournament-section h4{color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;}
   .prize-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap;}
@@ -576,12 +575,81 @@
 
 <script>
 // ============================================================
-// ✅ فقط از Upstash استفاده می‌شود، JSONBin حذف شد
+// ✅ فقط از Upstash استفاده می‌شود
 // ============================================================
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+
+// ============================================================
+// ✅ تابع اتصال خودکار سرور (در هنگام لود اجرا می‌شود)
+// ============================================================
+async function autoFixServerOnLoad() {
+  try {
+    // ابتدا وضعیت فعلی را از هر دو دیتابیس می‌خوانیم
+    const oldStatus = await fetch(UPSTASH_OLD_URL + '/get/server_maintenance', {
+      headers: { 'Authorization': 'Bearer ' + UPSTASH_OLD_TOKEN }
+    });
+    const newStatus = await fetch(UPSTASH_NEW_URL + '/get/server_maintenance', {
+      headers: { 'Authorization': 'Bearer ' + UPSTASH_NEW_TOKEN }
+    });
+
+    let isOffline = false;
+
+    if (oldStatus.ok) {
+      const data = await oldStatus.json();
+      if (data.result) {
+        try {
+          const parsed = JSON.parse(data.result);
+          if (parsed && parsed.on === true) isOffline = true;
+        } catch(e) {}
+      }
+    }
+
+    if (!isOffline && newStatus.ok) {
+      const data = await newStatus.json();
+      if (data.result) {
+        try {
+          const parsed = JSON.parse(data.result);
+          if (parsed && parsed.on === true) isOffline = true;
+        } catch(e) {}
+      }
+    }
+
+    // اگر سرور قطع بود، آن را وصل می‌کنیم (on: false)
+    if (isOffline) {
+      console.log("🔧 سرور قطع است، در حال اتصال خودکار...");
+      const newValue = JSON.stringify({ on: false, at: Date.now() });
+
+      const p1 = fetch(UPSTASH_OLD_URL + '/set/server_maintenance/' + encodeURIComponent(newValue), {
+        headers: { 'Authorization': 'Bearer ' + UPSTASH_OLD_TOKEN }
+      });
+      const p2 = fetch(UPSTASH_NEW_URL + '/set/server_maintenance/' + encodeURIComponent(newValue), {
+        headers: { 'Authorization': 'Bearer ' + UPSTASH_NEW_TOKEN }
+      });
+
+      await Promise.all([p1, p2]);
+      console.log("✅ سرور با موفقیت وصل شد (خودکار)");
+    } else {
+      console.log("✅ سرور در حال حاضر فعال است.");
+    }
+  } catch (e) {
+    console.error("خطا در اتصال خودکار سرور:", e);
+  }
+}
+
+// ============================================================
+// ✅ اجرای تابع اتصال خودکار در همان ابتدای بارگذاری
+// ============================================================
+(async function init() {
+  await autoFixServerOnLoad();
+  // سپس ادامه کد اصلی
+})();
+
+// ============================================================
+// ✅ بقیه کد (توابع کمکی، مدیریت کاربر، و ...)
+// ============================================================
 
 async function upstashGet(url, token, k) {
   try {
@@ -645,14 +713,12 @@ async function saveGroups(g){return await redisSet('police_groups',g);}
 async function getBanStatus(p){const b=await redisGet('ban:'+p);if(b&&b.isBanned){if(b.expiresAt&&b.duration!=='permanent'&&b.duration!=='دائمی'){if(new Date(b.expiresAt).getTime()<Date.now())return null;}return b;}return null;}
 async function getNews(){return await redisGet('game_news')||[];}
 async function saveNews(n){return await redisSet('game_news',n);}
-// توابع مربوط به maintenance حذف شدند
 async function getTournamentConfig(){return await redisGet('tournament_config')||{};}
 async function saveTournamentConfigData(cfg){return await redisSet('tournament_config',cfg);}
 
 let isRedirecting=false;
 function redirectToOffline(){if(isRedirecting)return;isRedirecting=true;window.location.href='off.html';}
 function redirectToBan(b,p){if(isRedirecting)return;isRedirecting=true;const params=new URLSearchParams({phone:p,by:b.bannedBy||'مدیریت',reason:b.reason||'بدون دلیل',duration:b.duration||'1d',expires:b.expiresAt||'',createdAt:b.createdAt||b.bannedAt||''});window.location.href='Ban.html?'+params.toString();}
-// offline event listener باقی می‌ماند (مربوط به قطعی اینترنت)
 window.addEventListener('offline',()=>{if(!isRedirecting)redirectToOffline();});
 
 document.addEventListener('visibilitychange', () => {
@@ -1182,8 +1248,6 @@ async function wipeDatabase(){
   showShopNotification('دیتابیس پاک شد');
 }
 
-// تابع toggleServer حذف شد
-
 function confirmTournamentTime(){
   showShopNotification('✅ زمان مسابقه تایید شد');
 }
@@ -1538,7 +1602,6 @@ async function checkAndDistributeTournamentPrizes() {
 // ============================================================
 async function syncWithServerInBackground() {
   try {
-    // بررسی بن
     const ban = await getBanStatus(currentPhone);
     if(ban){redirectToBan(ban,currentPhone); return;}
 
@@ -1579,6 +1642,9 @@ async function syncWithServerInBackground() {
   }
 }
 
+// ============================================================
+// ✅ رویداد DOMContentLoaded – اجرای اصلی
+// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) {
@@ -1682,7 +1748,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnUnbanUser').addEventListener('click',unbanUser);
   document.getElementById('btnDeleteAccount').addEventListener('click',deleteAccount);
   document.getElementById('btnWipeDB').addEventListener('click',wipeDatabase);
-  // دکمه قطع/وصل سرور دیگر وجود ندارد
   document.getElementById('btnFriendly').addEventListener('click',()=>{playClickSound();window.location.href='TalarDs.html';});
   document.getElementById('btnCompetitive').addEventListener('click',()=>{playClickSound();startCompetitiveSearch();});
   document.getElementById('cancelSearchBtn').addEventListener('click',cancelCompetitiveSearch);
