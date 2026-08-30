@@ -570,14 +570,10 @@
     <button class="game-start-btn" id="enterGameBtn">ورود به بازی</button>
   </div>
 
-  <!-- ✅ اصلاح شده: اضافه شدن دکمه اضطراری برای سازنده -->
   <div class="server-down-overlay" id="serverDownOverlay">
     <div class="server-down-icon">🔌</div>
     <div class="server-down-title">سرور قطع است</div>
     <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
-    <button id="creatorEmergencyBtn" style="display:block; margin-top:20px; padding:12px 24px; background:linear-gradient(180deg,#4CAF50,#45a049); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:900; cursor:pointer; font-family:'Vazirmatn',Tahoma; box-shadow:0 4px 15px rgba(76,175,80,0.4);">
-      🔓 وصل کردن سرور (مخصوص سازنده)
-    </button>
   </div>
 </div>
 
@@ -589,6 +585,9 @@
 </audio>
 
 <script>
+// ============================================================
+// ✅ فقط از Upstash استفاده می‌شود، JSONBin حذف شد
+// ============================================================
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
@@ -626,6 +625,7 @@ async function upstashDel(url, token, k) {
   } catch (e) { return false; }
 }
 
+// ✅ فقط Upstash - بدون JSONBin
 async function redisGet(key) {
   let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
   if (v !== null) return v;
@@ -666,6 +666,7 @@ function redirectToOffline(){if(isRedirecting)return;isRedirecting=true;window.l
 function redirectToBan(b,p){if(isRedirecting)return;isRedirecting=true;const params=new URLSearchParams({phone:p,by:b.bannedBy||'مدیریت',reason:b.reason||'بدون دلیل',duration:b.duration||'1d',expires:b.expiresAt||'',createdAt:b.createdAt||b.bannedAt||''});window.location.href='Ban.html?'+params.toString();}
 window.addEventListener('offline',()=>{if(!isRedirecting)redirectToOffline();});
 
+// ✅ رفع باگ صدا: وقتی صفحه دوباره فعال میشه، صدا رو دوباره شروع کن
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && bgMusicElement) {
     bgMusicElement.play().catch(e=>{});
@@ -982,6 +983,7 @@ async function sendNews(){
   showShopNotification('اطلاعیه ارسال شد');
 }
 
+// ✅ پنل سازنده: همه کاربران (حتی آفلاین) نمایش داده شوند
 async function loadUsers(){
   const allUsers=await getAllUsers();
   const list=document.getElementById('userList');
@@ -1008,6 +1010,7 @@ async function openEditUser(id){
   if(!isCreator && targetLevel>=myLevel){showShopNotification('نمی‌توانید هم‌مقام یا بالاتر را ویرایش کنید','error');return;}
 
   editingUserId=id;
+  // اگر آواتار اختصاصی 655.webm باشد و کاربر سازنده نباشد، حذف کن
   if(u.exclusiveAvatar === '655.webm' && id !== CREATOR_PHONE) {
     editingUserExclusiveAvatar = null;
     u.exclusiveAvatar = null;
@@ -1093,6 +1096,7 @@ async function saveUserEdit(){
     u.gems=gems<0?0:gems;
   }
   if(perm.rank)u.rank=document.getElementById('editUserRole').value;
+  // ✅ آواتار اختصاصی: اگر null شده، حذف کن
   if(perm.exclusive){
     if(editingUserExclusiveAvatar){
       if(editingUserExclusiveAvatar === '655.webm' && editingUserId !== CREATOR_PHONE) {
@@ -1104,6 +1108,7 @@ async function saveUserEdit(){
       const exKey='exclusive_'+editingUserId;
       if(!u.ownedAvatars.includes(exKey))u.ownedAvatars.push(exKey);
     } else {
+      // حذف آواتار اختصاصی
       delete u.exclusiveAvatar;
       if(u.ownedAvatars){
         u.ownedAvatars = u.ownedAvatars.filter(a => !a.startsWith('exclusive_'));
@@ -1557,20 +1562,13 @@ async function checkAndDistributeTournamentPrizes() {
   }
 }
 
-// ✅ اصلاح شده: همگام‌سازی سریع با قابلیت وصل کردن خودکار سرور برای سازنده
+// ✅ همگام‌سازی سریع: هر ۳ ثانیه یک بار با سرور
 async function syncWithServerInBackground() {
   try {
     const m = await getMaintenance();
-    
-    // ✅ اگر سرور قطع بود و شما سازنده هستید، خودکار وصلش کن!
-    if (m && m.on) {
-        if (currentPhone === CREATOR_PHONE) {
-            await setMaintenance(false);
-            showShopNotification('سرور به صورت خودکار برای سازنده وصل شد ✅');
-        } else {
-            document.getElementById('serverDownOverlay').classList.add('show');
-            return;
-        }
+    if(m && m.on && currentPhone !== CREATOR_PHONE){
+      document.getElementById('serverDownOverlay').classList.add('show');
+      return;
     }
 
     const ban = await getBanStatus(currentPhone);
@@ -1617,17 +1615,16 @@ async function syncWithServerInBackground() {
 document.addEventListener('DOMContentLoaded', () => {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) {
-      // اگر لاگین نبود، به صفحه ورود برود، اما دکمه اضطراری روی صفحه اصلی کار می‌کند
-      // window.location.href = 'index.html'; 
-      // return;
+      window.location.href = 'index.html';
+      return;
   }
 
   let phone = null;
   try {
-      if(loggedIn) phone = JSON.parse(loggedIn).phone;
+      phone = JSON.parse(loggedIn).phone;
   } catch(e) {
-      // window.location.href = 'index.html';
-      // return;
+      window.location.href = 'index.html';
+      return;
   }
 
   currentPhone = phone;
@@ -1654,28 +1651,8 @@ document.addEventListener('DOMContentLoaded', () => {
       syncWithServerInBackground();
   }, 0);
 
+  // همگام‌سازی دوره‌ای هر ۳ ثانیه
   setInterval(syncWithServerInBackground, 3000);
-
-  // ✅ اضافه شدن رویداد کلیک برای دکمه اضطراری سازنده
-  document.getElementById('creatorEmergencyBtn').addEventListener('click', async () => {
-      const inputPhone = prompt('شماره موبایل سازنده را وارد کنید:');
-      if (inputPhone === CREATOR_PHONE) {
-          showShopNotification('در حال وصل کردن سرور...');
-          await setMaintenance(false);
-          document.getElementById('serverDownOverlay').classList.remove('show');
-          showShopNotification('سرور با موفقیت وصل شد! اکنون می‌توانید وارد شوید. ✅');
-          
-          // ذخیره شماره سازنده در لاگین برای جلوگیری از مشکل بعدی
-          localStorage.setItem('currentLoggedInUser', JSON.stringify({phone: CREATOR_PHONE}));
-          currentPhone = CREATOR_PHONE;
-          
-          setTimeout(() => {
-              window.location.reload();
-          }, 1500);
-      } else {
-          showShopNotification('شماره وارد شده صحیح نیست!', 'error');
-      }
-  });
 
   document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();playClickSound();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
   document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
@@ -1810,6 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateGroupDisplay,30000);
 });
 
+// ✅ در صورت خاموش شدن صفحه، صدا را دوباره فعال کن
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && bgMusicElement) {
     bgMusicElement.play().catch(e=>{});
