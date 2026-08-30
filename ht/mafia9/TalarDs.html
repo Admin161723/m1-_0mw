@@ -145,6 +145,7 @@
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   
+  /* شماره صندلی خارج از دایره و در زیر آن */
   .seat-num {
     position: absolute;
     bottom: -28px;
@@ -164,39 +165,41 @@
     z-index: 5;
   }
 
+  /* علامت دیسکانکت */
   .disconnected-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.75);
+    background: rgba(0,0,0,0.8);
     border-radius: 50%;
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
   }
-  .disconnected-overlay.show { display: flex; }
+  .disconnected-overlay.show { display: flex; animation: fadeIn 0.3s; }
   .disconnected-icon {
-    width: 32px;
-    height: 32px;
-    background: #f44336;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(180deg, #f44336, #d32f2f);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(244,67,54,0.8);
+    box-shadow: 0 0 15px rgba(244,67,54,0.9);
     animation: pulse-red 1.5s infinite;
   }
   .disconnected-icon::before {
     content: '!';
     color: white;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 900;
   }
   @keyframes pulse-red {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.8; }
   }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .seat-tag-layer{position:relative;margin-top:-10px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
@@ -634,7 +637,7 @@
   let isProcessingAction = false;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۲۳۴۵۶۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const isStaff=r=>r&&r!=='کاربر';
   function crownHtml(){return '<span class="crown"><i class="l"></i><i class="r"></i></span>';}
@@ -658,7 +661,7 @@
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
-    {v:'3m',l:' ماه',ms:7776000000},
+    {v:'3m',l:'۳ ماه',ms:7776000000},
     {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
@@ -835,6 +838,7 @@
   }
 
   async function showReactionOnProfile(type) {
+    if (!currentRoomId) return false;
     const now = Date.now();
     const cooldown = type === 'dislike' ? lastDislikeTime : lastLikeTime;
     if (now - cooldown < REACTION_COOLDOWN) { return false; }
@@ -885,6 +889,28 @@
     try {
       const liveData = await getLive(currentRoomId);
       if (!liveData) return;
+
+      // مدیریت وضعیت دیسکانکت برای سایر کاربران
+      if (liveData.disconnected && liveData.discTime && (Date.now() - liveData.discTime < 10000)) {
+        const targetEl = document.querySelector(`[data-phone="${liveData.disconnected}"]`);
+        if (targetEl) {
+          let discOverlay = targetEl.querySelector('.disconnected-overlay');
+          if (!discOverlay) {
+            discOverlay = document.createElement('div');
+            discOverlay.className = 'disconnected-overlay show';
+            discOverlay.innerHTML = '<div class="disconnected-icon"></div>';
+            targetEl.appendChild(discOverlay);
+          } else {
+            discOverlay.classList.add('show');
+          }
+        }
+      } else {
+        document.querySelectorAll('.disconnected-overlay').forEach(el => {
+          if (!el.closest(`[data-phone="${me.phone}"]`) || !document.hidden) {
+             el.classList.remove('show');
+          }
+        });
+      }
 
       if (liveData.reactions) {
         const now = Date.now();
@@ -976,6 +1002,7 @@
   }
 
   function sendChatMessage() {
+    if (!currentRoomId) return;
     const input = $('chatInput');
     const text = input.value.trim();
     if (!text) { return; }
@@ -1021,30 +1048,35 @@
 
   window.addEventListener('beforeunload', () => {
     if (currentRoomId && me) {
-      navigator.sendBeacon(UPSTASH_URL + '/del/' + encodeURIComponent(liveKey(currentRoomId)), JSON.stringify({headers:{'Authorization':'Bearer '+UPSTASH_TOKEN}}));
+      leaveRoom(true);
     }
   });
 
+  // سیستم دقیق تشخیص دیسکانکت و اخراج خودکار
   document.addEventListener('visibilitychange', () => {
     if (!currentRoomId || !me) return;
     if (document.hidden) {
       hiddenStartTime = Date.now();
-      disconnectCheckTimer = setTimeout(() => {
-        if (document.hidden) {
-          const mySeatEl = document.querySelector(`.seat-circle[data-phone="${me.phone}"]`) || document.querySelector(`.super-circle[data-phone="${me.phone}"]`);
-          if (mySeatEl) {
-            let discOverlay = mySeatEl.querySelector('.disconnected-overlay');
-            if (!discOverlay) {
-              discOverlay = document.createElement('div');
-              discOverlay.className = 'disconnected-overlay show';
-              discOverlay.innerHTML = '<div class="disconnected-icon"></div>';
-              mySeatEl.appendChild(discOverlay);
-            }
-          }
+      
+      // نمایش آیکون دیسکانکت روی آواتار خود کاربر
+      const mySeatEl = document.querySelector(`.seat-circle[data-phone="${me.phone}"]`) || document.querySelector(`.super-circle[data-phone="${me.phone}"]`);
+      if (mySeatEl) {
+        let discOverlay = mySeatEl.querySelector('.disconnected-overlay');
+        if (!discOverlay) {
+          discOverlay = document.createElement('div');
+          discOverlay.className = 'disconnected-overlay show';
+          discOverlay.innerHTML = '<div class="disconnected-icon"></div>';
+          mySeatEl.appendChild(discOverlay);
+        } else {
+          discOverlay.classList.add('show');
         }
-      }, 2000);
+      }
+      
+      // اطلاع‌رسانی به سایر کاربران در همان لابی
+      setLive(currentRoomId, { disconnected: me.phone, discTime: Date.now() });
 
-      setTimeout(() => {
+      // اگر پس از 5 ثانیه برنگشت، کلاً از لابی خارج شود
+      disconnectCheckTimer = setTimeout(() => {
         if (document.hidden) {
           leaveRoom(true);
         }
@@ -1055,11 +1087,19 @@
         clearTimeout(disconnectCheckTimer);
         disconnectCheckTimer = null;
       }
+      
+      // حذف آیکون دیسکانکت
       const mySeatEl = document.querySelector(`.seat-circle[data-phone="${me.phone}"]`) || document.querySelector(`.super-circle[data-phone="${me.phone}"]`);
       if (mySeatEl) {
         const discOverlay = mySeatEl.querySelector('.disconnected-overlay');
-        if (discOverlay) discOverlay.remove();
+        if (discOverlay) discOverlay.classList.remove('show');
       }
+      
+      // پاک کردن وضعیت دیسکانکت از دیتابیس زنده
+      setLive(currentRoomId, { disconnected: null, discTime: null });
+      
+      // همگام‌سازی فوری پس از بازگشت
+      refreshRoom();
     }
   });
 
@@ -1414,6 +1454,7 @@
   }
 
   async function updateRoom(fn){
+    if (!currentRoomId) return null;
     const rooms=await getRooms();const room=rooms[currentRoomId];
     if(!room)return null;
     fn(room);await saveRooms(rooms);
@@ -1428,6 +1469,7 @@
   }
 
   async function tapSeat(i){
+    if (!currentRoomId) return;
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
     const ph=room.seats[i],bot=room.bots[i],my=mySeat(room);
     const isManager=room.managerPhone===me.phone;
@@ -1467,6 +1509,7 @@
   }
 
   async function tapSuper(i){
+    if (!currentRoomId) return;
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
     const ph=room.supers[i],my=mySeat(room);
     const isManager=room.managerPhone===me.phone;
@@ -1502,6 +1545,7 @@
   }
 
   async function toggleReady(){
+    if (!currentRoomId) return;
     const rooms=await getRooms();const room=rooms[currentRoomId];
     if(!room||room.managerPhone===me.phone)return;
     room.ready=room.ready||{};
@@ -1515,6 +1559,7 @@
   }
 
   async function startGame(){
+    if (!currentRoomId) return;
     await updateRoom(room=>{
       if(room.status === 'pending'){return;}
       const humans=Object.values(room.seats||{}).filter(Boolean);
@@ -1581,6 +1626,7 @@
   }
 
   async function openUserMenu(t){
+    if (!currentRoomId) return;
     menuTarget=t;
     const allUsers=await getUsersCached();
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
@@ -1651,6 +1697,7 @@
   }
   function closeUm(){$('userMenuModal').classList.remove('active');}
   async function setSuper(t,n){
+    if (!currentRoomId) return;
     await updateRoom(r=>{
       for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];
       for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];
@@ -1698,6 +1745,7 @@
   }
 
   async function openManager(){
+    if (!currentRoomId) return;
     const rooms=await getRooms();const room=rooms[currentRoomId];if(!room)return;
     const allUsers=await getUsersCached();
     const isCreator=me.phone===CREATOR_PHONE;
@@ -1713,7 +1761,7 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
 
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۰)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
     } else {
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
@@ -1752,6 +1800,7 @@
   }
 
   async function toggleGhost(){
+    if (!currentRoomId) return;
     const myLevel=RANK_LEVEL[me.rank]||0;
     if(myLevel<RANK_LEVEL['ناظر']){return;}
     await updateRoom(r=>{
@@ -1805,7 +1854,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     $('editWarn').style.display=(isCreator||isStaffUser)?'none':'block';
     $('editStaff').style.display=(isCreator||isStaffUser)?'block':'none';
-    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۰ سکه)':'ذخیره و ارسال برای تأیید (۵۰ سکه)';
+    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید (۵۰ سکه)';
     $('editModal').classList.add('active');
   }
   async function saveEdit(){
