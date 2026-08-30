@@ -145,17 +145,17 @@
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   
-  /* شماره صندلی */
   .seat-num {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    background: rgba(0,0,0,0.6);
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
     color: #ffd700;
     font-size: 11px;
     font-weight: 900;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -164,7 +164,6 @@
     z-index: 5;
   }
 
-  /* حالت دیسکانکت */
   .disconnected-overlay {
     position: absolute;
     inset: 0;
@@ -203,7 +202,6 @@
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:10px;padding:3px 8px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;gap:3px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.4;}
   .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
   
-  /* فیکس سایز تگ برای مقام‌داران */
   .seat-tag-badge.staff-badge .tag-color-text {
     font-size: 8px !important;
     padding: 1px 3px !important;
@@ -655,12 +653,12 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:'۱ ساعت',ms:3600000},
-    {v:'1d',l:'۱ روز',ms:86400000},
+    {v:'1h',l:' ساعت',ms:3600000},
+    {v:'1d',l:' روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
     {v:'1m',l:'۱ ماه',ms:2592000000},
-    {v:'3m',l:'۳ ماه',ms:7776000000},
+    {v:'3m',l:' ماه',ms:7776000000},
     {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
@@ -1015,10 +1013,10 @@
   function go(u){if(!isRedirecting){isRedirecting=true;window.location.href=u;}}
 
   window.addEventListener('offline', () => {
-    offlineTimer = setTimeout(() => { setTimeout(() => window.location.href = 'index.html', 1000); }, 3000);
+    offlineTimer = setTimeout(() => { setTimeout(() => window.location.href = 'TalarDs.html', 1000); }, 3000);
   });
   window.addEventListener('online', () => {
-    if (offlineTimer) { clearTimeout(offlineTimer); offlineTimer = null; window.location.href = 'index.html'; }
+    if (offlineTimer) { clearTimeout(offlineTimer); offlineTimer = null; window.location.href = 'TalarDs.html'; }
   });
 
   window.addEventListener('beforeunload', () => {
@@ -1079,12 +1077,12 @@
       if(m&&m.on&&phone!==CREATOR_PHONE){$('serverDownOverlay').classList.add('show');return;}
     }catch(e){}
     const lg=localStorage.getItem('currentLoggedInUser');
-    if(!lg){go('index.html');return;}
+    if(!lg){go('TalarDs.html');return;}
     const phone=JSON.parse(lg).phone;
     const ban=await getBan(phone);
     if(ban){const p=new URLSearchParams({phone:phone,by:ban.bannedBy||'مدیریت',reason:ban.reason||'بدون دلیل',duration:ban.duration||'permanent',expires:ban.expiresAt||'',createdAt:ban.createdAt||''});go('Ban.html?'+p.toString());return;}
     const u=await getUser(phone);
-    if(!u){go('index.html');return;}
+    if(!u){go('TalarDs.html');return;}
     const allUsers=await getAllUsers();
     if(!allUsers[phone]){allUsers[phone]=u;await saveAllUsers(allUsers);}
     me={phone:phone,name:u.name||'کاربر',avatar:u.avatar||'Mafia2.png',rank:u.rank||'کاربر',coins:u.coins||0};
@@ -1182,6 +1180,14 @@
       room.seats[seat]=me.phone;
     }
     if(room.kicked&&room.kicked[me.phone])delete room.kicked[me.phone];
+    
+    // کسر 50 سکه هنگام ورود به لابی
+    currentUser.coins = (currentUser.coins || 0) - 50;
+    allUsers[me.phone] = currentUser;
+    await saveUser(me.phone, currentUser);
+    await saveAllUsers(allUsers);
+    usersCache={ts:0,data:{}};
+    
     await saveRooms(rooms);
     const liveData = await getLive(id);
     if (!liveData.seats) liveData.seats = {};
@@ -1329,6 +1335,7 @@
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
           ${inner}
           <div class="voice-indicator"></div>
+          <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
         </div>
         ${tagLayer}
         <div class="super-label ${nameClass}">${labelHtml}</div>
@@ -1371,11 +1378,11 @@
 
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
-          <div class="seat-num">${toFa(i)}</div>
           ${inner}
           <div class="voice-indicator"></div>
           <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
         </div>
+        <div class="seat-num">${toFa(i)}</div>
         ${tagLayer}${tag}
       </div>`;
     }
@@ -1570,7 +1577,7 @@
       }
     }
     currentRoomId=null;
-    if(toMain){go('index.html');return;}
+    if(toMain){go('TalarDs.html');return;}
     startListView();
   }
 
@@ -1709,7 +1716,7 @@
     if(total >= MAX_PLAYERS && allReady) {
       html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
     } else {
-      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
+      html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۰) - همه باید آماده باشند</button>';
     }
 
     if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot"> افزودن بات</button>';
@@ -2074,7 +2081,7 @@
     boot();
     $('searchInput').addEventListener('input',renderList);
     $('refreshListBtn').addEventListener('click',()=>{playClick();refreshList();});
-    $('homeListBtn').addEventListener('click',()=>{playClick();go('index.html');});
+    $('homeListBtn').addEventListener('click',()=>{playClick();go('TalarDs.html');});
     $('homeRoomBtn').addEventListener('click',()=>{playClick();leaveRoom(true);});
     $('openCreateBtn').addEventListener('click',async()=>{
       if(me.phone!==CREATOR_PHONE){const m=await getMaintenance();if(m&&m.on){return;}}
@@ -2107,8 +2114,8 @@
     $('closeAdminUser').onclick=()=>$('adminUserModal').classList.remove('active');
     $('closeBan').onclick=()=>$('banModal').classList.remove('active');
     $('doBanBtn').onclick=doBan;
-    $('kickGoMain').onclick=()=>go('index.html');
-    $('deletedGoMain').onclick=()=>go('index.html');
+    $('kickGoMain').onclick=()=>go('TalarDs.html');
+    $('deletedGoMain').onclick=()=>go('TalarDs.html');
     $('enterGameBtn').onclick=()=>{
       localStorage.setItem('current_game_room',currentRoomId);
       window.location.href='Safe Game.html';
