@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#041228">
 <title>بازی پلیس | صفحه اصلی</title>
 <style>
-  /* ====== استایل‌های اصلی (همانند قبل) ====== */
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent!important;}
   html{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#041228!important;}
@@ -113,6 +112,11 @@
   .admin-tools{background:rgba(0,0,0,.25);border:2px solid #ffd700;border-radius:12px;padding:14px;margin-bottom:15px;}
   .admin-tools-title{color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;}
   .admin-tools-btns{display:flex;flex-direction:column;gap:8px;}
+  .server-down-overlay{position:absolute;inset:0;background:rgba(0,0,0,.95);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;text-align:center;padding:20px;}
+  .server-down-overlay.show{display:flex;}
+  .server-down-icon{font-size:60px;}
+  .server-down-title{color:#ff6b6b;font-size:24px;font-weight:900;}
+  .server-down-text{color:rgba(255,255,255,.8);font-size:14px;line-height:1.8;}
   .news-list{display:flex;flex-direction:column;gap:12px;}
   .news-item{background:linear-gradient(180deg,#3a8adc,#2a7acc);border-radius:12px;padding:16px;border:2px solid #4a9eff;cursor:pointer;}
   .news-title{color:#fff;font-size:16px;font-weight:900;margin-bottom:8px;}
@@ -228,6 +232,7 @@
   .setting-label{color:#fff;font-size:16px;font-weight:700;}
   .volume-slider{width:60%;accent-color:#4a9eff;}
   .password-btn{width:100%;padding:14px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:900;cursor:pointer;margin-top:10px;}
+
   .tournament-section{background:rgba(0,0,0,.3);border:2px solid #ffd700;border-radius:12px;padding:14px;margin-bottom:15px;}
   .tournament-section h4{color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;}
   .prize-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap;}
@@ -240,6 +245,7 @@
   .clan-blacklist-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:6px;margin-bottom:4px;}
   .clan-blacklist-item span{color:#fff;font-size:12px;}
   .clan-blacklist-item button{background:#f44336;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+
   .confirm-btn{background:linear-gradient(180deg,#4CAF50,#45a049);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:10px;}
   .confirm-btn:hover{background:linear-gradient(180deg,#45a049,#3d8b40);}
 </style>
@@ -290,7 +296,6 @@
     <div class="nav-item" id="navGroup"><div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div><span class="nav-label">گروه</span></div>
   </div>
 
-  <!-- مودال اطلاعیه‌ها -->
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
@@ -307,7 +312,6 @@
     </div>
   </div>
 
-  <!-- مودال مدیریت -->
   <div class="modal-overlay" id="adminModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">پنل مدیریت</div><div class="modal-close" onclick="closeModal('adminModal')">✕</div></div>
@@ -315,8 +319,7 @@
         <div class="admin-tools" id="adminTools" style="display:none;">
           <div class="admin-tools-title">🛠️ ابزارهای سازنده</div>
           <div class="admin-tools-btns">
-            <!-- دکمه قطع/وصل سرور (فقط برای سازنده) -->
-            <button class="edit-btn ban" id="btnServerToggle">🔌 قطع سرور</button>
+            <button class="edit-btn ban" id="btnServerToggle"> قطع سرور</button>
             <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن دیتابیس</button>
           </div>
         </div>
@@ -567,7 +570,15 @@
     <button class="game-start-btn" id="enterGameBtn">ورود به بازی</button>
   </div>
 
-  <!-- ====== صفحه قطعی سرور حذف شد ====== -->
+  <!-- ✅ اصلاح شده: اضافه شدن دکمه اضطراری برای سازنده -->
+  <div class="server-down-overlay" id="serverDownOverlay">
+    <div class="server-down-icon">🔌</div>
+    <div class="server-down-title">سرور قطع است</div>
+    <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
+    <button id="creatorEmergencyBtn" style="display:block; margin-top:20px; padding:12px 24px; background:linear-gradient(180deg,#4CAF50,#45a049); color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:900; cursor:pointer; font-family:'Vazirmatn',Tahoma; box-shadow:0 4px 15px rgba(76,175,80,0.4);">
+      🔓 وصل کردن سرور (مخصوص سازنده)
+    </button>
+  </div>
 </div>
 
 <audio id="clickSound" preload="auto">
@@ -578,17 +589,11 @@
 </audio>
 
 <script>
-// ============================================================
-// ✅ فقط از Upstash استفاده می‌شود
-// ============================================================
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
-// ============================================================
-// ✅ توابع کمکی Upstash
-// ============================================================
 async function upstashGet(url, token, k) {
   try {
     const c = new AbortController();
@@ -640,9 +645,6 @@ async function redisDel(key) {
   return true;
 }
 
-// ============================================================
-// ✅ توابع اصلی
-// ============================================================
 const CREATOR_PHONE='09904844031';
 
 async function getUser(p){return await redisGet('user:'+p);}
@@ -1191,27 +1193,21 @@ async function wipeDatabase(){
   showShopNotification('دیتابیس پاک شد');
 }
 
-// ============================================================
-// ✅ قطع و وصل کردن سرور (دکمه در پنل مدیریت)
-// ============================================================
 async function toggleServer(){
   if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده دسترسی دارد','error');return;}
   const m=await getMaintenance();
   const isOn=m&&m.on;
   await setMaintenance(!isOn);
-  showShopNotification(!isOn?'🔌 سرور قطع شد':'✅ سرور وصل شد');
+  showShopNotification(!isOn?'سرور قطع شد 🔌':'سرور وصل شد ✅');
   updateServerToggleBtn();
 }
 async function updateServerToggleBtn(){
   const m=await getMaintenance();
   const btn=document.getElementById('btnServerToggle');
-  if(m&&m.on){btn.textContent='✅ وصل کردن سرور';btn.className='edit-btn unban';}
+  if(m&&m.on){btn.textContent=' وصل کردن سرور';btn.className='edit-btn unban';}
   else{btn.textContent='🔌 قطع سرور';btn.className='edit-btn ban';}
 }
 
-// ============================================================
-// ✅ توابع مسابقات و بقیه موارد
-// ============================================================
 function confirmTournamentTime(){
   showShopNotification('✅ زمان مسابقه تایید شد');
 }
@@ -1561,12 +1557,22 @@ async function checkAndDistributeTournamentPrizes() {
   }
 }
 
-// ============================================================
-// ✅ همگام‌سازی در پس‌زمینه (بدون بررسی قطعی سرور)
-// ============================================================
+// ✅ اصلاح شده: همگام‌سازی سریع با قابلیت وصل کردن خودکار سرور برای سازنده
 async function syncWithServerInBackground() {
   try {
-    // فقط بن چک می‌شود، وضعیت سرور دیگر نمایش داده نمی‌شود
+    const m = await getMaintenance();
+    
+    // ✅ اگر سرور قطع بود و شما سازنده هستید، خودکار وصلش کن!
+    if (m && m.on) {
+        if (currentPhone === CREATOR_PHONE) {
+            await setMaintenance(false);
+            showShopNotification('سرور به صورت خودکار برای سازنده وصل شد ✅');
+        } else {
+            document.getElementById('serverDownOverlay').classList.add('show');
+            return;
+        }
+    }
+
     const ban = await getBanStatus(currentPhone);
     if(ban){redirectToBan(ban,currentPhone); return;}
 
@@ -1600,6 +1606,7 @@ async function syncWithServerInBackground() {
     await saveUserData();
 
     updateUIWithData(currentUserData);
+    updateServerToggleBtn();
     updateGroupDisplay();
 
   } catch (error) {
@@ -1607,22 +1614,20 @@ async function syncWithServerInBackground() {
   }
 }
 
-// ============================================================
-// ✅ اجرای اصلی
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) {
-      window.location.href = 'index.html';
-      return;
+      // اگر لاگین نبود، به صفحه ورود برود، اما دکمه اضطراری روی صفحه اصلی کار می‌کند
+      // window.location.href = 'index.html'; 
+      // return;
   }
 
   let phone = null;
   try {
-      phone = JSON.parse(loggedIn).phone;
+      if(loggedIn) phone = JSON.parse(loggedIn).phone;
   } catch(e) {
-      window.location.href = 'index.html';
-      return;
+      // window.location.href = 'index.html';
+      // return;
   }
 
   currentPhone = phone;
@@ -1645,16 +1650,33 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUIWithData(currentUserData);
   initAvatarShop();
 
-  // بروزرسانی دکمه قطع/وصل در پنل مدیریت
-  updateServerToggleBtn();
-
   setTimeout(() => {
       syncWithServerInBackground();
-  }, 500);
+  }, 0);
 
   setInterval(syncWithServerInBackground, 3000);
 
-  // ====== رویدادهای دکمه‌ها ======
+  // ✅ اضافه شدن رویداد کلیک برای دکمه اضطراری سازنده
+  document.getElementById('creatorEmergencyBtn').addEventListener('click', async () => {
+      const inputPhone = prompt('شماره موبایل سازنده را وارد کنید:');
+      if (inputPhone === CREATOR_PHONE) {
+          showShopNotification('در حال وصل کردن سرور...');
+          await setMaintenance(false);
+          document.getElementById('serverDownOverlay').classList.remove('show');
+          showShopNotification('سرور با موفقیت وصل شد! اکنون می‌توانید وارد شوید. ✅');
+          
+          // ذخیره شماره سازنده در لاگین برای جلوگیری از مشکل بعدی
+          localStorage.setItem('currentLoggedInUser', JSON.stringify({phone: CREATOR_PHONE}));
+          currentPhone = CREATOR_PHONE;
+          
+          setTimeout(() => {
+              window.location.reload();
+          }, 1500);
+      } else {
+          showShopNotification('شماره وارد شده صحیح نیست!', 'error');
+      }
+  });
+
   document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();playClickSound();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
   document.getElementById('menuOverlay').addEventListener('click',()=>{document.getElementById('menuOverlay').classList.remove('active');document.getElementById('menuDropdown').classList.remove('active');});
 
