@@ -145,24 +145,25 @@
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   
-  /* شماره صندلی خارج از دایره و در زیر آن */
+  /* شماره صندلی دقیقاً در بیرون دایره (بالای دایره) */
   .seat-num {
     position: absolute;
-    bottom: -28px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
+    background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
     color: #ffd700;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 900;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255,215,0,0.5);
-    z-index: 5;
+    border: 2px solid rgba(255,215,0,0.6);
+    z-index: 15;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.6);
   }
 
   /* علامت دیسکانکت */
@@ -1417,11 +1418,11 @@
 
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
+          <div class="seat-num">${toFa(i)}</div>
           ${inner}
           <div class="voice-indicator"></div>
           <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
         </div>
-        <div class="seat-num">${toFa(i)}</div>
         ${tagLayer}${tag}
       </div>`;
     }
