@@ -147,8 +147,9 @@
   
   .seat-num {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
     background: rgba(0,0,0,0.7);
     color: #ffd700;
     font-size: 11px;
@@ -429,7 +430,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن +  ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -444,7 +445,7 @@
     <div class="close-x" id="closeEditBtn"></div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
     <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
-    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۰ سکه</div>
+    <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۵۰ سکه</div>
     <div class="name-input-wrap"><input type="text" id="editInput" placeholder="نام لابی" maxlength="24" style="padding-left:15px"></div>
     <button class="green-btn" id="editSaveBtn">ذخیره و ارسال برای تأیید</button>
   </div></div>
@@ -633,7 +634,7 @@
   let isProcessingAction = false;
 
   const $=id=>document.getElementById(id);
-  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
+  const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۲۳۴۵۶۸۹'[+w]);
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const isStaff=r=>r&&r!=='کاربر';
   function crownHtml(){return '<span class="crown"><i class="l"></i><i class="r"></i></span>';}
@@ -652,13 +653,13 @@
   const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
 
   const DURATIONS=[
-    {v:'1h',l:' ساعت',ms:3600000},
-    {v:'1d',l:' روز',ms:86400000},
+    {v:'1h',l:'۱ ساعت',ms:3600000},
+    {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
-    {v:'1m',l:' ماه',ms:2592000000},
+    {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:' ماه',ms:7776000000},
-    {v:'8m',l:' ماه',ms:20736000000},
+    {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -671,15 +672,15 @@
   function getPanelTabs(rank){
     const tabs=[];
     if(rank==='ناظر'||rank==='ناظر ارشد'){
-      tabs.push({id:'users',label:' کاربران'});
-      tabs.push({id:'reports',label:' گزارش‌ها'});
-      tabs.push({id:'lobby_approvals',label:' تأیید لابی'});
+      tabs.push({id:'users',label:'کاربران'});
+      tabs.push({id:'reports',label:'گزارش‌ها'});
+      tabs.push({id:'lobby_approvals',label:'تأیید لابی'});
     }else{
-      tabs.push({id:'names',label:' تأیید نام'});
-      tabs.push({id:'users',label:' کاربران'});
-      tabs.push({id:'lobbies',label:' لابی‌ها'});
-      tabs.push({id:'lobby_approvals',label:'✅ تأیید لابی'});
-      tabs.push({id:'reports',label:' گزارش‌ها'});
+      tabs.push({id:'names',label:'تأیید نام'});
+      tabs.push({id:'users',label:'کاربران'});
+      tabs.push({id:'lobbies',label:'لابی‌ها'});
+      tabs.push({id:'lobby_approvals',label:'تأیید لابی'});
+      tabs.push({id:'reports',label:'گزارش‌ها'});
     }
     return tabs;
   }
@@ -1331,7 +1332,6 @@
       const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
       return `<div class="super-slot" data-super="${i}">
         <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
-          <div class="seat-num">${toFa(i)}</div>
           ${inner}
           <div class="voice-indicator"></div>
           <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
@@ -1377,11 +1377,11 @@
 
       return `<div class="seat" data-seat="${i}">
         <div class="${cls}" ${dp}>
-          <div class="seat-num">${toFa(i)}</div>
           ${inner}
           <div class="voice-indicator"></div>
           <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
         </div>
+        <div class="seat-num">${toFa(i)}</div>
         ${tagLayer}${tag}
       </div>`;
     }
@@ -1713,7 +1713,7 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
 
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۰)</button>';
     } else {
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
@@ -1805,7 +1805,7 @@
     const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
     $('editWarn').style.display=(isCreator||isStaffUser)?'none':'block';
     $('editStaff').style.display=(isCreator||isStaffUser)?'block':'none';
-    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۵۰ سکه)':'ذخیره و ارسال برای تأیید (۵ سکه)';
+    $('editSaveBtn').textContent=(isCreator||isStaffUser)?'ذخیره و فعال‌سازی (۰ سکه)':'ذخیره و ارسال برای تأیید (۵۰ سکه)';
     $('editModal').classList.add('active');
   }
   async function saveEdit(){
