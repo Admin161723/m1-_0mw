@@ -112,11 +112,6 @@
   .admin-tools{background:rgba(0,0,0,.25);border:2px solid #ffd700;border-radius:12px;padding:14px;margin-bottom:15px;}
   .admin-tools-title{color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;}
   .admin-tools-btns{display:flex;flex-direction:column;gap:8px;}
-  .server-down-overlay{position:absolute;inset:0;background:rgba(0,0,0,.95);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;text-align:center;padding:20px;}
-  .server-down-overlay.show{display:flex;}
-  .server-down-icon{font-size:60px;}
-  .server-down-title{color:#ff6b6b;font-size:24px;font-weight:900;}
-  .server-down-text{color:rgba(255,255,255,.8);font-size:14px;line-height:1.8;}
   .news-list{display:flex;flex-direction:column;gap:12px;}
   .news-item{background:linear-gradient(180deg,#3a8adc,#2a7acc);border-radius:12px;padding:16px;border:2px solid #4a9eff;cursor:pointer;}
   .news-title{color:#fff;font-size:16px;font-weight:900;margin-bottom:8px;}
@@ -245,38 +240,8 @@
   .clan-blacklist-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:6px;margin-bottom:4px;}
   .clan-blacklist-item span{color:#fff;font-size:12px;}
   .clan-blacklist-item button{background:#f44336;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
-
   .confirm-btn{background:linear-gradient(180deg,#4CAF50,#45a049);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:10px;}
   .confirm-btn:hover{background:linear-gradient(180deg,#45a049,#3d8b40);}
-
-  /* دکمه شناور اضطراری برای وصل کردن سرور */
-  .emergency-fix-btn {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    background: linear-gradient(180deg, #ff4444, #cc0000);
-    color: #fff;
-    font-weight: 900;
-    font-size: 16px;
-    padding: 14px 40px;
-    border-radius: 50px;
-    border: 3px solid #ffaa00;
-    box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
-    cursor: pointer;
-    display: none; /* مخفی بصورت پیش‌فرض */
-    animation: pulse 1.5s infinite;
-    font-family: 'Vazirmatn', Tahoma;
-  }
-  .emergency-fix-btn.show {
-    display: block;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 10px rgba(255,0,0,0.5); }
-    50% { box-shadow: 0 0 40px rgba(255,0,0,1); }
-    100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); }
-  }
 </style>
 </head>
 <body>
@@ -348,7 +313,7 @@
         <div class="admin-tools" id="adminTools" style="display:none;">
           <div class="admin-tools-title">🛠️ ابزارهای سازنده</div>
           <div class="admin-tools-btns">
-            <button class="edit-btn ban" id="btnServerToggle"> قطع سرور</button>
+            <!-- دکمه قطع/وصل سرور حذف شد -->
             <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن دیتابیس</button>
           </div>
         </div>
@@ -599,15 +564,8 @@
     <button class="game-start-btn" id="enterGameBtn">ورود به بازی</button>
   </div>
 
-  <div class="server-down-overlay" id="serverDownOverlay">
-    <div class="server-down-icon">🔌</div>
-    <div class="server-down-title">سرور قطع است</div>
-    <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
-  </div>
+  <!-- سرور-داون اورلی حذف شد -->
 </div>
-
-<!-- دکمه شناور اضطراری (فقط برای سازنده) -->
-<button class="emergency-fix-btn" id="emergencyFixBtn">🔧 اتصال اضطراری سرور</button>
 
 <audio id="clickSound" preload="auto">
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
@@ -687,14 +645,14 @@ async function saveGroups(g){return await redisSet('police_groups',g);}
 async function getBanStatus(p){const b=await redisGet('ban:'+p);if(b&&b.isBanned){if(b.expiresAt&&b.duration!=='permanent'&&b.duration!=='دائمی'){if(new Date(b.expiresAt).getTime()<Date.now())return null;}return b;}return null;}
 async function getNews(){return await redisGet('game_news')||[];}
 async function saveNews(n){return await redisSet('game_news',n);}
-async function getMaintenance(){return await redisGet('server_maintenance');}
-async function setMaintenance(on){return await redisSet('server_maintenance',{on:on,at:Date.now()});}
+// توابع مربوط به maintenance حذف شدند
 async function getTournamentConfig(){return await redisGet('tournament_config')||{};}
 async function saveTournamentConfigData(cfg){return await redisSet('tournament_config',cfg);}
 
 let isRedirecting=false;
 function redirectToOffline(){if(isRedirecting)return;isRedirecting=true;window.location.href='off.html';}
 function redirectToBan(b,p){if(isRedirecting)return;isRedirecting=true;const params=new URLSearchParams({phone:p,by:b.bannedBy||'مدیریت',reason:b.reason||'بدون دلیل',duration:b.duration||'1d',expires:b.expiresAt||'',createdAt:b.createdAt||b.bannedAt||''});window.location.href='Ban.html?'+params.toString();}
+// offline event listener باقی می‌ماند (مربوط به قطعی اینترنت)
 window.addEventListener('offline',()=>{if(!isRedirecting)redirectToOffline();});
 
 document.addEventListener('visibilitychange', () => {
@@ -1224,21 +1182,7 @@ async function wipeDatabase(){
   showShopNotification('دیتابیس پاک شد');
 }
 
-async function toggleServer(){
-  if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده دسترسی دارد','error');return;}
-  const m=await getMaintenance();
-  const isOn=m&&m.on;
-  await setMaintenance(!isOn);
-  showShopNotification(!isOn?'سرور قطع شد 🔌':'سرور وصل شد ✅');
-  updateServerToggleBtn();
-  updateEmergencyButton();
-}
-async function updateServerToggleBtn(){
-  const m=await getMaintenance();
-  const btn=document.getElementById('btnServerToggle');
-  if(m&&m.on){btn.textContent=' وصل کردن سرور';btn.className='edit-btn unban';}
-  else{btn.textContent='🔌 قطع سرور';btn.className='edit-btn ban';}
-}
+// تابع toggleServer حذف شد
 
 function confirmTournamentTime(){
   showShopNotification('✅ زمان مسابقه تایید شد');
@@ -1590,85 +1534,11 @@ async function checkAndDistributeTournamentPrizes() {
 }
 
 // ============================================================
-// ✅ تابع جدید: اتصال خودکار سرور (فقط برای سازنده)
-// ============================================================
-async function autoFixServerIfNeeded() {
-  try {
-    const m = await getMaintenance();
-    if (m && m.on === true && currentPhone === CREATOR_PHONE) {
-      console.log("🔧 سرور قطع است، سازنده وارد شده -> اتصال خودکار...");
-      await setMaintenance(false);
-      console.log("✅ سرور با موفقیت وصل شد (خودکار)");
-      updateServerToggleBtn();
-      updateEmergencyButton();
-      // رفرش صفحه برای اعمال تغییرات
-      location.reload();
-    }
-  } catch (e) {
-    console.error("خطا در اتصال خودکار سرور:", e);
-  }
-}
-
-// ============================================================
-// ✅ مدیریت دکمه شناور اضطراری
-// ============================================================
-function updateEmergencyButton() {
-  const btn = document.getElementById('emergencyFixBtn');
-  if (!btn) return;
-  // فقط برای سازنده نمایش داده شود
-  if (currentPhone !== CREATOR_PHONE) {
-    btn.classList.remove('show');
-    return;
-  }
-  // بررسی وضعیت سرور
-  getMaintenance().then(m => {
-    if (m && m.on === true) {
-      btn.classList.add('show');
-      btn.textContent = '🔧 اتصال اضطراری سرور';
-    } else {
-      btn.classList.remove('show');
-    }
-  }).catch(() => {
-    btn.classList.remove('show');
-  });
-}
-
-async function emergencyFixServer() {
-  if (currentPhone !== CREATOR_PHONE) {
-    showShopNotification('فقط سازنده دسترسی دارد', 'error');
-    return;
-  }
-  if (!confirm('⚠️ سرور در حال حاضر قطع است. آیا می‌خواهید آن را وصل کنید؟')) return;
-  try {
-    await setMaintenance(false);
-    showShopNotification('✅ سرور با موفقیت وصل شد!');
-    updateServerToggleBtn();
-    updateEmergencyButton();
-    setTimeout(() => location.reload(), 500);
-  } catch (e) {
-    showShopNotification('❌ خطا در اتصال سرور', 'error');
-    console.error(e);
-  }
-}
-
-// ============================================================
-// ✅ همگام‌سازی با سرور (اضافه شدن خودکار)
+// ✅ همگام‌سازی با سرور (بدون بررسی maintenance)
 // ============================================================
 async function syncWithServerInBackground() {
   try {
-    const m = await getMaintenance();
-    if(m && m.on && currentPhone !== CREATOR_PHONE){
-      document.getElementById('serverDownOverlay').classList.add('show');
-      return;
-    } else {
-      document.getElementById('serverDownOverlay').classList.remove('show');
-    }
-
-    // اگر کاربر سازنده است و سرور قطع است، خودکار وصل کن
-    if (currentPhone === CREATOR_PHONE) {
-      await autoFixServerIfNeeded();
-    }
-
+    // بررسی بن
     const ban = await getBanStatus(currentPhone);
     if(ban){redirectToBan(ban,currentPhone); return;}
 
@@ -1702,8 +1572,6 @@ async function syncWithServerInBackground() {
     await saveUserData();
 
     updateUIWithData(currentUserData);
-    updateServerToggleBtn();
-    updateEmergencyButton();
     updateGroupDisplay();
 
   } catch (error) {
@@ -1746,18 +1614,10 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUIWithData(currentUserData);
   initAvatarShop();
 
-  // دکمه اضطراری
-  const emergencyBtn = document.getElementById('emergencyFixBtn');
-  if (emergencyBtn) {
-    emergencyBtn.addEventListener('click', emergencyFixServer);
-  }
-
-  // همگام‌سازی اولیه
   setTimeout(() => {
       syncWithServerInBackground();
   }, 500);
 
-  // همگام‌سازی دوره‌ای هر ۳ ثانیه
   setInterval(syncWithServerInBackground, 3000);
 
   // رویدادهای دکمه‌ها
@@ -1811,7 +1671,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const p=getPerm();
       if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}
       await loadUsers();
-      await updateServerToggleBtn();
       if (currentPhone === CREATOR_PHONE) {
         await loadTournamentConfig();
         renderBlacklist();
@@ -1823,7 +1682,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnUnbanUser').addEventListener('click',unbanUser);
   document.getElementById('btnDeleteAccount').addEventListener('click',deleteAccount);
   document.getElementById('btnWipeDB').addEventListener('click',wipeDatabase);
-  document.getElementById('btnServerToggle').addEventListener('click',toggleServer);
+  // دکمه قطع/وصل سرور دیگر وجود ندارد
   document.getElementById('btnFriendly').addEventListener('click',()=>{playClickSound();window.location.href='TalarDs.html';});
   document.getElementById('btnCompetitive').addEventListener('click',()=>{playClickSound();startCompetitiveSearch();});
   document.getElementById('cancelSearchBtn').addEventListener('click',cancelCompetitiveSearch);
@@ -1892,9 +1751,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('gameVolumeSlider').addEventListener('input', updateMusicVolume);
 
   setInterval(updateGroupDisplay,30000);
-
-  // بروزرسانی دکمه اضطراری در ابتدا
-  updateEmergencyButton();
 });
 
 document.addEventListener('visibilitychange', () => {
