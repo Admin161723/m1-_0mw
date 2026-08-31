@@ -38,6 +38,6 @@ $data = json_decode($response, true);
 if (isset($data['payment_url'])) {
     echo json_encode(['success' => true, 'url' => $data['payment_url']]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'خطا: ' . ($data['message'] ?? 'نامشخص') . ' (کد: ' . $httpCode . ')']);
+    echo json_encode(['success' => false, 'message' => 'خطا: ' . ($data['message'] ?? 'نامشخص')]);
 }
 ?>
