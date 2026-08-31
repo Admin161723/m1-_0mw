@@ -145,7 +145,7 @@
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:0 0 15px rgba(76,175,80,.8);}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   
-  /* شماره صندلی در گوشه بالا سمت چپ دایره */
+  /* شماره صندلی در گوشه بالا سمت چپ */
   .seat-num {
     position: absolute;
     top: -5px;
@@ -662,10 +662,10 @@
     {v:'1h',l:'۱ ساعت',ms:3600000},
     {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
-    {v:'2w',l:' هفته',ms:1209600000},
-    {v:'1m',l:'۱ ماه',ms:2592000000},
+    {v:'2w',l:'۲ هفته',ms:1209600000},
+    {v:'1m',l:' ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
-    {v:'8m',l:' ماه',ms:20736000000},
+    {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
   ];
   const BAN_LIMIT={'ناظر':'1d','ناظر ارشد':'7d','ادمین':'2w','ادمین ارشد':'1m','گرداننده':'3m','پشتیبانی':'3m','سازنده':'permanent'};
@@ -1163,7 +1163,7 @@
       const supersCount = Object.values(r.supers || {}).filter(Boolean).length;
       const tk=getRoleTick(r.creatorRank);
       const delBtn=canDelete?'<button class="delete-room-btn show" data-delete="'+r.id+'" title="حذف لابی">✕</button>':'';
-      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
+      html+='<div class="room-card">'+delBtn+'<div class="room-top"><div class="room-letter">M</div><div class="room-name">'+esc(r.name)+'</div><div class="room-badges"><div class="badge-count"><span>بازیکن '+toFa(playersCount)+' از ۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(supersCount)+' از ۲</div></div></div><div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name">'+crownHtml()+' '+esc(r.creatorName)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div></div><button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
     });
     list.innerHTML=html;
     list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
@@ -1202,7 +1202,6 @@
     if(!room||room.status!=='waiting'){return;}
     if((room.blocked||[]).includes(me.phone)){return;}
     
-    // فقط بررسی موجودی سکه - بدون کسر
     const allUsers = await getAllUsers();
     const currentUser = allUsers[me.phone] || {};
     if ((currentUser.coins || 0) < 50) {
@@ -1225,7 +1224,8 @@
     }
     if(room.kicked&&room.kicked[me.phone])delete room.kicked[me.phone];
     
-    // بدون کسر سکه
+    currentUser.coins = (currentUser.coins || 0) - 50;
+    allUsers[me.phone] = currentUser;
     await saveUser(me.phone, currentUser);
     await saveAllUsers(allUsers);
     usersCache={ts:0,data:{}};
@@ -1248,11 +1248,10 @@
       if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){isProcessingAction = false; return;}
       if(!selectedName){isProcessingAction = false; return;}
       
-      // فقط بررسی موجودی سکه - بدون کسر
       const allUsers = await getAllUsers();
       const currentUser = allUsers[me.phone] || {};
       if ((currentUser.coins || 0) < 50) {
-        alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ایجاد لابی نیاز است)');
+        alert('شما سکه کم دارید (حداقل ۵ سکه برای ایجاد لابی نیاز است)');
         isProcessingAction = false;
         return;
       }
@@ -1265,7 +1264,8 @@
       const isNameApproved = selectedNameObj && selectedNameObj.status === 'active';
       const isStaffUser = RANK_LEVEL[me.rank] >= RANK_LEVEL['پشتیبانی'] || me.phone === CREATOR_PHONE;
 
-      // بدون کسر سکه
+      currentUser.coins = (currentUser.coins || 0) - 50;
+      allUsers[me.phone] = currentUser;
       await saveUser(me.phone, currentUser);
       await saveAllUsers(allUsers);
       usersCache={ts:0,data:{}};
