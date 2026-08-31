@@ -144,18 +144,19 @@
   .seat-circle.glow-red{border:3px solid #f44336;box-shadow:0 0 10px rgba(244,67,54,.6);}
   .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
-  
-  /* شماره صندلی در گوشه بالا سمت چپ و بیرون از دایره */
+
+  /* شماره صندلی چسبیده به کنار پروفایل (سمت چپ آواتار) */
   .seat-num {
     position: absolute;
-    top: -8px;
-    left: -8px;
+    top: 50%;
+    left: -12px;
+    transform: translateY(-50%);
     background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
     color: #ffd700;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -168,10 +169,10 @@
   /* نشانگر صحبت کردن با فایل Ma10.webm */
   .voice-indicator {
     position: absolute;
-    width: 32px;
-    height: 32px;
-    top: -16px;
-    right: -16px;
+    width: 28px;
+    height: 28px;
+    top: -14px;
+    right: -14px;
     display: none;
     align-items: center;
     justify-content: center;
@@ -232,7 +233,7 @@
   .seat-tag-layer{position:relative;margin-top:-8px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:8px;padding:2px 6px;font-size:9px;font-weight:900;display:inline-flex;align-items:center;gap:2px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.3;}
   .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
-  
+
   .seat-tag-badge.staff-badge .tag-color-text {
     font-size: 8px !important;
     padding: 1px 3px !important;
@@ -435,7 +436,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن + ۲ ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -662,7 +663,7 @@
     {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
-    {v:'1m',l:'۱ ماه',ms:2592000000},
+    {v:'1m',l:' ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
     {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
@@ -794,7 +795,10 @@
     try {
       if (!agoraClient) {
         await initVoice();
-        if (!agoraClient) { return; }
+        if (!agoraClient) { 
+          alert('خطا در اتصال صوتی');
+          return; 
+        }
       }
       if (!localAudioTrack) {
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
@@ -1200,9 +1204,10 @@
     const room=rooms[id];
     if(!room||room.status!=='waiting'){return;}
     if((room.blocked||[]).includes(me.phone)){return;}
-    
+
     const allUsers = await getAllUsers();
     const currentUser = allUsers[me.phone] || {};
+    // فقط بررسی موجودی سکه بدون کسر
     if ((currentUser.coins || 0) < 50) {
       alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ورود به لابی نیاز است)');
       return;
@@ -1222,13 +1227,7 @@
       room.seats[seat]=me.phone;
     }
     if(room.kicked&&room.kicked[me.phone])delete room.kicked[me.phone];
-    
-    currentUser.coins = (currentUser.coins || 0) - 50;
-    allUsers[me.phone] = currentUser;
-    await saveUser(me.phone, currentUser);
-    await saveAllUsers(allUsers);
-    usersCache={ts:0,data:{}};
-    
+
     await saveRooms(rooms);
     const liveData = await getLive(id);
     if (!liveData.seats) liveData.seats = {};
@@ -1240,17 +1239,18 @@
   async function createRoom(){
     if (isProcessingAction) return;
     isProcessingAction = true;
-    
+
     try {
       const rooms=await getRooms();
       if(myRoom(rooms)){isProcessingAction = false; return;}
       if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){isProcessingAction = false; return;}
       if(!selectedName){isProcessingAction = false; return;}
-      
+
       const allUsers = await getAllUsers();
       const currentUser = allUsers[me.phone] || {};
+      // فقط بررسی موجودی سکه بدون کسر
       if ((currentUser.coins || 0) < 50) {
-        alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ایجاد لابی نیاز است)');
+        alert('شما سکه کم دارید (حداقل ۵ سکه برای ایجاد لابی نیاز است)');
         isProcessingAction = false;
         return;
       }
@@ -1263,8 +1263,6 @@
       const isNameApproved = selectedNameObj && selectedNameObj.status === 'active';
       const isStaffUser = RANK_LEVEL[me.rank] >= RANK_LEVEL['پشتیبانی'] || me.phone === CREATOR_PHONE;
 
-      currentUser.coins = (currentUser.coins || 0) - 50;
-      allUsers[me.phone] = currentUser;
       await saveUser(me.phone, currentUser);
       await saveAllUsers(allUsers);
       usersCache={ts:0,data:{}};
@@ -1399,7 +1397,7 @@
         dp=' data-phone="'+ph+'"';
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
+        inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
         tag='<div class="seat-name normal-tag"> روح (شما)</div>';
       }
       else if(ph && !ghostHidden){
@@ -1732,8 +1730,8 @@
       '<div class="pf-stat"><div class="v">'+toFa(u.compWins||0)+'</div><div class="l">برد امتیازی</div></div>'+
       '<div class="pf-stat"><div class="v">'+toFa(u.friendWins||0)+'</div><div class="l">برد دوستانه</div></div>'+
       '<div class="pf-stat"><div class="v">'+toFa(u.mafiaWins||0)+'</div><div class="l">برد مافیا</div></div>'+
-      '<div class="pf-stat"><div class="v">'+toFa(u.citizenWins||0)+'</div><div class="l">برد شهروند</div></div>'+
-      '<div class="pf-stat"><div class="v">'+toFa(u.bestScore||0)+'</div><div class="l">بهترین امتیاز</div></div>'+
+      '<div class="pf-stat"><div class="v">'+toFa(u.citizenWins||0)'</div><div class="l">برد شهروند</div></div>'+
+      '<div class="pf-stat"><div class="v">'+toFa(u.bestScore||0)'</div><div class="l">بهترین امتیاز</div></div>'+
       '</div>';
     $('profileModal').classList.add('active');
     const im=$('profileBody').querySelector('img.tick-img');if(im)applyTick(im,im.dataset.tick.split(','));
@@ -1757,7 +1755,7 @@
     const isCreator=me.phone===CREATOR_PHONE;
     const myLevel=RANK_LEVEL[me.rank]||0;
     const canAddBot=isCreator||myLevel>=RANK_LEVEL['پشتیبانی'];
-    
+
     const canDelete = isCreator || myLevel >= RANK_LEVEL['گرداننده'];
 
     let html='';
@@ -1866,12 +1864,12 @@
   async function saveEdit(){
     if (isProcessingAction) return;
     isProcessingAction = true;
-    
+
     try {
       const val=$('editInput').value.trim();if(!val){isProcessingAction = false; return;}
       const names=await getNames(me.phone);
       if(editMode==='add'&&names.length>=MAX_NAMES){isProcessingAction = false; return;}
-      
+
       const allUsers=await getUsersCached(true);
       const u=allUsers[me.phone];
       if(!u||((u.coins||0)<50)){
@@ -1889,12 +1887,12 @@
       const isCreator=me.phone===CREATOR_PHONE;
       const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
       const status=(isCreator||isStaffUser)?'active':'pending';
-      
+
       if(editMode==='add')names.push({name:val,status:status});
       else names[editIndex]={name:val,status:status};
-      
+
       await saveNames(me.phone,names);
-      
+
       if(!isCreator&&!isStaffUser){
         const reqs=await getReqs();reqs.push({id:Date.now(),phone:me.phone,requester:me.name,newName:val,status:'pending'});
         await saveReqs(reqs.slice(-60));
