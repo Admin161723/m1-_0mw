@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0a1628">
+<meta name="theme-color" content="#0d2135">
 <title>بازی مافیا | تالار دوستانه</title>
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent!important;}
-  html{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#0a1628!important;touch-action:none!important;}
+  html{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#0d2135!important;touch-action:none!important;}
   body{font-family:'Vazirmatn',Tahoma,sans-serif;width:100%;height:100%;position:fixed;inset:0;display:flex;justify-content:center;align-items:center;overflow:hidden!important;color:white;}
   input,textarea,select{font-size:16px!important;-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation!important;font-family:'Vazirmatn';}
 
-  .app{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a1628 0%,#0f2040 100%);}
+  .app{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:linear-gradient(180deg,#275a8f 0%,#16304f 35%,#0d2135 100%);}
   .view{position:absolute;inset:0;display:none;flex-direction:column;}
   .view.active{display:flex;}
 
@@ -134,44 +134,44 @@
   .super-circle img,.super-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
   .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;}
 
-  .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:flex-start;padding:10px 15px;direction:ltr;}
-  .seat-col{display:flex;flex-direction:column;justify-content:flex-start;gap:15px;flex:1;}
+  .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:center;padding:0 4px;direction:ltr;}
+  .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:4px;flex:1;height:100%;}
 
   .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;}
-  .seat-circle{width:72px;height:72px;border-radius:50%;background:#1e3a5f;border:3px solid #2a4a7a;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,0.3);}
-  .seat-circle.filled{background:#173a5e;border-color:#4aa3e0;}
+  .seat-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .seat-circle.filled{background:#173a5e;}
   .seat-circle img,.seat-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-  .seat-circle.glow-red{border:3px solid #f44336;box-shadow:0 0 15px rgba(244,67,54,.8);}
-  .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:0 0 15px rgba(76,175,80,.8);}
+  .seat-circle.glow-red{border:3px solid #f44336;box-shadow:0 0 10px rgba(244,67,54,.6);}
+  .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
   .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
   
-  /* شماره صندلی در گوشه بالا سمت چپ */
+  /* شماره صندلی در گوشه بالا سمت چپ و بیرون از دایره */
   .seat-num {
     position: absolute;
-    top: -5px;
-    left: -5px;
-    background: linear-gradient(180deg, #ffd700, #ffa500);
-    color: #000;
-    font-size: 11px;
+    top: -8px;
+    left: -8px;
+    background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+    color: #ffd700;
+    font-size: 12px;
     font-weight: 900;
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #fff;
+    border: 2px solid rgba(255,215,0,0.8);
     z-index: 20;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.8);
   }
 
   /* نشانگر صحبت کردن با فایل Ma10.webm */
   .voice-indicator {
     position: absolute;
-    width: 28px;
-    height: 28px;
-    top: -14px;
-    right: -14px;
+    width: 32px;
+    height: 32px;
+    top: -16px;
+    right: -16px;
     display: none;
     align-items: center;
     justify-content: center;
@@ -229,7 +229,7 @@
   }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  .seat-tag-layer{position:relative;margin-top:5px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
+  .seat-tag-layer{position:relative;margin-top:-8px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
   .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:8px;padding:2px 6px;font-size:9px;font-weight:900;display:inline-flex;align-items:center;gap:2px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.3;}
   .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
   
@@ -241,8 +241,7 @@
   .seat-tag-badge .tag-color-text{font-weight:900;padding:1px 4px;border-radius:4px;font-size:9px;}
   .seat-tag-badge .rank-text{color:#ffd700;font-size:9px;}
 
-  .seat-name{margin-top:6px;font-size:11px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:3px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;}
-  .seat-name .star{color:#ffd700;font-size:10px;}
+  .seat-name{margin-top:2px;font-size:10px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:2px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;}
   .manager-tag{color:#ffd700;}
   .bot-tag{color:#ce93d8;}
   .normal-tag{color:white;}
@@ -436,7 +435,7 @@
     <div class="toggle-row"><span style="font-size:16px;font-weight:900">لابی رمزدار</span><div class="switch" id="passSwitch"><div class="knob"></div></div></div>
     <div id="passRow"><input type="text" id="lobbyPassInput" placeholder="رمز لابی" maxlength="20"></div>
     <div class="sc-label">سناریو</div>
-    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱ بازیکن + ۲ ناظر</div></div>
+    <div class="scenario-card"><div class="t">مافیاسان</div><div class="s">۱۰ بازیکن + ۲ ناظر</div></div>
     <button class="green-btn" id="doCreateBtn">ایجاد لابی</button>
   </div></div>
 
@@ -663,7 +662,7 @@
     {v:'1d',l:'۱ روز',ms:86400000},
     {v:'7d',l:'۷ روز',ms:604800000},
     {v:'2w',l:'۲ هفته',ms:1209600000},
-    {v:'1m',l:' ماه',ms:2592000000},
+    {v:'1m',l:'۱ ماه',ms:2592000000},
     {v:'3m',l:'۳ ماه',ms:7776000000},
     {v:'8m',l:'۸ ماه',ms:20736000000},
     {v:'permanent',l:'دائمی',ms:0}
@@ -1251,7 +1250,7 @@
       const allUsers = await getAllUsers();
       const currentUser = allUsers[me.phone] || {};
       if ((currentUser.coins || 0) < 50) {
-        alert('شما سکه کم دارید (حداقل ۵ سکه برای ایجاد لابی نیاز است)');
+        alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ایجاد لابی نیاز است)');
         isProcessingAction = false;
         return;
       }
@@ -1401,7 +1400,7 @@
         const u=allUsers[ph]||{avatar:'Mafia2.png'};
         cls+=' filled ghost-self glow-green';
         inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
-        tag='<div class="seat-name normal-tag"><span class="star">☆</span> روح (شما) <span class="star">☆</span></div>';
+        tag='<div class="seat-name normal-tag"> روح (شما)</div>';
       }
       else if(ph && !ghostHidden){
         dp=' data-phone="'+ph+'"';
@@ -1411,13 +1410,13 @@
         const tk=getRoleTick(u.rank);
         const mgr=(ph===room.managerPhone)?crownHtml():'';
         const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
-        tag='<div class="seat-name '+nameClass+'"><span class="star">☆</span>'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'<span class="star">☆</span></div>';
+        tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
         tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
         inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
       }
       else if(bot){
         inner='<span class="bot-face"></span>';cls+=' filled glow-green';
-        tag='<div class="seat-name bot-tag"><span class="star">☆</span>بات<span class="star">☆</span></div>';
+        tag='<div class="seat-name bot-tag">بات</div>';
       }
 
       return `<div class="seat" data-seat="${i}">
@@ -1768,7 +1767,7 @@
     const allReady=humans.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
 
     if(total >= MAX_PLAYERS && allReady) {
-      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱)</button>';
+      html += '<button class="menu-item-b mi-gold" id="mgStartGame">شروع بازی (۱۰/۱۰)</button>';
     } else {
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
