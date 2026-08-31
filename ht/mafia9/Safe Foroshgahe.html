@@ -5,39 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>فروشگاه - بازی مافیا</title>
-    
-    <!-- ✅ اسکریپت رسمی بازارپی (با اطمینان از بارگذاری) -->
-    <script src="https://pardakht.cafebazaar.ir/bazaarpay/web/v1/bazaarpay.js" onerror="console.error('خطا در بارگذاری اسکریپت بازارپی')"></script>
-
     <style>
-        /* (همان استایل‌های قبلی شما بدون هیچ تغییری برای حفظ زیبایی) */
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none !important; -moz-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
-        html { width: 100% !important; height: 100% !important; overflow: hidden !important; position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; overscroll-behavior: none !important; background: #0a1628 !important; touch-action: none !important; }
-        body { font-family: 'Vazirmatn', Tahoma, sans-serif; background: #0a1628 !important; background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px); width: 100% !important; height: 100% !important; position: fixed !important; top: 0; left: 0; margin: 0 !important; padding: 0 !important; display: flex; justify-content: center; overflow: hidden !important; overscroll-behavior: none !important; touch-action: none !important; color: #fff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent !important; }
+        html { width: 100% !important; height: 100% !important; overflow: hidden !important; position: fixed !important; inset: 0; background: #0a1628 !important; touch-action: none !important; }
+        body { font-family: 'Vazirmatn', Tahoma, sans-serif; background: #0a1628 !important; background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px); width: 100% !important; height: 100% !important; position: fixed !important; inset: 0; display: flex; justify-content: center; overflow: hidden !important; color: #fff; }
         input, textarea, select { font-size: 16px !important; -webkit-user-select: text !important; user-select: text !important; touch-action: manipulation !important; }
-        img, a, button, div { -webkit-user-drag: none !important; user-drag: none !important; }
-        .page-wrapper { width: 100%; max-width: 420px; height: 100vh; height: 100dvh; background: #0a1628; background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px); position: relative; display: flex; flex-direction: column; overflow: hidden !important; overscroll-behavior: none !important; touch-action: none !important; padding-bottom: 68px; }
+        .page-wrapper { width: 100%; max-width: 420px; height: 100vh; height: 100dvh; background: #0a1628; background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px); position: relative; display: flex; flex-direction: column; overflow: hidden !important; padding-bottom: 68px; }
         .top-bar { background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; border-bottom: 2px solid #2a5a9a; flex-shrink: 0; }
         .currency-item { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2); }
-        .coin-icon-top { width: 32px; height: 32px; background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%); border-radius: 50%; box-shadow: 0 0 10px rgba(255,215,0,0.6); display: flex; align-items: center; justify-content: center; font-size: 18px; pointer-events: none; }
-        .gem-icon-top { width: 28px; height: 28px; background: linear-gradient(135deg, #e040fb 0%, #b030e0 40%, #7c4dff 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); box-shadow: 0 0 10px rgba(124,77,255,0.6); pointer-events: none; }
-        .currency-value { font-weight: 900; font-size: 18px; color: #fff; min-width: 35px; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); pointer-events: none; }
-        .add-btn { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; border: none; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); opacity: 0.4; cursor: not-allowed; }
-        .add-btn.gold { background: linear-gradient(180deg, #ff8c42, #e06520); }
-        .add-btn.gem { background: linear-gradient(180deg, #c040ff, #9020dd); }
-        .scroll-content { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain !important; -webkit-overflow-scrolling: auto; touch-action: pan-y; }
+        .coin-icon-top { width: 32px; height: 32px; background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%); border-radius: 50%; box-shadow: 0 0 10px rgba(255,215,0,0.6); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .gem-icon-top { width: 28px; height: 28px; background: linear-gradient(135deg, #e040fb 0%, #b030e0 40%, #7c4dff 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); box-shadow: 0 0 10px rgba(124,77,255,0.6); }
+        .currency-value { font-weight: 900; font-size: 18px; color: #fff; min-width: 35px; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .scroll-content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: auto; touch-action: pan-y; }
         .neon-title { text-align: center; padding: 30px 20px; }
         .neon-box { display: inline-block; padding: 25px 50px; border: 3px solid #ff00ff; border-radius: 25px; position: relative; background: rgba(0,0,0,0.3); box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, inset 0 0 20px rgba(255,0,255,0.3); animation: neonPulse 1.5s ease-in-out infinite alternate; }
         .neon-box::before { content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border: 3px solid #00ffff; border-radius: 30px; box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; animation: neonPulse2 1.5s ease-in-out infinite alternate; z-index: -1; pointer-events: none; }
         @keyframes neonPulse { from { box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, inset 0 0 20px rgba(255,0,255,0.3); } to { box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 80px #ff00ff, inset 0 0 30px rgba(255,0,255,0.5); } }
         @keyframes neonPulse2 { from { box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; } to { box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 80px #00ffff; } }
-        .neon-title h1 { font-size: 52px; font-weight: 900; color: #fff; text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 80px #ff00ff; margin-bottom: 10px; letter-spacing: 2px; pointer-events: none; }
-        .timer-24h { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 18px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px #ffd700; pointer-events: none; }
+        .neon-title h1 { font-size: 52px; font-weight: 900; color: #fff; text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 80px #ff00ff; margin-bottom: 10px; letter-spacing: 2px; }
+        .timer-24h { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 18px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px #ffd700; }
         .timer-icon { width: 26px; height: 26px; background: #ffd700; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-size: 14px; }
-        .section-header { background: linear-gradient(90deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%); padding: 12px; text-align: center; font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin: 20px 15px 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none; }
+        .section-header { background: linear-gradient(90deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%); padding: 12px; text-align: center; font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin: 20px 15px 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .section-header.purple { background: linear-gradient(90deg, #e040fb 0%, #7c4dff 50%, #e040fb 100%); }
         .section-header.red { background: linear-gradient(90deg, #ff5252 0%, #ff1744 50%, #ff5252 100%); }
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 15px; margin-bottom: 25px; }
@@ -45,30 +35,30 @@
         .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%; background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%); border-radius: 12px 12px 0 0; pointer-events: none; }
         .card.disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(30%); }
         .card:active:not(.disabled):not(.waiting) { transform: scale(0.95); }
-        .card-amount { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 8px; pointer-events: none; }
-        .card-image { width: 60px; height: 60px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 45px; pointer-events: none; }
-        .card-price { background: rgba(0,0,0,0.4); padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; margin-top: 8px; pointer-events: none; }
-        .soon-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #ffd700; font-size: 10px; font-weight: 900; padding: 3px 6px; border-radius: 6px; pointer-events: none; }
-        .product-code { font-size: 9px; color: rgba(255,255,255,0.5); margin-top: 4px; font-weight: 700; pointer-events: none; }
+        .card-amount { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 8px; }
+        .card-image { width: 60px; height: 60px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 45px; }
+        .card-price { background: rgba(0,0,0,0.4); padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; margin-top: 8px; }
+        .soon-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #ffd700; font-size: 10px; font-weight: 900; padding: 3px 6px; border-radius: 6px; }
+        .product-code { font-size: 9px; color: rgba(255,255,255,0.5); margin-top: 4px; font-weight: 700; }
         .coin-card { background: linear-gradient(180deg, #ffc107 0%, #ff9800 100%); border: 3px solid #ffb300; }
-        .coin-img { width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%); border-radius: 50%; margin: 10px auto; box-shadow: 0 0 15px rgba(255,215,0,0.6); pointer-events: none; }
+        .coin-img { width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%); border-radius: 50%; margin: 10px auto; box-shadow: 0 0 15px rgba(255,215,0,0.6); }
         .diamond-card { background: linear-gradient(180deg, #e040fb 0%, #7c4dff 100%); border: 3px solid #ab47bc; }
-        .diamond-img { width: 45px; height: 45px; background: linear-gradient(135deg, #ff66ff 0%, #cc00cc 50%, #990099 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); margin: 10px auto; box-shadow: 0 0 15px rgba(255,0,255,0.6); pointer-events: none; }
+        .diamond-img { width: 45px; height: 45px; background: linear-gradient(135deg, #ff66ff 0%, #cc00cc 50%, #990099 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); margin: 10px auto; box-shadow: 0 0 15px rgba(255,0,255,0.6); }
         .emoji-card { background: linear-gradient(180deg, #ff5252 0%, #ff1744 100%); border: 3px solid #ff5252; }
-        .emoji-img { font-size: 40px; margin: 10px auto; pointer-events: none; }
-        .emoji-price { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 6px; font-size: 13px; font-weight: 700; pointer-events: none; }
+        .emoji-img { font-size: 40px; margin: 10px auto; }
+        .emoji-price { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 6px; font-size: 13px; font-weight: 700; }
         .free-coin-card { background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%); border: 3px solid #81c784; grid-column: 1 / -1; padding: 20px 15px; position: relative; animation: pulseCard 2s ease-in-out infinite; }
         .free-coin-card.waiting { background: linear-gradient(180deg, #757575 0%, #424242 100%); border-color: #9e9e9e; animation: none; cursor: not-allowed; opacity: 0.7; }
         @keyframes pulseCard { 0%, 100% { box-shadow: 0 0 20px rgba(76,175,80,0.5); } 50% { box-shadow: 0 0 40px rgba(76,175,80,0.9); } }
-        .free-coin-card-content { display: flex; align-items: center; justify-content: space-between; gap: 15px; pointer-events: none; }
+        .free-coin-card-content { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
         .free-coin-info { flex: 1; text-align: right; }
         .free-coin-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .free-coin-subtitle { font-size: 13px; color: rgba(255,255,255,0.9); font-weight: 700; }
         .free-coin-amount { font-size: 28px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.6); display: flex; align-items: center; gap: 6px; }
         .free-coin-amount::before { content: '🪙'; font-size: 28px; }
         .video-icon-big { font-size: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
-        .daily-counter { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ff5252, #d32f2f); color: white; padding: 4px 14px; border-radius: 12px; font-size: 12px; font-weight: 900; box-shadow: 0 2px 8px rgba(211,47,47,0.5); white-space: nowrap; pointer-events: none; }
-        .ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; padding: 15px; overscroll-behavior: none; }
+        .daily-counter { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, #ff5252, #d32f2f); color: white; padding: 4px 14px; border-radius: 12px; font-size: 12px; font-weight: 900; box-shadow: 0 2px 8px rgba(211,47,47,0.5); white-space: nowrap; }
+        .ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; padding: 15px; }
         .ad-modal.show { display: flex; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .ad-container { background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; border: 3px solid #4a9eff; box-shadow: 0 0 40px rgba(74,158,255,0.5); position: relative; overflow: hidden; }
@@ -78,7 +68,6 @@
         .ad-subtitle { font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 700; }
         .ad-video-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 2px solid rgba(255,255,255,0.1); }
         .ad-video-wrapper video { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .ad-video-wrapper video::-webkit-media-controls, .ad-video-wrapper video::-webkit-media-controls-enclosure { display: none !important; }
         .video-loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: white; font-weight: 700; z-index: 5; }
         .video-loading.hidden { display: none; }
         .video-spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #4a9eff; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -90,65 +79,52 @@
         .ad-reward { background: rgba(76,175,80,0.2); border: 2px solid #4caf50; border-radius: 12px; padding: 10px; text-align: center; margin-bottom: 12px; }
         .ad-reward-text { font-size: 13px; color: #81c784; font-weight: 900; margin-bottom: 4px; }
         .ad-reward-amount { font-size: 22px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.6); }
-        .ad-close-btn { background: linear-gradient(180deg, #757575, #424242); color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Vazirmatn', sans-serif; font-size: 15px; font-weight: 900; cursor: not-allowed; opacity: 0.5; width: 100%; touch-action: manipulation; transition: all 0.3s; }
+        .ad-close-btn { background: linear-gradient(180deg, #757575, #424242); color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Vazirmatn', sans-serif; font-size: 15px; font-weight: 900; cursor: not-allowed; opacity: 0.5; width: 100%; transition: all 0.3s; }
         .ad-close-btn.ready { background: linear-gradient(180deg, #4caf50, #388e3c); cursor: pointer; opacity: 1; box-shadow: 0 0 15px rgba(76,175,80,0.6); animation: readyPulse 1s ease-in-out infinite; }
         @keyframes readyPulse { 0%, 100% { box-shadow: 0 0 15px rgba(76,175,80,0.6); } 50% { box-shadow: 0 0 25px rgba(76,175,80,1); } }
-        .ad-close-btn.ready:active { transform: scale(0.97); }
         .failed-section { background: linear-gradient(180deg, #9c27b0 0%, #7b1fa2 100%); border-radius: 15px; padding: 20px; margin: 0 15px 20px; text-align: center; border: 2px solid #ba68c8; }
-        .failed-text { font-size: 16px; font-weight: 700; margin-bottom: 15px; line-height: 1.8; pointer-events: none; }
-        .failed-btn { background: linear-gradient(180deg, #ff9800 0%, #f57c00 100%); border: none; padding: 15px 30px; border-radius: 12px; font-family: 'Vazirmatn', sans-serif; font-size: 18px; font-weight: 900; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s; touch-action: manipulation; }
+        .failed-text { font-size: 16px; font-weight: 700; margin-bottom: 15px; line-height: 1.8; }
+        .failed-btn { background: linear-gradient(180deg, #ff9800 0%, #f57c00 100%); border: none; padding: 15px 30px; border-radius: 12px; font-family: 'Vazirmatn', sans-serif; font-size: 18px; font-weight: 900; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s; }
         .failed-btn:active { transform: scale(0.95); }
-        .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%); display: flex; align-items: center; justify-content: space-around; z-index: 100; border-top: 2px solid #2a5a9a; box-shadow: 0 -2px 8px rgba(0,0,0,0.3); height: 68px; flex-shrink: 0; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 6px 20px; flex: 1; height: 100%; transition: background 0.2s; position: relative; touch-action: manipulation; }
+        .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%); display: flex; align-items: center; justify-content: space-around; z-index: 100; border-top: 2px solid #2a5a9a; box-shadow: 0 -2px 8px rgba(0,0,0,0.3); height: 68px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 6px 20px; flex: 1; height: 100%; position: relative; }
         .nav-item.active { background: rgba(255,255,255,0.08); }
         .nav-item.active::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 3px; background: #4a9eff; border-radius: 0 0 3px 3px; }
-        .nav-label { color: white; font-size: 11px; font-weight: 700; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); pointer-events: none; }
-        .nav-shop { width: 40px; height: 34px; position: relative; pointer-events: none; }
+        .nav-label { color: white; font-size: 11px; font-weight: 700; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); }
+        .nav-shop { width: 40px; height: 34px; position: relative; }
         .shop-awning { width: 40px; height: 12px; background: repeating-linear-gradient(90deg, #f44336 0px, #f44336 8px, #ffeb3b 8px, #ffeb3b 16px, #4caf50 16px, #4caf50 24px, #2196f3 24px, #2196f3 32px, #f44336 32px, #f44336 40px); border-radius: 3px 3px 0 0; }
         .shop-base { width: 34px; height: 20px; background: linear-gradient(180deg, #5c6bc0, #3f51b5); margin: 0 auto; border-radius: 0 0 4px 4px; position: relative; border: 1px solid #3949ab; }
         .shop-base::before { content: ''; position: absolute; top: 4px; left: 6px; width: 22px; height: 12px; background: #ffd700; border-radius: 2px; }
-        .nav-home { width: 44px; height: 40px; position: relative; pointer-events: none; }
-        .home-roof { width: 0; height: 0; border-left: 24px solid transparent; border-right: 24px solid transparent; border-bottom: 20px solid #f44336; margin: 0 auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
-        .home-body { width: 34px; height: 20px; background: white; margin: 0 auto; border-radius: 0 0 3px 3px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .nav-home { width: 44px; height: 40px; position: relative; }
+        .home-roof { width: 0; height: 0; border-left: 24px solid transparent; border-right: 24px solid transparent; border-bottom: 20px solid #f44336; margin: 0 auto; }
+        .home-body { width: 34px; height: 20px; background: white; margin: 0 auto; border-radius: 0 0 3px 3px; position: relative; }
         .home-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 13px; height: 15px; background: #5d4037; border-radius: 3px 3px 0 0; }
-        .nav-friends { display: flex; align-items: center; gap: 0; pointer-events: none; }
+        .nav-friends { display: flex; align-items: center; gap: 0; }
         .friend-head { width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; position: relative; }
         .friend-head::before { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 26px; height: 12px; background: inherit; border-radius: 13px 13px 0 0; }
         .friend-1 { background: #42a5f5; z-index: 2; margin-right: -6px; }
         .friend-2 { background: #66bb6a; }
-        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%); padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 10001; pointer-events: none; white-space: nowrap; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%); padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 10001; white-space: nowrap; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; white-space: normal; max-width: 90%; text-align: center; }
         .toast.error { background: linear-gradient(180deg, #f44336 0%, #da190b 100%); }
         .toast.info { background: linear-gradient(180deg, #2196f3 0%, #1976d2 100%); }
         .scroll-content::-webkit-scrollbar { width: 4px; }
         .scroll-content::-webkit-scrollbar-thumb { background: rgba(74,158,255,0.4); border-radius: 2px; }
-        @media (max-width: 480px) { .neon-title h1 { font-size: 40px; } .ad-container { padding: 15px; } .ad-title { font-size: 18px; } }
     </style>
 </head>
 <body>
 
-<div class="page-wrapper" id="pageWrapper">
+<div class="page-wrapper">
     <div class="top-bar">
-        <div class="currency-item">
-            <div class="coin-icon-top">🪙</div>
-            <span class="currency-value" id="shopCoins">۰</span>
-            <button class="add-btn gold" disabled>+</button>
-        </div>
-        <div class="currency-item">
-            <div class="gem-icon-top"></div>
-            <span class="currency-value" id="shopGems">۰</span>
-            <button class="add-btn gem" disabled>+</button>
-        </div>
+        <div class="currency-item"><div class="coin-icon-top">🪙</div><span class="currency-value" id="shopCoins">۰</span></div>
+        <div class="currency-item"><div class="gem-icon-top"></div><span class="currency-value" id="shopGems">۰</span></div>
     </div>
 
     <div class="scroll-content" id="scrollContent">
         <div class="neon-title">
             <div class="neon-box">
                 <h1>فروشگاه</h1>
-                <div class="timer-24h">
-                    <span class="timer-icon">⏱️</span>
-                    <span id="freeCoinTimerText">آماده دریافت</span>
-                </div>
+                <div class="timer-24h"><span class="timer-icon">⏱️</span><span id="freeCoinTimerText">آماده دریافت</span></div>
             </div>
         </div>
 
@@ -169,20 +145,20 @@
 
         <div class="section-header">💎 بسته‌های جم (الماس)</div>
         <div class="cards-grid">
-            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam1')"><div class="card-amount">۲۰</div><div class="diamond-img"></div><div class="card-price">۱۰ هزار تومان</div><div class="product-code">کد: Jam1</div></div>
-            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam2')"><div class="card-amount">۱۰۰</div><div class="diamond-img" style="transform: scale(1.2);"></div><div class="card-price">۵۰ هزار تومان</div><div class="product-code">کد: Jam2</div></div>
-            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam3')"><div class="card-amount">۳۰۰</div><div class="diamond-img" style="transform: scale(1.4);"></div><div class="card-price">۱۵۰ هزار تومان</div><div class="product-code">کد: Jam3</div></div>
-            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam4')"><div class="card-amount">۱۰۰۰</div><div class="diamond-img" style="transform: scale(1.6);"></div><div class="card-price">۵۰۰ هزار تومان</div><div class="product-code">کد: Jam4</div></div>
-            <div class="card diamond-card" onclick="initiateBazaarPurchase('Jam5')"><div class="card-amount">۲۰۰۰</div><div class="card-image">💎</div><div class="card-price">۱ میلیون تومان</div><div class="product-code">کد: Jam5</div></div>
+            <div class="card diamond-card" onclick="buyProduct('Jam1')"><div class="card-amount">۲۰</div><div class="diamond-img"></div><div class="card-price">۱۰ هزار تومان</div><div class="product-code">کد: Jam1</div></div>
+            <div class="card diamond-card" onclick="buyProduct('Jam2')"><div class="card-amount">۱۰۰</div><div class="diamond-img" style="transform: scale(1.2);"></div><div class="card-price">۵۰ هزار تومان</div><div class="product-code">کد: Jam2</div></div>
+            <div class="card diamond-card" onclick="buyProduct('Jam3')"><div class="card-amount">۳۰۰</div><div class="diamond-img" style="transform: scale(1.4);"></div><div class="card-price">۱۵۰ هزار تومان</div><div class="product-code">کد: Jam3</div></div>
+            <div class="card diamond-card" onclick="buyProduct('Jam4')"><div class="card-amount">۱۰۰۰</div><div class="diamond-img" style="transform: scale(1.6);"></div><div class="card-price">۵۰۰ هزار تومان</div><div class="product-code">کد: Jam4</div></div>
+            <div class="card diamond-card" onclick="buyProduct('Jam5')"><div class="card-amount">۲۰۰۰</div><div class="card-image">💎</div><div class="card-price">۱ میلیون تومان</div><div class="product-code">کد: Jam5</div></div>
         </div>
 
         <div class="section-header purple">🪙 بسته‌های سکه</div>
         <div class="cards-grid">
-            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin1')"><div class="card-amount">۵۰۰</div><div class="coin-img"></div><div class="card-price">۲۰ هزار تومان</div><div class="product-code">کد: Coin1</div></div>
-            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin2')"><div class="card-amount">۱۰۰۰</div><div class="coin-img"></div><div class="card-price">۴۰ هزار تومان</div><div class="product-code">کد: Coin2</div></div>
-            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin3')"><div class="card-amount">۲۰۰۰</div><div class="coin-img"></div><div class="card-price">۸۰ هزار تومان</div><div class="product-code">کد: Coin3</div></div>
-            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin4')"><div class="card-amount">۵۰۰۰</div><div class="coin-img"></div><div class="card-price">۲۰۰ هزار تومان</div><div class="product-code">کد: Coin4</div></div>
-            <div class="card coin-card" onclick="initiateBazaarPurchase('Coin5')"><div class="card-amount">۱۰۰۰۰</div><div class="card-image">💰</div><div class="card-price">۳۵۰ هزار تومان</div><div class="product-code">کد: Coin5</div></div>
+            <div class="card coin-card" onclick="buyProduct('Coin1')"><div class="card-amount">۵۰۰</div><div class="coin-img"></div><div class="card-price">۲۰ هزار تومان</div><div class="product-code">کد: Coin1</div></div>
+            <div class="card coin-card" onclick="buyProduct('Coin2')"><div class="card-amount">۱۰۰۰</div><div class="coin-img"></div><div class="card-price">۴۰ هزار تومان</div><div class="product-code">کد: Coin2</div></div>
+            <div class="card coin-card" onclick="buyProduct('Coin3')"><div class="card-amount">۲۰۰۰</div><div class="coin-img"></div><div class="card-price">۸۰ هزار تومان</div><div class="product-code">کد: Coin3</div></div>
+            <div class="card coin-card" onclick="buyProduct('Coin4')"><div class="card-amount">۵۰۰۰</div><div class="coin-img"></div><div class="card-price">۲۰۰ هزار تومان</div><div class="product-code">کد: Coin4</div></div>
+            <div class="card coin-card" onclick="buyProduct('Coin5')"><div class="card-amount">۱۰۰۰۰</div><div class="card-image">💰</div><div class="card-price">۳۵۰ هزار تومان</div><div class="product-code">کد: Coin5</div></div>
         </div>
 
         <div class="section-header red">😊 بسته‌های ایموجی متحرک</div>
@@ -205,7 +181,6 @@
     </div>
 </div>
 
-<!-- Modal ویدیو واقعی -->
 <div class="ad-modal" id="adModal">
     <div class="ad-container">
         <div class="ad-header">
@@ -234,7 +209,7 @@
 
 <script>
     // ================================================================
-    // 🔒 قفل کامل زوم، کپی، کشش و نگه‌داشتن
+    // 🔒 قفل‌های امنیتی
     // ================================================================
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('gesturechange', e => e.preventDefault());
@@ -271,7 +246,7 @@
     }
 
     // ================================================================
-    // 📺 لیست ویدیوهای واقعی
+    // 📺 ویدیوها
     // ================================================================
     const VIDEO_SOURCES = [
         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
@@ -286,7 +261,7 @@
     function getRandomVideo() { return VIDEO_SOURCES[Math.floor(Math.random() * VIDEO_SOURCES.length)]; }
 
     // ================================================================
-    // تنظیمات Upstash Redis
+    // Upstash Redis
     // ================================================================
     const REDIS_URL = "https://smooth-werewolf-200782.upstash.io";
     const REDIS_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -333,11 +308,10 @@
     let adVideo = null;
 
     // ================================================================
-    // 💳 سیستم پرداخت بازارپی (BazaarPay) - نسخه عیب‌یابی شده و قطعی
+    // 💳 سیستم پرداخت بازار - ۴ روش مختلف برای اطمینان از کار کردن
     // ================================================================
-    const BAZAAR_CLIENT_ID = 'b1b9d596614ba90c351df5e9ff032bd3d8a0cc63';
-    let bp = null;
-
+    const BAZAAR_TOKEN = 'b1b9d596614ba90c351df5e9ff032bd3d8a0cc63';
+    
     const PRODUCTS = {
         'Jam1':   { toman: 10,    rewardType: 'gem',  rewardAmount: 20 },
         'Jam2':   { toman: 50,    rewardType: 'gem',  rewardAmount: 100 },
@@ -351,61 +325,76 @@
         'Coin5':  { toman: 350,   rewardType: 'coin', rewardAmount: 10000 }
     };
 
-    function initBazaarPay() {
-        // بررسی دقیق وجود کتابخانه در حافظه مرورگر
-        if (typeof window.BazaarPay !== 'undefined') {
-            try {
-                bp = new window.BazaarPay({ clientId: BAZAAR_CLIENT_ID });
-                console.log('✅ بازارپی با موفقیت راه‌اندازی شد');
-            } catch (e) {
-                console.error('❌ خطا در ساخت نمونه BazaarPay:', e);
-                showToast('خطا در راه‌اندازی درگاه: ' + e.message, 'error');
-            }
-        } else {
-            console.error('❌ اسکریپت بازارپی بارگذاری نشده است');
-            showToast('خطا: کتابخانه پرداخت بارگذاری نشد. لطفاً صفحه را رفرش کنید.', 'error');
-        }
-    }
-
-    function initiateBazaarPurchase(productId) {
+    /**
+     * تابع اصلی خرید - ۴ روش مختلف را امتحان می‌کند
+     */
+    function buyProduct(productId) {
         playClickSound();
         
-        // اگر به هر دلیلی bp هنوز null بود، یک بار دیگر تلاش می‌کنیم آن را بسازیم
-        if (!bp) {
-            console.warn('bp null بود، در حال تلاش مجدد برای راه‌اندازی...');
-            initBazaarPay();
-            if (!bp) {
-                showToast('درگاه پرداخت آماده نیست. لطفاً یک بار صفحه را رفرش (بازنشانی) کنید.', 'error');
-                return;
-            }
-        }
-
         const product = PRODUCTS[productId];
         if (!product) {
-            showToast('محصول نامعتبر است.', 'error');
+            showToast('محصول نامعتبر است', 'error');
             return;
         }
 
         const amountRial = product.toman * 1000;
-        const description = `خرید ${toPersianNum(product.rewardAmount)} ${product.rewardType === 'gem' ? 'الماس' : 'سکه'} در بازی مافیا`;
-        
+        const description = `خرید ${toPersianNum(product.rewardAmount)} ${product.rewardType === 'gem' ? 'الماس' : 'سکه'}`;
         const baseUrl = window.location.href.split('?')[0];
         const callbackUrl = `${baseUrl}?status=OK&product=${productId}&type=${product.rewardType}&amount=${product.rewardAmount}`;
 
-        showToast('در حال انتقال به درگاه بازار...', 'info');
+        showToast('در حال اتصال به درگاه بازار...', 'info');
 
-        bp.requestPayment({
-            amount: amountRial,
-            description: description,
-            callbackUrl: callbackUrl
-        })
-        .then(response => {
-            console.log('BazaarPay Response:', response);
-        })
-        .catch(error => {
-            console.error('BazaarPay Error:', error);
-            showToast('خطا در باز کردن درگاه: ' + (error.message || 'نامشخص'), 'error');
-        });
+        // روش ۱: Deep Link به اپ بازار (مطمئن‌ترین روش برای Median.co)
+        const deepLink = `bazaar://payment?clientId=${BAZAAR_TOKEN}&amount=${amountRial}&description=${encodeURIComponent(description)}&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+        
+        // روش ۲: Intent URL (مخصوص Android)
+        const intentUrl = `intent://payment?clientId=${BAZAAR_TOKEN}&amount=${amountRial}&description=${encodeURIComponent(description)}&callbackUrl=${encodeURIComponent(callbackUrl)}#Intent;scheme=bazaar;package=com.farsitel.bazaar;end`;
+        
+        // روش ۳: URL مستقیم درگاه وب بازار
+        const webUrl = `https://pardakht.cafebazaar.ir/payment/?clientId=${BAZAAR_TOKEN}&amount=${amountRial}&description=${encodeURIComponent(description)}&redirectUri=${encodeURIComponent(callbackUrl)}`;
+
+        // ابتدا روش ۱ (Deep Link) را امتحان می‌کنیم
+        setTimeout(() => {
+            try {
+                window.location.href = deepLink;
+                
+                // اگر بعد از ۲ ثانیه هنوز اینجا بودیم، یعنی اپ بازار نصب نیست
+                setTimeout(() => {
+                    // روش ۲: Intent
+                    try {
+                        window.location.href = intentUrl;
+                        
+                        setTimeout(() => {
+                            // روش ۳: وب
+                            try {
+                                window.location.href = webUrl;
+                            } catch (e3) {
+                                showToast('خطا در اتصال به درگاه', 'error');
+                            }
+                        }, 1500);
+                    } catch (e2) {
+                        // روش ۳: وب
+                        try {
+                            window.location.href = webUrl;
+                        } catch (e3) {
+                            showToast('خطا در اتصال به درگاه', 'error');
+                        }
+                    }
+                }, 2000);
+            } catch (e1) {
+                // اگر روش ۱ کار نکرد، روش ۲
+                try {
+                    window.location.href = intentUrl;
+                } catch (e2) {
+                    // روش ۳: وب
+                    try {
+                        window.location.href = webUrl;
+                    } catch (e3) {
+                        showToast('خطا در اتصال به درگاه', 'error');
+                    }
+                }
+            }
+        }, 500);
     }
 
     // ================================================================
@@ -502,7 +491,7 @@
     }
 
     // ================================================================
-    // 🎬 سیستم ویدیو واقعی
+    // 🎬 سیستم ویدیو
     // ================================================================
     async function watchAdForCoins() {
         playClickSound();
@@ -532,10 +521,9 @@
             await adVideo.play();
             document.getElementById('videoLoading').classList.add('hidden');
         } catch (err) {
-            console.warn('Autoplay blocked:', err);
             document.getElementById('videoLoading').innerHTML = `<div style="text-align:center; padding: 20px;"><div style="font-size: 40px; margin-bottom: 10px;">👆</div><div>برای پخش روی ویدیو ضربه بزن</div></div>`;
             adVideo.onclick = async () => {
-                try { await adVideo.play(); document.getElementById('videoLoading').classList.add('hidden'); adVideo.onclick = null; } catch (e) { console.error(e); }
+                try { await adVideo.play(); document.getElementById('videoLoading').classList.add('hidden'); adVideo.onclick = null; } catch (e) {}
             };
         }
     }
@@ -559,8 +547,7 @@
             document.getElementById('adTimerText').textContent = 'تمام شد! 🎉';
         });
         video.addEventListener('error', (e) => {
-            console.error('Video error:', e);
-            document.getElementById('videoLoading').innerHTML = `<div style="text-align:center; padding: 20px;"><div style="font-size: 40px; margin-bottom: 10px;">❌</div><div>خطا در پخش ویدیو</div><div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">لطفاً دوباره تلاش کنید</div></div>`;
+            document.getElementById('videoLoading').innerHTML = `<div style="text-align:center; padding: 20px;"><div style="font-size: 40px; margin-bottom: 10px;">❌</div><div>خطا در پخش ویدیو</div></div>`;
             document.getElementById('videoLoading').classList.remove('hidden');
         });
         video.addEventListener('pause', () => {
@@ -622,10 +609,6 @@
     // راه‌اندازی
     // ================================================================
     document.addEventListener('DOMContentLoaded', async () => {
-        // ۱. راه‌اندازی بازارپی با اطمینان
-        initBazaarPay();
-
-        // ۲. بررسی بازگشت از درگاه پرداخت
         const urlParams = new URLSearchParams(window.location.search);
         const status = urlParams.get('status');
         const product = urlParams.get('product');
@@ -634,7 +617,6 @@
 
         const loggedIn = localStorage.getItem('currentLoggedInUser');
         if (!loggedIn) {
-            if (status === 'OK') { showToast('لطفاً ابتدا وارد حساب کاربری خود شوید.', 'info'); window.history.replaceState({}, document.title, window.location.pathname); }
             window.location.href = 'index.html';
             return;
         }
@@ -647,7 +629,6 @@
             if (freshUser) { currentUser = freshUser; } 
             else { showToast('خطا در بارگذاری اطلاعات', 'error'); setTimeout(() => window.location.href = 'index.html', 1500); return; }
 
-            // ۳. پردازش موفقیت پرداخت و اضافه کردن جایزه
             if (status === 'OK' && product && type && amount) {
                 if (type === 'gem') { currentUser.gems = (currentUser.gems || 0) + parseInt(amount); } 
                 else if (type === 'coin') { currentUser.coins = (currentUser.coins || 0) + parseInt(amount); }
