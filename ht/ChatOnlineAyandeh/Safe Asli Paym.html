@@ -77,7 +77,7 @@ body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#0e1621;color:#fff;hei
 .message-row.received .message-bubble{background:#182533;border-bottom-right-radius:4px}
 .message-bubble.system{align-self:center;background:rgba(91,164,217,0.15);border-radius:16px;max-width:85%;text-align:center;font-size:0.82rem;color:#5ba4d9;padding:8px 14px;font-style:italic}
 .message-text{font-size:0.92rem;line-height:1.5}
-.message-text a{color:#5ba4d9;text-decoration:none;word-break:break-all}
+.message-text a{color:#5ba4d9;text-decoration:none;word-break:break-all;cursor:pointer}
 .message-media{max-width:100%;border-radius:8px;margin-bottom:4px;cursor:pointer;pointer-events:auto}
 .message-media img{max-width:100%;border-radius:8px;max-height:250px;object-fit:cover}
 .message-media video{max-width:100%;border-radius:8px;max-height:250px}
@@ -158,7 +158,7 @@ body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#0e1621;color:#fff;hei
 .back-btn{background:none;border:none;cursor:pointer;padding:6px;pointer-events:auto}
 .back-btn svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2}
 
-/* ===== صفحه ویرایش دایره‌ای ===== */
+/* صفحه ویرایش دایره‌ای */
 .edit-page{padding:20px 16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;align-items:center}
 .edit-avatar-circle{width:130px;height:130px;border-radius:50%;margin:10px auto 20px;background:linear-gradient(135deg,#5ba4d9,#4a93c8);display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:700;color:#fff;cursor:pointer;pointer-events:auto;position:relative;overflow:hidden;border:4px solid rgba(91,164,217,0.4);box-shadow:0 8px 30px rgba(91,164,217,0.3)}
 .edit-avatar-circle img{width:100%;height:100%;object-fit:cover}
@@ -382,8 +382,8 @@ body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#0e1621;color:#fff;hei
 <option value="60">هر ۱ دقیقه</option>
 <option value="900">هر ۱۵ دقیقه</option>
 <option value="3600">هر ۱ ساعت</option>
-<option value="18000">هر ۵ ساعت</option>
-<option value="36000">هر ۱ ساعت</option>
+<option value="18000">هر  ساعت</option>
+<option value="36000">هر ۱۰ ساعت</option>
 </select>
 </div>
 <button class="edit-submit" onclick="saveSettings()">ذخیره تنظیمات</button>
@@ -434,8 +434,25 @@ function getColor(s){let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5
 function getInitials(s){return s.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()}
 function getCurrentTime(){const n=new Date();return `${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}`}
 function getCurrentDate(){const n=new Date();return `${n.getFullYear()}/${(n.getMonth()+1).toString().padStart(2,'0')}/${n.getDate().toString().padStart(2,'0')}`}
-function generateUniqueLink(){const c='abcdefghijklmnopqrstuvwxyz0123456789';let r='';for(let i=0;i<8;i++)r+=c.charAt(Math.floor(Math.random()*c.length));return `iran.ir/g/${r}`}
 function formatSize(bytes){if(bytes<1024)return bytes+' B';if(bytes<1048576)return (bytes/1024).toFixed(1)+' KB';return (bytes/1048576).toFixed(2)+' MB'}
+
+// ===== تولید شناسه یکتا =====
+function generateUniqueId(){
+    const c='abcdefghijklmnopqrstuvwxyz0123456789';
+    let r='';
+    for(let i=0;i<8;i++) r+=c.charAt(Math.floor(Math.random()*c.length));
+    return r;
+}
+
+// ===== تولید لینک جدید =====
+function generateLink(type){
+    const id = generateUniqueId();
+    if(type === 'channel'){
+        return `Iran/Kan/${id}`;
+    } else {
+        return `Iran/Gor/${id}`;
+    }
+}
 
 // ===== تیک آبی SVG =====
 const verifiedSVG = `<span class="verified-badge"><svg viewBox="0 0 24 24"><polyline points="4,12 10,18 20,6"/></svg></span>`;
@@ -443,7 +460,7 @@ const verifiedSVG = `<span class="verified-badge"><svg viewBox="0 0 24 24"><poly
 // ===== اکانت‌های پشتیبانی =====
 const SUPPORT_ACCOUNTS = {
     "support_1": { id: "support_1", name: "پشتیبانی ایران", phone: "09904845012", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇮🇷" },
-    "support_2": { id: "support_2", name: "پشتیبانی ایران ۲", phone: "09904845013", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇮🇷" }
+    "support_2": { id: "support_2", name: "پشتیبانی ایران ۲", phone: "09904845013", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇷" }
 };
 
 // ===== کاربر فعلی =====
@@ -454,16 +471,11 @@ if (!currentUser) {
 }
 
 // ===== داده‌ها =====
-// چت‌های شخصی هر کاربر جداگانه
 let chats = JSON.parse(localStorage.getItem('iran_chats_' + currentUser.id) || '[]');
-// گروه‌ها و کانال‌ها مشترک بین همه کاربران
 let groups = JSON.parse(localStorage.getItem('iran_groups') || '[]');
 let channels = JSON.parse(localStorage.getItem('iran_channels') || '[]');
-// عضویت‌های هر کاربر جداگانه
 let myMemberships = JSON.parse(localStorage.getItem('iran_memberships_' + currentUser.id) || '[]');
 let blockedUsers = JSON.parse(localStorage.getItem('iran_blocked_' + currentUser.id) || '[]');
-
-// ===== پیام‌های پشتیبانی (مشترک بین همه کاربران) =====
 let supportMessages = JSON.parse(localStorage.getItem('iran_support_messages') || '{}');
 
 function getSupportChatId(supportId) {
@@ -522,11 +534,10 @@ if(chats.length === 0){
     chats = [
         {id:'saved', name:'پیام‌های ذخیره شده', type:'saved', lastMessage:'', time:'', unread:0, read:true, online:false, messages:[], ownerId: currentUser.id, verified: false},
     ];
-    // اضافه کردن چت‌های پشتیبانی
     Object.keys(SUPPORT_ACCOUNTS).forEach(supportId => {
         const chat = getOrCreateSupportChat(supportId);
         chat.messages = [{id:'m_init', text:'سلام! به پشتیبانی ایران خوش آمدید 🇮🇷\nچطور می‌توانم کمکتان کنم؟', time: getCurrentTime(), timestamp: Date.now(), sent: false, userId: supportId}];
-        chat.lastMessage = 'سلام! به پشتیبانی ایران خوش آمدید 🇷';
+        chat.lastMessage = 'سلام! به پشتیبانی ایران خوش آمدید 🇮🇷';
         chat.time = 'الان';
     });
     saveData();
@@ -562,8 +573,8 @@ function saveData(){
 function linkifyText(text) {
     if (!text) return '';
     text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    // لینک‌های داخلی iran.ir/g/xxx
-    text = text.replace(/(iran\.ir\/g\/[a-z0-9]+)/g, '<a href="#" onclick="openGroupByLink(\'$1\');return false;">$1</a>');
+    // لینک‌های جدید Iran/Kan/xxx و Iran/Gor/xxx
+    text = text.replace(/(Iran\/(Kan|Gor)\/[a-z0-9]+)/g, '<a href="#" onclick="openGroupByLink(\'$1\');return false;">$1</a>');
     // لینک‌های http/https
     text = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
     // آیدی‌ها
@@ -575,11 +586,11 @@ function linkifyText(text) {
 
 // ===== باز کردن گروه از لینک =====
 function openGroupByLink(linkCode) {
+    // linkCode می‌تونه Iran/Kan/xxx یا Iran/Gor/xxx باشه
     const allGroups = [...groups, ...channels];
-    const found = allGroups.find(g => g.link && g.link.includes(linkCode));
+    const found = allGroups.find(g => g.link && g.link === linkCode);
     if (found) {
         const type = groups.includes(found) ? 'group' : 'channel';
-        // اگر عضو نیست، عضو شو
         if (!isMemberOf(found)) {
             joinItemDirect(found, type);
         }
@@ -642,7 +653,6 @@ function openChatPage(type, id){
     else if(type==='channel') currentChat = {type:'channel', data: channels.find(c => c.id === id)};
     else {
         currentChat = {type:'personal', data: chats.find(c => c.id === id)};
-        // اگر چت پشتیبانی است، پیام‌ها را بارگذاری کن
         if (currentChat.data && currentChat.data.type === 'support' && currentChat.data.supportId) {
             loadSupportMessages(currentChat.data.supportId);
         }
@@ -843,7 +853,6 @@ function executeForward(targetId) {
     targetChat.messages.push(newMsg);
     targetChat.lastMessage = 'پیام هدایت شد';
     targetChat.time = getCurrentTime();
-    // اگر چت پشتیبانی است، در supportMessages هم ذخیره کن
     if (targetChat.type === 'support' && targetChat.supportId) {
         saveSupportMessages(targetChat.supportId);
     }
@@ -931,7 +940,6 @@ function sendMessage(){
     currentChat.data.messages.push(msg);
     currentChat.data.lastMessage = text;
     currentChat.data.time = time;
-    // اگر چت پشتیبانی است
     if (currentChat.data.type === 'support' && currentChat.data.supportId) {
         saveSupportMessages(currentChat.data.supportId);
     }
@@ -1281,14 +1289,30 @@ function saveEdit(){
     item.name = name;
     item.bio = bio;
     if(editAvatar) item.avatar = editAvatar;
-    if(link) item.link = link;
+    // اگر لینک جدید وارد شده، جایگزین کن
+    if(link && link !== item.link){
+        // بررسی فرمت لینک
+        if(link.startsWith('Iran/Kan/') || link.startsWith('Iran/Gor/')){
+            item.link = link;
+        } else {
+            // اگر فرمت درست نیست، خودکار بساز
+            item.link = generateLink(editingItemType);
+            showToast('لینک با فرمت صحیح ساخته شد: ' + item.link, 'success');
+        }
+    }
     
     if(oldName !== name){
         item.messages.push({id:'s'+Date.now(), text:`نام از "${oldName}" به "${name}" تغییر کرد`, time:getCurrentTime(), sent:false, system:true});
     }
+    if(editAvatar){
+        item.messages.push({id:'s'+Date.now(), text:'تصویر پروفایل تغییر کرد', time:getCurrentTime(), sent:false, system:true});
+    }
+    if(bio !== (item.bio || '')){
+        item.messages.push({id:'s'+Date.now(), text:'توضیحات تغییر کرد', time:getCurrentTime(), sent:false, system:true});
+    }
     
     saveData();
-    showToast('تغییرات ذخیره شد', 'success');
+    showToast('✅ تمام تغییرات ذخیره شد', 'success');
     closeEditPage();
     renderChats();
     
@@ -1301,7 +1325,7 @@ function saveEdit(){
 function regenerateLink(){
     if(!currentSheet || !isOwnerOrAdminOf(currentSheet.data)){ showToast('فقط مالک و مدیر', 'error'); return; }
     if(confirm('لینک قبلی باطل و لینک جدید ساخته شود؟')){
-        currentSheet.data.link = generateUniqueLink();
+        currentSheet.data.link = generateLink(currentSheet.type);
         currentSheet.data.messages.push({id:'s'+Date.now(), text:'لینک دعوت تغییر کرد: ' + currentSheet.data.link, time:getCurrentTime(), sent:false, system:true});
         saveData(); renderSheet(); showToast('لینک جدید: ' + currentSheet.data.link, 'success');
     }
@@ -1312,7 +1336,7 @@ function copyLink(){
     const link = currentSheet.data.link;
     if(!link){ showToast('لینکی وجود ندارد', 'error'); return; }
     try { if(navigator.clipboard) navigator.clipboard.writeText(link); } catch(e){}
-    showToast('لینک کپی شد', 'success');
+    showToast('لینک کپی شد: ' + link, 'success');
 }
 
 function joinItem(){
@@ -1395,7 +1419,7 @@ function startChat(userId){
     closeContacts(); openChatPage('personal', chat.id);
 }
 
-// ===== ساخت گروه/کانال =====
+// ===== ساخت گروه/کانال با لینک جدید =====
 function openCreatePage(type){
     createType = type;
     const maxCount = type === 'group' ? groups.filter(g => g.ownerId === currentUser?.id).length : channels.filter(c => c.ownerId === currentUser?.id).length;
@@ -1429,10 +1453,13 @@ function submitCreate(){
     const bio = document.getElementById('createBio').value.trim();
     if(!name){ showToast('نام را وارد کنید', 'error'); return; }
 
+    // تولید لینک جدید با فرمت Iran/Kan/xxx یا Iran/Gor/xxx
+    const newLink = generateLink(createType);
+
     const newItem = {
         id: 'c_' + Date.now(),
         name,
-        link: generateUniqueLink(),
+        link: newLink,
         bio,
         avatar: selectedAvatar,
         ownerId: currentUser.id,
@@ -1441,7 +1468,7 @@ function submitCreate(){
         admins: [],
         memberCount: createType === 'group' ? 1 : 0,
         createdAt: getCurrentDate(),
-        messages: [{id:'s'+Date.now(), text:`${createType==='group'?'گروه':'کانال'} "${name}" ایجاد شد`, time:getCurrentTime(), sent:false, system:true}],
+        messages: [{id:'s'+Date.now(), text:`${createType==='group'?'گروه':'کانال'} "${name}" ایجاد شد\nلینک دعوت: ${newLink}`, time:getCurrentTime(), sent:false, system:true}],
         hiddenMembers: false,
         pinnedMessage: null,
         restrictCopy: false,
@@ -1462,7 +1489,7 @@ function submitCreate(){
     myMemberships.push({itemId:newItem.id, type:createType, role:'owner', userId:currentUser.id, joinedAt:new Date().toISOString()});
     localStorage.setItem('iran_memberships_' + currentUser.id, JSON.stringify(myMemberships));
 
-    showToast(`${createType==='group'?'گروه':'کانال'} با موفقیت ایجاد شد`, 'success');
+    showToast(`${createType==='group'?'گروه':'کانال'} ایجاد شد\nلینک: ${newLink}`, 'success');
     closeCreatePage();
     renderChats();
     setTimeout(() => openChatPage(createType, newItem.id), 300);
@@ -1623,7 +1650,6 @@ document.getElementById('searchPageInput').addEventListener('input', function(e)
         return;
     }
 
-    // فقط گروه‌ها و کانال‌های عمومی (نه چت‌های شخصی)
     const allPublic = [...groups, ...channels];
     const filtered = allPublic.filter(item => {
         const nameMatch = item.name.toLowerCase().includes(q);
@@ -1640,7 +1666,7 @@ document.getElementById('searchPageInput').addEventListener('input', function(e)
         const color = getColor(item.name);
         const initials = getInitials(item.name);
         const type = groups.includes(item) ? 'group' : 'channel';
-        const typeIcon = type === 'group' ? '👥' : '';
+        const typeIcon = type === 'group' ? '' : '';
         const typeName = type === 'group' ? 'گروه' : 'کانال';
         const isJoined = myMemberships.some(m => m.itemId === item.id) || item.ownerId === currentUser.id;
         return `<div class="chat-item" onclick="openChatPage('${type}','${item.id}');closeSearchPage();">
@@ -1689,58 +1715,14 @@ document.addEventListener('visibilitychange', () => {
 // ===== بررسی لینک در URL =====
 window.addEventListener('load', () => {
     const hash = window.location.hash;
-    if (hash.startsWith('#/g/')) {
-        const linkCode = hash.substring(4);
+    if (hash.startsWith('#/')) {
+        const linkCode = hash.substring(2);
         setTimeout(() => openGroupByLink(linkCode), 500);
     }
     renderChats();
 });
 
-// ===== شبیه‌سازی پاسخ پشتیبانی =====
-function simulateSupportReply(supportId, userMessage) {
-    setTimeout(() => {
-        const chatId = getSupportChatId(supportId);
-        const chat = chats.find(c => c.id === chatId);
-        if (chat) {
-            const replies = [
-                'پیام شما دریافت شد. به زودی پاسخ داده می‌شود.',
-                'ممنون از پیام شما. در حال بررسی هستیم.',
-                'سلام! چطور می‌توانم کمکتان کنم؟',
-                'پیام شما ثبت شد. پشتیبانی به زودی با شما تماس می‌گیرد.'
-            ];
-            const reply = replies[Math.floor(Math.random() * replies.length)];
-            const msg = {
-                id: 'm_support_' + Date.now(),
-                text: reply,
-                time: getCurrentTime(),
-                timestamp: Date.now(),
-                sent: false,
-                userId: supportId
-            };
-            chat.messages.push(msg);
-            chat.lastMessage = reply;
-            chat.time = getCurrentTime();
-            chat.unread = (chat.unread || 0) + 1;
-            chat.read = false;
-            saveSupportMessages(supportId);
-            saveData();
-            renderChats();
-            if (currentChat && currentChat.data.id === chatId) {
-                renderMessages();
-                chat.unread = 0;
-                chat.read = true;
-                document.getElementById('messagesArea').scrollTop = 999999;
-            }
-        }
-    }, 2000 + Math.random() * 3000);
-}
-
 // ===== مانیتورینگ پیام‌های پشتیبانی =====
-const originalSendMessage = sendMessage;
-// override برای پشتیبانی
-const _origSend = sendMessage;
-
-// بررسی دوره‌ای پیام‌های جدید پشتیبانی
 setInterval(() => {
     const newSupportMessages = JSON.parse(localStorage.getItem('iran_support_messages') || '{}');
     Object.keys(SUPPORT_ACCOUNTS).forEach(supportId => {
