@@ -232,6 +232,33 @@ body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#0e1621;color:#fff;hei
 
 .screenshot-protected{filter:blur(20px)!important;transition:filter 0.1s}
 
+/* صفحه پروفایل کاربر */
+.user-profile-page{position:fixed;top:0;left:0;right:0;bottom:0;background:#0e1621;z-index:250;display:none;flex-direction:column;overflow-y:auto}
+.user-profile-page.active{display:flex}
+.user-profile-header{background:#17212b;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #0e1621;position:sticky;top:0;z-index:10}
+.user-profile-back{background:none;border:none;cursor:pointer;padding:6px;pointer-events:auto}
+.user-profile-back svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2}
+.user-profile-title{font-size:1.2rem;font-weight:700;flex:1}
+.user-profile-content{padding:20px 16px;display:flex;flex-direction:column;align-items:center}
+.user-profile-avatar{width:120px;height:120px;border-radius:50%;overflow:hidden;margin-bottom:15px;border:3px solid rgba(91,164,217,0.3);background:linear-gradient(135deg,#5ba4d9,#4a93c8);display:flex;align-items:center;justify-content:center}
+.user-profile-avatar img{width:100%;height:100%;object-fit:cover}
+.user-profile-name{font-size:1.5rem;font-weight:700;margin-bottom:5px;text-align:center;display:flex;align-items:center;gap:6px}
+.user-profile-status{font-size:0.85rem;color:#6c7883;margin-bottom:25px;text-align:center}
+.user-profile-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;margin-bottom:25px}
+.user-profile-btn{background:#17212b;border:none;border-radius:12px;padding:15px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;pointer-events:auto}
+.user-profile-btn:active{background:#242f3d}
+.user-profile-btn svg{width:24px;height:24px;fill:none;stroke:#5ba4d9;stroke-width:2}
+.user-profile-btn span{font-size:0.7rem;color:#fff}
+.user-profile-bio-section{width:100%;background:#17212b;border-radius:12px;padding:15px;margin-bottom:15px}
+.user-profile-bio-label{font-size:0.85rem;color:#6c7883;margin-bottom:8px}
+.user-profile-bio-text{font-size:0.9rem;line-height:1.6;color:#c0d0e0;white-space:pre-wrap;word-wrap:break-word}
+.user-profile-bio-text a{color:#5ba4d9;text-decoration:none}
+.user-profile-id-section{width:100%;background:#17212b;border-radius:12px;padding:15px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.user-profile-id-label{font-size:0.85rem;color:#6c7883}
+.user-profile-id-value{font-size:0.95rem;color:#5ba4d9;font-weight:500}
+.user-profile-iranoo-section{width:100%;background:#17212b;border-radius:12px;padding:15px;margin-bottom:15px;opacity:0.5;pointer-events:none}
+.user-profile-iranoo-label{font-size:0.9rem;color:#6c7883;text-align:center}
+
 @media (max-width:400px){.header-title{font-size:1.2rem}.chat-avatar{width:48px;height:48px}}
 </style>
 </head>
@@ -279,6 +306,37 @@ body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#0e1621;color:#fff;hei
 </div>
 <button class="voice-btn" id="voiceBtn" onmousedown="startVoiceRecord" ontouchstart="startVoiceRecord(event)" onmouseup="stopVoiceRecord" ontouchend="stopVoiceRecord(event)"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
 <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+</div>
+</div>
+
+<!-- صفحه پروفایل کاربر (مثل اسکرین‌شات) -->
+<div class="user-profile-page" id="userProfilePage">
+<div class="user-profile-header">
+<button class="user-profile-back" onclick="closeUserProfile()"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+<div class="user-profile-title">پروفایل</div>
+<div style="width:42px;"></div>
+</div>
+<div class="user-profile-content">
+<div class="user-profile-avatar" id="userProfileAvatar"></div>
+<div class="user-profile-name" id="userProfileName"></div>
+<div class="user-profile-status" id="userProfileStatus">آخرین بازدید به تازگی</div>
+<div class="user-profile-buttons">
+<button class="user-profile-btn"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>پیام‌ها</span></button>
+<button class="user-profile-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>بی‌صدا کردن</span></button>
+<button class="user-profile-btn"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>تماس صوتی</span></button>
+<button class="user-profile-btn"><svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg><span>تماس ویدیویی</span></button>
+</div>
+<div class="user-profile-bio-section">
+<div class="user-profile-bio-label">بیوگرافی</div>
+<div class="user-profile-bio-text" id="userProfileBio"></div>
+</div>
+<div class="user-profile-id-section">
+<span class="user-profile-id-label">آیدی ایران</span>
+<span class="user-profile-id-value" id="userProfileId"></span>
+</div>
+<div class="user-profile-iranoo-section">
+<div class="user-profile-iranoo-label">ایرانو (به زودی)</div>
+</div>
 </div>
 </div>
 
@@ -382,7 +440,7 @@ body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#0e1621;color:#fff;hei
 <option value="60">هر ۱ دقیقه</option>
 <option value="900">هر ۱۵ دقیقه</option>
 <option value="3600">هر ۱ ساعت</option>
-<option value="18000">هر  ساعت</option>
+<option value="18000">هر ۵ ساعت</option>
 <option value="36000">هر ۱۰ ساعت</option>
 </select>
 </div>
@@ -459,8 +517,8 @@ const verifiedSVG = `<span class="verified-badge"><svg viewBox="0 0 24 24"><poly
 
 // ===== اکانت‌های پشتیبانی =====
 const SUPPORT_ACCOUNTS = {
-    "support_1": { id: "support_1", name: "پشتیبانی ایران", phone: "09904845012", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇮🇷" },
-    "support_2": { id: "support_2", name: "پشتیبانی ایران ۲", phone: "09904845013", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇷" }
+    "support_1": { id: "support_1", name: "پشتیبانی ایران", phone: "09904845012", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇮" },
+    "support_2": { id: "support_2", name: "پشتیبانی ایران ۲", phone: "09904845013", password: "Par16172365", role: "support", verified: true, avatar: null, bio: "پشتیبانی رسمی پیام‌رسان ایران 🇮🇷" }
 };
 
 // ===== کاربر فعلی =====
@@ -536,7 +594,7 @@ if(chats.length === 0){
     ];
     Object.keys(SUPPORT_ACCOUNTS).forEach(supportId => {
         const chat = getOrCreateSupportChat(supportId);
-        chat.messages = [{id:'m_init', text:'سلام! به پشتیبانی ایران خوش آمدید 🇮🇷\nچطور می‌توانم کمکتان کنم؟', time: getCurrentTime(), timestamp: Date.now(), sent: false, userId: supportId}];
+        chat.messages = [{id:'m_init', text:'سلام! به پشتیبانی ایران خوش آمدید 🇷\nچطور می‌توانم کمکتان کنم؟', time: getCurrentTime(), timestamp: Date.now(), sent: false, userId: supportId}];
         chat.lastMessage = 'سلام! به پشتیبانی ایران خوش آمدید 🇮🇷';
         chat.time = 'الان';
     });
@@ -560,6 +618,7 @@ let currentMediaUrl = null;
 let currentMediaMsg = null;
 let longPressTimer = null;
 let forwardingMsgId = null;
+let currentViewedUser = null;
 
 function saveData(){
     localStorage.setItem('iran_chats_' + currentUser.id, JSON.stringify(chats));
@@ -635,7 +694,7 @@ function renderChats() {
         const avatarContent = chat.avatar ? `<img src="${chat.avatar}">` : initials;
         const unreadBadge = chat.unread > 0 ? `<div class="chat-unread">${chat.unread>99?'99+':chat.unread}</div>` : '';
         const checkIcon = chat.read ? `<div class="chat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>` : '';
-        const typeIcon = chat.type==='group'?'👥 ':chat.type==='channel'?'📢 ':'';
+        const typeIcon = chat.type==='group'?'👥 ':chat.type==='channel'?' ':'';
         const verifiedIcon = chat.verified ? verifiedSVG : '';
         return `<div class="chat-item" onclick="openChatPage('${chat.type}','${chat.id}')">
             <div class="chat-avatar" style="background:${color}">${avatarContent}</div>
@@ -808,7 +867,7 @@ function openForwardPage(msgId) {
         const color = getColor(chat.name);
         const initials = getInitials(chat.name);
         const avatarContent = chat.avatar ? `<img src="${chat.avatar}">` : initials;
-        const typeIcon = chat.type==='group'?'👥 ':chat.type==='channel'?'📢 ':'';
+        const typeIcon = chat.type==='group'?' ':chat.type==='channel'?'📢 ':'';
         const verifiedIcon = chat.verified ? verifiedSVG : '';
         return `<div class="chat-item" onclick="executeForward('${chat.id}')">
             <div class="chat-avatar" style="background:${color}">${avatarContent}</div>
@@ -1157,6 +1216,27 @@ function isMemberOf(item){
     return myMemberships.some(m => m.itemId === item.id && m.userId === currentUser.id);
 }
 
+// ===== صفحه پروفایل کاربر =====
+function openUserProfile(user) {
+    currentViewedUser = user;
+    const color = getColor(user.name);
+    const initials = getInitials(user.name);
+    
+    document.getElementById('userProfileAvatar').innerHTML = user.avatar ? `<img src="${user.avatar}">` : initials;
+    document.getElementById('userProfileAvatar').style.background = color;
+    document.getElementById('userProfileName').innerHTML = user.name + (user.verified ? ' ' + verifiedSVG : '');
+    document.getElementById('userProfileStatus').textContent = 'آخرین بازدید به تازگی';
+    document.getElementById('userProfileBio').innerHTML = linkifyText(user.bio || 'بدون بیوگرافی');
+    document.getElementById('userProfileId').textContent = user.id || '@' + user.phone;
+    
+    document.getElementById('userProfilePage').classList.add('active');
+}
+
+function closeUserProfile() {
+    document.getElementById('userProfilePage').classList.remove('active');
+    currentViewedUser = null;
+}
+
 // ===== Bottom Sheet پروفایل =====
 function openProfileSheet(){
     if(!currentChat) return;
@@ -1403,7 +1483,7 @@ function renderContacts(){
             const color = getColor(user.name);
             const initials = getInitials(user.name);
             const verifiedIcon = user.verified ? verifiedSVG : '';
-            return `<div class="contact-item" onclick="startChat('${user.id}')"><div class="contact-avatar" style="background:${color}">${user.avatar?`<img src="${user.avatar}">`:initials}</div><div class="contact-info"><div class="contact-name">${user.name} ${verifiedIcon}</div><div class="contact-status">${user.id}</div></div></div>`;
+            return `<div class="contact-item" onclick="openUserProfile(${JSON.stringify(user).replace(/"/g, '&quot;')})"><div class="contact-avatar" style="background:${color}">${user.avatar?`<img src="${user.avatar}">`:initials}</div><div class="contact-info"><div class="contact-name">${user.name} ${verifiedIcon}</div><div class="contact-status">${user.id}</div></div></div>`;
         }).join('');
     }
     if(contacts.length === 0) html = `<div style="text-align:center;padding:60px 20px;color:#6c7883"><div style="font-size:1.1rem;margin-bottom:10px">هنوز مخاطبی ندارید</div></div>`;
