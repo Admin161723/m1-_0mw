@@ -8,18 +8,20 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent!important;}
-  html{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#041228!important;}
-  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228!important;width:100%;height:100%;position:fixed;inset:0;display:flex;justify-content:center;align-items:center;overflow:hidden!important;}
+  html,body{width:100%;height:100%;overflow:hidden;position:fixed;inset:0;overscroll-behavior:none!important;background:#041228!important;font-family:'Vazirmatn',Tahoma,sans-serif;}
+  body{display:flex;justify-content:center;align-items:center;}
   input,textarea,select{font-size:16px!important;-webkit-user-select:text!important;user-select:text!important;}
   .game-container{width:100%;max-width:420px;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#041228;}
-  .bg-image{position:absolute;inset:0;background-color:#041228;background-image:url('1011.webp');background-size:cover;background-position:center;z-index:1;pointer-events:none;}
-  .bg-image::after{content:'';position:absolute;inset:0;background:rgba(10,22,40,0.15);}
+  
+  /* ویدئوی پس‌زمینه */
+  .bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;}
+  .bg-overlay{position:absolute;inset:0;background:rgba(10,22,40,0.4);z-index:1;pointer-events:none;}
+  
   .top-bar{position:absolute;top:0;left:0;right:0;height:52px;background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:20;border-bottom:2px solid #2a5a9a;}
-  .top-left{display:flex;align-items:center;gap:4px;}
-  .coin-display,.diamond-display{display:flex;align-items:center;gap:4px;}
-  .coin-img{width:36px;height:36px;background:radial-gradient(circle at 35% 35%,#ffe44d,#ffd700 30%,#daa520 70%,#b8860b);border-radius:50%;border:2px solid #c8960c;display:flex;align-items:center;justify-content:center;font-size:18px;}
-  .coin-value,.diamond-value{color:#fff;font-size:20px;font-weight:900;min-width:45px;text-align:center;}
-  .diamond-img{width:32px;height:32px;background:linear-gradient(135deg,#e040fb,#7c4dff);clip-path:polygon(50% 0,100% 38%,50% 100%,0 38%);}
+  .top-left{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .coin-display,.diamond-display,.dollar-display{display:flex;align-items:center;gap:4px;}
+  .currency-icon{width:34px;height:34px;border-radius:50%;object-fit:contain;background:transparent;border:none;}
+  .coin-value,.diamond-value,.dollar-value{color:#fff;font-size:18px;font-weight:900;min-width:40px;text-align:center;}
   .menu-btn{width:34px;height:34px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;cursor:pointer;padding:6px;border-radius:8px;}
   .menu-btn span{display:block;width:18px;height:2.5px;background:#fff;border-radius:2px;}
   .menu-overlay{position:absolute;inset:0;z-index:50;display:none;}
@@ -40,8 +42,9 @@
   .role-tick{width:18px;height:18px;object-fit:contain;}
   .right-buttons{position:absolute;top:62px;right:8px;display:flex;flex-direction:column;gap:7px;z-index:15;}
   .side-btn{width:62px;height:62px;background:linear-gradient(180deg,rgba(30,90,170,.9),rgba(18,61,122,.9));border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid #2a6ac0;}
-  .side-btn-icon-wrap{width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;}
+  .side-btn-icon-wrap{width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;position:relative;}
   .side-btn-label{color:#fff;font-size:8px;font-weight:700;text-align:center;}
+  .side-btn-icon-wrap .nav-icon-custom{width:40px;height:40px;object-fit:contain;}
   .icon-megaphone{width:28px;height:28px;position:relative;}
   .icon-megaphone::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:12px solid #4fc3f7;}
   .icon-megaphone::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:16px;height:20px;background:#4fc3f7;clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);}
@@ -58,24 +61,13 @@
   .mode-competitive{background:linear-gradient(180deg,#7dd87d,#45a845);border:2px solid #88e088;}
   .mode-title{color:#fff;font-size:24px;font-weight:900;margin-bottom:8px;}
   .mode-coins{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.2);padding:4px 18px;border-radius:20px;}
-  .mode-coin-icon{width:26px;height:26px;background:radial-gradient(circle at 35% 35%,#ffe44d,#b8860b);border-radius:50%;border:2px solid #c8960c;}
+  .mode-coin-icon{width:28px;height:28px;object-fit:contain;border-radius:50%;}
   .mode-coin-value{color:#fff;font-size:22px;font-weight:900;}
-  .bottom-nav{position:absolute;bottom:0;left:0;right:0;height:68px;background:linear-gradient(180deg,rgba(30,74,138,.98),rgba(18,53,106,.98));display:flex;align-items:center;justify-content:space-around;z-index:20;border-top:2px solid #2a5a9a;}
-  .nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:6px 20px;flex:1;height:100%;}
+  .bottom-nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:linear-gradient(180deg,rgba(30,74,138,.98),rgba(18,53,106,.98));display:flex;align-items:center;justify-content:space-around;z-index:20;border-top:2px solid #2a5a9a;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:6px 0;flex:1;height:100%;}
   .nav-item.active{background:rgba(255,255,255,.08);}
-  .nav-shop{width:40px;height:34px;}
-  .shop-awning{width:40px;height:12px;background:repeating-linear-gradient(90deg,#f44336 0 8px,#ffeb3b 8px 16px,#4caf50 16px 24px,#2196f3 24px 32px,#f44336 32px 40px);border-radius:3px 3px 0 0;}
-  .shop-base{width:34px;height:20px;background:linear-gradient(180deg,#5c6bc0,#3f51b5);margin:0 auto;border-radius:0 0 4px 4px;position:relative;}
-  .shop-base::before{content:'';position:absolute;top:4px;left:6px;width:22px;height:12px;background:#ffd700;border-radius:2px;}
-  .nav-home{width:44px;height:40px;}
-  .home-roof{width:0;height:0;border-left:24px solid transparent;border-right:24px solid transparent;border-bottom:20px solid #f44336;margin:0 auto;}
-  .home-body{width:34px;height:20px;background:#fff;margin:0 auto;border-radius:0 0 3px 3px;position:relative;}
-  .home-door{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:13px;height:15px;background:#5d4037;border-radius:3px 3px 0 0;}
-  .nav-friends{display:flex;align-items:center;}
-  .friend-head{width:20px;height:20px;border-radius:50%;border:2px solid #fff;position:relative;}
-  .friend-1{background:#42a5f5;z-index:2;margin-right:-6px;}
-  .friend-2{background:#66bb6a;}
-  .nav-label{color:#fff;font-size:11px;font-weight:700;margin-top:2px;}
+  .nav-icon{width:48px;height:48px;object-fit:contain;border-radius:6px;}
+  .nav-label{color:#fff;font-size:12px;font-weight:700;margin-top:4px;}
   .notification-badge{position:absolute;top:-5px;right:-5px;background:#ff4444;color:#fff;font-size:11px;font-weight:900;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 6px;}
   .modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;}
   .modal-overlay.active{display:flex;}
@@ -152,7 +144,7 @@
   .stats-row{display:flex;gap:8px;padding:0 15px;margin-bottom:15px;}
   .stat-card{flex:1;background:linear-gradient(180deg,#6a3abf,#3d1f80);border-radius:12px;padding:10px 8px;text-align:center;border:1px solid #7a4acf;}
   .stat-card-title{color:#fff;font-size:12px;font-weight:700;margin-bottom:6px;}
-  .stat-card-value{color:#fff;font-size:22px;font-weight:900;}
+  .stat-card-value{color:#fff;font-size:18px;font-weight:900;}
   .stat-card-icon{font-size:24px;}
   .aamar-section{padding:0 15px;margin-bottom:12px;}
   .aamar-title-row{display:flex;align-items:center;gap:10px;margin-bottom:15px;}
@@ -161,19 +153,17 @@
   .aamar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .aamar-card{background:linear-gradient(180deg,#2a7acc,#0f4090);border-radius:14px;padding:14px 8px;text-align:center;border:1px solid #3a8adc;}
   .aamar-card-icon{font-size:28px;margin-bottom:6px;}
-  .aamar-card-value{color:#fff;font-size:26px;font-weight:900;margin-bottom:4px;}
+  .aamar-card-value{color:#fff;font-size:20px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
   .aamar-card-label{color:rgba(255,255,255,.85);font-size:10px;font-weight:700;}
   .aamar-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
   .aamar-grid-4 .aamar-card{padding:12px 6px;}
-  .aamar-grid-4 .aamar-card-value{font-size:22px;}
+  .aamar-grid-4 .aamar-card-value{font-size:18px;}
   .aamar-grid-4 .aamar-card-label{font-size:9px;}
   .shop-top-bar{background:linear-gradient(180deg,#1e4d7a,#0f2d4a);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #2a7fb8;}
   .shop-back-btn{width:40px;height:40px;background:linear-gradient(180deg,#2a7fb8,#1a5f8a);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;border:2px solid #3a9fd8;color:#fff;}
   .shop-currencies{display:flex;gap:10px;}
   .shop-currency{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.4);padding:6px 12px;border-radius:20px;border:2px solid rgba(255,255,255,.2);}
-  .shop-currency-icon{width:24px;height:24px;border-radius:50%;}
-  .shop-gold{background:radial-gradient(circle at 30% 30%,#ffe066,#ffa500);}
-  .shop-gem{width:20px!important;height:24px!important;background:linear-gradient(135deg,#ff66ff,#990099);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);}
+  .shop-currency-icon{width:28px;height:28px;object-fit:contain;border-radius:50%;}
   .shop-currency-value{font-weight:900;font-size:16px;color:#fff;}
   .shop-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 15px;background:rgba(0,0,0,.3);}
   .shop-tab{padding:12px 8px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;}
@@ -232,7 +222,6 @@
   .setting-label{color:#fff;font-size:16px;font-weight:700;}
   .volume-slider{width:60%;accent-color:#4a9eff;}
   .password-btn{width:100%;padding:14px;background:linear-gradient(180deg,#4a9eff,#2a7acc);border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:900;cursor:pointer;margin-top:10px;}
-
   .tournament-section{background:rgba(0,0,0,.3);border:2px solid #ffd700;border-radius:12px;padding:14px;margin-bottom:15px;}
   .tournament-section h4{color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;}
   .prize-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap;}
@@ -245,19 +234,21 @@
   .clan-blacklist-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:6px;margin-bottom:4px;}
   .clan-blacklist-item span{color:#fff;font-size:12px;}
   .clan-blacklist-item button{background:#f44336;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
-
   .confirm-btn{background:linear-gradient(180deg,#4CAF50,#45a049);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:10px;}
   .confirm-btn:hover{background:linear-gradient(180deg,#45a049,#3d8b40);}
 </style>
 </head>
 <body>
 <div class="game-container" id="gameContainer">
-  <div class="bg-image"></div>
+  <!-- ویدئوی پس‌زمینه -->
+  <video class="bg-video" src="Mmd99.mp4" autoplay loop muted playsinline webkit-playsinline></video>
+  <div class="bg-overlay"></div>
 
   <div class="top-bar">
     <div class="top-left">
-      <div class="coin-display"><div class="coin-img">🪙</div><span class="coin-value" id="displayCoins">۰</span></div>
-      <div class="diamond-display"><div class="diamond-img"></div><span class="diamond-value" id="displayGems">۰</span></div>
+      <div class="coin-display"><img src="Coin99.webp" class="currency-icon" alt="سکه"><span class="coin-value" id="displayCoins">۰</span></div>
+      <div class="diamond-display"><img src="Jam99.webp" class="currency-icon" alt="جم"><span class="diamond-value" id="displayGems">۰</span></div>
+      <div class="dollar-display"><img src="Dolar99.webp" class="currency-icon" alt="دولار"><span class="dollar-value" id="displayDollars">۰</span></div>
     </div>
     <div class="menu-btn" id="menuBtn"><span></span><span></span><span></span></div>
   </div>
@@ -277,23 +268,43 @@
   </div>
 
   <div class="right-buttons">
-    <div class="side-btn" id="btnAnnouncements"><div class="side-btn-icon-wrap"><div class="icon-megaphone"></div><span class="notification-badge" id="newsBadge" style="display:none;">0</span></div><div class="side-btn-label">اطلاعیه‌ها</div></div>
+    <div class="side-btn" id="btnAnnouncements">
+      <div class="side-btn-icon-wrap">
+        <img src="At.webp" class="nav-icon-custom" alt="اطلاعیه">
+        <span class="notification-badge" id="newsBadge" style="display:none;">0</span>
+      </div>
+      <div class="side-btn-label">اطلاعیه‌ها</div>
+    </div>
     <div class="side-btn" id="btnHelp"><div class="side-btn-icon-wrap"><div class="icon-question">?</div></div><div class="side-btn-label">آموزش</div></div>
-    <div class="side-btn" id="btnTopPlayers"><div class="side-btn-icon-wrap"><div class="icon-trophy"></div></div><div class="side-btn-label">برترین‌ها</div></div>
+    <div class="side-btn" id="btnTopPlayers">
+      <div class="side-btn-icon-wrap">
+        <img src="Bar.webp" class="nav-icon-custom" alt="رتبه‌بندی">
+      </div>
+      <div class="side-btn-label">برترین‌ها</div>
+    </div>
     <div class="side-btn" id="btnManagement"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">تیم مدیریتی</div></div>
     <div class="side-btn" id="btnLive"><div class="side-btn-icon-wrap"><div class="icon-live">LIVE</div></div><div class="side-btn-label">پخش زنده</div></div>
     <div class="side-btn" id="btnAdmin" style="display:none;"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">مدیریت</div></div>
   </div>
 
   <div class="bottom-modes">
-    <button class="mode-btn mode-friendly" id="btnFriendly"><span class="mode-title">دوستانه</span><div class="mode-coins"><div class="mode-coin-icon"></div><span class="mode-coin-value">۵۰</span></div></button>
-    <button class="mode-btn mode-competitive" id="btnCompetitive"><span class="mode-title">امتیازی</span><div class="mode-coins"><div class="mode-coin-icon"></div><span class="mode-coin-value">۷۰</span></div></button>
+    <button class="mode-btn mode-friendly" id="btnFriendly"><span class="mode-title">دوستانه</span><div class="mode-coins"><img src="Coin99.webp" class="mode-coin-icon" alt="سکه"><span class="mode-coin-value">۵۰</span></div></button>
+    <button class="mode-btn mode-competitive" id="btnCompetitive"><span class="mode-title">امتیازی</span><div class="mode-coins"><img src="Coin99.webp" class="mode-coin-icon" alt="سکه"><span class="mode-coin-value">۷۰</span></div></button>
   </div>
 
   <div class="bottom-nav">
-    <div class="nav-item" id="navShop"><div class="nav-shop"><div class="shop-awning"></div><div class="shop-base"></div></div><span class="nav-label">فروشگاه</span></div>
-    <div class="nav-item active"><div class="nav-home"><div class="home-roof"></div><div class="home-body"><div class="home-door"></div></div></div><span class="nav-label">خانه</span></div>
-    <div class="nav-item" id="navGroup"><div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div><span class="nav-label">گروه</span></div>
+    <div class="nav-item" id="navShop">
+      <img src="Forosh.webp" class="nav-icon" alt="فروشگاه">
+      <span class="nav-label">فروشگاه</span>
+    </div>
+    <div class="nav-item active">
+      <img src="Khane.webp" class="nav-icon" alt="خانه">
+      <span class="nav-label">خانه</span>
+    </div>
+    <div class="nav-item" id="navGroup">
+      <img src="Goroh.webp" class="nav-icon" alt="گروه‌ها">
+      <span class="nav-label">گروه‌ها</span>
+    </div>
   </div>
 
   <div class="modal-overlay" id="newsModal">
@@ -421,6 +432,7 @@
       <div class="edit-field"><label class="edit-label">نام کاربری:</label><input type="text" class="edit-input" id="editUserName"></div>
       <div class="edit-field" id="fieldCoins"><label class="edit-label">سکه:</label><input type="number" class="edit-input" id="editUserCoins" min="0"></div>
       <div class="edit-field" id="fieldGems"><label class="edit-label">الماس:</label><input type="number" class="edit-input" id="editUserGems" min="0"></div>
+      <div class="edit-field" id="fieldDollars"><label class="edit-label">دولار:</label><input type="number" class="edit-input" id="editUserDollars" min="0"></div>
       <div class="edit-field" id="fieldRank"><label class="edit-label">مقام:</label>
         <select class="edit-input" id="editUserRole">
           <option value="کاربر">کاربر</option><option value="ناظر">ناظر</option><option value="ادمین">ادمین</option><option value="گرداننده">گرداننده</option><option value="پشتیبانی">پشتیبانی</option><option value="سازنده">سازنده</option><option value="ادمین ارشد">ادمین ارشد</option><option value="ناظر ارشد">ناظر ارشد</option>
@@ -437,7 +449,7 @@
         </div>
         <div class="exclusive-avatar-btns">
           <div class="exclusive-file-btn">
-            <label class="exclusive-file-label">📁 انتخاب از گالری
+            <label class="exclusive-file-label">📁 انتخاب از گالری (ویدیو/تصویر)
               <input type="file" id="exclusiveAvatarFile" accept="image/*,video/*">
             </label>
           </div>
@@ -459,7 +471,11 @@
       </div>
       <div class="profile-info-details">
         <div class="user-code-row" id="copyUserCode"><span class="user-code-label">کد کاربری</span><span class="user-code-value" id="userCode">----</span><button class="copy-btn">📋</button></div>
-        <div class="user-name-row"><span>☢️</span><span class="user-name-value" id="profileUserName">کاربر</span><img id="profileUserTick" class="role-tick" src="" style="display:none;"><span class="edit-name-btn" id="editNameBtn">✏️</span></div>
+        <div class="user-name-row">
+          <span class="user-name-value" id="profileUserName">کاربر</span>
+          <img id="profileUserTick" class="role-tick" src="" style="display:none;">
+          <span class="edit-name-btn" id="editNameBtn">✏️</span>
+        </div>
         <div class="clan-row">
           <div class="clan-badge no-group" id="profileGroupBadge">❌</div>
           <span class="clan-name" id="profileGroupName">بدون گروه</span>
@@ -467,7 +483,7 @@
       </div>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-card-title">امتیاز</div><div class="stat-card-value" id="statScore"></div><div class="stat-card-icon">🏆</div></div>
+      <div class="stat-card"><div class="stat-card-title">امتیاز</div><div class="stat-card-value" id="statScore">۰</div><div class="stat-card-icon">🏆</div></div>
       <div class="stat-card"><div class="stat-card-title">سطح</div><div class="stat-card-value" id="statLevel">۱</div><div class="stat-card-icon">⭐</div></div>
       <div class="stat-card"><div class="stat-card-title">رتبه فصل</div><div class="stat-card-value" id="statSeasonRank">۰</div><div class="stat-card-icon">👑</div></div>
     </div>
@@ -491,14 +507,15 @@
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="shopBackBtn">‹</div>
       <div class="shop-currencies">
-        <div class="shop-currency"><div class="shop-currency-icon shop-gold"></div><span class="shop-currency-value" id="shopGoldAmount">۰</span></div>
-        <div class="shop-currency"><div class="shop-currency-icon shop-gem"></div><span class="shop-currency-value" id="shopGemAmount">۰</span></div>
+        <div class="shop-currency"><img src="Coin99.webp" class="shop-currency-icon" alt="سکه"><span class="shop-currency-value" id="shopGoldAmount">۰</span></div>
+        <div class="shop-currency"><img src="Jam99.webp" class="shop-currency-icon" alt="جم"><span class="shop-currency-value" id="shopGemAmount">۰</span></div>
+        <div class="shop-currency"><img src="Dolar99.webp" class="shop-currency-icon" alt="دولار"><span class="shop-currency-value" id="shopDollarAmount">۰</span></div>
       </div>
     </div>
     <div class="shop-tabs">
-      <button class="shop-tab" data-tab="crowns">تاج‌ها</button>
+      <button class="shop-tab" data-tab="avatars">آواتارها</button>
       <button class="shop-tab" data-tab="frames">فریم‌ها</button>
-      <button class="shop-tab active" data-tab="avatars">آواتارها</button>
+      <button class="shop-tab" data-tab="crowns">تاج‌ها</button>
     </div>
     <div class="character-showcase"><div class="characters-container"><div class="character-main" id="showcaseAvatarContainer"><img id="showcaseAvatarImg" src="Mafia2.png"></div></div></div>
     <div class="avatar-section-tabs">
@@ -680,10 +697,10 @@ function applyTick(img,cands){if(!img||!cands||!cands.length)return;let i=0;(fun
 
 const RANK_LEVEL={'کاربر':0,'ناظر':1,'ناظر ارشد':2,'ادمین':3,'ادمین ارشد':4,'گرداننده':5,'پشتیبانی':6,'سازنده':7};
 const RANK_PERM={
-  'سازنده':   {panel:true, coins:true, gems:true, rank:true, exclusive:true, del:true, server:true, wipe:true, banMax:'permanent'},
-  'پشتیبانی': {panel:true, coins:false,gems:false,rank:false,exclusive:false,del:false,server:false,wipe:false,banMax:'3m'},
-  'ادمین ارشد':{panel:true, coins:true, gems:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'1m'},
-  'گرداننده': {panel:true, coins:true, gems:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'3m'}
+  'سازنده':   {panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:true, del:true, server:true, wipe:true, banMax:'permanent'},
+  'پشتیبانی': {panel:true, coins:false,gems:false,dollars:false,rank:false,exclusive:false,del:false,server:false,wipe:false,banMax:'3m'},
+  'ادمین ارشد':{panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'1m'},
+  'گرداننده': {panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'3m'}
 };
 const BAN_OPTIONS=[['1h','۱ ساعت'],['1d','۱ روز'],['7d','۷ روز'],['2w','۲ هفته'],['1m','۱ ماه'],['3m','۳ ماه'],['8m','۸ ماه'],['permanent','دائمی']];
 const DUR_MS={'1h':3600000,'1d':86400000,'7d':604800000,'2w':1209600000,'1m':2592000000,'3m':7776000000,'8m':20736000000,'permanent':0};
@@ -717,7 +734,7 @@ function getGroupIcon(key){return GROUP_ICONS[key]||GROUP_ICONS.shield;}
 
 let currentUserData=null,currentPhone=null,editingUserId=null;
 let editingUserExclusiveAvatar=null;
-let shopGold=0,shopGems=0,selectedAvatar=null,purchasePrice=0,currentAvatarSection='my';
+let shopGold=0,shopGems=0,shopDollars=0,selectedAvatar=null,purchasePrice=0,currentAvatarSection='my';
 let userGroupCache=null;
 let audioUnlocked = false;
 let bgMusicElement = null;
@@ -770,6 +787,7 @@ function sanitizeUserData(user, phone) {
   }
   if (user.coins < 0) user.coins = 0;
   if (user.gems < 0) user.gems = 0;
+  if (user.dollars < 0) user.dollars = 0;
   return user;
 }
 
@@ -818,6 +836,7 @@ function updateGlobalAvatar(src) {
 function updateUIWithData(user) {
   document.getElementById('displayCoins').textContent = toPersianNum(user.coins || 0);
   document.getElementById('displayGems').textContent = toPersianNum(user.gems || 0);
+  document.getElementById('displayDollars').textContent = toPersianNum(user.dollars || 0);
   document.getElementById('mainUserName').textContent = user.name || 'کاربر';
   document.getElementById('profileUserName').textContent = user.name || 'کاربر';
   document.getElementById('userCode').textContent = user.userCode || '----';
@@ -983,18 +1002,19 @@ async function sendNews(){
   showShopNotification('اطلاعیه ارسال شد');
 }
 
-// ✅ پنل سازنده: همه کاربران (حتی آفلاین) نمایش داده شوند
+// ✅ پنل مدیریت: نمایش همه کاربران از جمله خود سازنده
 async function loadUsers(){
   const allUsers=await getAllUsers();
   const list=document.getElementById('userList');
-  const users=Object.entries(allUsers).filter(([p])=>p!==currentPhone);
+  // حذف فیلتر p !== currentPhone تا خود سازنده هم دیده شود
+  const users=Object.entries(allUsers);
   if(!users.length){list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.6);padding:20px;">کاربری یافت نشد</div>';return;}
   list.innerHTML=users.map(([p,u])=>{
     const rc=u.rank==='سازنده'?'badge-creator':((u.rank==='ادمین'||u.rank==='ادمین ارشد')?'badge-admin':'');
     const exBadge=u.exclusiveAvatar?'<span class="user-badge" style="background:linear-gradient(180deg,#ffd700,#ff8c00);color:#000;">⭐</span>':'';
     const validAv = getValidAvatar(u.avatar||'Mafia2.png', p);
     const isBanned = u.banned ? 'badge-banned' : '';
-    return '<div class="user-item" onclick="openEditUser(\''+p+'\')"><div class="user-avatar"><img src="'+validAv+'" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div><div class="user-info"><div class="user-name">'+(u.name||'کاربر')+' <small style="color:#aaa;">('+p+')</small></div><div class="user-details"><span>سکه: '+toPersianNum(u.coins||0)+'</span><span>الماس: '+toPersianNum(u.gems||0)+'</span><span class="user-badge '+rc+'">'+(u.rank||'کاربر')+'</span>'+exBadge+(isBanned?'<span class="user-badge badge-banned">بن شده</span>':'')+'</div></div></div>';
+    return '<div class="user-item" onclick="openEditUser(\''+p+'\')"><div class="user-avatar"><img src="'+validAv+'" onerror="this.style.display=\'none\';" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div><div class="user-info"><div class="user-name">'+(u.name||'کاربر')+' <small style="color:#aaa;">('+p+')</small></div><div class="user-details"><span>سکه: '+toPersianNum(u.coins||0)+'</span><span>الماس: '+toPersianNum(u.gems||0)+'</span><span>دولار: '+toPersianNum(u.dollars||0)+'</span><span class="user-badge '+rc+'">'+(u.rank||'کاربر')+'</span>'+exBadge+(isBanned?'<span class="user-badge badge-banned">بن شده</span>':'')+'</div></div></div>';
   }).join('');
 }
 
@@ -1021,6 +1041,7 @@ async function openEditUser(id){
   document.getElementById('editUserName').value=u.name||'';
   document.getElementById('editUserCoins').value=u.coins||0;
   document.getElementById('editUserGems').value=u.gems||0;
+  document.getElementById('editUserDollars').value=u.dollars||0;
   document.getElementById('editUserRole').value=u.rank||'کاربر';
   const preview=document.getElementById('exclusiveAvatarPreview');
   if(u.exclusiveAvatar){
@@ -1035,6 +1056,7 @@ async function openEditUser(id){
 
   document.getElementById('fieldCoins').style.display=perm.coins?'block':'none';
   document.getElementById('fieldGems').style.display=perm.gems?'block':'none';
+  document.getElementById('fieldDollars').style.display=perm.dollars?'block':'none';
   document.getElementById('fieldRank').style.display=perm.rank?'block':'none';
   document.getElementById('fieldExclusive').style.display=perm.exclusive?'block':'none';
   document.getElementById('rowDelete').style.display=perm.del?'flex':'none';
@@ -1095,8 +1117,12 @@ async function saveUserEdit(){
     const gems=parseInt(document.getElementById('editUserGems').value)||0;
     u.gems=gems<0?0:gems;
   }
+  if(perm.dollars){
+    const dollars=parseInt(document.getElementById('editUserDollars').value)||0;
+    u.dollars=dollars<0?0:dollars;
+  }
   if(perm.rank)u.rank=document.getElementById('editUserRole').value;
-  // ✅ آواتار اختصاصی: اگر null شده، حذف کن
+  // ✅ آواتار اختصاصی: اگر null شده، حذف کن و آواتار را به قبلی برگردان
   if(perm.exclusive){
     if(editingUserExclusiveAvatar){
       if(editingUserExclusiveAvatar === '655.webm' && editingUserId !== CREATOR_PHONE) {
@@ -1108,10 +1134,16 @@ async function saveUserEdit(){
       const exKey='exclusive_'+editingUserId;
       if(!u.ownedAvatars.includes(exKey))u.ownedAvatars.push(exKey);
     } else {
-      // حذف آواتار اختصاصی
+      // حذف آواتار اختصاصی: آواتار کاربر را به قبلی یا پیش‌فرض برگردان
       delete u.exclusiveAvatar;
       if(u.ownedAvatars){
         u.ownedAvatars = u.ownedAvatars.filter(a => !a.startsWith('exclusive_'));
+      }
+      // بازیابی آواتار قبلی
+      if(u.previousAvatar && u.previousAvatar !== u.avatar) {
+        u.avatar = u.previousAvatar;
+      } else if (!u.avatar || u.avatar === u.exclusiveAvatar) {
+        u.avatar = 'Mafia2.png';
       }
     }
   }
@@ -1346,8 +1378,10 @@ function initAvatarShop(){
   if(!currentUserData)return;
   shopGold=currentUserData.coins||200;
   shopGems=currentUserData.gems||500;
+  shopDollars=currentUserData.dollars||0;
   document.getElementById('shopGoldAmount').textContent=toPersianNum(shopGold);
   document.getElementById('shopGemAmount').textContent=toPersianNum(shopGems);
+  document.getElementById('shopDollarAmount').textContent=toPersianNum(shopDollars);
 
   if (!currentUserData.ownedAvatars) currentUserData.ownedAvatars = [];
 
@@ -1639,7 +1673,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (!localUser) {
-      localUser = { name: 'کاربر', coins: 0, gems: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0 };
+      localUser = { name: 'کاربر', coins: 0, gems: 0, dollars: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0 };
   }
 
   currentUserData = localUser;
