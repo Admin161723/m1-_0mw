@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#041228">
+<title>بازی پلیس | صفحه اصلی</title>
+<link rel="stylesheet" href="Safe Asli.css">
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="top-bar">
+    <div class="top-left">
+      <div class="coin-display"><img src="Coin99.webp" class="currency-icon" alt="سکه"><span class="coin-value" id="displayCoins">۰</span></div>
+      <div class="diamond-display"><img src="Jam99.webp" class="currency-icon" alt="جم"><span class="diamond-value" id="displayGems">۰</span></div>
+      <div class="dollar-display"><img src="Dolar99.webp" class="currency-icon" alt="دولار"><span class="dollar-value" id="displayDollars">۰</span></div>
+    </div>
+    <div class="menu-btn" id="menuBtn"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="menu-overlay" id="menuOverlay"></div>
+  <div class="menu-dropdown" id="menuDropdown">
+    <div class="menu-item" id="menuContact"><div class="menu-item-icon icon-contact">📞</div><span class="menu-item-text">ارتباط با ما</span></div>
+    <div class="menu-item" id="menuSettings"><div class="menu-item-icon icon-settings">⚙️</div><span class="menu-item-text">تنظیمات</span></div>
+    <div class="menu-item" id="menuLogout"><div class="menu-item-icon icon-logout">🚪</div><span class="menu-item-text">خروج از اکانت</span></div>
+  </div>
+
+  <div class="profile-section" id="openProfile">
+    <div class="profile-avatar" id="mainAvatarContainer">
+      <img id="mainUserAvatar" src="Mafia2.png" alt="profile">
+    </div>
+    <div class="profile-name-bar"><span class="profile-name" id="mainUserName">کاربر</span><img id="mainUserTick" class="role-tick" src="" style="display:none;"></div>
+  </div>
+
+  <div class="right-buttons">
+    <div class="side-btn" id="btnAnnouncements">
+      <div class="side-btn-icon-wrap"><img src="At.webp" class="nav-icon-custom" alt="اطلاعیه"><span class="notification-badge" id="newsBadge" style="display:none;">0</span></div>
+      <div class="side-btn-label">اطلاعیه‌ها</div>
+    </div>
+    <div class="side-btn" id="btnHelp"><div class="side-btn-icon-wrap"><div class="icon-question">?</div></div><div class="side-btn-label">آموزش</div></div>
+    <div class="side-btn" id="btnTopPlayers"><div class="side-btn-icon-wrap"><img src="Bar.webp" class="nav-icon-custom" alt="رتبه‌بندی"></div><div class="side-btn-label">برترین‌ها</div></div>
+    <div class="side-btn" id="btnManagement"><div class="side-btn-icon-wrap"><img src="Tim.webp" class="nav-icon-custom" alt="تیم مدیریتی"></div><div class="side-btn-label">تیم مدیریتی</div></div>
+    <div class="side-btn" id="btnLive"><div class="side-btn-icon-wrap"><div class="icon-live" style="width:28px;height:20px;background:linear-gradient(180deg,#f44336,#d32f2f);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;">LIVE</div></div><div class="side-btn-label">پخش زنده</div></div>
+    <div class="side-btn" id="btnAdmin" style="display:none;"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">مدیریت</div></div>
+  </div>
+
+  <div class="bottom-modes">
+    <button class="mode-btn mode-friendly" id="btnFriendly"><span class="mode-title">دوستانه</span><div class="mode-coins"><img src="Coin99.webp" class="mode-coin-icon" alt="سکه"><span class="mode-coin-value">۵۰</span></div></button>
+    <button class="mode-btn mode-competitive" id="btnCompetitive"><span class="mode-title">امتیازی</span><div class="mode-coins"><img src="Coin99.webp" class="mode-coin-icon" alt="سکه"><span class="mode-coin-value">۷۰</span></div></button>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" id="navShop"><img src="Forosh.webp" class="nav-icon" alt="فروشگاه"><span class="nav-label">فروشگاه</span></div>
+    <div class="nav-item active"><img src="Khane.webp" class="nav-icon" alt="خانه"><span class="nav-label">خانه</span></div>
+    <div class="nav-item" id="navGroup"><img src="Goroh.webp" class="nav-icon" alt="گروه‌ها"><span class="nav-label">گروه‌ها</span></div>
+  </div>
+
+  <!-- مدال اطلاعیه‌ها -->
+  <div class="modal-overlay" id="newsModal">
+    <div class="modal-box">
+      <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
+      <div class="modal-body">
+        <div id="newsCreatorArea" style="display:none;">
+          <div class="news-create-area">
+            <input type="text" class="news-input" id="newsTitleInput" placeholder="عنوان اطلاعیه...">
+            <textarea class="news-input" id="newsContentInput" rows="3" placeholder="متن اطلاعیه..."></textarea>
+            <button class="news-send-btn" id="sendNewsBtn">ارسال برای همه</button>
+          </div>
+        </div>
+        <div class="news-list" id="newsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مدال مدیریت -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal-box" style="max-width:400px;">
+      <div class="modal-header"><div class="modal-title">پنل مدیریت</div><div class="modal-close" onclick="closeAdminModal()">✕</div></div>
+      <div class="modal-body">
+        <div class="admin-tools" id="adminTools" style="display:none;">
+          <div class="admin-tools-title">🛠️ ابزارهای سازنده</div>
+          <div class="admin-tools-btns">
+            <button class="edit-btn ban" id="btnServerToggle"> قطع سرور</button>
+            <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن دیتابیس</button>
+            <button class="edit-btn save" id="btnShowUsersList">👥 کاربران</button>
+            <button class="edit-btn info" id="btnUserControl">🎮 کنترل کاربر</button>
+            <button class="edit-btn unban" id="btnWhitelistIP">🌟 لیست سفید IP</button>
+          </div>
+        </div>
+
+        <div id="userControlSection" style="display:none;margin-bottom:15px;">
+          <div class="edit-field">
+            <label class="edit-label">شماره موبایل کاربر:</label>
+            <input type="tel" class="edit-input" id="controlUserPhone" placeholder="09xxxxxxxxx">
+          </div>
+          <div class="edit-actions" style="flex-wrap:wrap;">
+            <button class="edit-btn save" id="btnForceLogin">ورود اجباری</button>
+            <button class="edit-btn warn" id="btnForceLogout">خروج اجباری</button>
+            <button class="edit-btn ban" id="btnClearUserData">🧹 پاک‌سازی اکانت</button>
+            <button class="edit-btn info" id="btnClearSessions" style="background:linear-gradient(180deg,#9c27b0,#7b1fa2);">📜 پاک‌سازی تاریخچه ورود</button>
+          </div>
+        </div>
+
+        <div id="whitelistSection" style="display:none;margin-bottom:15px;">
+          <div class="ip-add-section">
+            <div class="edit-field">
+              <label class="edit-label">IP کاربر (مثال: 192.168.1.1):</label>
+              <input type="text" class="edit-input" id="whitelistIPInput" placeholder="IP را وارد کنید">
+            </div>
+            <div class="edit-field">
+              <label class="edit-label">توضیح (اختیاری):</label>
+              <input type="text" class="edit-input" id="whitelistNoteInput" placeholder="مثلاً: دوست من - تست">
+            </div>
+            <button class="edit-btn save" id="btnAddWhitelistIP">✅ افزودن به لیست سفید</button>
+            <div style="margin-top:12px;">
+              <div style="color:#4fc3f7;font-size:12px;font-weight:700;margin-bottom:8px;">📋 IP های موجود در لیست سفید:</div>
+              <div id="whitelistItemsList"></div>
+            </div>
+            <div style="color:#ffb74d;font-size:11px;margin-top:10px;line-height:1.8;">
+              💡 IP هایی که در این لیست باشند، حتی وقتی سرور قطع است می‌توانند وارد بازی شوند.
+            </div>
+          </div>
+        </div>
+
+        <div class="tournament-section" id="tournamentConfig" style="display:none;">
+          <h4>🏆 تنظیمات مسابقات کلن‌ها</h4>
+          <div style="margin-bottom:10px;">
+            <label style="color:#fff;font-size:12px;">مدت مسابقه:</label>
+            <select id="tournamentDuration" style="width:100%;padding:8px;border-radius:6px;border:1px solid #2a6ac0;background:rgba(255,255,255,.1);color:#fff;margin-top:4px;">
+              <option value="weekly">هفتگی</option><option value="monthly">ماهانه</option><option value="seasonal">فصلی</option>
+            </select>
+          </div>
+          <button class="confirm-btn" onclick="confirmTournamentTime()" style="width:100%;">✅ تایید زمان مسابقه</button>
+          <h4 style="color:#ffd700;font-size:13px;margin:10px 0 8px;">🥇 جایزه رتبه ۱</h4>
+          <div class="prize-row"><label>نوع:</label><select id="prize1Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option><option value="frame">فریم</option><option value="crown">تاج</option><option value="custom">آپلود از گالری</option></select></div>
+          <div class="prize-row"><label>مقدار:</label><input type="number" id="prize1Value" placeholder="مثلا: 500" min="0"></div>
+          <div class="prize-row" id="prize1FileRow" style="display:none;"><div class="prize-file-btn"><label class="prize-file-label">📁 انتخاب فایل<input type="file" id="prize1File" accept="image/*,video/*"></label></div></div>
+          <button class="confirm-btn" onclick="confirmPrize(1)" style="width:100%;">✅ تایید جایزه رتبه ۱</button>
+          <h4 style="color:#c0c0c0;font-size:13px;margin:10px 0 8px;">🥈 جایزه رتبه ۲</h4>
+          <div class="prize-row"><label>نوع:</label><select id="prize2Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option><option value="frame">فریم</option><option value="crown">تاج</option><option value="custom">آپلود از گالری</option></select></div>
+          <div class="prize-row"><label>مقدار:</label><input type="number" id="prize2Value" placeholder="مثلا: 300" min="0"></div>
+          <div class="prize-row" id="prize2FileRow" style="display:none;"><div class="prize-file-btn"><label class="prize-file-label">📁 انتخاب فایل<input type="file" id="prize2File" accept="image/*,video/*"></label></div></div>
+          <button class="confirm-btn" onclick="confirmPrize(2)" style="width:100%;">✅ تایید جایزه رتبه ۲</button>
+          <h4 style="color:#cd7f32;font-size:13px;margin:10px 0 8px;">🥉 جایزه رتبه ۳</h4>
+          <div class="prize-row"><label>نوع:</label><select id="prize3Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option><option value="frame">فریم</option><option value="crown">تاج</option><option value="custom">آپلود از گالری</option></select></div>
+          <div class="prize-row"><label>مقدار:</label><input type="number" id="prize3Value" placeholder="مثلا: 100" min="0"></div>
+          <div class="prize-row" id="prize3FileRow" style="display:none;"><div class="prize-file-btn"><label class="prize-file-label">📁 انتخاب فایل<input type="file" id="prize3File" accept="image/*,video/*"></label></div></div>
+          <button class="confirm-btn" onclick="confirmPrize(3)" style="width:100%;">✅ تایید جایزه رتبه ۳</button>
+          <h4 style="color:#4a9eff;font-size:13px;margin:10px 0 8px;">🎖️ جایزه رتبه ۴ تا ۱۰</h4>
+          <div class="prize-row"><label>نوع:</label><select id="prize4Type"><option value="gem">الماس</option><option value="coin">سکه</option><option value="avatar">آواتار</option></select></div>
+          <div class="prize-row"><label>مقدار:</label><input type="number" id="prize4Value" placeholder="مثلا: 50" min="0"></div>
+          <button class="confirm-btn" onclick="confirmPrize(4)" style="width:100%;">✅ تایید جایزه رتبه ۴-۱۰</button>
+          <button class="edit-btn save" onclick="saveAllTournamentConfig()" style="width:100%;margin-top:12px;">💾 ذخیره نهایی و شروع مسابقه</button>
+          <div class="clan-blacklist" id="clanBlacklist">
+            <h4 style="color:#f44336;font-size:12px;margin-bottom:8px;">🚫 لیست سیاه کلن‌ها</h4>
+            <div id="blacklistItems"></div>
+            <button class="edit-btn ban" onclick="addClanToBlacklist()" style="width:100%;margin-top:8px;">➕ افزودن کلن به لیست سیاه</button>
+          </div>
+        </div>
+
+        <div id="usersSection" style="display:none;">
+          <input type="text" class="admin-search" id="userSearchInput" placeholder="جستجو با کد کاربری...">
+          <div class="admin-tabs">
+            <span class="admin-tab active" data-tab="all">همه</span>
+            <span class="admin-tab" data-tab="online">آنلاین</span>
+            <span class="admin-tab" data-tab="offline">آفلاین</span>
+            <span class="admin-tab" data-tab="banned">بن شده</span>
+            <span class="admin-tab" data-tab="reports">گزارش‌ها</span>
+            <span class="admin-tab" data-tab="lobby">تایید لابی</span>
+          </div>
+          <div class="admin-list-container" id="adminUserListContainer"></div>
+        </div>
+
+        <div id="userHistorySection" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:#fff;font-weight:700;" id="historyUserName">کاربر</span>
+            <button class="edit-btn cancel" onclick="closeUserHistory()" style="padding:4px 12px;font-size:12px;">بازگشت</button>
+          </div>
+          <div id="historyContent"></div>
+        </div>
+
+        <div class="user-list" id="userList" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ویرایش کاربر -->
+  <div class="edit-user-modal" id="editUserModal">
+    <div class="edit-user-content">
+      <div class="edit-user-title">ویرایش کامل کاربر</div>
+      <div class="edit-field"><label class="edit-label">نام کاربری:</label><input type="text" class="edit-input" id="editUserName"></div>
+      <div class="edit-field"><label class="edit-label">کد کاربری (عدد):</label><input type="number" class="edit-input" id="editUserCode" min="1" placeholder="مثلا: 5"></div>
+      <div class="edit-field" id="fieldCoins"><label class="edit-label">سکه:</label><input type="number" class="edit-input" id="editUserCoins" min="0"></div>
+      <div class="edit-field" id="fieldGems"><label class="edit-label">الماس:</label><input type="number" class="edit-input" id="editUserGems" min="0"></div>
+      <div class="edit-field" id="fieldDollars"><label class="edit-label">دولار:</label><input type="number" class="edit-input" id="editUserDollars" min="0"></div>
+      <div class="edit-field" id="fieldRank"><label class="edit-label">مقام:</label>
+        <select class="edit-input" id="editUserRole">
+          <option value="کاربر">کاربر</option><option value="ناظر">ناظر</option><option value="ادمین">ادمین</option><option value="گرداننده">گرداننده</option><option value="پشتیبانی">پشتیبانی</option><option value="سازنده">سازنده</option><option value="ادمین ارشد">ادمین ارشد</option><option value="ناظر ارشد">ناظر ارشد</option>
+        </select>
+      </div>
+      <div class="edit-field" id="fieldStats"><label class="edit-label">آمار بازی:</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <input type="number" class="edit-input" id="editUserCups" placeholder="کاپ" min="0">
+          <input type="number" class="edit-input" id="editUserHours" placeholder="ساعت" min="0" step="0.1">
+          <input type="number" class="edit-input" id="editUserLevel" placeholder="سطح" min="1">
+          <input type="number" class="edit-input" id="editUserCompWins" placeholder="برد امتیازی" min="0">
+          <input type="number" class="edit-input" id="editUserFriendWins" placeholder="برد دوستانه" min="0">
+          <input type="number" class="edit-input" id="editUserMonitor" placeholder="نظارت" min="0">
+          <input type="number" class="edit-input" id="editUserMafiaWins" placeholder="برد مافیا" min="0">
+          <input type="number" class="edit-input" id="editUserCitizenWins" placeholder="برد شهروند" min="0">
+          <input type="number" class="edit-input" id="editUserBestScore" placeholder="بهترین امتیاز" min="0">
+        </div>
+      </div>
+      <div class="edit-field"><label class="edit-label">مدت بن:</label>
+        <select class="edit-input" id="editBanDuration"></select>
+      </div>
+      <div class="edit-field" id="fieldBanType"><label class="edit-label">نوع بن:</label>
+        <select class="edit-input" id="editBanType">
+          <option value="account">بن اکانت</option>
+          <option value="device">بن دستگاه</option>
+          <option value="ip">بن IP</option>
+        </select>
+      </div>
+
+      <div class="exclusive-avatar-section" id="fieldExclusive" style="display:none;">
+        <div class="exclusive-avatar-title">⭐ آواتار اختصاصی (از گالری)</div>
+        <div class="exclusive-avatar-preview" id="exclusiveAvatarPreview"><span class="exclusive-avatar-placeholder">👤</span></div>
+        <div class="exclusive-avatar-btns">
+          <div class="exclusive-file-btn"><label class="exclusive-file-label">📁 انتخاب از گالری (ویدیو/تصویر)<input type="file" id="exclusiveAvatarFile" accept="image/*,video/*"></label></div>
+          <button class="exclusive-remove-btn" id="removeExclusiveAvatar">حذف آواتار اختصاصی</button>
+        </div>
+      </div>
+
+      <div class="edit-actions">
+        <button class="edit-btn ban" id="btnBanUser">بن اکانت</button>
+        <button class="edit-btn warn" id="btnBanDevice">بن دستگاه</button>
+        <button class="edit-btn warn" id="btnBanIP" style="background:linear-gradient(180deg,#c62828,#8e0000);">بن IP</button>
+        <button class="edit-btn unban" id="btnUnbanUser" style="display:none;">رفع بن</button>
+      </div>
+      <div class="edit-actions" id="rowDelete"><button class="edit-btn danger" id="btnDeleteAccount">🗑️ حذف کامل اکانت</button></div>
+      <div class="edit-actions"><button class="edit-btn cancel" onclick="closeEditUser()">انصراف</button><button class="edit-btn save" onclick="saveUserEdit()">ذخیره</button></div>
+    </div>
+  </div>
+
+  <!-- صفحه پروفایل -->
+  <div class="profile-page" id="profilePage">
+    <div class="profile-page-header"><button class="back-btn" id="backBtn">‹</button><span class="profile-page-title">پروفایل</span></div>
+    <div class="profile-info-section">
+      <div class="profile-info-avatar" id="openAvatarShop"><img id="profileUserAvatar" src="Mafia2.png"></div>
+      <div class="profile-info-details">
+        <div class="user-code-row" id="copyUserCode"><span class="user-code-label">کد کاربری</span><span class="user-code-value" id="userCode">----</span><button class="copy-btn">📋</button></div>
+        <div class="user-name-row">
+          <span class="user-name-value" id="profileUserName">کاربر</span>
+          <img id="profileUserTick" class="role-tick" src="" style="display:none;">
+          <span class="edit-name-btn" id="editNameBtn">✏️</span>
+        </div>
+        <div class="clan-row">
+          <div class="clan-badge no-group" id="profileGroupBadge">❌</div>
+          <span class="clan-name" id="profileGroupName">بدون گروه</span>
+        </div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-card-title">امتیاز</div><div class="stat-card-value" id="statScore">۰</div><div class="stat-card-icon">🏆</div></div>
+      <div class="stat-card"><div class="stat-card-title">سطح</div><div class="stat-card-value" id="statLevel">۱</div><div class="stat-card-icon">⭐</div></div>
+      <div class="stat-card clan-rank"><div class="stat-card-title">رتبه کلن</div><div class="stat-card-value" id="statClanRank">-</div><div class="stat-card-icon">🛡️</div></div>
+    </div>
+    <div class="aamar-section">
+      <div class="aamar-title-row"><div class="aamar-line"></div><span class="aamar-title">آمار کلی</span><div class="aamar-line"></div></div>
+      <div class="aamar-grid">
+        <div class="aamar-card"><div class="aamar-card-icon">⏱️</div><div class="aamar-card-value" id="statHours">۰</div><div class="aamar-card-label">ساعت بازی</div></div>
+        <div class="aamar-card"><div class="aamar-card-icon">⚔️</div><div class="aamar-card-value" id="statCompWins">۰</div><div class="aamar-card-label">برد امتیازی</div></div>
+        <div class="aamar-card"><div class="aamar-card-icon">🤝</div><div class="aamar-card-value" id="statFriendWins">۰</div><div class="aamar-card-label">برد دوستانه</div></div>
+      </div>
+      <div class="aamar-grid-4">
+        <div class="aamar-card"><div class="aamar-card-icon">👁️</div><div class="aamar-card-value" id="statMonitor">۰</div><div class="aamar-card-label">نظارت</div></div>
+        <div class="aamar-card"><div class="aamar-card-icon">🏆</div><div class="aamar-card-value" id="statBestScore">۰</div><div class="aamar-card-label">بهترین امتیاز</div></div>
+        <div class="aamar-card"><div class="aamar-card-icon">🎩</div><div class="aamar-card-value" id="statMafiaWins">۰</div><div class="aamar-card-label">برد مافیا</div></div>
+        <div class="aamar-card"><div class="aamar-card-icon">👤</div><div class="aamar-card-value" id="statCitizenWins">۰</div><div class="aamar-card-label">برد شهروند</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- صفحه خرید آواتار -->
+  <div class="avatar-shop-page" id="avatarShopPage">
+    <div class="shop-top-bar">
+      <div class="shop-back-btn" id="shopBackBtn">‹</div>
+      <div class="shop-currencies">
+        <div class="shop-currency"><img src="Coin99.webp" class="shop-currency-icon" alt="سکه"><span class="shop-currency-value" id="shopGoldAmount">۰</span></div>
+        <div class="shop-currency"><img src="Jam99.webp" class="shop-currency-icon" alt="جم"><span class="shop-currency-value" id="shopGemAmount">۰</span></div>
+        <div class="shop-currency"><img src="Dolar99.webp" class="shop-currency-icon" alt="دولار"><span class="shop-currency-value" id="shopDollarAmount">۰</span></div>
+      </div>
+    </div>
+    <div class="shop-tabs">
+      <button class="shop-tab active" data-tab="avatars">آواتارها</button>
+      <button class="shop-tab" data-tab="frames">فریم‌ها</button>
+      <button class="shop-tab" data-tab="crowns">آواتار3D</button>
+    </div>
+    <div class="character-showcase"><div class="characters-container"><div class="character-main" id="showcaseAvatarContainer"><img id="showcaseAvatarImg" src="Mafia2.png"></div></div></div>
+    <div class="avatar-section-tabs">
+      <div class="avatar-section-tab active" data-section="my">آواتارهای من</div>
+      <div class="avatar-section-tab" data-section="buy">خرید آواتارها</div>
+    </div>
+    <div class="avatar-grid" id="avatarGrid"></div>
+  </div>
+
+  <!-- مدال خرید -->
+  <div class="shop-modal" id="purchaseModal">
+    <div class="shop-modal-content">
+      <div class="shop-modal-title">خرید آواتار</div>
+      <div class="shop-modal-text" id="modalText">آیا از خرید این آواتار اطمینان دارید؟</div>
+      <div class="shop-modal-buttons">
+        <button class="shop-modal-btn cancel" id="modalCancelBtn">انصراف</button>
+        <button class="shop-modal-btn confirm" id="modalConfirmBtn">تایید خرید</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- تنظیمات -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
+      <div class="modal-body">
+        <div class="setting-row"><span class="setting-label">🔊 صدای بازی</span><input type="range" min="0" max="100" value="80" class="volume-slider" id="gameVolumeSlider"></div>
+        <button class="password-btn" id="openChangePasswordBtn">🔒 تغییر رمز عبور</button>
+        <div style="margin-top:12px;color:#aaa;font-size:12px;text-align:center;">سازنده بازی: مرتضی</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- تغییر رمز -->
+  <div class="modal-overlay" id="changePasswordModal">
+    <div class="modal-box">
+      <div class="modal-header"><div class="modal-title">تغییر رمز عبور</div><div class="modal-close" onclick="closeModal('changePasswordModal')">✕</div></div>
+      <div class="modal-body">
+        <div class="edit-field"><label class="edit-label">شماره موبایل:</label><input type="tel" class="edit-input" id="cpPhone" placeholder="09xxxxxxxxx"></div>
+        <div class="edit-field"><label class="edit-label">رمز عبور فعلی:</label><input type="password" class="edit-input" id="cpCurrentPass" placeholder="رمز فعلی"></div>
+        <div class="edit-field"><label class="edit-label">رمز عبور جدید:</label><input type="password" class="edit-input" id="cpNewPass" placeholder="رمز جدید"></div>
+        <div class="edit-actions"><button class="edit-btn cancel" onclick="closeModal('changePasswordModal')">انصراف</button><button class="edit-btn save" id="submitPasswordChange">تغییر رمز</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shop-notification" id="shopNotification"></div>
+
+  <!-- اورلای رقابتی -->
+  <div class="competitive-overlay" id="competitiveOverlay">
+    <div class="competitive-content">
+      <div class="competitive-title">در حال انتظار بازیکن...</div>
+      <button class="competitive-cancel-btn" id="cancelSearchBtn">لغو جستجو</button>
+    </div>
+  </div>
+
+  <div class="game-started-overlay" id="gameStartedOverlay">
+    <h1>بازی شروع شد!</h1>
+    <button class="game-start-btn" id="enterGameBtn">ورود به بازی</button>
+  </div>
+
+  <div class="server-down-overlay" id="serverDownOverlay">
+    <div class="server-down-icon">🔌</div>
+    <div class="server-down-title">سرور قطع است</div>
+    <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
+  </div>
+
+  <div class="device-ban-overlay" id="deviceBanOverlay">
+    <div class="device-ban-icon" style="font-size:60px;">📱</div>
+    <div class="device-ban-title">🚫 دستگاه شما بن شده است</div>
+    <div class="device-ban-text">این دستگاه به دلیل تخلف از قوانین مسدود شده است.<br>برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.</div>
+  </div>
+</div>
+
+<audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
+
+<script src="Safe Asli.js"></script>
+</body>
+</html>
