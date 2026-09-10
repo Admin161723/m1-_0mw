@@ -1,266 +1,1306 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حساب مسدود</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Vazirmatn', Tahoma, sans-serif;
-            background: linear-gradient(160deg, #1c0a0a 0%, #2b0d0d 50%, #180808 100%);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .wrap {
-            width: 100%;
-            max-width: 400px;
-        }
-        .top-icon {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .ban-circle {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto;
-            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c62828);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 44px;
-            box-shadow: 0 0 40px rgba(255, 60, 60, 0.45);
-            animation: beat 1.6s ease-in-out infinite;
-        }
-        @keyframes beat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.06); }
-        }
-        .title {
-            text-align: center;
-            font-size: 22px;
-            font-weight: 900;
-            color: #ff8a80;
-            margin-bottom: 6px;
-        }
-        .subtitle {
-            text-align: center;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.55);
-            margin-bottom: 24px;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 120, 120, 0.25);
-            border-radius: 16px;
-            padding: 18px;
-            backdrop-filter: blur(8px);
-            margin-bottom: 14px;
-        }
-        .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .row:last-child { border-bottom: none; padding-bottom: 0; }
-        .row:first-child { padding-top: 0; }
-        .row .label {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.55);
-        }
-        .row .value {
-            font-size: 15px;
-            font-weight: 700;
-            color: white;
-            text-align: left;
-            max-width: 60%;
-            word-break: break-word;
-        }
-        .row .value.red { color: #ff8a80; }
-        .timer-box {
-            background: linear-gradient(135deg, #b71c1c, #8e0000);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 14px;
-            box-shadow: 0 6px 25px rgba(180, 0, 0, 0.35);
-        }
-        .timer-box .t-label {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 8px;
-        }
-        .timer-box .t-value {
-            font-size: 30px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            direction: ltr;
-            font-family: 'Courier New', monospace;
-        }
-        .timer-box .t-value.perm {
-            font-size: 20px;
-            font-family: 'Vazirmatn', sans-serif;
-            letter-spacing: 0;
-        }
-        .btn {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: white;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Vazirmatn', sans-serif;
-            transition: background 0.2s;
-        }
-        .btn:active { background: rgba(255, 255, 255, 0.2); transform: scale(0.98); }
-        .loading { text-align: center; padding: 30px; color: rgba(255,255,255,0.6); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0f1e">
+<title>ورود به بازی</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+html {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overscroll-behavior: none !important;
+    background: #0a0f1e !important;
+    touch-action: none !important;
+}
+
+body {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    background: #0a0f1e !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden !important;
+    touch-action: none !important;
+    color: white;
+}
+
+input, textarea, select {
+    font-size: 16px !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    touch-action: manipulation !important;
+}
+
+img, a, button, div {
+    -webkit-user-drag: none !important;
+    user-drag: none !important;
+}
+
+.page {
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    height: 100dvh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+    overflow: hidden !important;
+    touch-action: none !important;
+    flex-shrink: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#loadingPage {
+    background-image: url('3004.webp');
+    background-color: #0a0f1e;
+    background-size: cover;
+    background-position: center;
+    justify-content: center;
+}
+
+.loading-circle {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid rgba(255, 255, 255, 0.4);
+    border-top: 2.5px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.version {
+    position: absolute;
+    bottom: 22px;
+    right: 20px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.65);
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(2px);
+    padding: 2px 8px;
+    border-radius: 20px;
+    pointer-events: none;
+}
+
+#authPage {
+    background-image: url('64f994ba-91b1-419b-bba3-b8646f7b222d.png');
+    background-color: #0a0f1e;
+    background-size: cover;
+    justify-content: flex-start;
+    padding-top: 80px;
+}
+
+.logo {
+    width: 120px;
+    margin: 20px auto 30px;
+    display: block;
+    pointer-events: none;
+}
+
+.card {
+    background: rgba(10, 15, 30, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 32px;
+    padding: 24px 20px;
+    width: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    touch-action: none;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 60px;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 16px;
+    outline: none;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.btn {
+    background: #2ecc71;
+    border: none;
+    padding: 12px;
+    border-radius: 60px;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    width: 100%;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-top: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    touch-action: manipulation;
+}
+
+.btn:hover {
+    background: #27ae60;
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+.link-btn {
+    background: transparent;
+    color: #2ecc71;
+    box-shadow: none;
+    margin-top: 5px;
+}
+
+.error-msg {
+    color: #ff8a8a;
+    font-size: 12px;
+    margin-top: 6px;
+    text-align: center;
+}
+
+#profilePage {
+    background-image: url('64f994ba-91b1-419b-bba3-b8646f7b222d.png');
+    background-color: #0a0f1e;
+    background-size: cover;
+    justify-content: center;
+}
+
+.avatar-circle {
+    width: 140px;
+    height: 140px;
+    background: #2c3e50;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    border: 4px solid #2ecc71;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    touch-action: manipulation;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.avatar-menu {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 40px 40px 0 0;
+    padding: 20px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: 0.3s;
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+.avatar-menu.open {
+    transform: translateY(0);
+}
+
+.avatar-option {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid #2ecc71;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.1s;
+    background: #333;
+    touch-action: manipulation;
+}
+
+.avatar-option.selected {
+    border: 4px solid #f1c40f;
+    box-shadow: 0 0 10px #2ecc71;
+}
+
+.avatar-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.info-input {
+    margin-bottom: 15px;
+}
+
+.green-btn {
+    background: #2ecc71;
+    color: white;
+}
+
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+.backdrop.show {
+    display: block;
+}
+
+.toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.error {
+    background: linear-gradient(180deg, #f44336 0%, #da190b 100%);
+}
+
+#errorPage {
+    background-color: #0a0f1e;
+    justify-content: center;
+}
+
+.error-box {
+    width: 100%;
+    background: rgba(244, 67, 54, 0.1);
+    border: 2px solid #f44336;
+    border-radius: 28px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(244, 67, 54, 0.35);
+}
+
+.error-ico {
+    font-size: 56px;
+    margin-bottom: 14px;
+}
+
+.error-title {
+    color: #ff6b6b;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 12px;
+}
+
+.error-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    line-height: 2.1;
+}
+
+.error-code {
+    margin-top: 14px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    direction: ltr;
+}
+</style>
 </head>
 <body>
-<div class="wrap">
-    <div class="top-icon"><div class="ban-circle">🚫</div></div>
-    <div class="title">حساب شما مسدود شد</div>
-    <div class="subtitle">به دلیل تخلف از قوانین بازی</div>
 
-    <div id="loading" class="loading">در حال بارگذاری...</div>
+<!-- صفحه لودینگ -->
+<div id="loadingPage" class="page">
+    <div class="loading-circle"></div>
+    <div class="version">2.0.0</div>
+</div>
 
-    <div id="content" style="display:none;">
-        <div class="card">
-            <div class="row">
-                <span class="label">مسدود شده توسط</span>
-                <span class="value" id="by">-</span>
-            </div>
-            <div class="row">
-                <span class="label">دلیل مسدودی</span>
-                <span class="value red" id="reason">-</span>
-            </div>
-            <div class="row">
-                <span class="label">مدت محرومیت</span>
-                <span class="value" id="duration">-</span>
-            </div>
+<!-- صفحه ورود/ثبت‌نام -->
+<div id="authPage" class="page hidden">
+    <img class="logo" src="InShot_20260527_210904646.png" alt="logo" onerror="this.style.display='none'">
+    <div class="card" id="authCard">
+        <div id="stepPhone">
+            <div class="input-group"><input type="tel" id="phoneInput" placeholder="شماره موبایل" maxlength="11" inputmode="numeric"></div>
+            <button class="btn" id="checkPhoneBtn">ادامه</button>
+            <div id="phoneError" class="error-msg"></div>
         </div>
-
-        <div class="timer-box">
-            <div class="t-label">زمان باقی مانده</div>
-            <div class="t-value" id="timer">--:--:--</div>
+        <div id="stepPassword" style="display:none;">
+            <div class="input-group"><input type="password" id="passwordInput" placeholder="رمز عبور"></div>
+            <button class="btn" id="loginBtn">ورود</button>
+            <button class="btn link-btn" id="forgotPassBtn">فراموشی رمزعبور؟</button>
+            <div id="passError" class="error-msg"></div>
         </div>
-
-        <button class="btn" onclick="location.href='index.html'">بازگشت به ورود</button>
+        <div id="stepOtp" style="display:none;">
+            <div class="input-group"><input type="text" id="otpInput" placeholder="کد تایید ۶ رقمی" maxlength="6" inputmode="numeric"></div>
+            <button class="btn" id="verifyOtpBtn">تایید کد</button>
+            <button class="btn link-btn" id="resendOtpBtn">درخواست کد دیگه</button>
+            <div id="otpError" class="error-msg"></div>
+        </div>
     </div>
 </div>
 
-<script>
-const REDIS_URL = "https://smooth-werewolf-200782.upstash.io";
-const REDIS_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+<!-- صفحه پروفایل -->
+<div id="profilePage" class="page hidden">
+    <div class="avatar-circle" id="avatarCircle"><img id="selectedAvatarImg" src="3000.webp" alt="avatar"></div>
+    <div class="card" style="width:100%;">
+        <div class="info-input"><input type="text" id="gameName" placeholder="اسم داخل بازی" maxlength="20"></div>
+        <div class="info-input"><input type="number" id="age" placeholder="سن" min="5" max="99" inputmode="numeric"></div>
+        <div class="info-input"><input type="password" id="newPassword" placeholder="رمز عبور جدید"></div>
+        <button class="btn green-btn" id="submitProfileBtn">تایید و ادامه</button>
+    </div>
+</div>
 
-const DURATION_LABELS = {
-    '1h': '۱ ساعت', '1d': '۱ روز', '7d': '۷ روز',
-    '2w': '۲ هفته', '1m': '۱ ماه', '3m': '۳ ماه',
-    'permanent': 'دائمی'
+<!-- صفحه خطای دسترسی غیرمجاز -->
+<div id="errorPage" class="page hidden">
+    <div class="error-box">
+        <div class="error-ico">⛔</div>
+        <div class="error-title">خطا! دسترسی غیرمجاز</div>
+        <div class="error-text">اجرای بازی فقط از طریق <b>اپلیکیشن رسمی</b> امکان‌پذیر است.</div>
+        <div class="error-code">ERR_UNAUTHORIZED_CLIENT #403</div>
+    </div>
+</div>
+
+<div id="backdrop" class="backdrop"></div>
+<div class="toast" id="toast"></div>
+
+<audio id="clickSound" preload="auto">
+    <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+var APP_UA_TOKEN = 'MafiaApp';
+var PAGES = { game: 'Safe Asli Bazi.html', ban: 'Ban.html', off: 'off.html' };
+var CREATOR_PHONE = '09904844031';
+var tempPhone = null;
+var generatedOtp = null;
+
+var selectedAvatarSrc = "3000.webp";
+var avatarList = ["3000.webp", "3001.webp", "3002.webp", "3003.webp"];
+
+var isRedirecting = false;
+var appVerified = true;
+var audioUnlocked = false;
+
+var currentDeviceId = null;
+var currentIP = null;
+
+// ============================================================
+//  اتصال به Redis
+// ============================================================
+var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
+var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+var UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
+var UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+
+async function upstashGet(url, token, k) {
+    try {
+        var c = new AbortController();
+        var t = setTimeout(function () { c.abort(); }, 5000);
+        var r = await fetch(url + '/get/' + encodeURIComponent(k), {
+            headers: { 'Authorization': 'Bearer ' + token },
+            signal: c.signal
+        });
+        clearTimeout(t);
+        if (!r.ok) return null;
+        var d = await r.json();
+        if (d && d.result) {
+            try { return JSON.parse(d.result); } catch (e) { return d.result; }
+        }
+        return null;
+    } catch (e) { return null; }
+}
+
+async function upstashSet(url, token, k, v) {
+    try {
+        var jsonValue = JSON.stringify(v);
+        var c = new AbortController();
+        var t = setTimeout(function () { c.abort(); }, 5000);
+        var r = await fetch(url + '/set/' + encodeURIComponent(k) + '/' + encodeURIComponent(jsonValue), {
+            headers: { 'Authorization': 'Bearer ' + token },
+            signal: c.signal
+        });
+        clearTimeout(t);
+        return r.ok;
+    } catch (e) { return false; }
+}
+
+async function upstashDel(url, token, k) {
+    try {
+        var c = new AbortController();
+        var t = setTimeout(function () { c.abort(); }, 5000);
+        var r = await fetch(url + '/del/' + encodeURIComponent(k), {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            signal: c.signal
+        });
+        clearTimeout(t);
+        return r.ok;
+    } catch (e) { return false; }
+}
+
+async function redisGet(key) {
+    if (!appVerified) return null;
+    var v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
+    if (v1 !== null) return v1;
+    return await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
+}
+
+async function redisSet(key, value) {
+    if (!appVerified) return false;
+    var p1 = upstashSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key, value);
+    var p2 = upstashSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key, value);
+    var results = await Promise.allSettled([p1, p2]);
+    return results.some(function (r) { return r.status === 'fulfilled' && r.value === true; });
+}
+
+async function redisDel(key) {
+    if (!appVerified) return false;
+    await Promise.allSettled([
+        upstashDel(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key),
+        upstashDel(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key)
+    ]);
+    return true;
+}
+
+async function redisIncr(key) {
+    var val = await redisGet(key);
+    var num = parseInt(val) || 0;
+    num++;
+    await redisSet(key, num);
+    return num;
+}
+
+async function getUser(phone) { return await redisGet('user:' + phone); }
+async function saveUser(phone, userData) { return await redisSet('user:' + phone, userData); }
+async function getAllUsers() { return await redisGet('all_users') || {}; }
+async function saveAllUsers(users) { return await redisSet('all_users', users); }
+async function getMaintenance() { return await redisGet('server_maintenance'); }
+
+async function getBanStatus(phone) {
+    var ban = await redisGet('ban:' + phone);
+    if (ban && ban.isBanned) {
+        if (ban.expiresAt && ban.duration !== 'permanent' && ban.duration !== 'دائمی') {
+            if (new Date(ban.expiresAt).getTime() < Date.now()) return null;
+        }
+        return ban;
+    }
+    return null;
+}
+
+async function getIPBan(ip) { return await redisGet('ip_ban:' + ip); }
+async function getDeviceBan(deviceId) { return await redisGet('device_ban:' + deviceId); }
+
+async function getPhoneForDevice(deviceId) {
+    if (!deviceId) return null;
+    return await redisGet('device_phone:' + deviceId);
+}
+
+async function lockDeviceToPhone(deviceId, phone) {
+    if (!deviceId || !phone) return false;
+    return await redisSet('device_phone:' + deviceId, { phone: phone, lockedAt: Date.now() });
+}
+
+async function getAllWhitelistIPs() { return await redisGet('whitelist_ips') || {}; }
+
+async function isIPWhitelisted(ip) {
+    if (!ip) return false;
+    var list = await getAllWhitelistIPs();
+    return !!list[ip];
+}
+
+async function logLoginSession(phone, ip, deviceId) {
+    try {
+        var user = await getUser(phone);
+        if (!user) return;
+        if (!user.loginHistory) user.loginHistory = [];
+        user.loginHistory.push({
+            time: Date.now(),
+            ip: ip || 'unknown',
+            device: deviceId || 'unknown',
+            userAgent: navigator.userAgent || 'unknown'
+        });
+        if (user.loginHistory.length > 50) {
+            user.loginHistory = user.loginHistory.slice(-50);
+        }
+        user.lastIP = ip;
+        user.lastDevice = deviceId;
+        user.lastLogin = Date.now();
+        await saveUser(phone, user);
+
+        var allUsers = await getAllUsers();
+        allUsers[phone] = user;
+        await saveAllUsers(allUsers);
+    } catch (e) {}
+}
+
+var SPECIAL_ACCOUNTS = {
+    '09904844031': {
+        password: 'Par1617230',
+        name: 'سازنده بازی',
+        age: 30,
+        avatar: 'Mafia10.png',
+        rank: 'سازنده',
+        fullProfile: true,
+        canAccessAdult: true,
+        canAccessTeen: true,
+        coins: 999,
+        gems: 999
+    },
+    '09942785343': {
+        password: 'mmmmmm',
+        name: 'یــزدگَــردِ ســوّم',
+        age: 30,
+        avatar: '100.jpg',
+        rank: 'ناظر',
+        fullProfile: true,
+        canAccessAdult: true,
+        canAccessTeen: false,
+        coins: 3000,
+        gems: 2000
+    }
 };
 
-async function init() {
-    const params = new URLSearchParams(location.search);
-    let phone = params.get('phone');
-    if (!phone) {
+function getDeviceId() {
+    var id = localStorage.getItem('__device_id__');
+    if (!id) {
+        var parts = [
+            navigator.userAgent || 'ua',
+            navigator.platform || 'plat',
+            screen.width + 'x' + screen.height,
+            screen.colorDepth || 24,
+            navigator.language || 'fa',
+            navigator.hardwareConcurrency || 4,
+            new Date().getTimezoneOffset()
+        ];
+        var raw = parts.join('|');
+        var hash = 0;
+        for (var i = 0; i < raw.length; i++) {
+            hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+            hash = hash & hash;
+        }
+        id = 'dev_' + Math.abs(hash) + '_' + Date.now().toString(36);
+        localStorage.setItem('__device_id__', id);
+    }
+    return id;
+}
+
+async function fetchUserIP() {
+    try {
+        var c = new AbortController();
+        var t = setTimeout(function () { c.abort(); }, 4000);
+        var res = await fetch('https://api.ipify.org?format=json', { signal: c.signal });
+        clearTimeout(t);
+        var data = await res.json();
+        return data.ip || null;
+    } catch (e) { return null; }
+}
+
+function isInsideApp() {
+    try {
+        if (localStorage.getItem('__MAFIA_OK__') === '1') return true;
+        if (window.__MAFIA_APP__ === true) return true;
+        var ua = navigator.userAgent || '';
+        if (APP_UA_TOKEN && ua.indexOf(APP_UA_TOKEN) !== -1) return true;
+        if (navigator.standalone === true) return true;
+        if (/; wv\)/.test(ua)) return true;
+        if (ua.indexOf('WebView') !== -1) return true;
+        if (window.Android !== undefined) return true;
+        if (window.flutter_inappwebview !== undefined) return true;
+        if (window.ReactNativeWebView !== undefined) return true;
+        if (window.Capacitor !== undefined) return true;
+        if (window.cordova !== undefined) return true;
+        return false;
+    } catch (e) { return false; }
+}
+
+function killApp() {
+    appVerified = false;
+    document.title = 'Access Denied';
+    try { window.stop(); } catch (e) {}
+    document.open();
+    document.write('<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>خطا</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;font-family:"Vazirmatn",sans-serif;color:white;display:flex;align-items:center;justify-content:center;padding:20px}.box{max-width:420px;width:100%;background:rgba(244,67,54,0.1);border:2px solid #f44336;border-radius:28px;padding:30px 20px;text-align:center}.ico{font-size:56px;margin-bottom:14px}.title{color:#ff6b6b;font-size:22px;font-weight:900;margin-bottom:12px}.text{color:rgba(255,255,255,0.85);font-size:13px;line-height:2.1}</style></head><body><div class="box"><div class="ico">⛔</div><div class="title">دسترسی غیرمجاز</div><div class="text">اجرای بازی فقط از طریق اپلیکیشن رسمی امکان‌پذیر است.</div></div></body></html>');
+    document.close();
+}
+
+function showServerDown() {
+    document.open();
+    document.write('<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>سرور قطع</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;font-family:"Vazirmatn",sans-serif;color:white;display:flex;align-items:center;justify-content:center;padding:20px}.box{max-width:420px;width:100%;background:rgba(231,76,60,0.1);border:2px solid #e74c3c;border-radius:28px;padding:30px 20px;text-align:center}.ico{font-size:72px;margin-bottom:18px}.title{color:#ff6b6b;font-size:24px;font-weight:900;margin-bottom:14px}.text{color:rgba(255,255,255,0.85);font-size:14px;line-height:2.2}</style></head><body><div class="box"><div class="ico">🔌</div><div class="title">سرور قطع است</div><div class="text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div></div></body></html>');
+    document.close();
+}
+
+function showDeviceLock(lockedPhone) {
+    document.open();
+    document.write('<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>قفل</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;font-family:"Vazirmatn",sans-serif;color:white;display:flex;align-items:center;justify-content:center;padding:20px}.box{max-width:420px;width:100%;background:rgba(255,152,0,0.12);border:2px solid #ff9800;border-radius:28px;padding:30px 20px;text-align:center;box-shadow:0 0 30px rgba(255,152,0,0.35)}.ico{font-size:60px;margin-bottom:14px}.title{color:#ffb74d;font-size:22px;font-weight:900;margin-bottom:12px}.text{color:rgba(255,255,255,0.9);font-size:13px;line-height:2.1}.hint{color:#4fc3f7;font-size:12px;margin-top:12px;direction:ltr}</style></head><body><div class="box"><div class="ico">📱</div><div class="title">این گوشی قبلاً ثبت‌نام کرده است</div><div class="text">شما قبلاً با شماره دیگری در این گوشی ثبت‌نام کرده‌اید.<br>هر گوشی فقط یک اکانت می‌تواند داشته باشد.</div><div class="hint">Registered: ' + (lockedPhone || '****') + '</div></div></body></html>');
+    document.close();
+}
+
+function lockInspect() {
+    document.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); killApp(); return false; }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) { e.preventDefault(); killApp(); return false; }
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's' || e.key === 'P' || e.key === 'p')) { e.preventDefault(); killApp(); return false; }
+    });
+    document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    document.addEventListener('selectstart', function (e) { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+    document.addEventListener('copy', function (e) { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+    document.addEventListener('cut', function (e) { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+    document.addEventListener('paste', function (e) { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+    document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
+    document.addEventListener('gestureend', function (e) { e.preventDefault(); });
+    document.addEventListener('touchmove', function (e) { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); }, { passive: false });
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function (e) {
+        var now = Date.now();
+        if (now - lastTouchEnd <= 300 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+        lastTouchEnd = now;
+    }, false);
+    setInterval(function () {
+        if (!isInsideApp()) { killApp(); return; }
         try {
-            const lg = localStorage.getItem('currentLoggedInUser');
-            if (lg) phone = JSON.parse(lg).phone;
-        } catch(e) {}
+            var start = performance.now();
+            debugger;
+            var end = performance.now();
+            if (end - start > 100) killApp();
+        } catch (e) {}
+    }, 800);
+}
+
+function showToast(message, type) {
+    if (!appVerified) return;
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = message;
+    t.className = 'toast show' + (type === 'error' ? ' error' : '');
+    setTimeout(function () { t.classList.remove('show'); }, 3000);
+}
+
+function redirectToOffline() {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    window.location.href = PAGES.off;
+}
+
+function redirectToBan(banData, phone, type) {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    var params = new URLSearchParams({
+        phone: phone || '',
+        by: banData.bannedBy || 'مدیریت',
+        reason: banData.reason || 'بدون دلیل',
+        duration: banData.duration || 'permanent',
+        expires: banData.expiresAt || '',
+        createdAt: banData.bannedAt || banData.createdAt || '',
+        type: type || banData.type || 'account'
+    });
+    window.location.href = PAGES.ban + '?' + params.toString();
+}
+
+async function performSecurityChecks(phone) {
+    if (!currentIP) currentIP = await fetchUserIP();
+    if (!currentDeviceId) currentDeviceId = getDeviceId();
+
+    var isWhitelisted = await isIPWhitelisted(currentIP);
+
+    if (currentIP && !isWhitelisted) {
+        var ipBan = await getIPBan(currentIP);
+        if (ipBan && ipBan.isBanned) {
+            if (!ipBan.expiresAt || new Date(ipBan.expiresAt).getTime() > Date.now()) {
+                redirectToBan(ipBan, phone, 'ip');
+                return { blocked: true, reason: 'ip_ban' };
+            }
+        }
     }
 
-    if (!phone) {
-        showInfo({
-            bannedBy: params.get('by') || 'مدیریت',
-            reason: params.get('reason') || 'نامشخص',
-            duration: params.get('duration') || 'permanent',
-            expiresAt: params.get('expires')
-        });
-        return;
+    if (currentDeviceId) {
+        var deviceBan = await getDeviceBan(currentDeviceId);
+        if (deviceBan && deviceBan.isBanned) {
+            if (!deviceBan.expiresAt || new Date(deviceBan.expiresAt).getTime() > Date.now()) {
+                redirectToBan(deviceBan, phone, 'device');
+                return { blocked: true, reason: 'device_ban' };
+            }
+        }
     }
+
+    if (phone) {
+        var accountBan = await getBanStatus(phone);
+        if (accountBan) {
+            redirectToBan(accountBan, phone, 'account');
+            return { blocked: true, reason: 'account_ban' };
+        }
+    }
+
+    return { blocked: false, isWhitelisted: isWhitelisted };
+}
+
+async function initSpecialAccounts() {
+    var keys = Object.keys(SPECIAL_ACCOUNTS);
+    var allUsers = await getAllUsers();
+    for (var k = 0; k < keys.length; k++) {
+        var phone = keys[k];
+        var data = SPECIAL_ACCOUNTS[phone];
+        try {
+            var existing = await getUser(phone);
+            if (!existing) {
+                await saveUser(phone, data);
+                allUsers[phone] = data;
+            }
+        } catch (e) {}
+    }
+    await saveAllUsers(allUsers);
+}
+
+function getLegacyUser(phone) {
+    try {
+        var legacyUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+        return legacyUsers[phone] || null;
+    } catch (e) { return null; }
+}
+
+async function findUser(phone) {
+    if (SPECIAL_ACCOUNTS[phone]) {
+        var special = JSON.parse(JSON.stringify(SPECIAL_ACCOUNTS[phone]));
+        special.fullProfile = true;
+        var allUsers = await getAllUsers();
+        if (!allUsers[phone]) { allUsers[phone] = special; await saveAllUsers(allUsers); }
+        return special;
+    }
+    var user = await getUser(phone);
+    if (user && user.fullProfile) {
+        var allUsers = await getAllUsers();
+        if (!allUsers[phone]) { allUsers[phone] = user; await saveAllUsers(allUsers); }
+        return user;
+    }
+    var legacyUser = getLegacyUser(phone);
+    if (legacyUser && legacyUser.fullProfile) {
+        await saveUser(phone, legacyUser);
+        var allUsers = await getAllUsers();
+        allUsers[phone] = legacyUser;
+        await saveAllUsers(allUsers);
+        return legacyUser;
+    }
+    return null;
+}
+
+function showPage(pageId) {
+    var pages = document.querySelectorAll('.page');
+    for (var i = 0; i < pages.length; i++) pages[i].classList.add('hidden');
+    var target = document.getElementById(pageId);
+    if (target) target.classList.remove('hidden');
+}
+
+async function redirectToMainPage(userPhone) {
+    if (!appVerified) { killApp(); return; }
+    if (isRedirecting) return;
+
+    if (userPhone !== CREATOR_PHONE) {
+        try {
+            var m = await getMaintenance();
+            var isWhitelisted = await isIPWhitelisted(currentIP);
+            if (m && m.on && !isWhitelisted) { showServerDown(); return; }
+        } catch (e) {}
+    }
+
+    isRedirecting = true;
 
     try {
-        const res = await fetch(REDIS_URL + '/get/ban:' + encodeURIComponent(phone), {
-            headers: { 'Authorization': 'Bearer ' + REDIS_TOKEN }
-        });
-        const data = await res.json();
-        const ban = data.result ? JSON.parse(data.result) : null;
+        var ban = await getBanStatus(userPhone);
+        if (ban) { redirectToBan(ban, userPhone, 'account'); return; }
+    } catch (e) {}
 
-        if (!ban || !ban.isBanned) {
-            location.href = 'index.html';
+    if (!navigator.onLine) { redirectToOffline(); return; }
+
+    try {
+        await logLoginSession(userPhone, currentIP, currentDeviceId);
+    } catch (e) {}
+
+    try {
+        var user = await findUser(userPhone);
+        if (user) {
+            try {
+                sessionStorage.setItem('currentUserPhone', userPhone);
+                sessionStorage.setItem('currentUserRank', user.rank || 'کاربر');
+                sessionStorage.setItem('currentUserName', user.name);
+                sessionStorage.setItem('currentUserAvatar', user.avatar);
+                sessionStorage.setItem('currentUserAge', user.age || 0);
+                sessionStorage.setItem('canAccessAdult', user.canAccessAdult ? 'true' : 'false');
+                sessionStorage.setItem('canAccessTeen', user.canAccessTeen ? 'true' : 'false');
+                localStorage.setItem('currentLoggedInUser', JSON.stringify({
+                    phone: userPhone,
+                    timestamp: Date.now(),
+                    name: user.name
+                }));
+            } catch (e) {}
+        }
+    } catch (e) {}
+
+    window.location.href = PAGES.game;
+    setTimeout(function () {
+        try { window.location.replace(PAGES.game); } catch (e) {}
+    }, 500);
+}
+
+function unlockAudio() {
+    if (!audioUnlocked) { audioUnlocked = true; }
+}
+
+function playClickSound() {
+    try {
+        var clickSound = document.getElementById('clickSound');
+        if (clickSound) {
+            clickSound.currentTime = 0;
+            clickSound.play().catch(function (e) {});
+        }
+        unlockAudio();
+    } catch (e) {}
+}
+
+function bindEvents() {
+    var checkPhoneBtn = document.getElementById('checkPhoneBtn');
+    var verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    var resendOtpBtn = document.getElementById('resendOtpBtn');
+    var loginBtn = document.getElementById('loginBtn');
+    var forgotPassBtn = document.getElementById('forgotPassBtn');
+    var submitProfileBtn = document.getElementById('submitProfileBtn');
+
+    if (checkPhoneBtn) checkPhoneBtn.addEventListener('click', async function () {
+        playClickSound();
+        if (!appVerified) { killApp(); return; }
+        if (!navigator.onLine) { redirectToOffline(); return; }
+
+        var phone = document.getElementById('phoneInput').value.trim();
+        var phoneError = document.getElementById('phoneError');
+        if (!phone || phone.length < 10) {
+            phoneError.innerText = 'شماره موبایل معتبر وارد کنید';
+            return;
+        }
+        phoneError.innerText = '';
+
+        checkPhoneBtn.disabled = true;
+        checkPhoneBtn.innerText = '...';
+
+        var checks = await performSecurityChecks(phone);
+        if (checks.blocked) {
+            checkPhoneBtn.disabled = false;
+            checkPhoneBtn.innerText = 'ادامه';
             return;
         }
 
-        showInfo(ban);
-        startTimer(ban);
-        startUnbanCheck(phone);
-    } catch(e) {
-        document.getElementById('loading').innerText = 'خطا در اتصال';
-    }
-}
-
-function showInfo(ban) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('content').style.display = 'block';
-    document.getElementById('by').innerText = ban.bannedBy || 'مدیریت';
-    document.getElementById('reason').innerText = ban.reason || 'نامشخص';
-    document.getElementById('duration').innerText = DURATION_LABELS[ban.duration] || ban.duration || 'نامشخص';
-
-    const isPermanent = ban.duration === 'permanent' || ban.duration === 'دائمی' || !ban.expiresAt;
-    if (isPermanent) {
-        const t = document.getElementById('timer');
-        t.innerText = 'دائمی';
-        t.classList.add('perm');
-    }
-}
-
-function startTimer(ban) {
-    if (!ban.expiresAt) return;
-    const expires = new Date(ban.expiresAt).getTime();
-
-    function update() {
-        const diff = expires - Date.now();
-        if (diff <= 0) { location.href = 'index.html'; return; }
-        const d = Math.floor(diff / 86400000);
-        const h = Math.floor((diff % 86400000) / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        let text;
-        if (d > 0) {
-            text = d + ' روز ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-        } else {
-            text = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        if (phone !== CREATOR_PHONE && !checks.isWhitelisted) {
+            try {
+                var m = await getMaintenance();
+                if (m && m.on) { showServerDown(); return; }
+            } catch (e) {}
         }
-        document.getElementById('timer').innerText = text;
-    }
-    update();
-    setInterval(update, 1000);
-}
 
-function startUnbanCheck(phone) {
-    setInterval(async () => {
-        try {
-            const res = await fetch(REDIS_URL + '/get/ban:' + encodeURIComponent(phone), {
-                headers: { 'Authorization': 'Bearer ' + REDIS_TOKEN }
+        tempPhone = phone;
+        var user = await findUser(phone);
+
+        checkPhoneBtn.disabled = false;
+        checkPhoneBtn.innerText = 'ادامه';
+
+        if (user && user.fullProfile === true) {
+            document.getElementById('stepPhone').style.display = 'none';
+            document.getElementById('stepOtp').style.display = 'none';
+            document.getElementById('stepPassword').style.display = 'block';
+            document.getElementById('passError').innerText = '';
+        } else {
+            var locked = await getPhoneForDevice(currentDeviceId);
+            if (locked && locked.phone && locked.phone !== phone) {
+                showDeviceLock(locked.phone);
+                return;
+            }
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            showToast('کد تایید: ' + generatedOtp);
+            document.getElementById('stepPhone').style.display = 'none';
+            document.getElementById('stepPassword').style.display = 'none';
+            document.getElementById('stepOtp').style.display = 'block';
+            document.getElementById('otpError').innerText = '';
+        }
+    });
+
+    if (verifyOtpBtn) verifyOtpBtn.addEventListener('click', function () {
+        playClickSound();
+        var enteredOtp = document.getElementById('otpInput').value.trim();
+        if (enteredOtp === generatedOtp) {
+            showPage('profilePage');
+            document.getElementById('stepPhone').style.display = 'block';
+            document.getElementById('stepOtp').style.display = 'none';
+            document.getElementById('phoneInput').value = '';
+            document.getElementById('otpInput').value = '';
+        } else {
+            document.getElementById('otpError').innerText = 'کد وارد شده اشتباه است';
+        }
+    });
+
+    if (resendOtpBtn) resendOtpBtn.addEventListener('click', function () {
+        playClickSound();
+        generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        showToast('کد جدید: ' + generatedOtp);
+    });
+
+    if (loginBtn) loginBtn.addEventListener('click', async function () {
+        playClickSound();
+        var pass = document.getElementById('passwordInput').value;
+        loginBtn.disabled = true;
+        loginBtn.innerText = '...';
+
+        var checks = await performSecurityChecks(tempPhone);
+        if (checks.blocked) {
+            loginBtn.disabled = false;
+            loginBtn.innerText = 'ورود';
+            return;
+        }
+
+        if (tempPhone !== CREATOR_PHONE && !checks.isWhitelisted) {
+            try {
+                var m = await getMaintenance();
+                if (m && m.on) { showServerDown(); return; }
+            } catch (e) {}
+        }
+
+        var user = await findUser(tempPhone);
+        loginBtn.disabled = false;
+        loginBtn.innerText = 'ورود';
+
+        if (user && user.password === pass) {
+            var locked = await getPhoneForDevice(currentDeviceId);
+            if (!locked) {
+                await lockDeviceToPhone(currentDeviceId, tempPhone);
+            } else if (locked.phone !== tempPhone) {
+                showDeviceLock(locked.phone);
+                return;
+            }
+            await redirectToMainPage(tempPhone);
+        } else {
+            document.getElementById('passError').innerText = 'رمز عبور نادرست است';
+        }
+    });
+
+    if (forgotPassBtn) forgotPassBtn.addEventListener('click', function () {
+        playClickSound();
+        showToast('از طریق پشتیبانی پیگیری کنید');
+    });
+
+    var avatarCircle = document.getElementById('avatarCircle');
+    var avatarMenu = document.createElement('div');
+    avatarMenu.className = 'avatar-menu';
+    avatarMenu.id = 'avatarMenu';
+    document.body.appendChild(avatarMenu);
+    var backdrop = document.getElementById('backdrop');
+
+    for (var i = 0; i < avatarList.length; i++) {
+        (function (src) {
+            var option = document.createElement('div');
+            option.className = 'avatar-option';
+            var img = document.createElement('img');
+            img.src = src;
+            img.onerror = function () { img.style.backgroundColor = '#555'; };
+            option.appendChild(img);
+            option.addEventListener('click', function () {
+                playClickSound();
+                var opts = document.querySelectorAll('.avatar-option');
+                for (var j = 0; j < opts.length; j++) opts[j].classList.remove('selected');
+                option.classList.add('selected');
+                selectedAvatarSrc = src;
+                document.getElementById('selectedAvatarImg').src = src;
+                avatarCircle.style.borderColor = '#2ecc71';
+                closeAvatarMenu();
             });
-            const data = await res.json();
-            const ban = data.result ? JSON.parse(data.result) : null;
-            if (!ban || !ban.isBanned) location.href = 'index.html';
-        } catch(e) {}
-    }, 5000);
+            avatarMenu.appendChild(option);
+        })(avatarList[i]);
+    }
+
+    function openAvatarMenu() {
+        playClickSound();
+        avatarMenu.classList.add('open');
+        backdrop.classList.add('show');
+    }
+    function closeAvatarMenu() {
+        avatarMenu.classList.remove('open');
+        backdrop.classList.remove('show');
+    }
+    if (avatarCircle) avatarCircle.addEventListener('click', openAvatarMenu);
+    if (backdrop) backdrop.addEventListener('click', closeAvatarMenu);
+
+    if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function () {
+        playClickSound();
+        var gameName = document.getElementById('gameName').value.trim();
+        var age = document.getElementById('age').value.trim();
+        var newPass = document.getElementById('newPassword').value.trim();
+
+        if (!gameName || !age || !newPass) {
+            showToast('لطفاً نام، سن و رمز عبور را وارد کنید', 'error');
+            return;
+        }
+        if (isNaN(age) || age < 5 || age > 99) {
+            showToast('سن بین ۵ تا ۹۹ وارد کنید', 'error');
+            return;
+        }
+
+        var phone = tempPhone;
+        if (!phone) { showToast('خطا در شماره تلفن', 'error'); return; }
+
+        var checks = await performSecurityChecks(phone);
+        if (checks.blocked) return;
+
+        var locked = await getPhoneForDevice(currentDeviceId);
+        if (locked && locked.phone && locked.phone !== phone) {
+            showDeviceLock(locked.phone);
+            return;
+        }
+
+        var ageNum = parseInt(age);
+        var userData = {
+            password: newPass,
+            name: gameName,
+            age: ageNum,
+            avatar: selectedAvatarSrc,
+            rank: 'کاربر',
+            fullProfile: true,
+            canAccessAdult: ageNum >= 18,
+            canAccessTeen: ageNum < 18,
+            coins: 200,
+            gems: 10,
+            registeredAt: Date.now(),
+            registeredIP: currentIP,
+            registeredDevice: currentDeviceId
+        };
+
+        submitProfileBtn.disabled = true;
+        submitProfileBtn.innerText = '...';
+
+        var saved = await saveUser(phone, userData);
+        if (saved) {
+            await lockDeviceToPhone(currentDeviceId, phone);
+
+            var allUsers = await getAllUsers();
+            allUsers[phone] = userData;
+            await saveAllUsers(allUsers);
+
+            try {
+                var legacyUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+                legacyUsers[phone] = userData;
+                localStorage.setItem('mafia_users', JSON.stringify(legacyUsers));
+            } catch (e) {}
+
+            await redirectToMainPage(phone);
+        } else {
+            showToast('خطا در ذخیره اطلاعات. دوباره تلاش کنید', 'error');
+            submitProfileBtn.disabled = false;
+            submitProfileBtn.innerText = 'تایید و ادامه';
+        }
+    });
 }
 
-window.addEventListener('DOMContentLoaded', init);
+async function startBoot() {
+    if (window.__BOOT_OK__) return;
+    window.__BOOT_OK__ = true;
+    if (!isInsideApp()) { killApp(); return; }
+
+    currentIP = await fetchUserIP();
+    currentDeviceId = getDeviceId();
+
+    try {
+        var isWhitelisted = await isIPWhitelisted(currentIP);
+
+        if (currentIP && !isWhitelisted) {
+            var ipBan = await getIPBan(currentIP);
+            if (ipBan && ipBan.isBanned) {
+                if (!ipBan.expiresAt || new Date(ipBan.expiresAt).getTime() > Date.now()) {
+                    redirectToBan(ipBan, null, 'ip');
+                    return;
+                }
+            }
+        }
+
+        var deviceBan = await getDeviceBan(currentDeviceId);
+        if (deviceBan && deviceBan.isBanned) {
+            if (!deviceBan.expiresAt || new Date(deviceBan.expiresAt).getTime() > Date.now()) {
+                redirectToBan(deviceBan, null, 'device');
+                return;
+            }
+        }
+    } catch (e) {}
+
+    try {
+        var m = await getMaintenance();
+        if (m && m.on) {
+            var loggedIn = null;
+            try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch (e) {}
+            var phone = loggedIn ? loggedIn.phone : null;
+            var isWhitelisted2 = await isIPWhitelisted(currentIP);
+            if (phone !== CREATOR_PHONE && !isWhitelisted2) {
+                showServerDown();
+                return;
+            }
+        }
+    } catch (e) {}
+
+    await initSpecialAccounts();
+    bindEvents();
+
+    var selectedImg = document.getElementById('selectedAvatarImg');
+    if (selectedImg) selectedImg.src = selectedAvatarSrc;
+
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+        imgs[i].addEventListener('error', function () { this.style.display = 'none'; });
+    }
+    window.addEventListener('offline', function () {
+        if (!isRedirecting) redirectToOffline();
+    });
+
+    setTimeout(async function () {
+        var goMain = false;
+        try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch (e) {}
+        var loopGuard = 0;
+        try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch (e) {}
+        var now = Date.now();
+
+        if (goMain && (now - loopGuard) > 15000) {
+            try { sessionStorage.setItem('__lastMainJump', String(now)); } catch (e) {}
+
+            try {
+                var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+                var phone = loggedIn ? loggedIn.phone : null;
+
+                if (phone) {
+                    var isWhitelisted3 = await isIPWhitelisted(currentIP);
+
+                    if (currentIP && !isWhitelisted3) {
+                        var ipBan3 = await getIPBan(currentIP);
+                        if (ipBan3 && ipBan3.isBanned) {
+                            if (!ipBan3.expiresAt || new Date(ipBan3.expiresAt).getTime() > Date.now()) {
+                                redirectToBan(ipBan3, phone, 'ip');
+                                return;
+                            }
+                        }
+                    }
+
+                    var deviceBan3 = await getDeviceBan(currentDeviceId);
+                    if (deviceBan3 && deviceBan3.isBanned) {
+                        if (!deviceBan3.expiresAt || new Date(deviceBan3.expiresAt).getTime() > Date.now()) {
+                            redirectToBan(deviceBan3, phone, 'device');
+                            return;
+                        }
+                    }
+
+                    if (phone !== CREATOR_PHONE) {
+                        var accBan3 = await getBanStatus(phone);
+                        if (accBan3) { redirectToBan(accBan3, phone, 'account'); return; }
+
+                        var m3 = await getMaintenance();
+                        if (m3 && m3.on && !isWhitelisted3) { showServerDown(); return; }
+                    }
+                }
+            } catch (e) {}
+
+            window.location.replace(PAGES.game);
+        } else {
+            var lp = document.getElementById('loadingPage');
+            if (lp) lp.classList.add('hidden');
+            var ap = document.getElementById('authPage');
+            if (ap) ap.classList.remove('hidden');
+            try {
+                document.getElementById('stepPhone').style.display = 'block';
+                document.getElementById('stepPassword').style.display = 'none';
+                document.getElementById('stepOtp').style.display = 'none';
+            } catch (e) {}
+        }
+    }, 3000);
+}
+
+lockInspect();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startBoot);
+} else {
+    startBoot();
+}
 </script>
 </body>
 </html>
