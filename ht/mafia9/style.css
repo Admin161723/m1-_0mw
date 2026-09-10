@@ -149,3 +149,35 @@ input::placeholder { color: rgba(255,255,255,0.6); }
 .error-title { color: #ff6b6b; font-size: 22px; font-weight: 900; margin-bottom: 12px; }
 .error-text { color: rgba(255,255,255,0.85); font-size: 13px; line-height: 2.1; }
 .error-code { margin-top: 14px; color: rgba(255,255,255,0.4); font-size: 10px; direction: ltr; }
+
+/* 🆕 استایل صفحه خطای IP بن */
+#ipBanPage {
+  background-color: #0a0f1e; justify-content: center;
+}
+
+.ip-ban-box {
+  width: 100%; background: rgba(244,67,54,0.15); border: 2px solid #f44336;
+  border-radius: 28px; padding: 30px 20px; text-align: center; box-shadow: 0 0 30px rgba(244,67,54,0.4);
+}
+
+.ip-ban-ico { font-size: 60px; margin-bottom: 14px; }
+.ip-ban-title { color: #ff5252; font-size: 22px; font-weight: 900; margin-bottom: 12px; }
+.ip-ban-text { color: rgba(255,255,255,0.9); font-size: 13px; line-height: 2.1; margin-bottom: 10px; }
+.ip-ban-reason { color: #ffb74d; font-size: 13px; font-weight: 700; margin-top: 10px; }
+.ip-ban-code { margin-top: 14px; color: rgba(255,255,255,0.4); font-size: 10px; direction: ltr; }
+
+/* 🆕 استایل صفحه خطای یک اکانت در گوشی */
+#deviceLockPage {
+  background-color: #0a0f1e; justify-content: center;
+}
+
+.device-lock-box {
+  width: 100%; background: rgba(255,152,0,0.12); border: 2px solid #ff9800;
+  border-radius: 28px; padding: 30px 20px; text-align: center; box-shadow: 0 0 30px rgba(255,152,0,0.35);
+}
+
+.device-lock-ico { font-size: 60px; margin-bottom: 14px; }
+.device-lock-title { color: #ffb74d; font-size: 22px; font-weight: 900; margin-bottom: 12px; }
+.device-lock-text { color: rgba(255,255,255,0.9); font-size: 13px; line-height: 2.1; }
+.device-lock-hint { color: #4fc3f7; font-size: 12px; margin-top: 12px; }
+.device-lock-code { margin-top: 14px; color: rgba(255,255,255,0.4); font-size: 10px; direction: ltr; }
