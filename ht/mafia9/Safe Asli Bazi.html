@@ -42,9 +42,6 @@
   .side-btn-icon-wrap{width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;position:relative;}
   .side-btn-label{color:#fff;font-size:8px;font-weight:700;text-align:center;}
   .side-btn-icon-wrap .nav-icon-custom{width:40px;height:40px;object-fit:contain;}
-  .icon-megaphone{width:28px;height:28px;position:relative;}
-  .icon-megaphone::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:12px solid #4fc3f7;}
-  .icon-megaphone::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:16px;height:20px;background:#4fc3f7;clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);}
   .icon-question{width:28px;height:28px;background:linear-gradient(180deg,#2196F3,#1976D2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;}
   .icon-admin{width:28px;height:28px;background:linear-gradient(180deg,#9c27b0,#7b1fa2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;}
   .bottom-modes{position:absolute;bottom:85px;left:12px;right:12px;display:flex;gap:12px;z-index:15;}
@@ -135,12 +132,12 @@
   .clan-badge.has-group{background:linear-gradient(135deg,#bc6c25,#8b5e3c);border-color:#ffd700;box-shadow:0 0 8px rgba(255,215,0,.4);}
   .clan-badge.no-group{background:linear-gradient(135deg,#555,#333);border-color:#777;}
   .clan-name{font-size:15px;font-weight:900;flex:1;text-align:center;color:#fff;}
-  .clan-rank-display{color:#ffd700;font-size:12px;font-weight:700;text-align:center;padding:4px 0;}
-  .stats-row{display:flex;gap:8px;padding:0 15px;margin-bottom:15px;}
-  .stat-card{flex:1;background:linear-gradient(180deg,#6a3abf,#3d1f80);border-radius:12px;padding:10px 8px;text-align:center;border:1px solid #7a4acf;}
+  .stats-row{display:flex;gap:8px;padding:0 15px;margin-bottom:15px;flex-wrap:wrap;}
+  .stat-card{flex:1;min-width:80px;background:linear-gradient(180deg,#6a3abf,#3d1f80);border-radius:12px;padding:10px 8px;text-align:center;border:1px solid #7a4acf;position:relative;}
   .stat-card-title{color:#fff;font-size:12px;font-weight:700;margin-bottom:6px;}
   .stat-card-value{color:#fff;font-size:18px;font-weight:900;}
   .stat-card-icon{font-size:24px;}
+  .stat-card .clan-rank-badge{position:absolute;top:-8px;left:-8px;background:#ffd700;color:#000;font-size:10px;font-weight:900;padding:2px 8px;border-radius:12px;box-shadow:0 0 8px rgba(255,215,0,.5);}
   .aamar-section{padding:0 15px;margin-bottom:12px;}
   .aamar-title-row{display:flex;align-items:center;gap:10px;margin-bottom:15px;}
   .aamar-line{flex:1;height:2px;background:linear-gradient(90deg,transparent,#7a4acf,transparent);}
@@ -254,6 +251,8 @@
   .device-ban-overlay.show{display:flex;}
   .device-ban-title{color:#ff6b6b;font-size:22px;font-weight:900;}
   .device-ban-text{color:rgba(255,255,255,.8);font-size:14px;line-height:2;}
+  .ip-add-section{background:rgba(0,0,0,.2);border:1px solid #4a9eff;border-radius:10px;padding:12px;margin-top:10px;}
+  .ip-add-section .edit-input{margin-bottom:6px;}
 </style>
 </head>
 <body>
@@ -335,6 +334,33 @@
             <button class="edit-btn ban" id="btnServerToggle"> قطع سرور</button>
             <button class="edit-btn danger" id="btnWipeDB">🗑️ پاک کردن دیتابیس</button>
             <button class="edit-btn save" id="btnShowUsersList">👥 کاربران</button>
+            <button class="edit-btn info" id="btnUserControl">🎮 کنترل کاربر</button>
+            <button class="edit-btn unban" id="btnAddIPUser">➕ افزودن با IP</button>
+          </div>
+        </div>
+
+        <!-- بخش کنترل کاربر (ورود/خروج/پاک‌سازی) -->
+        <div id="userControlSection" style="display:none;margin-bottom:15px;">
+          <div class="edit-field">
+            <label class="edit-label">شماره موبایل کاربر:</label>
+            <input type="tel" class="edit-input" id="controlUserPhone" placeholder="09xxxxxxxxx">
+          </div>
+          <div class="edit-actions" style="flex-wrap:wrap;">
+            <button class="edit-btn save" id="btnForceLogin" style="background:linear-gradient(180deg,#4caf50,#388e3c);">ورود اجباری</button>
+            <button class="edit-btn danger" id="btnForceLogout" style="background:linear-gradient(180deg,#ff6f00,#e65100);">خروج اجباری</button>
+            <button class="edit-btn ban" id="btnClearUserData">🧹 پاک‌سازی اکانت</button>
+          </div>
+        </div>
+
+        <!-- بخش افزودن با IP -->
+        <div id="addIPSection" style="display:none;margin-bottom:15px;">
+          <div class="ip-add-section">
+            <div class="edit-field">
+              <label class="edit-label">IP کاربر:</label>
+              <input type="text" class="edit-input" id="addIPInput" placeholder="مثلا: 192.168.1.1">
+            </div>
+            <button class="edit-btn save" id="btnConfirmIPAdd">✅ تایید و افزودن</button>
+            <button class="edit-btn danger" id="btnRemoveIPUser" style="margin-top:6px;">🗑️ حذف کاربر با IP</button>
           </div>
         </div>
 
@@ -428,7 +454,7 @@
           <input type="number" class="edit-input" id="editUserBestScore" placeholder="بهترین امتیاز" min="0">
         </div>
       </div>
-      <div class="edit-field"><label class="edit-label">کد کاربری:</label><input type="number" class="edit-input" id="editUserCode" min="1"></div>
+      <div class="edit-field"><label class="edit-label">کد کاربری (عدد):</label><input type="number" class="edit-input" id="editUserCode" min="1"></div>
       <div class="edit-field"><label class="edit-label">مدت بن:</label>
         <select class="edit-input" id="editBanDuration"></select>
       </div>
@@ -470,12 +496,16 @@
           <div class="clan-badge no-group" id="profileGroupBadge">❌</div>
           <span class="clan-name" id="profileGroupName">بدون گروه</span>
         </div>
-        <div class="clan-rank-display" id="clanRankDisplay">رتبه کلن: -</div>
       </div>
     </div>
     <div class="stats-row">
+      <div class="stat-card" id="statCardLevel">
+        <div class="stat-card-title">سطح</div>
+        <div class="stat-card-value" id="statLevel">۱</div>
+        <div class="stat-card-icon">⭐</div>
+        <div class="clan-rank-badge" id="clanRankBadge">-</div>
+      </div>
       <div class="stat-card"><div class="stat-card-title">امتیاز</div><div class="stat-card-value" id="statScore">۰</div><div class="stat-card-icon">🏆</div></div>
-      <div class="stat-card"><div class="stat-card-title">سطح</div><div class="stat-card-value" id="statLevel">۱</div><div class="stat-card-icon">⭐</div></div>
       <div class="stat-card"><div class="stat-card-title">رتبه فصل</div><div class="stat-card-value" id="statSeasonRank">۰</div><div class="stat-card-icon">👑</div></div>
     </div>
     <div class="aamar-section">
@@ -575,7 +605,6 @@
     <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
   </div>
 
-  <!-- بن دستگاه -->
   <div class="device-ban-overlay" id="deviceBanOverlay">
     <div class="device-ban-icon" style="font-size:60px;">📱</div>
     <div class="device-ban-title">🚫 دستگاه شما بن شده است</div>
@@ -673,6 +702,9 @@ async function getTournamentConfig(){return await redisGet('tournament_config')|
 async function saveTournamentConfigData(cfg){return await redisSet('tournament_config',cfg);}
 async function getUserCodeCounter(){return await redisGet('user_code_counter') || 0;}
 async function incrementUserCodeCounter(){return await redisIncr('user_code_counter');}
+async function getIPUser(ip){return await redisGet('ip_user:'+ip);}
+async function setIPUser(ip,phone){return await redisSet('ip_user:'+ip,phone);}
+async function delIPUser(ip){return await redisDel('ip_user:'+ip);}
 
 // توابع لاگ
 async function addUserSession(phone, sessionData) {
@@ -721,10 +753,10 @@ function applyTick(img,cands){if(!img||!cands||!cands.length)return;let i=0;(fun
 
 const RANK_LEVEL={'کاربر':0,'ناظر':1,'ناظر ارشد':2,'ادمین':3,'ادمین ارشد':4,'گرداننده':5,'پشتیبانی':6,'سازنده':7};
 const RANK_PERM={
-  'سازنده':   {panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:true, del:true, server:true, wipe:true, banMax:'permanent', stats:true},
-  'پشتیبانی': {panel:true, coins:false,gems:false,dollars:false,rank:false,exclusive:false,del:false,server:false,wipe:false,banMax:'3m', stats:false},
-  'ادمین ارشد':{panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'1m', stats:true},
-  'گرداننده': {panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'3m', stats:true}
+  'سازنده':   {panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:true, del:true, server:true, wipe:true, banMax:'permanent', stats:true, ipControl:true, userControl:true},
+  'پشتیبانی': {panel:true, coins:false,gems:false,dollars:false,rank:false,exclusive:false,del:false,server:false,wipe:false,banMax:'3m', stats:false, ipControl:false, userControl:false},
+  'ادمین ارشد':{panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'1m', stats:true, ipControl:true, userControl:true},
+  'گرداننده': {panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:false,del:false,server:false,wipe:false,banMax:'3m', stats:true, ipControl:false, userControl:false}
 };
 const BAN_OPTIONS=[['1h','۱ ساعت'],['1d','۱ روز'],['7d','۷ روز'],['2w','۲ هفته'],['1m','۱ ماه'],['3m','۳ ماه'],['8m','۸ ماه'],['permanent','دائمی']];
 const DUR_MS={'1h':3600000,'1d':86400000,'7d':604800000,'2w':1209600000,'1m':2592000000,'3m':7776000000,'8m':20736000000,'permanent':0};
@@ -812,7 +844,6 @@ function sanitizeUserData(user, phone) {
   if (user.coins < 0) user.coins = 0;
   if (user.gems < 0) user.gems = 0;
   if (user.dollars < 0) user.dollars = 0;
-  // محاسبه سطح بر اساس XP
   if (user.cups === undefined) user.cups = 0;
   if (user.hours === undefined) user.hours = 0;
   const xp = Math.floor((user.cups / 10) * 20 + (user.hours || 0) * 100);
@@ -876,6 +907,7 @@ function updateUIWithData(user) {
   document.getElementById('displayDollars').textContent = toPersianNum(user.dollars || 0);
   document.getElementById('mainUserName').textContent = user.name || 'کاربر';
   document.getElementById('profileUserName').textContent = user.name || 'کاربر';
+  // کد کاربری فقط عدد
   document.getElementById('userCode').textContent = user.userCode || '----';
   document.getElementById('statLevel').textContent = toPersianNum(user.level || 1);
   document.getElementById('statScore').textContent = toPersianNum(user.xp || 0);
@@ -888,6 +920,9 @@ function updateUIWithData(user) {
   document.getElementById('statMafiaWins').textContent = toPersianNum(user.mafiaWins || 0);
   document.getElementById('statCitizenWins').textContent = toPersianNum(user.citizenWins || 0);
 
+  // رتبه کلن در کارت سطح
+  updateClanRankBadge();
+
   updateGlobalAvatar(user.avatar || 'Mafia2.png');
   const tk = getRoleTick(user.rank);
   if(tk){applyTick(document.getElementById('mainUserTick'), tk); applyTick(document.getElementById('profileUserTick'), tk);}
@@ -896,6 +931,28 @@ function updateUIWithData(user) {
   document.getElementById('btnAdmin').style.display = perm.panel ? 'flex' : 'none';
   document.getElementById('adminTools').style.display = perm.server ? 'block' : 'none';
   document.getElementById('tournamentConfig').style.display = (currentPhone === CREATOR_PHONE) ? 'block' : 'none';
+  document.getElementById('btnUserControl').style.display = perm.userControl ? 'block' : 'none';
+  document.getElementById('btnAddIPUser').style.display = perm.ipControl ? 'block' : 'none';
+}
+
+async function updateClanRankBadge() {
+  const badge = document.getElementById('clanRankBadge');
+  if (!badge) return;
+  try {
+    if (!currentPhone) { badge.textContent = '-'; return; }
+    const group = await findUserGroup(currentPhone);
+    if (!group) { badge.textContent = '-'; return; }
+    const allGroups = await getGroups();
+    const groupsWithPoints = allGroups.map(g => {
+      let pts = parseInt(g.extraPoints) || 0;
+      return { name: g.name, points: pts };
+    });
+    groupsWithPoints.sort((a,b) => b.points - a.points);
+    const rank = groupsWithPoints.findIndex(g => g.name === group.name) + 1;
+    badge.textContent = rank > 0 ? 'رتبه کلن: ' + toPersianNum(rank) : '-';
+  } catch(e) {
+    badge.textContent = '-';
+  }
 }
 
 async function saveUserData(){
@@ -962,13 +1019,11 @@ async function findUserGroup(phone){
 async function updateGroupDisplay(){
   const nameEl=document.getElementById('profileGroupName');
   const badgeEl=document.getElementById('profileGroupBadge');
-  const rankEl=document.getElementById('clanRankDisplay');
   if(!nameEl||!badgeEl)return;
   try{
     nameEl.textContent='در حال بارگذاری...';
     badgeEl.className='clan-badge no-group';
     badgeEl.innerHTML='❌';
-    if(rankEl) rankEl.textContent = 'رتبه کلن: -';
     if(!currentPhone)return;
     const group=await findUserGroup(currentPhone);
     if(group){
@@ -980,30 +1035,17 @@ async function updateGroupDisplay(){
           badgeEl.innerHTML = getGroupIcon(group.logo||'shield');
       }
       userGroupCache=group;
-      // محاسبه رتبه کلن
-      const allGroups=await getGroups();
-      const groupsWithPoints = allGroups.map(g => {
-        let pts = parseInt(g.extraPoints) || 0;
-        if (g.members) {
-          g.members.forEach(m => { /* می‌توانیم امتیاز اعضا را هم اضافه کنیم */ });
-        }
-        return { name: g.name, points: pts };
-      });
-      groupsWithPoints.sort((a,b) => b.points - a.points);
-      const rank = groupsWithPoints.findIndex(g => g.name === group.name) + 1;
-      if(rankEl) rankEl.textContent = 'رتبه کلن: ' + (rank > 0 ? toPersianNum(rank) : '-');
     }else{
       nameEl.textContent='بدون گروه';
       badgeEl.className='clan-badge no-group';
       badgeEl.innerHTML='❌';
-      if(rankEl) rankEl.textContent = 'رتبه کلن: -';
       userGroupCache=null;
     }
+    await updateClanRankBadge();
   }catch(e){
     nameEl.textContent='بدون گروه';
     badgeEl.className='clan-badge no-group';
     badgeEl.innerHTML='❌';
-    if(rankEl) rankEl.textContent = 'رتبه کلن: -';
   }
 }
 
@@ -1200,14 +1242,148 @@ async function setUserOnlineStatus(online) {
 }
 
 // **********************************************
-// بارگذاری کاربران برای پنل
+// توابع کنترل کاربر (ورود/خروج/پاک‌سازی)
+// **********************************************
+async function forceUserLogin() {
+  const phone = document.getElementById('controlUserPhone').value.trim();
+  if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  user.forceOnline = true;
+  user.lastSeen = Date.now();
+  await saveUser(phone, user);
+  showShopNotification('✅ کاربر وارد بازی شد');
+}
+
+async function forceUserLogout() {
+  const phone = document.getElementById('controlUserPhone').value.trim();
+  if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  user.forceOnline = false;
+  user.online = false;
+  await saveUser(phone, user);
+  showShopNotification('🚫 کاربر از بازی خارج شد');
+}
+
+async function clearUserData() {
+  const phone = document.getElementById('controlUserPhone').value.trim();
+  if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
+  if (!confirm('آیا از پاک‌سازی کامل داده‌های این کاربر اطمینان دارید؟')) return;
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  // پاک‌سازی آمار
+  user.coins = 0;
+  user.gems = 0;
+  user.dollars = 0;
+  user.cups = 0;
+  user.hours = 0;
+  user.xp = 0;
+  user.level = 1;
+  user.compWins = 0;
+  user.friendWins = 0;
+  user.monitorCount = 0;
+  user.bestScore = 0;
+  user.mafiaWins = 0;
+  user.citizenWins = 0;
+  user.score = 0;
+  await saveUser(phone, user);
+  showShopNotification('🧹 داده‌های کاربر پاک شد');
+}
+
+// **********************************************
+// توابع افزودن با IP
+// **********************************************
+async function addUserByIP() {
+  const ip = document.getElementById('addIPInput').value.trim();
+  if (!ip) { showShopNotification('IP را وارد کنید', 'error'); return; }
+  // ساخت کاربر جدید با این IP
+  const phone = 'ip_' + ip.replace(/\./g, '_');
+  let user = await getUser(phone);
+  if (user) {
+    showShopNotification('این IP قبلاً ثبت شده است', 'error');
+    return;
+  }
+  user = {
+    name: 'کاربر IP',
+    coins: 0,
+    gems: 0,
+    dollars: 0,
+    avatar: 'Mafia2.png',
+    rank: 'کاربر',
+    userCode: await incrementUserCodeCounter(),
+    level: 1,
+    score: 0,
+    cups: 0,
+    hours: 0,
+    xp: 0,
+    compWins: 0,
+    friendWins: 0,
+    monitorCount: 0,
+    bestScore: 0,
+    mafiaWins: 0,
+    citizenWins: 0,
+    ip: ip,
+    deviceId: 'ip_' + ip,
+    online: false,
+    createdBy: currentPhone
+  };
+  await saveUser(phone, user);
+  await setIPUser(ip, phone);
+  // اضافه کردن به all_users
+  const allUsers = await getAllUsers();
+  allUsers[phone] = user;
+  await saveAllUsers(allUsers);
+  showShopNotification('✅ کاربر با IP اضافه شد');
+  loadAdminUsers();
+}
+
+async function removeUserByIP() {
+  const ip = document.getElementById('addIPInput').value.trim();
+  if (!ip) { showShopNotification('IP را وارد کنید', 'error'); return; }
+  const phone = await getIPUser(ip);
+  if (!phone) { showShopNotification('IP یافت نشد', 'error'); return; }
+  if (!confirm('آیا از حذف کاربر با این IP اطمینان دارید؟')) return;
+  const allUsers = await getAllUsers();
+  delete allUsers[phone];
+  await saveAllUsers(allUsers);
+  await redisDel('user:'+phone);
+  await delIPUser(ip);
+  showShopNotification('🗑️ کاربر با IP حذف شد');
+  loadAdminUsers();
+}
+
+// **********************************************
+// بارگذاری و رویدادهای پنل
 // **********************************************
 document.getElementById('btnShowUsersList').addEventListener('click', async function() {
   document.getElementById('usersSection').style.display = 'block';
   document.getElementById('userList').style.display = 'none';
   document.getElementById('userHistorySection').style.display = 'none';
+  document.getElementById('userControlSection').style.display = 'none';
+  document.getElementById('addIPSection').style.display = 'none';
   await loadAdminUsers();
 });
+
+document.getElementById('btnUserControl').addEventListener('click', function() {
+  document.getElementById('userControlSection').style.display = 'block';
+  document.getElementById('usersSection').style.display = 'none';
+  document.getElementById('userHistorySection').style.display = 'none';
+  document.getElementById('addIPSection').style.display = 'none';
+});
+
+document.getElementById('btnAddIPUser').addEventListener('click', function() {
+  document.getElementById('addIPSection').style.display = 'block';
+  document.getElementById('usersSection').style.display = 'none';
+  document.getElementById('userHistorySection').style.display = 'none';
+  document.getElementById('userControlSection').style.display = 'none';
+});
+
+document.getElementById('btnForceLogin').addEventListener('click', forceUserLogin);
+document.getElementById('btnForceLogout').addEventListener('click', forceUserLogout);
+document.getElementById('btnClearUserData').addEventListener('click', clearUserData);
+document.getElementById('btnConfirmIPAdd').addEventListener('click', addUserByIP);
+document.getElementById('btnRemoveIPUser').addEventListener('click', removeUserByIP);
 
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', function() {
@@ -1366,10 +1542,8 @@ async function saveUserEdit(){
     u.citizenWins=parseInt(document.getElementById('editUserCitizenWins').value)||0;
     u.bestScore=parseInt(document.getElementById('editUserBestScore').value)||0;
   }
-  // کد کاربری
   const newCode = parseInt(document.getElementById('editUserCode').value);
   if(newCode && newCode > 0) {
-    // بررسی نکنید که تکراری نباشد (برای سادگی)
     u.userCode = newCode;
   }
   if(perm.exclusive){
@@ -1422,7 +1596,6 @@ async function banUser(type = 'account'){
   const banData={isBanned:true,phone:editingUserId,bannedBy:currentUserData.name,reason:'تخلف از قوانین',duration:dur,bannedAt:new Date().toISOString(),expiresAt:DUR_MS[dur]?new Date(Date.now()+DUR_MS[dur]).toISOString():null};
 
   if(type === 'device') {
-    // بن دستگاه
     const deviceId = u.deviceId || 'unknown';
     await setDeviceBan(deviceId, banData);
     showShopNotification('دستگاه کاربر بن شد');
@@ -1449,7 +1622,6 @@ async function unbanUser(){
   allUsers[editingUserId]=u;
   await saveAllUsers(allUsers);
   await saveUser(editingUserId,u);
-  // رفع بن دستگاه هم اگر هست
   const deviceId = u.deviceId;
   if(deviceId) await redisDel('device_ban:'+deviceId);
   await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'رفع بن', duration: 'unbanned', type: 'account' });
@@ -1472,6 +1644,7 @@ async function deleteAccount(){
   await redisDel('user:'+editingUserId);
   await redisDel('ban:'+editingUserId);
   if(u.deviceId) await redisDel('device_user:'+u.deviceId);
+  if(u.ip) await delIPUser(u.ip);
   closeEditUser();
   await loadUsers();
   showShopNotification('اکانت کامل حذف شد');
@@ -1717,10 +1890,8 @@ function cancelCompetitiveSearch(){if(confirm('از جستجو خارج می‌�
 
 async function checkBanPeriodically(){
   if(!currentPhone||isRedirecting)return;
-  // چک بن اکانت
   const b=await getBanStatus(currentPhone);
   if(b)redirectToBan(b,currentPhone);
-  // چک بن دستگاه
   const deviceId = getDeviceId();
   const db = await getDeviceBan(deviceId);
   if(db && db.isBanned) {
@@ -1828,7 +1999,6 @@ async function syncWithServerInBackground() {
     }
     const ban = await getBanStatus(currentPhone);
     if(ban){redirectToBan(ban,currentPhone); return;}
-    // چک بن دستگاه
     const deviceId = getDeviceId();
     const db = await getDeviceBan(deviceId);
     if(db && db.isBanned) {
@@ -1859,7 +2029,6 @@ async function syncWithServerInBackground() {
       }
       currentUserData.userCode = newCode;
     }
-    // ذخیره deviceId در کاربر
     if (!currentUserData.deviceId) {
       currentUserData.deviceId = deviceId;
       await setDeviceUser(deviceId, currentPhone);
@@ -1940,6 +2109,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       document.getElementById('usersSection').style.display = 'none';
       document.getElementById('userHistorySection').style.display = 'none';
+      document.getElementById('userControlSection').style.display = 'none';
+      document.getElementById('addIPSection').style.display = 'none';
       document.getElementById('adminModal').classList.add('active');
   });
   document.getElementById('sendNewsBtn').addEventListener('click',sendNews);
@@ -2009,9 +2180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('cpCurrentPass').value = '';
       document.getElementById('cpNewPass').value = '';
   });
-  document.getElementById('gameVolumeSlider').addEventListener('input', function() {
-    // volume control for click sound only
-  });
+  document.getElementById('gameVolumeSlider').addEventListener('input', function() {});
   setInterval(updateGroupDisplay,30000);
 });
 
