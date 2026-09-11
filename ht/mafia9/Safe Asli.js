@@ -1,6 +1,6 @@
 /* ============================================================ */
 /*  فایل: Safe Asli.js                                          */
-/*  منطق صفحه اصلی بازی                                         */
+/*  منطق کامل صفحه اصلی بازی - با سیستم وایت‌لیست IP            */
 /* ============================================================ */
 
 // ============================================================
@@ -89,32 +89,108 @@ async function addBanLog(phone, banData) {
 }
 
 // ============================================================
-//  لیست سفید IP
+//  🌟 سیستم لیست سفید IP - با کش
 // ============================================================
-async function getAllWhitelistIPs() { return await redisGet('whitelist_ips') || {}; }
-async function addToWhitelist(ip, note, byPhone) {
-  const list = await getAllWhitelistIPs();
-  list[ip] = { ip: ip, note: note || '', addedBy: byPhone || 'سازنده', addedAt: Date.now() };
-  return await redisSet('whitelist_ips', list);
+var _whitelistCache = null;
+var _whitelistCacheTime = 0;
+var WHITELIST_CACHE_DURATION = 15000;
+
+async function getAllWhitelistIPs(forceFresh) {
+  var now = Date.now();
+  if (!forceFresh && _whitelistCache && (now - _whitelistCacheTime) < WHITELIST_CACHE_DURATION) {
+    return _whitelistCache;
+  }
+  var list = await redisGet('whitelist_ips') || {};
+  _whitelistCache = list;
+  _whitelistCacheTime = now;
+  return list;
 }
-async function removeFromWhitelist(ip) {
-  const list = await getAllWhitelistIPs();
-  delete list[ip];
-  return await redisSet('whitelist_ips', list);
-}
+
 async function isIPWhitelisted(ip) {
   if (!ip) return false;
-  const list = await getAllWhitelistIPs();
-  return !!list[ip];
+  var list = await getAllWhitelistIPs(false);
+  return !!(list && list[ip]);
 }
+
+async function addToWhitelist(ip, note, byPhone) {
+  var list = await getAllWhitelistIPs(true);
+  list[ip] = { ip: ip, note: note || '', addedBy: byPhone || 'سازنده', addedAt: Date.now() };
+  var result = await redisSet('whitelist_ips', list);
+  _whitelistCacheTime = 0;
+  return result;
+}
+
+async function removeFromWhitelist(ip) {
+  var list = await getAllWhitelistIPs(true);
+  delete list[ip];
+  var result = await redisSet('whitelist_ips', list);
+  _whitelistCacheTime = 0;
+  return result;
+}
+
+function showWhitelistBadge(show) {
+  var badge = document.getElementById('whitelistBadge');
+  if (!badge) return;
+  if (show) badge.classList.add('show');
+  else badge.classList.remove('show');
+}
+
+// ============================================================
+//  🌐 دریافت IP با کش و تلاش مجدد
+// ============================================================
 async function fetchUserIP() {
+  var cached = null;
+  var cacheTime = 0;
   try {
-    const c = new AbortController(); const t = setTimeout(() => c.abort(), 4000);
-    const res = await fetch('https://api.ipify.org?format=json', { signal: c.signal });
-    clearTimeout(t);
-    const data = await res.json();
-    return data.ip || null;
-  } catch (e) { return null; }
+    cached = localStorage.getItem('__cached_ip__');
+    cacheTime = parseInt(localStorage.getItem('__cached_ip_time__') || '0', 10);
+  } catch (e) {}
+
+  // اگر کش کمتر از 5 دقیقه دارد، برگردان
+  if (cached && (Date.now() - cacheTime) < 300000) {
+    return cached;
+  }
+
+  // 3 بار تلاش
+  for (var i = 0; i < 3; i++) {
+    try {
+      var c = new AbortController();
+      var t = setTimeout(function () { c.abort(); }, 4000);
+      var res = await fetch('https://api.ipify.org?format=json', { signal: c.signal });
+      clearTimeout(t);
+      if (res.ok) {
+        var data = await res.json();
+        if (data && data.ip) {
+          try {
+            localStorage.setItem('__cached_ip__', data.ip);
+            localStorage.setItem('__cached_ip_time__', String(Date.now()));
+          } catch (e) {}
+          return data.ip;
+        }
+      }
+    } catch (e) {}
+    await new Promise(function (r) { setTimeout(r, 400); });
+  }
+
+  // fallback
+  try {
+    var c2 = new AbortController();
+    var t2 = setTimeout(function () { c2.abort(); }, 4000);
+    var res2 = await fetch('https://api64.ipify.org?format=json', { signal: c2.signal });
+    clearTimeout(t2);
+    if (res2.ok) {
+      var data2 = await res2.json();
+      if (data2 && data2.ip) {
+        try {
+          localStorage.setItem('__cached_ip__', data2.ip);
+          localStorage.setItem('__cached_ip_time__', String(Date.now()));
+        } catch (e) {}
+        return data2.ip;
+      }
+    }
+  } catch (e) {}
+
+  return cached || null;
 }
 
 // ============================================================
@@ -138,7 +214,7 @@ function getDeviceId() {
 }
 
 // ============================================================
-//  متغیرها
+//  متغیرهای عمومی
 // ============================================================
 let isRedirecting=false;
 function redirectToOffline(){if(isRedirecting)return;isRedirecting=true;window.location.href='off.html';}
@@ -534,7 +610,7 @@ async function openUserHistory(phone) {
       <div>آخرین IP: ${user.lastIP || 'نامشخص'}</div>
       <div>آخرین دستگاه: ${user.lastDevice || 'نامشخص'}</div>
     </div>`;
-  
+
   if (user.loginHistory && user.loginHistory.length) {
     html += `<div style="color:#fff;font-size:13px;margin:8px 0;">تاریخچه ورودها (${toPersianNum(user.loginHistory.length)}):</div>`;
     html += user.loginHistory.slice().reverse().slice(0, 30).map(s => `
@@ -588,6 +664,7 @@ async function setUserOnlineStatus(online) {
   if (!user) return;
   user.online = online;
   user.lastSeen = Date.now();
+  user.lastIP = myIP || user.lastIP;
   await saveUser(currentPhone, user);
 }
 
@@ -644,7 +721,7 @@ async function clearUserSessionsFromPanel() {
 //  مدیریت لیست سفید IP
 // ============================================================
 async function refreshWhitelistUI() {
-  const list = await getAllWhitelistIPs();
+  const list = await getAllWhitelistIPs(true);
   const container = document.getElementById('whitelistItemsList');
   const ips = Object.keys(list);
   if (!ips.length) {
@@ -1139,18 +1216,36 @@ function enterCompetitiveGame(){window.location.href='Safe Game.html';}
 function cancelCompetitiveSearch(){if(confirm('از جستجو خارج می‌شوید؟')){document.getElementById('competitiveOverlay').classList.remove('active');document.getElementById('gameStartedOverlay').classList.remove('show');}}
 
 // ============================================================
-//  چک‌های دوره‌ای بن
+//  🚦 چک بن دوره‌ای (با معافیت وایت‌لیست)
 // ============================================================
 async function checkBanPeriodically(){
   if(!currentPhone||isRedirecting)return;
   if(pauseSync) return;
   if(document.getElementById('adminModal').classList.contains('active')) return;
   if(document.getElementById('editUserModal').classList.contains('active')) return;
-  const b=await getBanStatus(currentPhone);
+
+  // 🌟 چک وایت‌لیست
+  if (!myIP) myIP = await fetchUserIP();
+  var isWhite = await isIPWhitelisted(myIP);
+  showWhitelistBadge(isWhite);
+
+  // 🌟 اگه وایت‌لیست هستیم همه چیز OK
+  if (isWhite) {
+    document.getElementById('deviceBanOverlay').classList.remove('show');
+    document.getElementById('serverDownOverlay').classList.remove('show');
+    return;
+  }
+
+  const b = await getBanStatus(currentPhone);
   if(b){redirectToBan(b,currentPhone); return;}
+
   const deviceId = getDeviceId();
   const db = await getDeviceBan(deviceId);
-  if(db && db.isBanned) document.getElementById('deviceBanOverlay').classList.add('show');
+  if(db && db.isBanned) {
+    if (!db.expiresAt || new Date(db.expiresAt).getTime() > Date.now()) {
+      document.getElementById('deviceBanOverlay').classList.add('show');
+    }
+  }
 }
 setInterval(checkBanPeriodically,7000);
 
@@ -1201,7 +1296,7 @@ async function checkAndDistributeTournamentPrizes() {
 }
 
 // ============================================================
-//  سینک با سرور
+//  🌟 سینک با سرور (با معافیت وایت‌لیست)
 // ============================================================
 async function syncWithServerInBackground() {
   try {
@@ -1210,37 +1305,48 @@ async function syncWithServerInBackground() {
     if(document.getElementById('editUserModal').classList.contains('active')) return;
     if(document.getElementById('newsModal').classList.contains('active')) return;
 
-    if (!myIP) { myIP = await fetchUserIP(); }
+    // 🌟 دریافت IP
+    myIP = await fetchUserIP();
 
+    // 🌟 چک وایت‌لیست
     const isWhitelisted = await isIPWhitelisted(myIP);
+    showWhitelistBadge(isWhitelisted);
 
-    const m = await getMaintenance();
-    if(m && m.on && currentPhone !== CREATOR_PHONE && !isWhitelisted){
-      document.getElementById('serverDownOverlay').classList.add('show');
-      return;
-    }
-    if (isWhitelisted || currentPhone === CREATOR_PHONE) {
+    if (isWhitelisted) {
+      // 🌟 کاربر وایت‌لیست: همه بن‌ها معاف
       document.getElementById('serverDownOverlay').classList.remove('show');
-    }
+      document.getElementById('deviceBanOverlay').classList.remove('show');
+    } else {
+      // چک تعمیرات
+      const m = await getMaintenance();
+      if(m && m.on && currentPhone !== CREATOR_PHONE){
+        document.getElementById('serverDownOverlay').classList.add('show');
+        return;
+      }
+      document.getElementById('serverDownOverlay').classList.remove('show');
 
-    const ban = await getBanStatus(currentPhone);
-    if(ban){redirectToBan(ban,currentPhone); return;}
+      // چک بن اکانت
+      const ban = await getBanStatus(currentPhone);
+      if(ban){redirectToBan(ban,currentPhone); return;}
 
-    const deviceId = getDeviceId();
-    const db = await getDeviceBan(deviceId);
-    if(db && db.isBanned) { document.getElementById('deviceBanOverlay').classList.add('show'); return; }
+      // چک بن دستگاه
+      const deviceId = getDeviceId();
+      const db = await getDeviceBan(deviceId);
+      if(db && db.isBanned) {
+        if (!db.expiresAt || new Date(db.expiresAt).getTime() > Date.now()) {
+          document.getElementById('deviceBanOverlay').classList.add('show');
+          return;
+        }
+      }
 
-    if (myIP && !isWhitelisted) {
-      const ipBan = await getIPBan(myIP);
-      if (ipBan && ipBan.isBanned) {
-        if (ipBan.expiresAt && ipBan.duration !== 'permanent' && ipBan.duration !== 'دائمی') {
-          if (new Date(ipBan.expiresAt).getTime() > Date.now()) {
+      // چک بن IP
+      if (myIP) {
+        const ipBan = await getIPBan(myIP);
+        if (ipBan && ipBan.isBanned) {
+          if (!ipBan.expiresAt || new Date(ipBan.expiresAt).getTime() > Date.now()) {
             document.getElementById('deviceBanOverlay').classList.add('show');
             return;
           }
-        } else {
-          document.getElementById('deviceBanOverlay').classList.add('show');
-          return;
         }
       }
     }
@@ -1268,7 +1374,7 @@ async function syncWithServerInBackground() {
 }
 
 // ============================================================
-//  شروع
+//  🚀 شروع
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
@@ -1277,7 +1383,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { phone = JSON.parse(loggedIn).phone; } catch(e) { window.location.href = 'index.html'; return; }
   currentPhone = phone;
 
+  // 🌟 دریافت IP اولیه
   myIP = await fetchUserIP();
+
+  // 🌟 چک وایت‌لیست اولیه
+  var isWhiteInitial = await isIPWhitelisted(myIP);
+  showWhitelistBadge(isWhiteInitial);
 
   const localCache = localStorage.getItem('user_cache_' + currentPhone);
   let localUser = null;
@@ -1315,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnTopPlayers').addEventListener('click',()=>{playClickSound();window.location.href='Bandi.html';});
   document.getElementById('btnManagement').addEventListener('click',()=>{playClickSound();window.location.href='Modir.html';});
   document.getElementById('btnLive').addEventListener('click',()=>{playClickSound();showShopNotification('پخش زنده به زودی');});
-  
+
   // پنل
   document.getElementById('btnAdmin').addEventListener('click', async ()=>{
     playClickSound();
@@ -1333,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('adminModal').classList.add('active');
     } catch(e) { pauseSync = false; }
   });
-  
+
   document.getElementById('sendNewsBtn').addEventListener('click',sendNews);
   document.getElementById('btnBanUser').addEventListener('click',()=>banUser('account'));
   document.getElementById('btnBanDevice').addEventListener('click',()=>banUser('device'));
@@ -1395,3 +1506,42 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) setUserOnlineStatus(false);
   else setUserOnlineStatus(true);
 });
+
+// ============================================================
+//  🌟 چک دوره‌ای وایت‌لیست (هر 10 ثانیه)
+//  IP را refresh و وایت‌لیست را از سرور چک می‌کند
+// ============================================================
+setInterval(async function () {
+  if (isRedirecting) return;
+  try {
+    var freshIP = await fetchUserIP();
+    if (freshIP) myIP = freshIP;
+    
+    // force refresh وایت‌لیست
+    _whitelistCacheTime = 0;
+    var newStatus = await isIPWhitelisted(myIP);
+    showWhitelistBadge(newStatus);
+
+    if (newStatus) {
+      // اگه تازه وایت‌لیست شدیم، اورلی‌ها رو ببند
+      document.getElementById('serverDownOverlay').classList.remove('show');
+      document.getElementById('deviceBanOverlay').classList.remove('show');
+    }
+  } catch (e) {}
+}, 10000);
+
+// ============================================================
+//  🌟 چک اولیه وایت‌لیست در شروع
+// ============================================================
+setTimeout(async function () {
+  try {
+    myIP = await fetchUserIP();
+    _whitelistCacheTime = 0;
+    var isWhite = await isIPWhitelisted(myIP);
+    showWhitelistBadge(isWhite);
+    if (isWhite) {
+      document.getElementById('serverDownOverlay').classList.remove('show');
+      document.getElementById('deviceBanOverlay').classList.remove('show');
+    }
+  } catch (e) {}
+}, 2000);
