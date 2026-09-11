@@ -327,14 +327,6 @@
       <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
       <div class="modal-body">
         <div class="setting-row"><span class="setting-label">🔊 صدای بازی</span><input type="range" min="0" max="100" value="80" class="volume-slider" id="gameVolumeSlider"></div>
-        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
-          <span class="setting-label">📡 IP فعلی شما:</span>
-          <span id="myIPDisplay" style="color:#4fc3f7;font-weight:900;direction:ltr;font-size:14px;">در حال دریافت...</span>
-        </div>
-        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
-          <span class="setting-label">📱 شناسه دستگاه:</span>
-          <span id="myDeviceDisplay" style="color:#4fc3f7;font-weight:900;font-size:11px;direction:ltr;word-break:break-all;">-</span>
-        </div>
         <button class="password-btn" id="openChangePasswordBtn">🔒 تغییر رمز عبور</button>
         <div style="margin-top:12px;color:#aaa;font-size:12px;text-align:center;">سازنده بازی: مرتضی</div>
       </div>
@@ -373,6 +365,7 @@
     <div class="server-down-icon">🔌</div>
     <div class="server-down-title">سرور قطع است</div>
     <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
+    <button id="retryWhitelistBtn" style="margin-top:16px;padding:12px 32px;background:linear-gradient(180deg,#4caf50,#388e3c);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;">🔄 بررسی مجدد</button>
   </div>
 
   <div class="device-ban-overlay" id="deviceBanOverlay">
@@ -384,6 +377,6 @@
 
 <audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
 
-<script src="Safe Asli.js"></script>
+<script src="Safe Asli.js?v=2026"></script>
 </body>
 </html>
