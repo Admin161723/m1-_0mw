@@ -1,7 +1,3 @@
-<!-- ============================================================ -->
-<!--  فایل: Safe Asli Bazi.html                                  -->
-<!--  صفحه اصلی بازی                                              -->
-<!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -15,6 +11,8 @@
 <div class="game-container" id="gameContainer">
   <div class="bg-image"></div>
   <div class="bg-overlay"></div>
+
+  <div class="whitelist-badge" id="whitelistBadge">🌟 IP شما در لیست سفید است</div>
 
   <div class="top-bar">
     <div class="top-left">
@@ -62,7 +60,6 @@
     <div class="nav-item" id="navGroup"><img src="Goroh.webp" class="nav-icon" alt="گروه‌ها"><span class="nav-label">گروه‌ها</span></div>
   </div>
 
-  <!-- مدال اطلاعیه‌ها -->
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
@@ -79,7 +76,6 @@
     </div>
   </div>
 
-  <!-- مدال مدیریت -->
   <div class="modal-overlay" id="adminModal">
     <div class="modal-box" style="max-width:400px;">
       <div class="modal-header"><div class="modal-title">پنل مدیریت</div><div class="modal-close" onclick="closeAdminModal()">✕</div></div>
@@ -191,7 +187,6 @@
     </div>
   </div>
 
-  <!-- ویرایش کاربر -->
   <div class="edit-user-modal" id="editUserModal">
     <div class="edit-user-content">
       <div class="edit-user-title">ویرایش کامل کاربر</div>
@@ -249,7 +244,6 @@
     </div>
   </div>
 
-  <!-- صفحه پروفایل -->
   <div class="profile-page" id="profilePage">
     <div class="profile-page-header"><button class="back-btn" id="backBtn">‹</button><span class="profile-page-title">پروفایل</span></div>
     <div class="profile-info-section">
@@ -288,7 +282,6 @@
     </div>
   </div>
 
-  <!-- صفحه خرید آواتار -->
   <div class="avatar-shop-page" id="avatarShopPage">
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="shopBackBtn">‹</div>
@@ -311,7 +304,6 @@
     <div class="avatar-grid" id="avatarGrid"></div>
   </div>
 
-  <!-- مدال خرید -->
   <div class="shop-modal" id="purchaseModal">
     <div class="shop-modal-content">
       <div class="shop-modal-title">خرید آواتار</div>
@@ -323,7 +315,6 @@
     </div>
   </div>
 
-  <!-- تنظیمات -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
@@ -335,7 +326,6 @@
     </div>
   </div>
 
-  <!-- تغییر رمز -->
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تغییر رمز عبور</div><div class="modal-close" onclick="closeModal('changePasswordModal')">✕</div></div>
@@ -350,7 +340,6 @@
 
   <div class="shop-notification" id="shopNotification"></div>
 
-  <!-- اورلای رقابتی -->
   <div class="competitive-overlay" id="competitiveOverlay">
     <div class="competitive-content">
       <div class="competitive-title">در حال انتظار بازیکن...</div>
