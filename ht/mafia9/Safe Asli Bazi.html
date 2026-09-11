@@ -60,6 +60,7 @@
     <div class="nav-item" id="navGroup"><img src="Goroh.webp" class="nav-icon" alt="گروه‌ها"><span class="nav-label">گروه‌ها</span></div>
   </div>
 
+  <!-- مدال اطلاعیه‌ها -->
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
@@ -76,6 +77,7 @@
     </div>
   </div>
 
+  <!-- مدال مدیریت -->
   <div class="modal-overlay" id="adminModal">
     <div class="modal-box" style="max-width:400px;">
       <div class="modal-header"><div class="modal-title">پنل مدیریت</div><div class="modal-close" onclick="closeAdminModal()">✕</div></div>
@@ -187,6 +189,7 @@
     </div>
   </div>
 
+  <!-- ویرایش کاربر -->
   <div class="edit-user-modal" id="editUserModal">
     <div class="edit-user-content">
       <div class="edit-user-title">ویرایش کامل کاربر</div>
@@ -244,6 +247,7 @@
     </div>
   </div>
 
+  <!-- صفحه پروفایل -->
   <div class="profile-page" id="profilePage">
     <div class="profile-page-header"><button class="back-btn" id="backBtn">‹</button><span class="profile-page-title">پروفایل</span></div>
     <div class="profile-info-section">
@@ -282,6 +286,7 @@
     </div>
   </div>
 
+  <!-- صفحه خرید آواتار -->
   <div class="avatar-shop-page" id="avatarShopPage">
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="shopBackBtn">‹</div>
@@ -304,6 +309,7 @@
     <div class="avatar-grid" id="avatarGrid"></div>
   </div>
 
+  <!-- مدال خرید -->
   <div class="shop-modal" id="purchaseModal">
     <div class="shop-modal-content">
       <div class="shop-modal-title">خرید آواتار</div>
@@ -315,17 +321,27 @@
     </div>
   </div>
 
+  <!-- تنظیمات -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
       <div class="modal-body">
         <div class="setting-row"><span class="setting-label">🔊 صدای بازی</span><input type="range" min="0" max="100" value="80" class="volume-slider" id="gameVolumeSlider"></div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+          <span class="setting-label">📡 IP فعلی شما:</span>
+          <span id="myIPDisplay" style="color:#4fc3f7;font-weight:900;direction:ltr;font-size:14px;">در حال دریافت...</span>
+        </div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+          <span class="setting-label">📱 شناسه دستگاه:</span>
+          <span id="myDeviceDisplay" style="color:#4fc3f7;font-weight:900;font-size:11px;direction:ltr;word-break:break-all;">-</span>
+        </div>
         <button class="password-btn" id="openChangePasswordBtn">🔒 تغییر رمز عبور</button>
         <div style="margin-top:12px;color:#aaa;font-size:12px;text-align:center;">سازنده بازی: مرتضی</div>
       </div>
     </div>
   </div>
 
+  <!-- تغییر رمز -->
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تغییر رمز عبور</div><div class="modal-close" onclick="closeModal('changePasswordModal')">✕</div></div>
@@ -340,6 +356,7 @@
 
   <div class="shop-notification" id="shopNotification"></div>
 
+  <!-- اورلای رقابتی -->
   <div class="competitive-overlay" id="competitiveOverlay">
     <div class="competitive-content">
       <div class="competitive-title">در حال انتظار بازیکن...</div>
