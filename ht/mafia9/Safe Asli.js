@@ -1,3 +1,8 @@
+/* ============================================================ */
+/*  فایل: Safe Asli.js                                          */
+/*  منطق کامل صفحه اصلی بازی - نسخه نهایی                       */
+/* ============================================================ */
+
 // ============================================================
 //  اتصال به Redis
 // ============================================================
@@ -1148,24 +1153,84 @@ function initAvatarShop(){
   currentUserData.avatar = getValidAvatar(currentUserData.avatar || 'Mafia2.png', currentPhone);
 }
 
+// ============================================================
+//  🎨 رندر آواتارها - نسخه نهایی با دکمه تایید و عکس جم
+// ============================================================
 function renderAvatars(){
-  const grid=document.getElementById('avatarGrid');
+  const grid = document.getElementById('avatarGrid');
   let disp;
-  if(currentAvatarSection==='my'){
-    disp=avatars.filter(a=>a.owned);
-    if(currentPhone!==CREATOR_PHONE) disp=disp.filter(a=>a.src!=='655.webm');
-  }else disp=avatars.filter(a=>!a.owned&&!a.exclusive&&!a.isMyExclusive);
+  if(currentAvatarSection === 'my'){
+    disp = avatars.filter(a => a.owned);
+    if(currentPhone !== CREATOR_PHONE) disp = disp.filter(a => a.src !== '655.webm');
+  } else {
+    disp = avatars.filter(a => !a.owned && !a.exclusive && !a.isMyExclusive);
+  }
 
-  if(!disp.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">آواتاری موجود نیست</div>';return;}
+  if(!disp.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">آواتاری موجود نیست</div>';
+    return;
+  }
 
-  grid.innerHTML=disp.map(a=>{
+  const currentAvatarSrc = currentUserData ? currentUserData.avatar : '';
+
+  grid.innerHTML = disp.map(a => {
     const isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4') || a.src.endsWith('.mov');
-    const mediaHtml = isVid ? `<video src="${a.src}" autoplay loop muted playsinline webkit-playsinline preload="metadata" onerror="avatarLoadError(this,'${a.src}')"></video>` : `<img src="${a.src}" loading="lazy" onerror="avatarLoadError(this,'${a.src}')">`;
-    const cardClass='avatar-card '+(a.owned?'owned ':'')+(a.isMyExclusive?'exclusive':'');
-    return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${(!a.owned?`<div class="avatar-price"><div class="gem-icon"></div><span class="price-value">${toPersianNum(a.price)}</span></div>`:`<div style="color:#4CAF50;font-weight:900;font-size:12px;margin-top:5px;">✓ ${(a.isMyExclusive?'⭐ اختصاصی':(a.exclusive?'اختصاصی':'دارید'))}</div>`)}</div>`;
+    const mediaHtml = isVid
+      ? `<video src="${a.src}" autoplay loop muted playsinline webkit-playsinline preload="metadata" onerror="avatarLoadError(this,'${a.src}')"></video>`
+      : `<img src="${a.src}" loading="lazy" onerror="avatarLoadError(this,'${a.src}')">`;
+
+    const isCurrent = (currentAvatarSrc === a.src);
+    const cardClass = 'avatar-card ' + (a.owned ? 'owned ' : '') + (a.isMyExclusive ? 'exclusive ' : '') + (isCurrent ? 'is-selected' : '');
+
+    // دکمه تأیید فقط برای "آواتارهای من"
+    let confirmBtn = '';
+    if (currentAvatarSection === 'my' && a.owned) {
+      confirmBtn = `<button class="cbtn cbtn-mini avatar-confirm-btn" data-src="${a.src}" data-id="${a.id}">✓ تایید</button>`;
+    }
+
+    // بخش قیمت یا وضعیت
+    let priceHtml = '';
+    if (!a.owned) {
+      priceHtml = `<div class="avatar-price"><img src="Jam99.webp" alt="جم"><span class="price-value">${toPersianNum(a.price)}</span></div>`;
+    } else {
+      priceHtml = `<div style="color:${isCurrent ? '#f1c40f' : '#4CAF50'};font-weight:900;font-size:11px;margin-top:5px;">${isCurrent ? '⭐ آواتار فعلی' : '✓ دارید'}</div>`;
+    }
+
+    return `<div class="${cardClass}" data-id="${a.id}">
+      <div class="avatar-image">${mediaHtml}</div>
+      ${priceHtml}
+      ${confirmBtn}
+    </div>`;
   }).join('');
 
-  grid.querySelectorAll('.avatar-card').forEach(c=>c.addEventListener('click',()=>handleAvatarClick(parseInt(c.dataset.id))));
+  // کلیک روی کارت (فقط در بخش خرید)
+  grid.querySelectorAll('.avatar-card').forEach(c => {
+    c.addEventListener('click', (e) => {
+      if (e.target.closest('.avatar-confirm-btn')) return;
+      const id = parseInt(c.dataset.id);
+      const av = avatars.find(x => x.id === id);
+      if (!av) return;
+
+      if (currentAvatarSection === 'buy' && !av.owned) {
+        handleAvatarClick(id);
+      }
+    });
+  });
+
+  // کلیک روی دکمه تأیید
+  grid.querySelectorAll('.avatar-confirm-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      playClickSound();
+      const src = btn.dataset.src;
+      if (!src) return;
+      updateGlobalAvatar(src);
+      await saveAvatarToStorage(src);
+      showShopNotification('✅ آواتار با موفقیت تایید شد');
+      setTimeout(() => renderAvatars(), 200);
+    });
+  });
+
   observeVideos(grid);
 }
 
@@ -1188,8 +1253,7 @@ function enterCompetitiveGame(){window.location.href='Safe Game.html';}
 function cancelCompetitiveSearch(){if(confirm('از جستجو خارج می‌شوید؟')){document.getElementById('competitiveOverlay').classList.remove('active');document.getElementById('gameStartedOverlay').classList.remove('show');}}
 
 // ============================================================
-//  چک وایت‌لیست - اصلی‌ترین تابع
-//  هر 2 ثانیه اجرا میشه و اگه تو لیست باشی، همه اورلی‌ها بسته میشن
+//  چک وایت‌لیست
 // ============================================================
 async function checkWhitelistNow() {
   try {
@@ -1206,9 +1270,6 @@ async function checkWhitelistNow() {
   } catch(e) { return false; }
 }
 
-// ============================================================
-//  چک بن دوره‌ای (با معافیت وایت‌لیست)
-// ============================================================
 async function checkBanPeriodically(){
   if(!currentPhone||isRedirecting)return;
   if(pauseSync) return;
@@ -1286,12 +1347,10 @@ async function syncWithServerInBackground() {
     if(document.getElementById('adminModal').classList.contains('active')) return;
     if(document.getElementById('editUserModal').classList.contains('active')) return;
 
-    // اول IP رو بگیر
     myIP = await fetchUserIP();
     if (!myIP) return;
     currentDeviceId = getDeviceId();
 
-    // چک وایت‌لیست
     var isWhitelisted = await isIPWhitelisted(myIP, currentDeviceId);
 
     if (isWhitelisted) {
@@ -1358,7 +1417,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { phone = JSON.parse(loggedIn).phone; } catch(e) { window.location.href = 'index.html'; return; }
   currentPhone = phone;
 
-  // چک اولیه
   await checkWhitelistNow();
 
   const localCache = localStorage.getItem('user_cache_' + currentPhone);
@@ -1483,8 +1541,7 @@ document.addEventListener('visibilitychange', async () => {
 });
 
 // ============================================================
-//  🌟 چک وایت‌لیست هر 2 ثانیه - مهم‌ترین بخش
-//  وقتی IP طرف تو لیست اضافه شد، خودکار ظرف 2 ثانیه اعمال میشه
+//  چک وایت‌لیست هر 2 ثانیه
 // ============================================================
 setInterval(async function () {
   if (isRedirecting) return;
