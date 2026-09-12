@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0a1a3a">
+<meta name="theme-color" content="#041228">
 <title>گروه‌ها - مافیا</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
@@ -12,14 +12,16 @@ html{width:100%!important;height:100%!important;overflow:hidden!important;positi
 body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228!important;width:100%!important;height:100%!important;position:fixed!important;inset:0;display:flex;justify-content:center;overflow:hidden!important;color:#fff;}
 input,textarea,select{font-size:16px!important;-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation!important;}
 img,video{-webkit-user-drag:none!important;}
-
 .game-container{width:100%;max-width:420px;height:100vh;height:100dvh;background:#041228;position:relative;display:flex;flex-direction:column;overflow:hidden!important;}
 
 /* ===== TOP BAR ===== */
 .top-bar{background:linear-gradient(180deg,rgba(30,74,138,.98),rgba(18,53,106,.98));padding:8px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #2a5a9a;z-index:50;flex-shrink:0;gap:6px;}
 .currency-item{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.3);padding:4px 10px;border-radius:18px;border:1.5px solid #2a6ac0;flex:1;justify-content:center;}
 .currency-icon{width:26px;height:26px;object-fit:contain;border-radius:50%;flex-shrink:0;}
-.coin-svg,.gem-svg,.dollar-svg{width:26px;height:26px;flex-shrink:0;}
+.coin-icon-top{width:26px;height:26px;background:radial-gradient(circle at 35% 35%,#ffe44d 0%,#ffd700 30%,#daa520 70%,#b8860b 100%);border-radius:50%;border:1.5px solid #c8960c;position:relative;flex-shrink:0;}
+.coin-icon-top::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:radial-gradient(circle,#b8860b 0%,#8b6914 100%);border-radius:50%;}
+.gem-icon-top{width:22px;height:22px;background:linear-gradient(135deg,#e040fb 0%,#7c4dff 100%);clip-path:polygon(50% 0%,100% 38%,50% 100%,0% 38%);flex-shrink:0;}
+.dollar-icon-top{width:24px;height:24px;background:linear-gradient(180deg,#7ddf7d,#2e7d32);border-radius:4px;border:1.5px solid #1b5e20;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:900;flex-shrink:0;}
 .currency-value{font-weight:900;font-size:14px;color:#fff;min-width:22px;text-align:center;}
 
 /* ===== SEARCH ===== */
@@ -42,7 +44,7 @@ img,video{-webkit-user-drag:none!important;}
 .group-card{background:linear-gradient(180deg,rgba(30,74,138,.85),rgba(18,53,106,.85));border:2px solid #2a6ac0;border-radius:14px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;position:relative;}
 .group-card.my-group{border-color:#ffd700;background:linear-gradient(180deg,rgba(60,90,150,.9),rgba(30,60,120,.9));box-shadow:0 0 12px rgba(255,215,0,.25);}
 .group-card.verified-card{border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,.4);}
-.group-logo{width:52px;height:52px;background:rgba(0,0,0,.3);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid #2a6ac0;}
+.group-logo{width:52px;height:52px;background:rgba(0,0,0,.3);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid #2a6ac0;position:relative;}
 .group-logo img{width:100%;height:100%;object-fit:contain;padding:4px;}
 .group-info{flex:1;min-width:0;}
 .group-name{font-size:15px;font-weight:900;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -50,20 +52,22 @@ img,video{-webkit-user-drag:none!important;}
 .group-tag-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
 .group-tag{background:rgba(255,255,255,.15);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:900;color:#fff;direction:ltr;display:inline-block;}
 .group-tag.colored{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);}
-.group-verified-tick{width:32px;height:32px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));flex-shrink:0;}
+/* Old verify tick - small checkmark next to name */
+.group-verify-tick{width:22px;height:22px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));flex-shrink:0;vertical-align:middle;}
 
-/* ===== TICK CIRCLE (top-left of group view) ===== */
-.tick-circle-wrap{position:absolute;top:8px;left:8px;z-index:60;width:52px;height:52px;border-radius:50%;background:#000;border:3px solid #ffd700;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 15px rgba(255,215,0,.5);overflow:hidden;transition:transform .15s;}
+/* ===== TICK CIRCLE (top-left of group view - SMALL, black only, no border) ===== */
+.tick-circle-wrap{position:absolute;top:10px;left:10px;z-index:60;width:42px;height:42px;border-radius:50%;background:#000;display:none;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.5);}
 .tick-circle-wrap.show{display:flex;}
-.tick-circle-wrap:active{transform:scale(.93);}
-.tick-circle-wrap img{width:100%;height:100%;object-fit:contain;padding:4px;}
-.tick-circle-wrap::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid transparent;pointer-events:none;}
+.tick-circle-wrap:active{transform:scale(.92);}
+.tick-circle-wrap img{width:100%;height:100%;object-fit:contain;padding:3px;}
 
-/* ===== FAB BUTTONS ===== */
+/* ===== FAB ===== */
 .fab-menu-btn{position:absolute;bottom:85px;left:15px;width:56px;height:56px;background:linear-gradient(180deg,#bc6c25,#8b5e3c);border-radius:50%;border:3px solid #041228;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:90;}
+.fab-menu-btn.hide{display:none;}
 .fab-menu-btn svg{width:28px;height:28px;fill:#fff;}
 .creator-panel-btn{position:absolute;bottom:85px;right:15px;width:56px;height:56px;background:linear-gradient(180deg,#e74c3c,#c0392b);border-radius:50%;border:3px solid #041228;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:90;box-shadow:0 4px 12px rgba(231,76,60,.4);}
 .creator-panel-btn.show{display:flex;}
+.creator-panel-btn.hide{display:none;}
 .creator-panel-btn svg{width:28px;height:28px;fill:#fff;}
 .fab-options{position:absolute;bottom:150px;left:15px;display:none;flex-direction:column;gap:10px;z-index:90;}
 .fab-options.show{display:flex;}
@@ -98,10 +102,10 @@ img,video{-webkit-user-drag:none!important;}
 .about-logo img{width:100%;height:100%;object-fit:contain;padding:6px;}
 .about-name{font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
 .about-desc{font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:10px;}
-
-.about-tick-badge{position:absolute;top:12px;left:12px;width:56px;height:56px;border-radius:50%;background:#000;border:3px solid #ffd700;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 15px rgba(255,215,0,.5);overflow:hidden;}
-.about-tick-badge.show{display:flex;}
-.about-tick-badge img{width:100%;height:100%;object-fit:contain;padding:4px;}
+/* Small tick in corner of about page */
+.about-tick-corner{position:absolute;top:10px;left:10px;width:38px;height:38px;border-radius:50%;background:#000;display:none;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6);}
+.about-tick-corner.show{display:flex;}
+.about-tick-corner img{width:100%;height:100%;object-fit:contain;padding:3px;}
 
 .clan-level-box{background:rgba(0,0,0,.3);border:2px solid #2a6ac0;border-radius:12px;padding:12px;margin-top:10px;width:100%;}
 .clan-level-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;font-weight:900;color:#fff;}
@@ -136,35 +140,34 @@ img,video{-webkit-user-drag:none!important;}
 .member-cups{background:rgba(255,215,0,.15);padding:4px 10px;border-radius:8px;font-size:13px;font-weight:900;color:#ffd700;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;border:1px solid #ffd700;}
 .section-title{font-size:15px;font-weight:900;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
 
-/* ===== BOTTOM NAV ===== */
-.bottom-nav{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(30,74,138,.98),rgba(18,53,106,.98));display:flex;align-items:center;justify-content:space-around;z-index:100;border-top:2px solid #2a5a9a;height:68px;flex-shrink:0;}
-.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:6px 0;flex:1;height:100%;position:relative;}
+/* ===== BOTTOM NAV (from Safe Asli style - icons with images/CSS) ===== */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(30,74,138,.98),rgba(18,53,106,.98));display:flex;align-items:center;justify-content:space-around;z-index:100;border-top:2px solid #2a5a9a;height:72px;flex-shrink:0;}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:4px 0;flex:1;height:100%;position:relative;}
 .nav-item.active{background:rgba(74,158,255,.12);}
 .nav-item.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:#4a9eff;border-radius:0 0 3px 3px;}
+.nav-icon-wrap{width:48px;height:48px;display:flex;align-items:center;justify-content:center;position:relative;}
 
-/* ==== NAV ICONS (NEW POLISHED) ==== */
-.nav-icon{width:42px;height:42px;position:relative;pointer-events:none;display:flex;align-items:center;justify-content:center;}
-.nav-icon svg{width:38px;height:38px;}
+/* Shop icon */
+.nav-shop-wrap{position:relative;width:40px;height:36px;}
+.nav-shop-awning{position:absolute;top:0;left:0;width:40px;height:12px;background:repeating-linear-gradient(90deg,#f44336 0px,#f44336 8px,#ffeb3b 8px,#ffeb3b 16px,#4caf50 16px,#4caf50 24px,#2196f3 24px,#2196f3 32px,#f44336 32px,#f44336 40px);border-radius:3px 3px 0 0;border:1px solid rgba(0,0,0,.3);}
+.nav-shop-body{position:absolute;top:12px;left:3px;width:34px;height:22px;background:linear-gradient(180deg,#5c6bc0,#3f51b5);border-radius:0 0 4px 4px;border:1px solid #3949ab;}
+.nav-shop-body::before{content:'';position:absolute;top:4px;left:6px;width:22px;height:12px;background:#ffd700;border-radius:2px;}
 
-/* Shop icon: bag with awning */
-.nav-shop-awning{position:absolute;top:0;left:2px;width:38px;height:11px;background:repeating-linear-gradient(90deg,#e74c3c 0,#e74c3c 7px,#ffd700 7px,#ffd700 14px,#4caf50 14px,#4caf50 21px,#2196f3 21px,#2196f3 28px,#e74c3c 28px,#e74c3c 35px);border-radius:5px 5px 0 0;border:1px solid rgba(0,0,0,.4);}
-.nav-shop-body{position:absolute;top:11px;left:6px;width:30px;height:27px;background:linear-gradient(180deg,#5c6bc0,#3f51b5);border-radius:0 0 5px 5px;border:1px solid #3949ab;display:flex;align-items:center;justify-content:center;}
-.nav-shop-body::before{content:'$';color:#ffd700;font-size:18px;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+/* Home icon */
+.nav-home-wrap{position:relative;width:44px;height:40px;}
+.nav-home-roof{position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:24px solid transparent;border-right:24px solid transparent;border-bottom:20px solid #f44336;}
+.nav-home-body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:34px;height:20px;background:#fff;border-radius:0 0 3px 3px;position:relative;}
+.nav-home-door{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:13px;height:15px;background:#5d4037;border-radius:3px 3px 0 0;}
 
-/* Home icon: house */
-.nav-home-roof{position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-bottom:18px solid #e74c3c;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3));}
-.nav-home-body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:28px;height:22px;background:linear-gradient(180deg,#f5f5f5,#e0e0e0);border-radius:0 0 4px 4px;border:1px solid #b0bec5;display:flex;align-items:flex-end;justify-content:center;}
-.nav-home-door{width:12px;height:15px;background:linear-gradient(180deg,#5d4037,#3e2723);border-radius:4px 4px 0 0;margin-bottom:0;border:1px solid #3e2723;}
+/* Group icon - 3 people */
+.nav-group-wrap{position:relative;width:44px;height:40px;}
+.nav-group-person{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid #fff;top:2px;}
+.nav-group-person.p1{background:#42a5f5;left:2px;z-index:2;}
+.nav-group-person.p2{background:#66bb6a;left:50%;transform:translateX(-50%);top:0;z-index:3;}
+.nav-group-person.p3{background:#ffa726;right:2px;z-index:2;}
+.nav-group-body{position:absolute;bottom:2px;left:4px;right:4px;height:16px;border-radius:12px 12px 4px 4px;background:linear-gradient(180deg,#42a5f5,#66bb6a,#ffa726);opacity:.85;}
 
-/* Group icon: three people */
-.nav-group-icon{position:relative;width:38px;height:38px;}
-.nav-group-person{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid #fff;top:4px;}
-.nav-group-person.p1{background:#42a5f5;left:0;}
-.nav-group-person.p2{background:#66bb6a;left:50%;transform:translateX(-50%);top:0;}
-.nav-group-person.p3{background:#ffa726;right:0;}
-.nav-group-body{position:absolute;bottom:2px;left:0;right:0;height:14px;background:linear-gradient(180deg,#42a5f5,#66bb6a);border-radius:10px 10px 4px 4px;opacity:.85;}
-
-.nav-label{color:#fff;font-size:10px;font-weight:700;margin-top:2px;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+.nav-label{color:#fff;font-size:10px;font-weight:700;margin-top:2px;pointer-events:none;}
 
 /* ===== MODALS ===== */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:15px;}
@@ -209,7 +212,7 @@ img,video{-webkit-user-drag:none!important;}
 .creator-group-item{background:rgba(255,255,255,.06);border:2px solid #2a6ac0;border-radius:12px;padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;}
 .creator-group-top{display:flex;align-items:center;gap:10px;}
 .creator-group-info{flex:1;min-width:0;}
-.creator-group-name{font-size:13px;font-weight:900;color:#fff;margin-bottom:2px;display:flex;align-items:center;gap:4px;}
+.creator-group-name{font-size:13px;font-weight:900;color:#fff;margin-bottom:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
 .creator-group-meta{font-size:11px;color:rgba(255,255,255,.7);}
 .creator-group-actions{display:flex;gap:5px;flex-wrap:wrap;}
 .creator-action-btn{border:none;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;font-family:'Vazirmatn',Tahoma,sans-serif;display:flex;align-items:center;gap:4px;color:#fff;flex-shrink:0;}
@@ -220,6 +223,7 @@ img,video{-webkit-user-drag:none!important;}
 .creator-action-btn.tick.active{background:linear-gradient(180deg,#4CAF50,#388e3c);color:#fff;}
 .creator-action-btn.tick.active svg{fill:#fff;}
 .creator-action-btn.rank{background:linear-gradient(180deg,#9c27b0,#6a1b9a);}
+.creator-action-btn.color{background:linear-gradient(180deg,#00bcd4,#0097a7);}
 
 .creator-user-item{background:rgba(255,255,255,.06);border:2px solid #2a6ac0;border-radius:12px;padding:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
 .creator-user-avatar{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.3);overflow:hidden;flex-shrink:0;border:2px solid #2a6ac0;display:flex;align-items:center;justify-content:center;}
@@ -235,46 +239,37 @@ img,video{-webkit-user-drag:none!important;}
 .creator-tab{flex:1;padding:9px;background:rgba(255,255,255,.08);border:2px solid #2a6ac0;border-radius:10px;font-size:12px;font-weight:900;color:rgba(255,255,255,.8);cursor:pointer;text-align:center;}
 .creator-tab.active{background:linear-gradient(180deg,#4a9eff,#2a7acc);color:#fff;border-color:#4a9eff;}
 
-/* ===== TICK TREE MODAL ===== */
+/* ===== TICK TREE MODAL (only ticks + green progress circle) ===== */
 .tick-tree-modal{max-width:400px;}
-.tick-section-title{font-size:13px;font-weight:900;color:#ffd700;margin:12px 0 8px;text-align:center;padding:6px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid #ffd700;}
-.tick-row{display:flex;justify-content:space-around;gap:6px;margin-bottom:10px;flex-wrap:nowrap;}
-.tick-item{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;cursor:pointer;}
-.tick-circle{width:52px;height:52px;border-radius:50%;background:#000;border:3px solid #444;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;transition:all .3s;}
-.tick-circle.unlocked{border-color:#4CAF50;box-shadow:0 0 12px rgba(76,175,80,.6);}
-.tick-circle.current{border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,.7);animation:tickPulse 2s infinite;}
-.tick-circle.locked{opacity:.5;border-color:#333;}
-.tick-circle svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
-.tick-circle .progress-ring{fill:none;stroke:#4CAF50;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .5s;}
-.tick-circle .progress-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:3;}
-.tick-circle img{width:100%;height:100%;object-fit:contain;padding:4px;position:relative;z-index:2;}
-.tick-circle.locked img{filter:grayscale(1) brightness(.5);}
-.tick-label{font-size:9px;color:rgba(255,255,255,.8);font-weight:700;text-align:center;}
-.tick-label.unlocked{color:#4CAF50;}
-.tick-label.current{color:#ffd700;font-weight:900;}
-@keyframes tickPulse{0%,100%{box-shadow:0 0 15px rgba(255,215,0,.7);}50%{box-shadow:0 0 25px rgba(255,215,0,1);}}
+.tick-progress-circle-wrap{display:flex;justify-content:center;margin-bottom:14px;}
+.tick-progress-circle{width:120px;height:120px;position:relative;}
+.tick-progress-circle svg{width:100%;height:100%;transform:rotate(-90deg);}
+.tick-progress-circle .pc-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:8;}
+.tick-progress-circle .pc-fill{fill:none;stroke:#4CAF50;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s ease;}
+.tick-progress-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.tick-progress-pct{font-size:20px;font-weight:900;color:#4CAF50;}
+.tick-progress-lbl{font-size:10px;color:rgba(255,255,255,.7);font-weight:700;}
 
-.tick-progress-info{background:rgba(76,175,80,.15);border:2px solid #4CAF50;border-radius:10px;padding:10px;margin-bottom:12px;text-align:center;}
-.tick-progress-info-title{color:#4CAF50;font-size:12px;font-weight:900;margin-bottom:4px;}
-.tick-progress-info-value{color:#fff;font-size:14px;font-weight:900;}
+.tick-section-title{font-size:12px;font-weight:900;margin:10px 0 6px;text-align:center;padding:5px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid;}
+.tick-row{display:flex;justify-content:space-around;gap:4px;margin-bottom:8px;flex-wrap:nowrap;}
+.tick-item{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0;}
+.tick-img-box{width:46px;height:46px;display:flex;align-items:center;justify-content:center;position:relative;}
+.tick-img-box img{width:100%;height:100%;object-fit:contain;transition:filter .3s;}
+.tick-img-box.locked img{filter:grayscale(1) brightness(.35);}
+.tick-img-box.current img{filter:drop-shadow(0 0 6px #4CAF50);}
+.tick-img-box.unlocked img{filter:drop-shadow(0 0 4px #ffd700);}
+.tick-label{font-size:9px;color:rgba(255,255,255,.6);font-weight:700;text-align:center;}
+.tick-label.unlocked{color:#ffd700;}
+.tick-label.current{color:#4CAF50;font-weight:900;}
 </style>
 </head>
 <body>
 <div class="game-container">
-  <!-- TOP BAR with Coins / Gems / Dollars -->
+  <!-- TOP BAR -->
   <div class="top-bar">
-    <div class="currency-item">
-      <svg class="coin-svg" viewBox="0 0 32 32"><defs><radialGradient id="cg" cx="35%" cy="35%"><stop offset="0%" stop-color="#ffe44d"/><stop offset="50%" stop-color="#ffd700"/><stop offset="100%" stop-color="#b8860b"/></radialGradient></defs><circle cx="16" cy="16" r="14" fill="url(#cg)" stroke="#8b6914" stroke-width="1.5"/><circle cx="16" cy="16" r="8" fill="none" stroke="#8b6914" stroke-width="1.2" opacity=".6"/><text x="16" y="21" font-size="12" font-weight="900" text-anchor="middle" fill="#8b6914">$</text></svg>
-      <span class="currency-value" id="userCoins">۰</span>
-    </div>
-    <div class="currency-item">
-      <svg class="gem-svg" viewBox="0 0 32 32"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e040fb"/><stop offset="100%" stop-color="#7c4dff"/></linearGradient></defs><polygon points="16,2 30,12 16,30 2,12" fill="url(#gg)" stroke="#4a148c" stroke-width="1"/><polygon points="16,2 22,12 16,30 10,12" fill="#e040fb" opacity=".4"/></svg>
-      <span class="currency-value" id="userGems">۰</span>
-    </div>
-    <div class="currency-item">
-      <svg class="dollar-svg" viewBox="0 0 32 32"><defs><linearGradient id="dg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7ddf7d"/><stop offset="100%" stop-color="#2e7d32"/></linearGradient></defs><rect x="4" y="6" width="24" height="20" rx="3" fill="url(#dg)" stroke="#1b5e20" stroke-width="1.5"/><text x="16" y="23" font-size="18" font-weight="900" text-anchor="middle" fill="#fff">$</text></svg>
-      <span class="currency-value" id="userDollars">۰</span>
-    </div>
+    <div class="currency-item"><div class="coin-icon-top"></div><span class="currency-value" id="userCoins">۰</span></div>
+    <div class="currency-item"><div class="gem-icon-top"></div><span class="currency-value" id="userGems">۰</span></div>
+    <div class="currency-item"><div class="dollar-icon-top">$</div><span class="currency-value" id="userDollars">۰</span></div>
   </div>
 
   <div class="search-container">
@@ -287,7 +282,7 @@ img,video{-webkit-user-drag:none!important;}
     <button class="tab-btn" id="tabBtnAbout" onclick="switchTab('about')" style="display:none;">📋 درباره</button>
   </div>
 
-  <!-- Tick Circle top-left of group view -->
+  <!-- Small tick circle top-left (only shows current tick) -->
   <div class="tick-circle-wrap" id="tickCircleWrap" onclick="openTickTree()">
     <img id="tickCircleImg" src="" onerror="this.style.display='none'">
   </div>
@@ -311,7 +306,7 @@ img,video{-webkit-user-drag:none!important;}
 
   <div class="view-section" id="viewAbout">
     <div class="about-header" id="aboutHeader">
-      <div class="about-tick-badge" id="aboutTickBadge" onclick="openTickTree()">
+      <div class="about-tick-corner" id="aboutTickCorner" onclick="openTickTree()">
         <img id="aboutTickImg" src="" onerror="this.style.display='none'">
       </div>
       <div class="about-logo" id="aboutLogo"></div>
@@ -343,30 +338,23 @@ img,video{-webkit-user-drag:none!important;}
     </div>
   </div>
 
-  <!-- BOTTOM NAV (New polished icons) -->
+  <!-- BOTTOM NAV -->
   <div class="bottom-nav">
     <div class="nav-item" id="navShop">
-      <div class="nav-icon">
-        <div class="nav-shop-awning"></div>
-        <div class="nav-shop-body"></div>
+      <div class="nav-icon-wrap">
+        <div class="nav-shop-wrap"><div class="nav-shop-awning"></div><div class="nav-shop-body"></div></div>
       </div>
       <div class="nav-label">فروشگاه</div>
     </div>
     <div class="nav-item" id="navHome">
-      <div class="nav-icon">
-        <div class="nav-home-roof"></div>
-        <div class="nav-home-body"><div class="nav-home-door"></div></div>
+      <div class="nav-icon-wrap">
+        <div class="nav-home-wrap"><div class="nav-home-roof"></div><div class="nav-home-body"><div class="nav-home-door"></div></div></div>
       </div>
       <div class="nav-label">خانه</div>
     </div>
     <div class="nav-item active">
-      <div class="nav-icon">
-        <div class="nav-group-icon">
-          <div class="nav-group-person p1"></div>
-          <div class="nav-group-person p2"></div>
-          <div class="nav-group-person p3"></div>
-          <div class="nav-group-body"></div>
-        </div>
+      <div class="nav-icon-wrap">
+        <div class="nav-group-wrap"><div class="nav-group-person p1"></div><div class="nav-group-person p2"></div><div class="nav-group-person p3"></div><div class="nav-group-body"></div></div>
       </div>
       <div class="nav-label">گروه</div>
     </div>
@@ -447,6 +435,22 @@ img,video{-webkit-user-drag:none!important;}
   </div>
 </div>
 
+<!-- Assign color to clan -->
+<div class="modal-overlay" id="modalAssignClanColor">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">🎨 اختصاص رنگ به گروه</div><button class="modal-close" id="closeAssignClanColor">✕</button></div>
+    <div class="modal-body">
+      <div id="assignClanColorName" style="text-align:center;font-weight:900;font-size:15px;color:#fff;margin-bottom:8px;"></div>
+      <div class="modal-hint">انتخاب رنگ برای نام و تگ گروه:</div>
+      <select class="modal-select" id="assignClanColorSelect"></select>
+      <div class="color-preview" id="assignClanColorPreview" style="margin-top:8px;">-</div>
+      <button class="btn-primary gold" id="btnSaveClanColor" style="margin-top:10px;">ذخیره رنگ</button>
+      <button class="btn-primary" id="btnRemoveClanColor" style="margin-top:6px;background:linear-gradient(180deg,#757575,#616161);box-shadow:0 4px 0 #424242;">حذف رنگ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Assign color to user -->
 <div class="modal-overlay" id="modalAssignColor">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title">🎨 اختصاص رنگ به کاربر</div><button class="modal-close" id="closeAssignColor">✕</button></div>
@@ -456,15 +460,15 @@ img,video{-webkit-user-drag:none!important;}
       <select class="modal-select" id="assignColorSelect"></select>
       <div class="color-preview" id="assignColorPreview" style="margin-top:8px;">-</div>
       <button class="btn-primary gold" id="btnSaveColor" style="margin-top:10px;">ذخیره رنگ</button>
-      <button class="btn-primary" id="btnRemoveColor" style="margin-top:6px;background:linear-gradient(180deg,#757575,#616161);box-shadow:0 4px 0 #424242;">حذف رنگ اختصاصی</button>
+      <button class="btn-primary" id="btnRemoveColor" style="margin-top:6px;background:linear-gradient(180deg,#757575,#616161);box-shadow:0 4px 0 #424242;">حذف رنگ</button>
     </div>
   </div>
 </div>
 
-<!-- ===== TICK RANK SELECTOR (for creator) ===== -->
+<!-- Tick rank for clan (creator only) -->
 <div class="modal-overlay" id="modalTickRank">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title">🏆 تعیین رتبه تیک کلن</div><button class="modal-close" id="closeTickRank">✕</button></div>
+    <div class="modal-header"><div class="modal-title">🏆 رتبه‌بندی تیک کلن</div><button class="modal-close" id="closeTickRank">✕</button></div>
     <div class="modal-body">
       <div id="tickRankClanName" style="text-align:center;font-weight:900;font-size:15px;color:#ffd700;margin-bottom:8px;"></div>
       <div class="modal-hint">رتبه تیک (۰ تا ۲۰):</div>
@@ -475,7 +479,7 @@ img,video{-webkit-user-drag:none!important;}
   </div>
 </div>
 
-<!-- ===== TICK TREE MODAL (show all ticks + progress) ===== -->
+<!-- Tick tree modal (only ticks + green progress) -->
 <div class="modal-overlay" id="modalTickTree">
   <div class="modal-box tick-tree-modal">
     <div class="modal-header"><div class="modal-title">🏆 درخت تیک‌های کلن</div><button class="modal-close" id="closeTickTree">✕</button></div>
@@ -486,9 +490,7 @@ img,video{-webkit-user-drag:none!important;}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   Audio click
-============================================================ */
+/* ========= Audio click ========= */
 let audioCtx;
 function playClickSound(){
   try{
@@ -505,13 +507,11 @@ function playClickSound(){
   }catch(e){}
 }
 document.addEventListener('click',function(e){
-  const el=e.target.closest('button,.tab-btn,.group-card,.action-btn,.fab-option,.nav-item,.modal-close,.creator-tab,.msg-action-btn,.logo-option,.creator-action-btn,.member-card,.request-item button,.btn-small,.tick-circle');
+  const el=e.target.closest('button,.tab-btn,.group-card,.action-btn,.fab-option,.nav-item,.modal-close,.creator-tab,.msg-action-btn,.logo-option,.creator-action-btn,.member-card,.request-item button,.btn-small');
   if(el) playClickSound();
 },true);
 
-/* ============================================================
-   Helpers
-============================================================ */
+/* ========= Helpers ========= */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toPersianNum(num){const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];return(num||0).toString().replace(/[0-9]/g,w=>p[+w]);}
 function showToast(msg,isError=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(isError?' error':'');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -520,9 +520,7 @@ function gm(g){return(g&&g.members)?g.members:[];}
 function gp(g){return(g&&g.pending)?g.pending:[];}
 function gd(g){return(g&&g.deputies)?g.deputies:[];}
 
-/* ============================================================
-   COLOR CODES (1-100)
-============================================================ */
+/* ========= Color codes ========= */
 const COLOR_CODES={
 1:{name:'سفید',hex:'#FFFFFF',text:'#000'},2:{name:'مشکی',hex:'#000000',text:'#fff'},
 3:{name:'قرمز',hex:'#FF0000',text:'#fff'},4:{name:'سبز',hex:'#008000',text:'#fff'},
@@ -577,42 +575,17 @@ const COLOR_CODES={
 };
 function getColorByCode(code){if(!code)return null;const n=parseInt(code);if(n>=1&&n<=100)return COLOR_CODES[n];return null;}
 
-/* ============================================================
-   TICK SYSTEM - 20 tiers, 4 sections
-============================================================ */
-const TICK_LEVELS = [
-  // Section 1
-  {img:'Tik990.webp', need:10},
-  {img:'Tik00.webp', need:15},
-  {img:'Tik000.webp', need:20},
-  {img:'Tik0000.webp', need:25},
-  {img:'Tik00000.webp', need:30},
-  // Section 2
-  {img:'Tik01.webp', need:35},
-  {img:'Tik02.webp', need:40},
-  {img:'Tik03.webp', need:45},
-  {img:'Tik04.webp', need:50},
-  {img:'Tik05.webp', need:55},
-  // Section 3
-  {img:'Tik001.webp', need:60},
-  {img:'Tik002.webp', need:70},
-  {img:'Tik003.webp', need:80},
-  {img:'Tik004.webp', need:90},
-  {img:'Tik005.webp', need:100},
-  // Section 4
-  {img:'Tik0002.webp', need:200},
-  {img:'Tik0003.webp', need:300},
-  {img:'Tik0004.webp', need:400},
-  {img:'Tik0005.webp', need:500},
-  {img:'Tik0006.webp', need:600}
+/* ========= TICK SYSTEM - 20 tiers ========= */
+const TICK_LEVELS=[
+  {img:'Tik990.webp',need:10},{img:'Tik00.webp',need:15},{img:'Tik000.webp',need:20},{img:'Tik0000.webp',need:25},{img:'Tik00000.webp',need:30},
+  {img:'Tik01.webp',need:35},{img:'Tik02.webp',need:40},{img:'Tik03.webp',need:45},{img:'Tik04.webp',need:50},{img:'Tik05.webp',need:55},
+  {img:'Tik001.webp',need:60},{img:'Tik002.webp',need:70},{img:'Tik003.webp',need:80},{img:'Tik004.webp',need:90},{img:'Tik005.webp',need:100},
+  {img:'Tik0002.webp',need:200},{img:'Tik0003.webp',need:300},{img:'Tik0004.webp',need:400},{img:'Tik0005.webp',need:500},{img:'Tik0006.webp',need:600}
 ];
-
-// Cumulative levels required for each tick (from start)
-const TICK_CUMULATIVE = (()=>{
-  let sum=0; return TICK_LEVELS.map(t=>{sum+=t.need; return sum;});
-})();
+const TICK_CUMULATIVE=(()=>{let s=0;return TICK_LEVELS.map(t=>{s+=t.need;return s;});})();
 
 const LOGO_IMAGES=['20.webp','21.webp','22.webp','23.webp','30.webp','31.webp','32.webp','33.webp','34.webp','35.webp','36.webp','37.webp','38.webp','39.webp','40.webp','41.webp','42.webp','43.webp','44.webp','45.webp','46.webp','47.webp','48.webp','49.webp'];
+const CLAN_TICK_IMG='TikK2.png'; // OLD verify tick (kept)
 
 function getLogoImg(f){return '<img src="'+f+'" style="width:100%;height:100%;object-fit:contain;display:block;" onerror="this.style.display=\'none\';">';}
 
@@ -627,12 +600,11 @@ const ICONS={
   emptyGroups:'<svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3z"/></svg>',
   star:'<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
   crown:'<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>',
-  tick:'<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>'
+  tick:'<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>',
+  color:'<svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/></svg>'
 };
 
-/* ============================================================
-   DATABASE (ONLY UPSTASH - JSONBin removed)
-============================================================ */
+/* ========= DATABASE (ONLY Upstash) ========= */
 const UPSTASH_OLD_URL="https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN="gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const UPSTASH_NEW_URL="https://holy-hamster-122717.upstash.io";
@@ -662,16 +634,11 @@ async function redisGet(key){
   if(v!==null)return v;
   v=await upstashGet(UPSTASH_NEW_URL,UPSTASH_NEW_TOKEN,key);
   if(v!==null)return v;
-  // Local backup fallback for police_groups
-  if(key==='police_groups'){
-    try{const b=localStorage.getItem('police_groups_backup');if(b)return JSON.parse(b);}catch(e){}
-  }
+  if(key==='police_groups'){try{const b=localStorage.getItem('police_groups_backup');if(b)return JSON.parse(b);}catch(e){}}
   return null;
 }
 async function redisSet(key,value){
-  if(key==='police_groups'){
-    try{localStorage.setItem('police_groups_backup',JSON.stringify(value));}catch(e){}
-  }
+  if(key==='police_groups'){try{localStorage.setItem('police_groups_backup',JSON.stringify(value));}catch(e){}}
   const r=await Promise.allSettled([
     upstashSet(UPSTASH_OLD_URL,UPSTASH_OLD_TOKEN,key,value),
     upstashSet(UPSTASH_NEW_URL,UPSTASH_NEW_TOKEN,key,value)
@@ -690,9 +657,7 @@ async function getGroups(){
 }
 async function saveGroups(g){return await redisSet('police_groups',g);}
 
-/* ============================================================
-   STATE
-============================================================ */
+/* ========= STATE ========= */
 let currentUser=null;
 let groups=[];
 let currentGroupId=null;
@@ -702,6 +667,7 @@ let chatSyncInterval=null;
 let usersCache={ts:0,data:{}};
 let currentCreatorTab='groups';
 let colorAssignTarget=null;
+let clanColorAssignTarget=null;
 let tickRankTargetGroupId=null;
 
 function clearUsersCache(){usersCache={ts:0,data:{}};}
@@ -710,7 +676,6 @@ async function getUsersCached(force=false){
   if(force||now-usersCache.ts>1000){usersCache={ts:now,data:await getAllUsers()};}
   return usersCache.data;
 }
-
 function getAvatarHtml(av){
   if(!av)return ICONS.userDefault;
   const isVid=av.endsWith('.webm')||av.endsWith('.mp4')||av.endsWith('.mov');
@@ -718,45 +683,27 @@ function getAvatarHtml(av){
   if(av.includes('.')||av.startsWith('data:'))return '<img src="'+av+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\''+ICONS.userDefault.replace(/'/g,"\\'")+'\';">';
   return ICONS.userDefault;
 }
-
 function calculateClanStats(group,allUsers){
   let totalPoints=parseInt(group.extraPoints)||0;
-  const members=gm(group);
-  members.forEach(mid=>{
-    const u=allUsers[mid];
-    if(u){totalPoints+=(parseInt(u.cups)||0)*2+(parseInt(u.hours)||0)*20;}
-  });
+  gm(group).forEach(mid=>{const u=allUsers[mid];if(u){totalPoints+=(parseInt(u.cups)||0)*2+(parseInt(u.hours)||0)*20;}});
   let level=Math.floor(totalPoints/1000)+1;
   if(level>1000)level=1000;
   const cur=totalPoints-((level-1)*1000);
-  const pct=Math.min(100,(cur/1000)*100);
-  return{totalPoints,level,currentLevelPoints:cur,percentage:pct};
+  return{totalPoints,level,currentLevelPoints:cur,percentage:Math.min(100,(cur/1000)*100)};
 }
-
-/* ============================================================
-   TICK PROGRESS
-============================================================ */
 function getTickProgress(group,clanLevel){
   const tickRank=parseInt(group.tickRank)||0;
   const startLevel=parseInt(group.tickStartLevel)||1;
   const gained=Math.max(0,clanLevel-startLevel);
-  // Next tick needs: TICK_CUMULATIVE[tickRank] - (already gained since previous tick)
-  let prevReq=tickRank>0?TICK_CUMULATIVE[tickRank-1]:0;
-  let nextReq=tickRank<20?TICK_CUMULATIVE[tickRank]:TICK_CUMULATIVE[19];
+  const prevReq=tickRank>0?TICK_CUMULATIVE[tickRank-1]:0;
   const needForNext=tickRank<20?TICK_LEVELS[tickRank].need:0;
   const gainedSinceLast=Math.max(0,gained-prevReq);
   const progress=needForNext>0?Math.min(100,(gainedSinceLast/needForNext)*100):100;
-  return{tickRank,startLevel,gained,prevReq,nextReq,needForNext,gainedSinceLast,progress};
+  return{tickRank,startLevel,gained,prevReq,needForNext,gainedSinceLast,progress};
 }
+function getTickImage(rank){if(rank<1||rank>20)return null;return TICK_LEVELS[rank-1].img;}
 
-function getTickImage(rank){
-  if(rank<1||rank>20)return null;
-  return TICK_LEVELS[rank-1].img;
-}
-
-/* ============================================================
-   LOAD & SAVE
-============================================================ */
+/* ========= LOAD & SAVE ========= */
 async function loadUserData(){
   const loggedIn=localStorage.getItem('currentLoggedInUser');
   if(!loggedIn){window.location.href='index.html';return;}
@@ -771,7 +718,6 @@ async function loadUserData(){
   if(!groups||groups.length===0){try{const b=localStorage.getItem('police_groups_backup');if(b)groups=JSON.parse(b);}catch(e){}}
   if(currentUser.id===CREATOR_PHONE)document.getElementById('creatorPanelBtn').classList.add('show');
 }
-
 async function saveData(){
   if(!currentUser)return;
   await saveUser(currentUser.id,currentUser);
@@ -780,7 +726,6 @@ async function saveData(){
   await saveGroups(groups);
   updateUI();
 }
-
 function updateUI(){
   if(!currentUser)return;
   document.getElementById('userCoins').textContent=toPersianNum(currentUser.coins||0);
@@ -788,9 +733,7 @@ function updateUI(){
   document.getElementById('userDollars').textContent=toPersianNum(currentUser.dollars||0);
 }
 
-/* ============================================================
-   TABS
-============================================================ */
+/* ========= TABS ========= */
 function switchTab(view){
   document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -799,7 +742,15 @@ function switchTab(view){
   const v=document.getElementById(vm[view]),t=document.getElementById(tm[view]);
   if(v)v.classList.add('active');
   if(t)t.classList.add('active');
-  document.getElementById('tickCircleWrap').classList.remove('show');
+  // Show FAB only in list view
+  const fab=document.getElementById('fabMenuBtn');
+  const cp=document.getElementById('creatorPanelBtn');
+  if(view==='list'){fab.classList.remove('hide');if(currentUser&&currentUser.id===CREATOR_PHONE)cp.classList.remove('hide');}
+  else{fab.classList.add('hide');cp.classList.add('hide');document.getElementById('fabOptions').classList.remove('show');}
+  // Tick circle only in list
+  const tc=document.getElementById('tickCircleWrap');
+  if(view==='list'&&currentGroupId){/* handled elsewhere */}
+  else if(view!=='list'){tc.classList.remove('show');}
   if(view==='list'){
     document.getElementById('tabBtnChat').style.display='none';
     document.getElementById('tabBtnAbout').style.display='none';
@@ -811,7 +762,7 @@ function switchTab(view){
 
 function updateTickCircle(){
   const wrap=document.getElementById('tickCircleWrap');
-  const badge=document.getElementById('aboutTickBadge');
+  const corner=document.getElementById('aboutTickCorner');
   if(!currentGroupId){wrap.classList.remove('show');return;}
   const group=groups.find(g=>g.id===currentGroupId);
   if(!group){wrap.classList.remove('show');return;}
@@ -820,19 +771,20 @@ function updateTickCircle(){
     const img=getTickImage(rank);
     document.getElementById('tickCircleImg').src=img;
     document.getElementById('tickCircleImg').style.display='block';
-    wrap.classList.add('show');
     document.getElementById('aboutTickImg').src=img;
     document.getElementById('aboutTickImg').style.display='block';
-    badge.classList.add('show');
+    // Only show in list view or about view
+    const activeView=document.querySelector('.view-section.active');
+    if(activeView&&activeView.id==='viewList'){wrap.classList.add('show');corner.classList.remove('show');}
+    else if(activeView&&activeView.id==='viewAbout'){wrap.classList.remove('show');corner.classList.add('show');}
+    else{wrap.classList.remove('show');corner.classList.remove('show');}
   }else{
     wrap.classList.remove('show');
-    badge.classList.remove('show');
+    corner.classList.remove('show');
   }
 }
 
-/* ============================================================
-   GROUPS LIST
-============================================================ */
+/* ========= GROUPS LIST ========= */
 async function renderGroupsList(){
   groups=await getGroups();
   const c=document.getElementById('groupsContainer');
@@ -850,18 +802,21 @@ async function renderGroupsList(){
 
 function createGroupCard(group,isMine){
   const div=document.createElement('div');
-  const isVerified=group.verified===true||(parseInt(group.tickRank)||0)>0;
+  const isVerified=group.verified===true;
+  const tickRank=parseInt(group.tickRank)||0;
   div.className='group-card'+(isMine?' my-group':'')+(isVerified?' verified-card':'');
   div.onclick=()=>openGroup(group.id);
   const isMember=gm(group).includes(currentUser.id);
   const isPending=gp(group).includes(currentUser.id);
   const statusText=isMember?'عضو هستید':(isPending?'در انتظار':toPersianNum(gm(group).length)+'/'+toPersianNum(group.capacity||50));
-  const cd=(group.owner===CREATOR_PHONE)?getColorByCode(group.colorCode):null;
+  const cd=getColorByCode(group.colorCode); // color for ANY clan (creator can assign)
   let tagStyle='',tagClass='group-tag',tagNameHtml=esc(group.name);
   if(cd){tagStyle='background:'+cd.hex+';color:'+cd.text+';';tagClass+=' colored';tagNameHtml='<span style="color:'+cd.hex+';text-shadow:0 1px 2px rgba(0,0,0,.25);">'+esc(group.name)+'</span>';}
-  const tickRank=parseInt(group.tickRank)||0;
-  const tickHtml=tickRank>0?('<img src="'+getTickImage(tickRank)+'" class="group-verified-tick" onerror="this.style.display=\'none\'">'):'';
-  div.innerHTML='<div class="group-logo">'+getLogoImg(group.logo)+'</div><div class="group-info"><div class="group-name">'+tagNameHtml+' '+tickHtml+'</div><div class="group-tag-row"><span class="'+tagClass+'" style="'+tagStyle+'">'+esc(group.tag)+'</span></div><div class="group-meta">'+statusText+'</div></div>';
+  // Old verify tick next to name (verified:true)
+  const verifyTick=isVerified?('<img src="'+CLAN_TICK_IMG+'" class="group-verify-tick" onerror="this.style.display=\'none\'">'):'';
+  // New tick rank also shows next to name (small)
+  const rankTick=tickRank>0?('<img src="'+getTickImage(tickRank)+'" class="group-verify-tick" onerror="this.style.display=\'none\'">'):'';
+  div.innerHTML='<div class="group-logo">'+getLogoImg(group.logo)+'</div><div class="group-info"><div class="group-name">'+tagNameHtml+' '+verifyTick+' '+rankTick+'</div><div class="group-tag-row"><span class="'+tagClass+'" style="'+tagStyle+'">'+esc(group.tag)+'</span></div><div class="group-meta">'+statusText+'</div></div>';
   return div;
 }
 
@@ -882,9 +837,7 @@ async function openGroup(groupId){
   switchTab('about');
 }
 
-/* ============================================================
-   ABOUT
-============================================================ */
+/* ========= ABOUT ========= */
 async function renderAbout(){
   groups=await getGroups();
   const group=groups.find(g=>g.id===currentGroupId);
@@ -892,14 +845,15 @@ async function renderAbout(){
   const allUsers=await getUsersCached(true);
   const header=document.getElementById('aboutHeader');
   const tickRank=parseInt(group.tickRank)||0;
-  const isVerified=tickRank>0;
-  header.className='about-header'+(isVerified?' verified-about':'');
+  const isVerified=group.verified===true;
+  header.className='about-header'+((isVerified||tickRank>0)?' verified-about':'');
   document.getElementById('aboutLogo').innerHTML=getLogoImg(group.logo);
   const nameEl=document.getElementById('aboutName');
-  const cd=(group.owner===CREATOR_PHONE)?getColorByCode(group.colorCode):null;
-  const tickHtml=isVerified?' <img src="'+getTickImage(tickRank)+'" style="width:36px;height:36px;vertical-align:middle;" onerror="this.style.display=\'none\'">':'';
-  if(cd){nameEl.innerHTML='<span style="color:'+cd.hex+';text-shadow:0 1px 3px rgba(0,0,0,.3);">'+esc(group.name)+'</span>'+tickHtml;}
-  else{nameEl.innerHTML=esc(group.name)+tickHtml;}
+  const cd=getColorByCode(group.colorCode);
+  const verifyTick=isVerified?' <img src="'+CLAN_TICK_IMG+'" style="width:26px;height:26px;vertical-align:middle;" onerror="this.style.display=\'none\'">':'';
+  const rankTick=tickRank>0?' <img src="'+getTickImage(tickRank)+'" style="width:26px;height:26px;vertical-align:middle;" onerror="this.style.display=\'none\'">':'';
+  if(cd){nameEl.innerHTML='<span style="color:'+cd.hex+';text-shadow:0 1px 3px rgba(0,0,0,.3);">'+esc(group.name)+'</span>'+verifyTick+rankTick;}
+  else{nameEl.innerHTML=esc(group.name)+verifyTick+rankTick;}
   document.getElementById('aboutDesc').textContent=group.desc||'بدون توضیحات';
   const stats=calculateClanStats(group,allUsers);
   const statsC=document.getElementById('aboutStats');
@@ -967,9 +921,7 @@ async function renderAbout(){
   });
 }
 
-/* ============================================================
-   TICK TREE MODAL
-============================================================ */
+/* ========= TICK TREE MODAL (only ticks + green progress circle) ========= */
 async function openTickTree(){
   if(!currentGroupId){showToast('اول یک گروه انتخاب کن',true);return;}
   groups=await getGroups();
@@ -979,9 +931,12 @@ async function openTickTree(){
   const stats=calculateClanStats(group,allUsers);
   const tp=getTickProgress(group,stats.level);
   const body=document.getElementById('tickTreeBody');
-  let html='';
-  html+='<div class="tick-progress-info"><div class="tick-progress-info-title">🏆 رتبه فعلی: '+(tp.tickRank>0?('تیک '+toPersianNum(tp.tickRank)):'بدون تیک')+'</div><div class="tick-progress-info-value">'+(tp.tickRank<20?('تا تیک بعدی: '+toPersianNum(Math.max(0,tp.needForNext-tp.gainedSinceLast))+' سطح'):'حداکثر تیک گرفته شده!')+'</div></div>';
-  const sectionNames=['🥉 بخش برنزی','🥈 بخش نقره‌ای','🥇 بخش طلایی','💎 بخش الماسی'];
+  // Green circular progress
+  const R=52,C=2*Math.PI*R;
+  const offset=C-(C*tp.progress/100);
+  let html='<div class="tick-progress-circle-wrap"><div class="tick-progress-circle"><svg viewBox="0 0 120 120"><circle class="pc-bg" cx="60" cy="60" r="'+R+'"/><circle class="pc-fill" cx="60" cy="60" r="'+R+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+offset+'"/></svg><div class="tick-progress-inner"><div class="tick-progress-pct">'+toPersianNum(Math.round(tp.progress))+'%</div><div class="tick-progress-lbl">'+(tp.tickRank<20?('تا تیک '+toPersianNum(tp.tickRank+1)):'حداکثر')+'</div></div></div></div>';
+  html+='<div style="text-align:center;font-size:12px;color:rgba(255,255,255,.8);margin-bottom:12px;">سطح کلن: <b style="color:#4CAF50;">'+toPersianNum(stats.level)+'</b> · رتبه: <b style="color:#ffd700;">'+(tp.tickRank>0?('تیک '+toPersianNum(tp.tickRank)):'بدون تیک')+'</b></div>';
+  const sectionNames=['🥉 بخش اول','🥈 بخش دوم','🥇 بخش سوم','💎 بخش چهارم'];
   const secColors=['#cd7f32','#c0c0c0','#ffd700','#4fc3f7'];
   for(let s=0;s<4;s++){
     html+='<div class="tick-section-title" style="color:'+secColors[s]+';border-color:'+secColors[s]+';">'+sectionNames[s]+'</div>';
@@ -992,36 +947,20 @@ async function openTickTree(){
       const tickNum=idx+1;
       const isUnlocked=tp.tickRank>=tickNum;
       const isCurrent=tp.tickRank+1===tickNum;
-      let cls='tick-circle';
+      let cls='tick-img-box';
       if(isUnlocked)cls+=' unlocked';
       else if(isCurrent)cls+=' current';
       else cls+=' locked';
-      // Progress ring for current
-      const R=24, C=2*Math.PI*R;
-      const offset=isCurrent?C-(C*tp.progress/100):C;
-      const ringHtml=isCurrent?('<svg><circle class="progress-bg" cx="26" cy="26" r="'+R+'"/><circle class="progress-ring" cx="26" cy="26" r="'+R+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+offset+'" style="stroke:#4CAF50;"/></svg>'):'';
-      // If unlocked, draw full green ring
-      const unlockedRing=isUnlocked?('<svg><circle class="progress-ring" cx="26" cy="26" r="'+R+'" stroke-dasharray="'+C+'" stroke-dashoffset="0"/></svg>'):'';
-      html+='<div class="tick-item" onclick="showTickInfo('+tickNum+')">';
-      html+='<div class="'+cls+'">'+unlockedRing+ringHtml+'<img src="'+tick.img+'" onerror="this.style.display=\'none\'"></div>';
-      html+='<div class="tick-label '+(isUnlocked?'unlocked':(isCurrent?'current':''))+'">'+toPersianNum(tick.need)+' سطح</div>';
-      html+='</div>';
+      const labelCls=isUnlocked?'unlocked':(isCurrent?'current':'');
+      html+='<div class="tick-item"><div class="'+cls+'"><img src="'+tick.img+'" onerror="this.style.display=\'none\'"></div><div class="tick-label '+labelCls+'">'+toPersianNum(tick.need)+' سطح</div></div>';
     }
     html+='</div>';
   }
-  html+='<div style="margin-top:12px;text-align:center;font-size:11px;color:rgba(255,255,255,.6);">سطح کلن: '+toPersianNum(stats.level)+' | شروع تیک: '+toPersianNum(tp.startLevel)+' | تلاش: '+toPersianNum(tp.gained)+'</div>';
   body.innerHTML=html;
   document.getElementById('modalTickTree').classList.add('active');
 }
 
-function showTickInfo(tickNum){
-  const t=TICK_LEVELS[tickNum-1];
-  showToast('تیک '+toPersianNum(tickNum)+': نیازمند '+toPersianNum(t.need)+' سطح');
-}
-
-/* ============================================================
-   REQUESTS
-============================================================ */
+/* ========= REQUESTS ========= */
 async function openRequestsModal(){
   groups=await getGroups();
   const group=groups.find(g=>g.id===currentGroupId);
@@ -1043,7 +982,6 @@ async function openRequestsModal(){
   }
   document.getElementById('modalRequests').classList.add('active');
 }
-
 async function handleRequest(userId,accept){
   groups=await getGroups();
   const group=groups.find(g=>g.id===currentGroupId);
@@ -1060,9 +998,7 @@ async function handleRequest(userId,accept){
   await saveData();closeModal('modalRequests');await renderAbout();showToast(accept?'تایید شد ✅':'رد شد');
 }
 
-/* ============================================================
-   USER ACTIONS
-============================================================ */
+/* ========= USER ACTIONS ========= */
 async function openUserActions(userId){
   if(userId===currentUser.id){showToast('برای خودت غیرفعال است');return;}
   groups=await getGroups();
@@ -1095,15 +1031,12 @@ async function openUserActions(userId){
   }else{list.innerHTML='<div class="empty-state">فقط مدیر و معاون</div>';}
   document.getElementById('modalUserActions').classList.add('active');
 }
-
 async function promoteUser(){groups=await getGroups();const g=groups.find(x=>x.id===currentGroupId);if(!g)return;if(!g.deputies)g.deputies=[];if(!g.deputies.includes(targetUserIdForAction)){g.deputies.push(targetUserIdForAction);await saveData();closeModal('modalUserActions');clearUsersCache();await renderAbout();showToast('ارتقا یافت');}}
 async function demoteUser(){groups=await getGroups();const g=groups.find(x=>x.id===currentGroupId);if(!g)return;if(!g.deputies)g.deputies=[];g.deputies=g.deputies.filter(id=>id!==targetUserIdForAction);await saveData();closeModal('modalUserActions');clearUsersCache();await renderAbout();showToast('عزل شد');}
 async function transferOwnership(){if(!confirm('انتقال مالکیت؟'))return;groups=await getGroups();const g=groups.find(x=>x.id===currentGroupId);if(!g)return;g.owner=targetUserIdForAction;if(g.deputies)g.deputies=g.deputies.filter(id=>id!==targetUserIdForAction);await saveData();closeModal('modalUserActions');clearUsersCache();await renderAbout();showToast('مالکیت منتقل شد');}
 async function kickUser(){if(!confirm('اخراج؟'))return;groups=await getGroups();const g=groups.find(x=>x.id===currentGroupId);if(!g)return;g.members=gm(g).filter(id=>id!==targetUserIdForAction);g.deputies=gd(g).filter(id=>id!==targetUserIdForAction);g.pending=gp(g).filter(id=>id!==targetUserIdForAction);await saveData();closeModal('modalUserActions');clearUsersCache();await renderAbout();showToast('اخراج شد');}
 
-/* ============================================================
-   CREATE GROUP
-============================================================ */
+/* ========= CREATE GROUP ========= */
 function initLogoGrid(){
   const grid=document.getElementById('logoGrid');grid.innerHTML='';
   LOGO_IMAGES.forEach(img=>{
@@ -1114,7 +1047,6 @@ function initLogoGrid(){
     grid.appendChild(d);
   });
 }
-
 function openCreateModal(){
   document.getElementById('fabOptions').classList.remove('show');
   if(!currentUser){showToast('اول وارد شو',true);return;}
@@ -1129,15 +1061,12 @@ function openCreateModal(){
     ci.disabled=false;ci.placeholder='شماره رنگ (۱ تا ۱۰۰)';
     ch.innerHTML='🎨 عدد رنگ را بزن (۱ تا ۱۰۰)';ch.style.color='#fff';
     ci.value='';cp.style.display='none';
-  }else{
-    cs.style.display='none';
-  }
+  }else{cs.style.display='none';}
   document.getElementById('createName').value='';
   document.getElementById('createTag').value='';
   document.getElementById('createDesc').value='';
   document.getElementById('modalCreate').classList.add('active');
 }
-
 async function createGroup(){
   try{
     if(!currentUser){showToast('اول وارد شو',true);return;}
@@ -1157,18 +1086,9 @@ async function createGroup(){
     if((currentUser.gems||0)<150){showToast('❌ الماس کافی ندارید',true);return;}
     currentUser.gems-=150;
     const newGroup={
-      id:'g'+Date.now(),
-      name,tag,desc,
-      logo:selectedLogo,
-      owner:currentUser.id,
-      deputies:[],
-      members:[currentUser.id],
-      pending:[],
-      capacity:50,
-      colorCode:fcc,
-      verified:false,
-      tickRank:0,
-      tickStartLevel:1,
+      id:'g'+Date.now(),name,tag,desc,logo:selectedLogo,owner:currentUser.id,
+      deputies:[],members:[currentUser.id],pending:[],capacity:50,
+      colorCode:fcc,verified:false,tickRank:0,tickStartLevel:1,
       chat:[{id:Date.now(),userId:'system',userName:'سیستم',text:'گروه '+name+' ساخته شد.',time:'اکنون',isAnnounce:true}]
     };
     groups.unshift(newGroup);
@@ -1183,9 +1103,7 @@ async function createGroup(){
   }catch(e){showToast('❌ خطا: '+(e&&e.message?e.message:'نامشخص'),true);}
 }
 
-/* ============================================================
-   JOIN, LEAVE, EDIT
-============================================================ */
+/* ========= JOIN, LEAVE, EDIT ========= */
 function openJoinByTagModal(){document.getElementById('fabOptions').classList.remove('show');document.getElementById('modalJoin').classList.add('active');}
 async function requestJoinGroup(){
   const tag=document.getElementById('joinTag').value.trim().toUpperCase();
@@ -1199,7 +1117,6 @@ async function requestJoinGroup(){
   await saveData();closeModal('modalJoin');document.getElementById('joinTag').value='';
   showToast('درخواست ارسال شد');await renderGroupsList();
 }
-
 async function leaveGroup(){
   if(!confirm('خروج از گروه؟'))return;
   groups=await getGroups();
@@ -1215,7 +1132,6 @@ async function leaveGroup(){
   document.getElementById('tabBtnAbout').style.display='none';
   await saveData();switchTab('list');await renderGroupsList();showToast('خارج شدید');
 }
-
 async function upgradeCapacity(){
   groups=await getGroups();
   const g=groups.find(x=>x.id===currentGroupId);
@@ -1224,7 +1140,6 @@ async function upgradeCapacity(){
   currentUser.gems-=50;g.capacity=(g.capacity||50)+50;
   await saveData();await renderAbout();showToast('ظرفیت افزایش یافت');
 }
-
 async function openEditModal(){
   groups=await getGroups();
   const g=groups.find(x=>x.id===currentGroupId);
@@ -1233,7 +1148,6 @@ async function openEditModal(){
   document.getElementById('editDesc').value=g.desc||'';
   document.getElementById('modalEdit').classList.add('active');
 }
-
 async function saveGroupEdit(){
   groups=await getGroups();
   const g=groups.find(x=>x.id===currentGroupId);
@@ -1245,9 +1159,7 @@ async function saveGroupEdit(){
   await saveData();closeModal('modalEdit');await renderAbout();await renderGroupsList();showToast('بروزرسانی شد');
 }
 
-/* ============================================================
-   FAB
-============================================================ */
+/* ========= FAB ========= */
 function toggleFabMenu(){
   const f=document.getElementById('fabOptions');
   document.getElementById('fabJoinBtn').onclick=openJoinByTagModal;
@@ -1255,9 +1167,7 @@ function toggleFabMenu(){
   f.classList.toggle('show');
 }
 
-/* ============================================================
-   CREATOR PANEL
-============================================================ */
+/* ========= CREATOR PANEL ========= */
 function switchCreatorTab(tab){
   currentCreatorTab=tab;
   document.getElementById('creatorTabGroups').classList.toggle('active',tab==='groups');
@@ -1266,7 +1176,6 @@ function switchCreatorTab(tab){
   document.getElementById('creatorUsersView').style.display=tab==='users'?'block':'none';
   if(tab==='groups')renderCreatorGroups();else renderCreatorUsers();
 }
-
 async function openCreatorPanel(){
   if(currentUser.id!==CREATOR_PHONE){showToast('فقط سازنده',true);return;}
   document.getElementById('modalCreatorPanel').classList.add('active');
@@ -1287,15 +1196,17 @@ async function renderCreatorGroups(){
   for(const g of groups){
     const od=allUsers[g.owner]||{name:'نامشخص'};
     const tr=parseInt(g.tickRank)||0;
-    const isOC=g.owner===CREATOR_PHONE;
-    const cd=isOC?getColorByCode(g.colorCode):null;
+    const isV=g.verified===true;
+    const cd=getColorByCode(g.colorCode);
     const cb=cd?'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+cd.hex+';border:1px solid #000;"></span> '+cd.name:'';
     const item=document.createElement('div');
     item.className='creator-group-item';
-    item.innerHTML='<div class="creator-group-top"><div class="group-logo" style="width:40px;height:40px;border-radius:10px;">'+getLogoImg(g.logo)+'</div><div class="creator-group-info"><div class="creator-group-name">'+esc(g.name)+(tr>0?' <img src="'+getTickImage(tr)+'" style="width:24px;height:24px;vertical-align:middle;" onerror="this.style.display=\'none\'">':'')+'</div><div class="creator-group-meta">['+esc(g.tag)+'] · 👤 '+(od.name||'نامشخص')+(cb?' · '+cb:'')+(tr>0?' · 🏆 تیک '+toPersianNum(tr):'')+'</div></div></div><div class="creator-group-actions"><button class="creator-action-btn rank" data-gid="'+g.id+'" data-act="rank">🏆 تیک</button><button class="creator-action-btn delete" data-gid="'+g.id+'" data-act="delete">'+ICONS.delete+' حذف</button></div>';
+    item.innerHTML='<div class="creator-group-top"><div class="group-logo" style="width:40px;height:40px;border-radius:10px;">'+getLogoImg(g.logo)+'</div><div class="creator-group-info"><div class="creator-group-name">'+esc(g.name)+(isV?' <img src="'+CLAN_TICK_IMG+'" style="width:20px;height:20px;vertical-align:middle;" onerror="this.style.display=\'none\'">':'')+(tr>0?' <img src="'+getTickImage(tr)+'" style="width:22px;height:22px;vertical-align:middle;" onerror="this.style.display=\'none\'">':'')+'</div><div class="creator-group-meta">['+esc(g.tag)+'] · 👤 '+(od.name||'نامشخص')+(cb?' · '+cb:'')+(tr>0?' · تیک '+toPersianNum(tr):'')+'</div></div></div><div class="creator-group-actions"><button class="creator-action-btn tick '+(isV?'active':'')+'" data-gid="'+g.id+'" data-act="verify">'+(isV?'✅ وریفای':'⭐ وریفای')+'</button><button class="creator-action-btn rank" data-gid="'+g.id+'" data-act="rank">🏆 تیک</button><button class="creator-action-btn color" data-gid="'+g.id+'" data-act="color">🎨 رنگ</button><button class="creator-action-btn delete" data-gid="'+g.id+'" data-act="delete">'+ICONS.delete+' حذف</button></div>';
     v.appendChild(item);
   }
+  v.querySelectorAll('[data-act="verify"]').forEach(b=>{b.onclick=()=>toggleVerify(b.dataset.gid);});
   v.querySelectorAll('[data-act="rank"]').forEach(b=>{b.onclick=()=>openTickRankModal(b.dataset.gid);});
+  v.querySelectorAll('[data-act="color"]').forEach(b=>{b.onclick=()=>openAssignClanColorModal(b.dataset.gid);});
   v.querySelectorAll('[data-act="delete"]').forEach(b=>{b.onclick=()=>deleteGroupAsCreator(b.dataset.gid);});
 }
 
@@ -1315,10 +1226,23 @@ async function renderCreatorUsers(){
     const cs=cd?'background:'+cd.hex+';color:'+cd.text+';padding:2px 8px;border-radius:6px;font-weight:900;':'color:rgba(255,255,255,.6);';
     const item=document.createElement('div');
     item.className='creator-user-item';
-    item.innerHTML='<div class="creator-user-avatar">'+getAvatarHtml(u.avatar)+'</div><div class="creator-user-info"><div class="creator-user-name">'+(u.name||'کاربر')+'</div><div class="creator-user-meta"><span style="'+cs+'">'+ct+'</span></div></div><div><button class="creator-action-btn" data-phone="'+phone+'" style="background:linear-gradient(180deg,#9c27b0,#6a1b9a);">🎨 رنگ</button></div>';
+    item.innerHTML='<div class="creator-user-avatar">'+getAvatarHtml(u.avatar)+'</div><div class="creator-user-info"><div class="creator-user-name">'+(u.name||'کاربر')+'</div><div class="creator-user-meta"><span style="'+cs+'">'+ct+'</span></div></div><div><button class="creator-action-btn color" data-phone="'+phone+'">🎨 رنگ</button></div>';
     v.appendChild(item);
   }
   v.querySelectorAll('[data-phone]').forEach(b=>{b.onclick=()=>openAssignColorModal(b.dataset.phone);});
+}
+
+async function toggleVerify(gid){
+  if(currentUser.id!==CREATOR_PHONE){showToast('فقط سازنده',true);return;}
+  groups=await getGroups();
+  const g=groups.find(x=>x.id===gid);
+  if(!g)return;
+  g.verified=!g.verified;
+  await saveGroups(groups);
+  showToast(g.verified?'✅ وریفای داده شد':'❌ وریفای برداشته شد');
+  renderCreatorGroups();
+  if(currentGroupId===gid)await renderAbout();
+  await renderGroupsList();
 }
 
 async function deleteGroupAsCreator(gid){
@@ -1332,66 +1256,63 @@ async function deleteGroupAsCreator(gid){
   if(currentGroupId===gid){currentGroupId=null;switchTab('list');await renderGroupsList();}
 }
 
-/* ============================================================
-   TICK RANK MODAL (creator assigns rank)
-============================================================ */
-function openTickRankModal(gid){
+/* ========= CLAN COLOR ========= */
+function openAssignClanColorModal(gid){
+  if(currentUser.id!==CREATOR_PHONE){showToast('فقط سازنده',true);return;}
   groups=groups||[];
   const g=groups.find(x=>x.id===gid);
   if(!g)return;
-  tickRankTargetGroupId=gid;
-  document.getElementById('tickRankClanName').textContent='🏆 '+g.name;
-  const sel=document.getElementById('tickRankSelect');
-  sel.innerHTML='';
-  const opt0=document.createElement('option');opt0.value='0';opt0.textContent='بدون تیک';sel.appendChild(opt0);
-  for(let i=1;i<=20;i++){
-    const o=document.createElement('option');o.value=i;o.textContent='تیک '+i+' (نیاز: '+TICK_LEVELS[i-1].need+' سطح)';
-    if((parseInt(g.tickRank)||0)===i)o.selected=true;
+  clanColorAssignTarget=gid;
+  document.getElementById('assignClanColorName').textContent='🏷️ '+g.name;
+  const sel=document.getElementById('assignClanColorSelect');
+  sel.innerHTML='<option value="">بدون رنگ</option>';
+  for(let i=1;i<=100;i++){
+    const c=COLOR_CODES[i];
+    const o=document.createElement('option');o.value=i;o.textContent=i+': '+c.name;
+    if(g.colorCode&&parseInt(g.colorCode)===i)o.selected=true;
     sel.appendChild(o);
   }
-  if((parseInt(g.tickRank)||0)===0)sel.value='0';
-  document.getElementById('modalTickRank').classList.add('active');
+  updateClanColorPreview();
+  document.getElementById('modalAssignClanColor').classList.add('active');
 }
-
-async function saveTickRank(){
-  if(!tickRankTargetGroupId)return;
+function updateClanColorPreview(){
+  const sel=document.getElementById('assignClanColorSelect');
+  const p=document.getElementById('assignClanColorPreview');
+  const val=sel.value;
+  if(val){
+    const cd=COLOR_CODES[parseInt(val)];
+    p.style.display='flex';p.style.background=cd.hex;p.style.color=cd.text;p.textContent=cd.name+' ('+val+')';
+  }else{
+    p.style.display='flex';p.style.background='rgba(255,255,255,.1)';p.style.color='#fff';p.textContent='بدون رنگ';
+  }
+}
+async function saveClanColor(){
+  if(!clanColorAssignTarget)return;
+  const val=document.getElementById('assignClanColorSelect').value;
   groups=await getGroups();
-  const g=groups.find(x=>x.id===tickRankTargetGroupId);
+  const g=groups.find(x=>x.id===clanColorAssignTarget);
   if(!g)return;
-  const newRank=parseInt(document.getElementById('tickRankSelect').value)||0;
-  const oldRank=parseInt(g.tickRank)||0;
-  const allUsers=await getUsersCached(true);
-  const stats=calculateClanStats(g,allUsers);
-  // When setting a new rank: record current level as new start
-  g.tickRank=newRank;
-  g.tickStartLevel=stats.level;
-  g.verified=newRank>0;
+  if(val){g.colorCode=parseInt(val);showToast('🎨 رنگ '+COLOR_CODES[parseInt(val)].name+' داده شد');}
+  else{delete g.colorCode;showToast('❌ رنگ حذف شد');}
   await saveGroups(groups);
-  closeModal('modalTickRank');
-  showToast(newRank>0?('✅ تیک '+toPersianNum(newRank)+' داده شد'):'❌ تیک برداشته شد');
-  renderCreatorGroups();
-  if(currentGroupId===tickRankTargetGroupId)await renderAbout();
+  closeModal('modalAssignClanColor');clanColorAssignTarget=null;renderCreatorGroups();
+  if(currentGroupId===g.id)await renderAbout();
+  await renderGroupsList();
+}
+async function removeClanColor(){
+  if(!clanColorAssignTarget)return;
+  groups=await getGroups();
+  const g=groups.find(x=>x.id===clanColorAssignTarget);
+  if(!g)return;
+  delete g.colorCode;
+  await saveGroups(groups);
+  showToast('❌ رنگ حذف شد');
+  closeModal('modalAssignClanColor');clanColorAssignTarget=null;renderCreatorGroups();
+  if(currentGroupId===g.id)await renderAbout();
   await renderGroupsList();
 }
 
-async function resetTickRank(){
-  if(!tickRankTargetGroupId)return;
-  if(!confirm('ریست تیک این کلن؟'))return;
-  groups=await getGroups();
-  const g=groups.find(x=>x.id===tickRankTargetGroupId);
-  if(!g)return;
-  g.tickRank=0;g.verified=false;g.tickStartLevel=1;
-  await saveGroups(groups);
-  closeModal('modalTickRank');
-  showToast('❌ تیک ریست شد');
-  renderCreatorGroups();
-  if(currentGroupId===tickRankTargetGroupId)await renderAbout();
-  await renderGroupsList();
-}
-
-/* ============================================================
-   ASSIGN COLOR
-============================================================ */
+/* ========= USER COLOR ========= */
 async function openAssignColorModal(phone){
   if(currentUser.id!==CREATOR_PHONE){showToast('فقط سازنده',true);return;}
   colorAssignTarget=phone;
@@ -1410,7 +1331,6 @@ async function openAssignColorModal(phone){
   updateColorPreview();
   document.getElementById('modalAssignColor').classList.add('active');
 }
-
 function updateColorPreview(){
   const sel=document.getElementById('assignColorSelect');
   const p=document.getElementById('assignColorPreview');
@@ -1422,7 +1342,6 @@ function updateColorPreview(){
     p.style.display='flex';p.style.background='rgba(255,255,255,.1)';p.style.color='#fff';p.textContent='بدون رنگ';
   }
 }
-
 async function saveUserColor(){
   if(!colorAssignTarget)return;
   const val=document.getElementById('assignColorSelect').value;
@@ -1435,7 +1354,6 @@ async function saveUserColor(){
   await saveAllUsers(allUsers);await saveUser(colorAssignTarget,u);
   closeModal('modalAssignColor');colorAssignTarget=null;renderCreatorUsers();
 }
-
 async function removeUserColor(){
   if(!colorAssignTarget)return;
   const allUsers=await getAllUsers();
@@ -1447,9 +1365,58 @@ async function removeUserColor(){
   closeModal('modalAssignColor');colorAssignTarget=null;renderCreatorUsers();
 }
 
-/* ============================================================
-   CHAT
-============================================================ */
+/* ========= TICK RANK ========= */
+function openTickRankModal(gid){
+  if(currentUser.id!==CREATOR_PHONE){showToast('فقط سازنده',true);return;}
+  groups=groups||[];
+  const g=groups.find(x=>x.id===gid);
+  if(!g)return;
+  tickRankTargetGroupId=gid;
+  document.getElementById('tickRankClanName').textContent='🏆 '+g.name;
+  const sel=document.getElementById('tickRankSelect');
+  sel.innerHTML='';
+  const o0=document.createElement('option');o0.value='0';o0.textContent='بدون تیک';sel.appendChild(o0);
+  for(let i=1;i<=20;i++){
+    const o=document.createElement('option');o.value=i;o.textContent='تیک '+i+' (نیاز: '+TICK_LEVELS[i-1].need+' سطح)';
+    if((parseInt(g.tickRank)||0)===i)o.selected=true;
+    sel.appendChild(o);
+  }
+  if((parseInt(g.tickRank)||0)===0)sel.value='0';
+  document.getElementById('modalTickRank').classList.add('active');
+}
+async function saveTickRank(){
+  if(!tickRankTargetGroupId)return;
+  groups=await getGroups();
+  const g=groups.find(x=>x.id===tickRankTargetGroupId);
+  if(!g)return;
+  const newRank=parseInt(document.getElementById('tickRankSelect').value)||0;
+  const allUsers=await getUsersCached(true);
+  const stats=calculateClanStats(g,allUsers);
+  g.tickRank=newRank;
+  g.tickStartLevel=stats.level;
+  await saveGroups(groups);
+  closeModal('modalTickRank');
+  showToast(newRank>0?('✅ تیک '+toPersianNum(newRank)+' داده شد'):'❌ تیک برداشته شد');
+  renderCreatorGroups();
+  if(currentGroupId===tickRankTargetGroupId)await renderAbout();
+  await renderGroupsList();
+}
+async function resetTickRank(){
+  if(!tickRankTargetGroupId)return;
+  if(!confirm('ریست تیک این کلن؟'))return;
+  groups=await getGroups();
+  const g=groups.find(x=>x.id===tickRankTargetGroupId);
+  if(!g)return;
+  g.tickRank=0;g.tickStartLevel=1;
+  await saveGroups(groups);
+  closeModal('modalTickRank');
+  showToast('❌ تیک ریست شد');
+  renderCreatorGroups();
+  if(currentGroupId===tickRankTargetGroupId)await renderAbout();
+  await renderGroupsList();
+}
+
+/* ========= CHAT ========= */
 async function renderChat(){
   if(!currentGroupId)return;
   groups=await getGroups();
@@ -1475,7 +1442,6 @@ async function renderChat(){
   });
   setTimeout(()=>{c.scrollTop=c.scrollHeight;},50);
 }
-
 function handleChatKey(e){if(e.key==='Enter')sendMessage();}
 async function sendMessage(isA=false){
   const t=document.getElementById('chatInput').value.trim();
@@ -1503,9 +1469,7 @@ function copyMessage(t){navigator.clipboard.writeText(t).then(()=>showToast('ک�
 function startChatSync(){stopChatSync();chatSyncInterval=setInterval(async()=>{if(currentGroupId&&document.getElementById('viewChat').classList.contains('active'))await renderChat();},3000);}
 function stopChatSync(){if(chatSyncInterval){clearInterval(chatSyncInterval);chatSyncInterval=null;}}
 
-/* ============================================================
-   INIT
-============================================================ */
+/* ========= INIT ========= */
 document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('fabMenuBtn').addEventListener('click',toggleFabMenu);
   document.getElementById('closeCreate').addEventListener('click',()=>closeModal('modalCreate'));
@@ -1515,6 +1479,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('closeEdit').addEventListener('click',()=>closeModal('modalEdit'));
   document.getElementById('closeCreatorPanel').addEventListener('click',()=>closeModal('modalCreatorPanel'));
   document.getElementById('closeAssignColor').addEventListener('click',()=>closeModal('modalAssignColor'));
+  document.getElementById('closeAssignClanColor').addEventListener('click',()=>closeModal('modalAssignClanColor'));
   document.getElementById('closeTickRank').addEventListener('click',()=>closeModal('modalTickRank'));
   document.getElementById('closeTickTree').addEventListener('click',()=>closeModal('modalTickTree'));
   document.getElementById('btnCreateGroup').addEventListener('click',createGroup);
@@ -1523,9 +1488,12 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('creatorPanelBtn').addEventListener('click',openCreatorPanel);
   document.getElementById('btnSaveColor').addEventListener('click',saveUserColor);
   document.getElementById('btnRemoveColor').addEventListener('click',removeUserColor);
+  document.getElementById('btnSaveClanColor').addEventListener('click',saveClanColor);
+  document.getElementById('btnRemoveClanColor').addEventListener('click',removeClanColor);
   document.getElementById('btnSaveTickRank').addEventListener('click',saveTickRank);
   document.getElementById('btnResetTickRank').addEventListener('click',resetTickRank);
   document.getElementById('assignColorSelect').addEventListener('change',updateColorPreview);
+  document.getElementById('assignClanColorSelect').addEventListener('change',updateClanColorPreview);
   document.getElementById('navShop').addEventListener('click',()=>{window.location.href='Safe Foroshgahe.html';});
   document.getElementById('navHome').addEventListener('click',()=>{window.location.href='Safe Asli.html';});
   document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');});});
