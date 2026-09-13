@@ -269,31 +269,58 @@
         <div class="shop-currency"><img src="Dolar99.webp" class="shop-currency-icon" alt="دولار"><span class="shop-currency-value" id="shopDollarAmount">۰</span></div>
       </div>
     </div>
-    <div class="shop-tabs">
-      <button class="shop-tab active" data-tab="avatars">آواتارها</button>
-      <button class="shop-tab" data-tab="templates">قالب‌ها</button>
-      <button class="shop-tab" data-tab="crowns">آواتار3D</button>
+
+    <div class="shop-nav-row">
+      <div class="shop-nav-btn active">👤 آواتارها</div>
+      <div class="shop-nav-btn" id="goTemplatesBtn">🖼️ قالب‌ها</div>
     </div>
 
-    <!-- ===== AVATARS SECTION ===== -->
-    <div class="shop-section" id="avatarsSection">
-      <div class="character-showcase"><div class="characters-container"><div class="character-main" id="showcaseAvatarContainer"><img id="showcaseAvatarImg" src="Mafia2.png"></div></div></div>
-      <div class="avatar-section-tabs">
-        <div class="avatar-section-tab active" data-section="my">آواتارهای من</div>
-        <div class="avatar-section-tab" data-section="buy">خرید آواتارها</div>
+    <div class="character-showcase">
+      <div class="characters-container">
+        <div class="character-main" id="showcaseAvatarContainer">
+          <img id="showcaseAvatarImg" src="Mafia2.png">
+        </div>
       </div>
-      <div class="avatar-grid" id="avatarGrid"></div>
     </div>
 
-    <!-- ===== TEMPLATES SECTION ===== -->
-    <div class="shop-section" id="templatesSection" style="display:none;">
-      <div class="character-showcase"><div class="characters-container"><div class="character-main" id="templateShowcaseContainer"></div></div></div>
-      <div class="avatar-section-tabs">
-        <div class="template-tab active" data-section="my">قالب‌های من</div>
-        <div class="template-tab" data-section="buy">خرید قالب‌ها</div>
-      </div>
-      <div class="avatar-grid template-grid" id="templateGrid"></div>
+    <div class="avatar-section-tabs">
+      <div class="avatar-section-tab active" data-section="my">آواتارهای من</div>
+      <div class="avatar-section-tab" data-section="buy">خرید آواتارها</div>
     </div>
+
+    <div class="avatar-grid" id="avatarGrid"></div>
+  </div>
+
+  <!-- ============ TEMPLATE SHOP PAGE (NEW) ============ -->
+  <div class="avatar-shop-page" id="templateShopPage">
+    <div class="shop-top-bar">
+      <div class="shop-back-btn" id="templateBackBtn">‹</div>
+      <div class="shop-currencies">
+        <div class="shop-currency"><img src="Coin99.webp" class="shop-currency-icon" alt="سکه"><span class="shop-currency-value" id="shopGoldAmount2">۰</span></div>
+        <div class="shop-currency"><img src="Jam99.webp" class="shop-currency-icon" alt="جم"><span class="shop-currency-value" id="shopGemAmount2">۰</span></div>
+        <div class="shop-currency"><img src="Dolar99.webp" class="shop-currency-icon" alt="دولار"><span class="shop-currency-value" id="shopDollarAmount2">۰</span></div>
+      </div>
+    </div>
+
+    <div class="shop-nav-row">
+      <div class="shop-nav-btn" id="goAvatarsBtn">👤 آواتارها</div>
+      <div class="shop-nav-btn active">🖼️ قالب‌ها</div>
+    </div>
+
+    <div class="character-showcase">
+      <div class="characters-container">
+        <div class="character-main" id="templateShowcaseContainer">
+          <img src="Mafia2.png">
+        </div>
+      </div>
+    </div>
+
+    <div class="avatar-section-tabs">
+      <div class="template-tab active" data-tsection="my">قالب‌های من</div>
+      <div class="template-tab" data-tsection="buy">خرید قالب‌ها</div>
+    </div>
+
+    <div class="avatar-grid" id="templateGrid"></div>
   </div>
 
   <div class="shop-modal" id="purchaseModal">
