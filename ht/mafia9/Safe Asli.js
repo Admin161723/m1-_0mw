@@ -1,5 +1,5 @@
 /* ============================================================ */
-/*  فایل: Safe Asli.js - نسخه نهایی                             */
+/*  فایل: Safe Asli.js - نسخه نهایی با تغییرات زنده            */
 /* ============================================================ */
 
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -81,7 +81,6 @@ async function addBanLog(phone, banData) {
   await saveUser(phone, user);
 }
 
-/* کد کاربری یکتا و ترتیبی */
 async function getUniqueUserCode() {
   try {
     const allUsers = await getAllUsers();
@@ -98,6 +97,43 @@ async function getUniqueUserCode() {
   } catch(e) { return Date.now(); }
 }
 window.getUniqueUserCode = getUniqueUserCode;
+
+/* ===== بازنشانی کامل کدهای کاربری ===== */
+async function resetAllUserCodes() {
+  if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
+  if (!confirm('همه کدهای کاربری حذف و از ۱ به ترتیب بر اساس زمان ثبت‌نام داده می‌شوند؟\nاین عمل قابل بازگشت نیست!')) return;
+  showShopNotification('در حال بازنشانی...');
+  try {
+    const allUsers = await getAllUsers();
+    const entries = Object.entries(allUsers);
+    // مرتب‌سازی بر اساس تاریخ ثبت‌نام یا کد قبلی
+    entries.sort((a, b) => {
+      const tA = a[1].createdAt || a[1].registeredAt || parseInt(a[1].userCode) || 0;
+      const tB = b[1].createdAt || b[1].registeredAt || parseInt(b[1].userCode) || 0;
+      return tA - tB;
+    });
+    let counter = 1;
+    for (const [phone, user] of entries) {
+      user.userCode = counter;
+      allUsers[phone] = user;
+      await saveUser(phone, user);
+      counter++;
+    }
+    await saveAllUsers(allUsers);
+    await redisSet('user_code_counter', counter - 1);
+    showShopNotification('✅ همه کدها بازنشانی شد (' + (counter-1) + ' کاربر)');
+    // آپدیت UI کاربر فعلی اگه لازم بود
+    if (currentUserData && currentUserData.userCode !== allUsers[currentPhone]?.userCode) {
+      currentUserData.userCode = allUsers[currentPhone].userCode;
+      localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+      updateUIWithData(currentUserData);
+    }
+    await loadUsers();
+  } catch(e) {
+    showShopNotification('خطا در بازنشانی', 'error');
+  }
+}
+window.resetAllUserCodes = resetAllUserCodes;
 
 async function getAllWhitelistIPs() { return await redisGet('whitelist_ips') || {}; }
 async function isIPWhitelisted(ip, deviceId) {
@@ -209,6 +245,7 @@ let myIP = null;
 let currentDeviceId = null;
 let localAvatarLock = 0;
 let localTemplateLock = 0;
+let lastAdminSync = 0; // ← جدید: آخرین زمان دریافت تغییرات ادمین
 
 const avatars=[
   {id:1, src:'3000.webp', price:0, owned:false, free:true},
@@ -420,11 +457,45 @@ async function updateClanRank() {
   } catch(e) { el.textContent = '-'; }
 }
 
+/* ============================================================ */
+/*  💾 ذخیره داده (با احترام به تغییرات ادمین)                   */
+/* ============================================================ */
 async function saveUserData(){
   if(!currentUserData||!currentPhone)return;
   if(pauseSync) return;
   if(document.getElementById('adminModal').classList.contains('active')) return;
   if(document.getElementById('editUserModal').classList.contains('active')) return;
+
+  // چک کن که آیا ادمین تغییرات جدیدی داده
+  try {
+    const serverUser = await getUser(currentPhone);
+    if (serverUser && serverUser.adminUpdatedAt && 
+        (!currentUserData.adminUpdatedAt || serverUser.adminUpdatedAt > currentUserData.adminUpdatedAt)) {
+      // تغییرات ادمین جدیدتر هست → از سرور استفاده کن
+      currentUserData.coins = serverUser.coins;
+      currentUserData.gems = serverUser.gems;
+      currentUserData.dollars = serverUser.dollars;
+      currentUserData.rank = serverUser.rank;
+      currentUserData.banned = serverUser.banned;
+      currentUserData.name = serverUser.name;
+      currentUserData.userCode = serverUser.userCode;
+      currentUserData.cups = serverUser.cups;
+      currentUserData.hours = serverUser.hours;
+      currentUserData.level = serverUser.level;
+      currentUserData.compWins = serverUser.compWins;
+      currentUserData.friendWins = serverUser.friendWins;
+      currentUserData.monitorCount = serverUser.monitorCount;
+      currentUserData.mafiaWins = serverUser.mafiaWins;
+      currentUserData.citizenWins = serverUser.citizenWins;
+      currentUserData.bestScore = serverUser.bestScore;
+      if (serverUser.ownedAvatars) currentUserData.ownedAvatars = serverUser.ownedAvatars;
+      if (serverUser.ownedTemplates) currentUserData.ownedTemplates = serverUser.ownedTemplates;
+      currentUserData.adminUpdatedAt = serverUser.adminUpdatedAt;
+      // آپدیت UI
+      setTimeout(() => updateUIWithData(currentUserData), 0);
+    }
+  } catch(e) {}
+
   currentUserData = sanitizeUserData(currentUserData, currentPhone);
   localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
   await saveUser(currentPhone,currentUserData);
@@ -636,6 +707,7 @@ async function forceUserLogin() {
   if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
   user.forceOnline = true; user.online = true;
   user.forceLoginAt = Date.now();
+  user.adminUpdatedAt = Date.now();
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('کاربر وارد بازی شد');
@@ -647,6 +719,7 @@ async function forceUserLogout() {
   if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
   user.forceOnline = false; user.online = false;
   user.forceLogoutAt = Date.now();
+  user.adminUpdatedAt = Date.now();
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('کاربر از بازی خارج شد');
@@ -661,6 +734,7 @@ async function clearUserData() {
   user.cups = 0; user.hours = 0; user.xp = 0; user.level = 1;
   user.compWins = 0; user.friendWins = 0; user.monitorCount = 0;
   user.bestScore = 0; user.mafiaWins = 0; user.citizenWins = 0; user.score = 0;
+  user.adminUpdatedAt = Date.now();
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('داده‌های کاربر پاک شد');
@@ -817,6 +891,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 
+/* ============================================================ */
+/*  💾 ذخیره ویرایش کاربر (با adminUpdatedAt)                   */
+/* ============================================================ */
 async function saveUserEdit(){
   if(!editingUserId)return;
   const perm=getPerm();
@@ -855,6 +932,7 @@ async function saveUserEdit(){
       else if (!u.avatar || u.avatar === u.exclusiveAvatar) u.avatar = 'Mafia2.png';
     }
   }
+  // ✅ مهم: ثبت زمان تغییر ادمین
   u.adminUpdatedAt = Date.now();
   allUsers[editingUserId]=u;
   await saveUser(editingUserId, u);
@@ -866,6 +944,7 @@ async function saveUserEdit(){
   }
   closeEditUser();
   await loadUsers();
+  showShopNotification('✅ تغییرات برای کاربر اعمال شد');
 }
 
 async function banUser(type = 'account'){
@@ -899,6 +978,7 @@ async function banUser(type = 'account'){
   } else {
     await redisSet('ban:'+editingUserId, banData);
     u.banned=true;
+    u.adminUpdatedAt = Date.now();
     allUsers[editingUserId]=u;
     await saveAllUsers(allUsers);
     await saveUser(editingUserId, u);
@@ -916,6 +996,7 @@ async function unbanUser(){
   if(!u)return;
   await redisDel('ban:'+editingUserId);
   u.banned=false;
+  u.adminUpdatedAt = Date.now();
   allUsers[editingUserId]=u;
   await saveAllUsers(allUsers);
   await saveUser(editingUserId, u);
@@ -1364,6 +1445,7 @@ async function checkAndDistributeTournamentPrizes() {
           const user = allUsers[memberPhone]; if (!user) continue;
           if (prizeConfig.type === 'coin') user.coins = (user.coins || 0) + parseInt(prizeConfig.value);
           else if (prizeConfig.type === 'gem') user.gems = (user.gems || 0) + parseInt(prizeConfig.value);
+          user.adminUpdatedAt = Date.now();
           allUsers[memberPhone] = user;
         }
       }
@@ -1374,6 +1456,9 @@ async function checkAndDistributeTournamentPrizes() {
   } catch (e) {}
 }
 
+/* ============================================================ */
+/*  🔄 سینک با سرور (سریع‌تر + احترام به تغییرات ادمین)         */
+/* ============================================================ */
 async function syncWithServerInBackground() {
   try {
     if(pauseSync) return;
@@ -1410,15 +1495,35 @@ async function syncWithServerInBackground() {
     }
 
     const merged = sanitizeUserData({ ...currentUserData, ...serverUser }, currentPhone);
+    
+    // 🔒 قفل آواتار/قالب فقط اگه خود کاربر تازه تغییر داده
     if (Date.now() - localAvatarLock < 30000) {
       merged.avatar = currentUserData.avatar;
       merged.previousAvatar = currentUserData.previousAvatar;
-      merged.ownedAvatars = currentUserData.ownedAvatars;
     }
     if (Date.now() - localTemplateLock < 30000) {
       merged.currentTemplate = currentUserData.currentTemplate;
-      merged.ownedTemplates = currentUserData.ownedTemplates;
     }
+
+    // ✅ اگه ادمین تازه تغییر داده، همه چیز رو از سرور بگیر
+    if (serverUser.adminUpdatedAt && 
+        (!currentUserData.adminUpdatedAt || serverUser.adminUpdatedAt > currentUserData.adminUpdatedAt)) {
+      // تغییرات ادمین جدیدتر → همه چیز از سرور
+      merged.coins = serverUser.coins;
+      merged.gems = serverUser.gems;
+      merged.dollars = serverUser.dollars;
+      merged.rank = serverUser.rank;
+      merged.banned = serverUser.banned;
+      merged.name = serverUser.name;
+      merged.userCode = serverUser.userCode;
+      merged.ownedAvatars = serverUser.ownedAvatars || merged.ownedAvatars;
+      merged.ownedTemplates = serverUser.ownedTemplates || merged.ownedTemplates;
+      merged.exclusiveAvatar = serverUser.exclusiveAvatar;
+      // رفع قفل‌ها چون ادمین تغییر داده
+      localAvatarLock = 0;
+      localTemplateLock = 0;
+    }
+
     currentUserData = merged;
     currentUserData.lastIP = myIP; currentUserData.lastDevice = currentDeviceId;
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
@@ -1429,6 +1534,8 @@ async function syncWithServerInBackground() {
     updateUIWithData(currentUserData);
     updateServerToggleBtn();
     updateGroupDisplay();
+    // ⚡ رفرش آواتار و قالب نمایش داده شده
+    updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
   } catch (error) {}
 }
 
@@ -1451,7 +1558,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateUIWithData(currentUserData);
   initAvatarShop();
   setTimeout(() => { syncWithServerInBackground(); setUserOnlineStatus(true); }, 0);
-  setInterval(syncWithServerInBackground, 5000);
+  
+  // ⚡ سینک سریع‌تر (هر ۲ ثانیه)
+  setInterval(syncWithServerInBackground, 2000);
   setInterval(() => { setUserOnlineStatus(!document.hidden); }, 30000);
 
   document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();playClickSound();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
@@ -1493,6 +1602,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnTopPlayers').addEventListener('click',()=>{playClickSound();window.location.href='Bandi.html';});
   document.getElementById('btnManagement').addEventListener('click',()=>{playClickSound();window.location.href='Modir.html';});
   document.getElementById('btnLive').addEventListener('click',()=>{playClickSound();showShopNotification('پخش زنده به زودی');});
+
+  // ✅ دکمه بازنشانی کدهای کاربری
+  const resetCodesBtn = document.getElementById('btnResetCodes');
+  if (resetCodesBtn) {
+    resetCodesBtn.addEventListener('click', resetAllUserCodes);
+  }
 
   document.getElementById('btnAdmin').addEventListener('click', async ()=>{
     playClickSound();
