@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#041228">
 <title>گروه‌ها - مافیا</title>
 <style>
@@ -43,7 +46,6 @@ img,video{-webkit-user-drag:none!important;}
 .group-tag-row{display:flex;align-items:center;gap:6px;margin-top:4px;}
 .group-tag{background:rgba(255,255,255,.15);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:900;color:#fff;direction:ltr;display:inline-block;}
 .group-tag.colored{color:#fff;}
-/* BIG tick image next to name in group card */
 .group-verify-tick{width:52px;height:52px;object-fit:contain;flex-shrink:0;vertical-align:middle;display:inline-block;}
 
 .tick-circle-wrap{position:absolute;top:10px;left:10px;z-index:60;width:60px;height:60px;border-radius:50%;background:#000;display:none;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;}
@@ -114,8 +116,16 @@ img,video{-webkit-user-drag:none!important;}
 .member-card{background:linear-gradient(180deg,rgba(30,74,138,.85),rgba(18,53,106,.85));border:2px solid #2a6ac0;border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;}
 .member-card.owner-card{border-color:#ffd700;background:linear-gradient(135deg,rgba(60,90,150,.9),rgba(30,60,120,.9));}
 .member-card.deputy-card{border-color:#bc6c25;}
-.member-avatar{width:50px;height:50px;background:rgba(0,0,0,.3);border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.member-avatar img,.member-avatar video{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ===== MEMBER AVATAR با پشتیبانی قالب ===== */
+.member-avatar{width:50px;height:50px;background:rgba(0,0,0,.3);border-radius:50%;overflow:visible;flex-shrink:0;position:relative;}
+.member-avatar .avatar-with-template{position:relative;width:100%;height:100%;border-radius:50%;}
+.member-avatar .avatar-with-template .avatar-inner{position:absolute;width:72%;height:72%;border-radius:50%;overflow:hidden;top:14%;left:14%;background:#1a3a6a;z-index:1;}
+.member-avatar .avatar-with-template .avatar-inner img,
+.member-avatar .avatar-with-template .avatar-inner video{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;}
+.member-avatar .avatar-with-template .template-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:10;border-radius:50%;}
+.member-avatar>img, .member-avatar>video{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+
 .member-info{flex:1;min-width:0;}
 .member-name{font-size:14px;font-weight:900;color:#fff;display:flex;align-items:center;gap:4px;flex-wrap:wrap;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .member-role{font-size:11px;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:4px;}
@@ -445,6 +455,13 @@ img,video{-webkit-user-drag:none!important;}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ============================================================ */
+/*  جلوگیری از bfcache و کش مرورگر                              */
+/* ============================================================ */
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) { window.location.reload(); }
+});
+
 let audioCtx;
 function playClickSound(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type='sine';o.frequency.setValueAtTime(400,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(600,audioCtx.currentTime+.05);g.gain.setValueAtTime(.08,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.08);o.start();o.stop(audioCtx.currentTime+.08);}catch(e){}}
 document.addEventListener('click',function(e){const el=e.target.closest('button,.tab-btn,.group-card,.action-btn,.fab-option,.nav-item,.modal-close,.creator-tab,.msg-action-btn,.logo-option,.creator-action-btn,.member-card,.request-item button,.btn-small');if(el)playClickSound();},true);
@@ -505,13 +522,36 @@ let currentUser=null,groups=[],currentGroupId=null,selectedLogo='20.webp',target
 function clearUsersCache(){usersCache={ts:0,data:{}};}
 async function getUsersCached(force=false){const now=Date.now();if(force||now-usersCache.ts>1000){usersCache={ts:now,data:await getAllUsers()};}return usersCache.data;}
 
-/* ONLY avatar image/video - NO symbol fallback */
 function getAvatarHtml(av){
   if(!av)return '';
   const isVid=av.endsWith('.webm')||av.endsWith('.mp4')||av.endsWith('.mov');
   if(isVid)return '<video src="'+av+'" autoplay loop muted playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';"></video>';
   if(av.includes('.')||av.startsWith('data:'))return '<img src="'+av+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';">';
   return '';
+}
+
+/* ============================================================ */
+/*  🎨 ساخت آواتار عضو با قالب                                  */
+/* ============================================================ */
+function buildMemberAvatarHtml(u) {
+  const avatarSrc = u.avatar || 'Mafia2.png';
+  const templateSrc = u.currentTemplate || null;
+  const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
+
+  let innerHtml = '';
+  if (isVideo) {
+    innerHtml = `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></video>`;
+  } else {
+    innerHtml = `<img src="${avatarSrc}" onerror="this.src='Mafia2.png'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  }
+
+  if (templateSrc) {
+    return `<div class="avatar-with-template">
+      <div class="avatar-inner">${innerHtml}</div>
+      <img class="template-overlay" src="${templateSrc}" onerror="this.style.display='none'">
+    </div>`;
+  }
+  return innerHtml;
 }
 
 function calculateClanStats(group,allUsers){
@@ -523,23 +563,15 @@ function calculateClanStats(group,allUsers){
   return{totalPoints,level,currentLevelPoints:cur,percentage:Math.min(100,(cur/1000)*100)};
 }
 
-/* AUTO UPGRADE TICK - when clan level fills the next tick requirement */
 function checkAndAutoUpgradeTick(group,clanLevel){
   let rank=parseInt(group.tickRank)||0;
   let startLevel=parseInt(group.tickStartLevel)||1;
   let changed=false;
   while(rank<20){
     const need=TICK_LEVELS[rank].need;
-    if(clanLevel-startLevel>=need){
-      rank++;
-      startLevel+=need;
-      changed=true;
-    }else{break;}
+    if(clanLevel-startLevel>=need){rank++;startLevel+=need;changed=true;}else{break;}
   }
-  if(changed){
-    group.tickRank=rank;
-    group.tickStartLevel=startLevel;
-  }
+  if(changed){group.tickRank=rank;group.tickStartLevel=startLevel;}
   return changed;
 }
 
@@ -555,10 +587,10 @@ function getTickImage(rank){if(rank<1||rank>20)return null;return TICK_LEVELS[ra
 
 async function loadUserData(){
   const loggedIn=localStorage.getItem('currentLoggedInUser');
-  if(!loggedIn){window.location.href='index.html';return;}
+  if(!loggedIn){window.location.replace('index.html');return;}
   const info=JSON.parse(loggedIn);
   const user=await getUser(info.phone);
-  if(!user){window.location.href='index.html';return;}
+  if(!user){window.location.replace('index.html');return;}
   currentUser=user;currentUser.id=info.phone;
   currentUser.coins=currentUser.coins||0;
   currentUser.gems=currentUser.gems||0;
@@ -616,23 +648,55 @@ function updateTickCircle(){
   }else{wrap.classList.remove('show');corner.classList.remove('show');}
 }
 
+/* ============================================================ */
+/*  ⚡ لیست گروه‌ها با کش سریع                                   */
+/* ============================================================ */
 async function renderGroupsList(){
-  groups=await getGroups();
-  const allUsers=await getAllUsers();
-  let anyChanged=false;
-  for(const g of groups){
-    const stats=calculateClanStats(g,allUsers);
-    if(checkAndAutoUpgradeTick(g,stats.level))anyChanged=true;
+  // ⚡ اول از localStorage بخون (سریع)
+  let cached = null;
+  try {
+    const b = localStorage.getItem('police_groups_backup');
+    if (b) cached = JSON.parse(b);
+  } catch(e){}
+  
+  if (cached && cached.length > 0) {
+    groups = cached;
+    renderGroupsListUI(cached);
   }
-  if(anyChanged)await saveGroups(groups);
+  
+  // بعد از سرور آپدیت کن
+  try {
+    const fresh = await getGroups();
+    if (fresh && fresh.length > 0) {
+      groups = fresh;
+      const allUsers = await getAllUsers();
+      let anyChanged = false;
+      for(const g of groups){
+        const stats = calculateClanStats(g, allUsers);
+        if(checkAndAutoUpgradeTick(g, stats.level)) anyChanged = true;
+      }
+      if(anyChanged) await saveGroups(groups);
+      renderGroupsListUI(groups);
+    } else if (!cached) {
+      const c=document.getElementById('groupsContainer');
+      c.innerHTML='<div class="empty-state">هنوز هیچ گروهی ساخته نشده</div>';
+    }
+  } catch(e){}
+}
+
+function renderGroupsListUI(groupsList) {
   const c=document.getElementById('groupsContainer');
+  if (!c) return;
   c.innerHTML='';
-  if(!groups||groups.length===0){c.innerHTML='<div class="empty-state">هنوز هیچ گروهی ساخته نشده</div>';return;}
-  const mg=groups.find(g=>gm(g).includes(currentUser.id));
-  const pg=groups.find(g=>gp(g).includes(currentUser.id));
+  if(!groupsList||groupsList.length===0){
+    c.innerHTML='<div class="empty-state">هنوز هیچ گروهی ساخته نشده</div>';
+    return;
+  }
+  const mg=groupsList.find(g=>gm(g).includes(currentUser.id));
+  const pg=groupsList.find(g=>gp(g).includes(currentUser.id));
   const myG=mg||pg;
   if(myG)c.appendChild(createGroupCard(myG,true));
-  groups.filter(g=>g.id!==(myG?myG.id:'')).forEach(g=>c.appendChild(createGroupCard(g,false)));
+  groupsList.filter(g=>g.id!==(myG?myG.id:'')).forEach(g=>c.appendChild(createGroupCard(g,false)));
 }
 
 function createGroupCard(group,isMine){
@@ -657,6 +721,18 @@ function searchGroups(){const q=document.getElementById('searchInput').value.tri
 
 async function openGroup(groupId){
   currentGroupId=groupId;
+  // ⚡ از cache استفاده کن اگه موجوده
+  if (groups && groups.length) {
+    const g = groups.find(x=>x.id===groupId);
+    if (g) {
+      const isM=gm(g).includes(currentUser.id);
+      const isO=g.owner===currentUser.id;
+      document.getElementById('tabBtnAbout').style.display='block';
+      document.getElementById('tabBtnChat').style.display=(isM||isO)?'block':'none';
+      switchTab('about');
+      return;
+    }
+  }
   groups=await getGroups();
   const g=groups.find(x=>x.id===groupId);
   if(!g)return;
@@ -670,11 +746,19 @@ async function openGroup(groupId){
 async function renderAbout(preFetchedGroup){
   let group;
   if(preFetchedGroup){group=preFetchedGroup;}
-  else{groups=await getGroups();group=groups.find(g=>g.id===currentGroupId);}
+  else {
+    // ⚡ اگه cache داری از cache استفاده کن
+    if (groups && groups.length) {
+      group = groups.find(g=>g.id===currentGroupId);
+    }
+    if (!group) {
+      groups = await getGroups();
+      group = groups.find(g=>g.id===currentGroupId);
+    }
+  }
   if(!group)return;
   const allUsers=await getUsersCached(true);
   const stats=calculateClanStats(group,allUsers);
-  /* AUTO UPGRADE tick check */
   if(checkAndAutoUpgradeTick(group,stats.level)){
     await saveGroups(groups);
     showToast('🏆 تیک کلن به تیک '+toPersianNum(group.tickRank)+' ارتقا یافت!');
@@ -757,7 +841,8 @@ async function renderAbout(preFetchedGroup){
     const nameColor=userColor?('color:'+userColor.hex+';'):'';
     const card=document.createElement('div');
     card.className='member-card '+cc;card.onclick=()=>openUserActions(uid);
-    card.innerHTML='<div class="member-avatar">'+getAvatarHtml(u.avatar)+'</div><div class="member-info"><div class="member-name"><span style="'+nameColor+'">'+(u.name||'کاربر')+'</span>'+(isMe?' <span style="color:#bc6c25;font-size:10px;">(شما)</span>':'')+'</div><div class="member-role '+rc+'">'+rt+'</div></div><div class="member-cups">🏆 '+toPersianNum(u.cups||0)+'</div>';
+    // 🎨 استفاده از buildMemberAvatarHtml برای نمایش قالب
+    card.innerHTML='<div class="member-avatar">'+buildMemberAvatarHtml(u)+'</div><div class="member-info"><div class="member-name"><span style="'+nameColor+'">'+(u.name||'کاربر')+'</span>'+(isMe?' <span style="color:#bc6c25;font-size:10px;">(شما)</span>':'')+'</div><div class="member-role '+rc+'">'+rt+'</div></div><div class="member-cups">🏆 '+toPersianNum(u.cups||0)+'</div>';
     listD.appendChild(card);
   });
 }
@@ -806,7 +891,7 @@ async function openRequestsModal(){
     for(const uid of gp(group)){
       const u=allUsers[uid]||{name:'کاربر',avatar:null};
       const d=document.createElement('div');d.className='request-item';
-      d.innerHTML='<div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;"><div class="member-avatar" style="width:40px;height:40px;flex-shrink:0;">'+getAvatarHtml(u.avatar)+'</div><div style="font-weight:700;color:#fff;font-size:13px;">'+(u.name||'کاربر')+'</div></div><div class="request-actions"><button class="btn-small btn-accept" data-uid="'+uid+'">تایید</button><button class="btn-small btn-reject" data-uid="'+uid+'">رد</button></div>';
+      d.innerHTML='<div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;"><div class="member-avatar" style="width:40px;height:40px;flex-shrink:0;">'+buildMemberAvatarHtml(u)+'</div><div style="font-weight:700;color:#fff;font-size:13px;">'+(u.name||'کاربر')+'</div></div><div class="request-actions"><button class="btn-small btn-accept" data-uid="'+uid+'">تایید</button><button class="btn-small btn-reject" data-uid="'+uid+'">رد</button></div>';
       list.appendChild(d);
     }
     list.querySelectorAll('.btn-accept').forEach(b=>{b.onclick=()=>handleRequest(b.dataset.uid,true);});
@@ -982,7 +1067,7 @@ async function renderCreatorUsers(){
     const ct=cd?'🎨 '+u.colorCode+': '+cd.name:'❌ بدون رنگ';
     const cs=cd?'background:'+cd.hex+';color:'+cd.text+';padding:2px 8px;border-radius:6px;font-weight:900;':'color:rgba(255,255,255,.6);';
     const item=document.createElement('div');item.className='creator-user-item';
-    item.innerHTML='<div class="creator-user-avatar">'+getAvatarHtml(u.avatar)+'</div><div class="creator-user-info"><div class="creator-user-name">'+(u.name||'کاربر')+'</div><div class="creator-user-meta"><span style="'+cs+'">'+ct+'</span></div></div><div><button class="creator-action-btn color" data-phone="'+phone+'">🎨 رنگ</button></div>';
+    item.innerHTML='<div class="creator-user-avatar">'+buildMemberAvatarHtml(u)+'</div><div class="creator-user-info"><div class="creator-user-name">'+(u.name||'کاربر')+'</div><div class="creator-user-meta"><span style="'+cs+'">'+ct+'</span></div></div><div><button class="creator-action-btn color" data-phone="'+phone+'">🎨 رنگ</button></div>';
     v.appendChild(item);
   }
   v.querySelectorAll('[data-phone]').forEach(b=>{b.onclick=()=>openAssignColorModal(b.dataset.phone);});
@@ -1137,6 +1222,26 @@ async function deleteMessage(mid){
 }
 function copyMessage(t){navigator.clipboard.writeText(t).then(()=>showToast('کپی شد')).catch(()=>showToast('کپی نشد',true));}
 
+/* ============================================================ */
+/*  🎯 دکمه بازگشت به خانه (رفع باگ bfcache)                   */
+/* ============================================================ */
+function goHome(){
+  playClickSound();
+  try {
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        names.forEach(function(name) { try { caches.delete(name); } catch(e) {} });
+      });
+    }
+  } catch(e) {}
+  const targetUrl = 'Safe Asli Bazi.html?v=' + Date.now();
+  try {
+    window.location.replace(targetUrl);
+  } catch(e) {
+    window.location.href = targetUrl;
+  }
+}
+
 document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('fabMenuBtn').addEventListener('click',toggleFabMenu);
   document.getElementById('closeCreate').addEventListener('click',()=>closeModal('modalCreate'));
@@ -1162,7 +1267,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('assignColorSelect').addEventListener('change',updateColorPreview);
   document.getElementById('assignClanColorSelect').addEventListener('change',updateClanColorPreview);
   document.getElementById('navShop').addEventListener('click',()=>{window.location.href='Safe Foroshgahe.html';});
-  document.getElementById('navHome').addEventListener('click',()=>{window.location.href='Safe Asli.html';});
+  document.getElementById('navHome').addEventListener('click', goHome);
   document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');});});
   document.addEventListener('click',e=>{if(!e.target.closest('.fab-menu-btn')&&!e.target.closest('.fab-options'))document.getElementById('fabOptions').classList.remove('show');});
   const ci=document.getElementById('createColorCode');
