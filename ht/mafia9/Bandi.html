@@ -6,6 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#061a3a">
 <title>برترین کلن‌ها</title>
 <style>
@@ -63,10 +66,7 @@
   .modal-close{position:absolute;top:12px;left:12px;width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:white;border:none;}
   .modal-body{padding:15px;overflow-y:auto;flex:1;}
 
-  /* ===== MEMBER CARD MODAL (با پشتیبانی قالب) ===== */
   .member-card-modal{display:flex;align-items:center;gap:12px;padding:10px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.1);}
-
-  /* avatar-with-template wrapper داخل کارت عضو */
   .member-avatar-modal{width:60px;height:60px;border-radius:50%;overflow:visible;flex-shrink:0;background:transparent;position:relative;}
   .member-avatar-modal .avatar-with-template{position:relative;width:100%;height:100%;border-radius:50%;}
   .member-avatar-modal .avatar-with-template .avatar-inner{position:absolute;width:72%;height:72%;border-radius:50%;overflow:hidden;top:14%;left:14%;background:#1a3a6a;z-index:1;}
@@ -86,9 +86,9 @@
 
 <div class="page-wrapper">
   <div class="header">
-    <button class="back-btn" onclick="goBack()">‹</button>
+    <button class="back-btn" id="backBtn">‹</button>
     <div class="header-title">برترین کلن‌ها</div>
-    <button class="refresh-btn" id="refreshBtn" onclick="refreshLeaderboard()">↻</button>
+    <button class="refresh-btn" id="refreshBtn">↻</button>
   </div>
 
   <div class="tournament-timer" id="tournamentTimer">
@@ -105,7 +105,7 @@
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modalClanName">اعضای کلن</div>
-      <button class="modal-close" onclick="closeModal('clanMembersModal')">✕</button>
+      <button class="modal-close" id="closeMembersBtn">✕</button>
     </div>
     <div class="modal-body" id="modalClanMembersList"></div>
   </div>
@@ -118,6 +118,16 @@
 </audio>
 
 <script>
+  /* ============================================================ */
+  /*  جلوگیری از کش و bfcache مرورگر                              */
+  /* ============================================================ */
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      // صفحه از bfcache بازیابی شده - مجبور به رفرش کن
+      window.location.reload();
+    }
+  });
+
   const clickSound = document.getElementById('clickSound');
   function playClick(){try{if(clickSound){clickSound.currentTime=0;clickSound.volume=0.3;clickSound.play().catch(()=>{});}}catch(e){}}
 
@@ -292,7 +302,7 @@
     else if(rank===3)rankHtml='<img src="28.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
     else rankHtml=`<div class="rank-badge">${toPersianNum(rank)}</div>`;
     return `
-      <div class="rank-item ${rank<=3?'top-'+rank:''} ${isCurrentUserClan?'current-user':''}" onclick="showClanMembers('${group.id}')">
+      <div class="rank-item ${rank<=3?'top-'+rank:''} ${isCurrentUserClan?'current-user':''}" data-groupid="${group.id}">
         <div class="rank-number">${toPersianNum(rank)}</div>
         <div class="clan-logo-box">${logoHtml}</div>
         <div class="user-info">
@@ -320,9 +330,6 @@
     `;
   }
 
-  /* ============================================================ */
-  /*  ساخت آواتار با قالب برای هر عضو                            */
-  /* ============================================================ */
   function buildMemberAvatarHtml(u) {
     const avatarSrc = u.avatar || 'Mafia2.png';
     const templateSrc = u.currentTemplate || null;
@@ -406,30 +413,100 @@
     showToast('رتبه‌بندی به‌روز شد');
   }
 
-  function goBack(){playClick();window.location.href='Safe Asli.html';}
+  /* ============================================================ */
+  /*  🎯 دکمه بازگشت (بدون bfcache + بدون کش)                    */
+  /* ============================================================ */
+  function goBack(){
+    playClick();
+    try {
+      // پاک کردن کش مرورگر برای صفحه اصلی
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) { 
+            try { caches.delete(name); } catch(e) {} 
+          });
+        });
+      }
+    } catch(e) {}
 
-  document.addEventListener('DOMContentLoaded',async()=>{
-    const loggedIn=localStorage.getItem('currentLoggedInUser');
-    if(!loggedIn){showToast('ابتدا وارد شوید','error');setTimeout(()=>window.location.href='index.html',1500);return;}
-    try{
-      const userInfo=JSON.parse(loggedIn);
-      currentUserPhone=userInfo.phone;
-      const groups=await getGroups();
-      currentUserGroup=groups.find(g=>g.members&&g.members.includes(currentUserPhone))||null;
+    // استفاده از location.replace (جایگزین در تاریخچه) + پارامتر یکتا برای جلوگیری از کش
+    const targetUrl = 'Safe Asli Bazi.html?v=' + Date.now();
+    try {
+      window.location.replace(targetUrl);
+    } catch(e) {
+      window.location.href = targetUrl;
+    }
+  }
+
+  /* ============================================================ */
+  /*  اتصال دکمه‌ها                                                */
+  /* ============================================================ */
+  document.addEventListener('DOMContentLoaded', async () => {
+    // دکمه بازگشت
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+      backBtn.addEventListener('click', goBack);
+    }
+
+    // دکمه رفرش
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', refreshLeaderboard);
+    }
+
+    // دکمه بستن مودال اعضا
+    const closeMembersBtn = document.getElementById('closeMembersBtn');
+    if (closeMembersBtn) {
+      closeMembersBtn.addEventListener('click', () => closeModal('clanMembersModal'));
+    }
+
+    // کلیک روی overlay مودال → بستن
+    const clanMembersModal = document.getElementById('clanMembersModal');
+    if (clanMembersModal) {
+      clanMembersModal.addEventListener('click', (e) => {
+        if (e.target === clanMembersModal) clanMembersModal.classList.remove('active');
+      });
+    }
+
+    // کلیک روی کارت‌های کلن (event delegation)
+    const leaderboardEl = document.getElementById('leaderboard');
+    if (leaderboardEl) {
+      leaderboardEl.addEventListener('click', (e) => {
+        const item = e.target.closest('.rank-item');
+        if (item && item.dataset.groupid) {
+          showClanMembers(item.dataset.groupid);
+        }
+      });
+    }
+
+    // بارگذاری اولیه
+    const loggedIn = localStorage.getItem('currentLoggedInUser');
+    if (!loggedIn) {
+      showToast('ابتدا وارد شوید', 'error');
+      setTimeout(() => { window.location.replace('index.html'); }, 1500);
+      return;
+    }
+    try {
+      const userInfo = JSON.parse(loggedIn);
+      currentUserPhone = userInfo.phone;
+      const groups = await getGroups();
+      currentUserGroup = groups.find(g => g.members && g.members.includes(currentUserPhone)) || null;
       await loadLeaderboard();
       updateTimer();
-      setInterval(updateTimer,1000);
-      setInterval(async()=>{
-        if(document.visibilityState==='visible'){
+      setInterval(updateTimer, 1000);
+      setInterval(async () => {
+        if (document.visibilityState === 'visible') {
           await loadLeaderboard();
           await updateTimer();
         }
-      },10000);
-    }catch(e){showToast('خطا در بارگذاری','error');console.error(e);}
+      }, 10000);
+    } catch(e) {
+      showToast('خطا در بارگذاری', 'error');
+    }
   });
 
-  document.addEventListener('visibilitychange',async()=>{
-    if(document.visibilityState==='visible'){
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
       await loadLeaderboard();
       await updateTimer();
     }
