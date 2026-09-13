@@ -37,7 +37,6 @@
   .user-info{flex:1;min-width:0;overflow:hidden;}
   .user-name-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
   .user-name{color:white;font-weight:900;word-break:break-word;white-space:normal;line-height:1.3;max-width:100%;font-size:15px;}
-  /* BIG tick images next to clan name */
   .clan-tick{width:44px;height:44px;object-fit:contain;flex-shrink:0;}
   .clan-verify-tick{width:30px;height:30px;object-fit:contain;flex-shrink:0;vertical-align:middle;}
   .clan-level-box{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px;}
@@ -63,9 +62,19 @@
   .modal-title{color:white;font-size:16px;font-weight:900;}
   .modal-close{position:absolute;top:12px;left:12px;width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:white;border:none;}
   .modal-body{padding:15px;overflow-y:auto;flex:1;}
+
+  /* ===== MEMBER CARD MODAL (با پشتیبانی قالب) ===== */
   .member-card-modal{display:flex;align-items:center;gap:12px;padding:10px;background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.1);}
-  .member-avatar-modal{width:50px;height:50px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1a3a6a;}
-  .member-avatar-modal img,.member-avatar-modal video{width:100%;height:100%;object-fit:cover;display:block;}
+
+  /* avatar-with-template wrapper داخل کارت عضو */
+  .member-avatar-modal{width:60px;height:60px;border-radius:50%;overflow:visible;flex-shrink:0;background:transparent;position:relative;}
+  .member-avatar-modal .avatar-with-template{position:relative;width:100%;height:100%;border-radius:50%;}
+  .member-avatar-modal .avatar-with-template .avatar-inner{position:absolute;width:72%;height:72%;border-radius:50%;overflow:hidden;top:14%;left:14%;background:#1a3a6a;z-index:1;}
+  .member-avatar-modal .avatar-with-template .avatar-inner img,
+  .member-avatar-modal .avatar-with-template .avatar-inner video{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;}
+  .member-avatar-modal .avatar-with-template .template-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:10;border-radius:50%;}
+  .member-avatar-modal>img, .member-avatar-modal>video{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;border:2px solid rgba(255,255,255,0.3);}
+
   .member-info-modal{flex:1;min-width:0;}
   .member-name-modal{color:#fff;font-weight:900;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .member-role-modal{font-size:12px;font-weight:700;margin-top:2px;}
@@ -192,23 +201,15 @@
   ];
   function getTickImage(rank){if(rank<1||rank>20)return null;return TICK_LEVELS[rank-1].img;}
 
-  /* Auto upgrade tick when clan level fills next requirement */
   function checkAndAutoUpgradeTick(group,clanLevel){
     let rank=parseInt(group.tickRank)||0;
     let startLevel=parseInt(group.tickStartLevel)||1;
     let changed=false;
     while(rank<20){
       const need=TICK_LEVELS[rank].need;
-      if(clanLevel-startLevel>=need){
-        rank++;
-        startLevel+=need;
-        changed=true;
-      }else{break;}
+      if(clanLevel-startLevel>=need){rank++;startLevel+=need;changed=true;}else{break;}
     }
-    if(changed){
-      group.tickRank=rank;
-      group.tickStartLevel=startLevel;
-    }
+    if(changed){group.tickRank=rank;group.tickStartLevel=startLevel;}
     return changed;
   }
 
@@ -218,10 +219,7 @@
   function calculateClanStats(group,allUsers){
     let totalPoints=parseInt(group.extraPoints)||0;
     const members=group.members||[];
-    members.forEach(mid=>{
-      const u=allUsers[mid];
-      if(u){totalPoints+=(parseInt(u.cups)||0)*2+(parseInt(u.hours)||0)*20;}
-    });
+    members.forEach(mid=>{const u=allUsers[mid];if(u){totalPoints+=(parseInt(u.cups)||0)*2+(parseInt(u.hours)||0)*20;}});
     let level=Math.floor(totalPoints/1000)+1;
     if(level>1000)level=1000;
     const cur=totalPoints-((level-1)*1000);
@@ -248,7 +246,6 @@
     leaderboard.innerHTML='<div class="empty-state">در حال بارگذاری از سرور...<div class="loading-spinner"></div></div>';
     const [allUsers,groups]=await Promise.all([getAllUsers(),getGroups()]);
 
-    // Auto upgrade ticks based on clan level
     let anyChanged=false;
     for(const g of groups){
       const stats=calculateClanStats(g,allUsers);
@@ -258,7 +255,6 @@
 
     const clansWithStats=groups.map(group=>({group,stats:calculateClanStats(group,allUsers)}));
 
-    /* SORT: tickRank first (higher = better), then verified, then level, then totalPoints */
     clansWithStats.sort((a,b)=>{
       const aTick=parseInt(a.group.tickRank)||0;
       const bTick=parseInt(b.group.tickRank)||0;
@@ -282,27 +278,19 @@
 
   function createClanItem(group,stats,rank,allUsers){
     const isCurrentUserClan=currentUserGroup&&currentUserGroup.id===group.id;
-
     let nameStyle='';
     const colorData=getColorByCode(group.colorCode);
     if(colorData){nameStyle=`color:${colorData.hex};`;}
-
-    // Two separate ticks:
-    // 1) verified tick (TikK2.png) — verified flag
-    // 2) rank tick (from TICK_LEVELS) — tickRank 1..20
     const verifyTickHtml=group.verified?`<img src="${CLAN_TICK_IMG}" class="clan-verify-tick" onerror="this.style.display='none'">`:'';
     const tickRank=parseInt(group.tickRank)||0;
     const rankTickHtml=tickRank>0?`<img src="${getTickImage(tickRank)}" class="clan-tick" onerror="this.style.display='none'">`:'';
-
     const logoSrc=group.logo||'20.webp';
     const logoHtml=`<img src="${logoSrc}" onerror="this.src='20.webp'">`;
-
     let rankHtml='';
     if(rank===1)rankHtml='<img src="26.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
     else if(rank===2)rankHtml='<img src="27.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
     else if(rank===3)rankHtml='<img src="28.webp" class="rank-medal" onerror="this.style.display=\'none\'">';
     else rankHtml=`<div class="rank-badge">${toPersianNum(rank)}</div>`;
-
     return `
       <div class="rank-item ${rank<=3?'top-'+rank:''} ${isCurrentUserClan?'current-user':''}" onclick="showClanMembers('${group.id}')">
         <div class="rank-number">${toPersianNum(rank)}</div>
@@ -330,6 +318,30 @@
         ${rankHtml}
       </div>
     `;
+  }
+
+  /* ============================================================ */
+  /*  ساخت آواتار با قالب برای هر عضو                            */
+  /* ============================================================ */
+  function buildMemberAvatarHtml(u) {
+    const avatarSrc = u.avatar || 'Mafia2.png';
+    const templateSrc = u.currentTemplate || null;
+    const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
+
+    let innerHtml = '';
+    if (isVideo) {
+      innerHtml = `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></video>`;
+    } else {
+      innerHtml = `<img src="${avatarSrc}" onerror="this.src='Mafia2.png'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    }
+
+    if (templateSrc) {
+      return `<div class="avatar-with-template">
+        <div class="avatar-inner">${innerHtml}</div>
+        <img class="template-overlay" src="${templateSrc}" onerror="this.style.display='none'">
+      </div>`;
+    }
+    return innerHtml;
   }
 
   async function showClanMembers(groupId){
@@ -360,11 +372,7 @@
         if(isOwner){roleText='مدیر کلن';roleColor='#ffd700';}
         else if(isDeputy){roleText='معاون';roleColor='#4a9eff';}
 
-        const isVideo=u.avatar&&(u.avatar.endsWith('.webm')||u.avatar.endsWith('.mp4'));
-        const avatarHtml=isVideo
-          ?`<video src="${u.avatar}" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
-          :`<img src="${u.avatar||'Mafia2.png'}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='Mafia2.png'">`;
-
+        const avatarHtml = buildMemberAvatarHtml(u);
         const userColor=getColorByCode(u.colorCode);
         const nameStyle=userColor?('color:'+userColor.hex+';'):'';
 
