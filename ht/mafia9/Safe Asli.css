@@ -50,14 +50,104 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 .side-btn-icon-wrap .nav-icon-custom{width:40px;height:40px;object-fit:contain;}
 .icon-question{width:28px;height:28px;background:linear-gradient(180deg,#2196F3,#1976D2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;}
 .icon-admin{width:28px;height:28px;background:linear-gradient(180deg,#9c27b0,#7b1fa2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;}
-.bottom-modes{position:absolute;bottom:85px;left:12px;right:12px;display:flex;gap:12px;z-index:15;}
-.mode-btn{flex:1;height:110px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:none;}
-.mode-friendly{background:linear-gradient(180deg,#5cb8ff,#2088e0);border:2px solid #6ac4ff;}
-.mode-competitive{background:linear-gradient(180deg,#7dd87d,#45a845);border:2px solid #88e088;}
-.mode-title{color:#fff;font-size:24px;font-weight:900;margin-bottom:8px;}
-.mode-coins{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.2);padding:4px 18px;border-radius:20px;}
-.mode-coin-icon{width:28px;height:28px;object-fit:contain;border-radius:50%;}
-.mode-coin-value{color:#fff;font-size:22px;font-weight:900;}
+
+/* ============================================================ */
+/*  دکمه‌های دوستانه و امتیازی - طراحی جدید                     */
+/* ============================================================ */
+.bottom-modes{
+  position:absolute;
+  bottom:85px;
+  left:12px;
+  right:12px;
+  display:flex;
+  gap:10px;
+  z-index:15;
+}
+
+.mode-btn-new{
+  flex:1;
+  aspect-ratio:201/117;
+  position:relative;
+  cursor:pointer;
+  transition:transform .1s ease;
+  background:transparent;
+  border:none;
+  padding:0;
+  font-family:'Vazirmatn',Tahoma,sans-serif;
+  overflow:visible;
+}
+.mode-btn-new:active{transform:translateY(3px);}
+
+.mode-btn-new .m-base{
+  position:absolute;
+  top:4px;
+  left:0;
+  right:0;
+  bottom:0;
+  border-radius:18px;
+}
+
+.mode-btn-new .m-face{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:6px;
+  border-radius:18px;
+  box-shadow:
+    inset 0 3px 4px rgba(255,255,255,.35),
+    inset 0 -5px 8px rgba(0,0,0,.3);
+}
+.mode-btn-new:active .m-face{filter:brightness(.92);}
+
+.mode-btn-new .m-title{
+  position:absolute;
+  top:20%;
+  left:8%;
+  font-size:20px;
+  font-weight:800;
+  text-shadow:0 2px 2px rgba(0,0,0,.5);
+  pointer-events:none;
+  line-height:1;
+}
+
+.mode-btn-new .m-slot{
+  position:absolute;
+  bottom:14%;
+  left:50%;
+  transform:translateX(-50%);
+  padding:4px 14px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:14px;
+  font-weight:800;
+  box-shadow:inset 0 2px 3px rgba(0,0,0,.3);
+  pointer-events:none;
+  min-width:70px;
+  height:22px;
+}
+.mode-btn-new .m-slot img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  display:block;
+}
+
+/* ===== Friendly (دوستانه - آبی) ===== */
+.mode-btn-new.mode-friendly-new .m-base{background:#102f57;}
+.mode-btn-new.mode-friendly-new .m-face{background:linear-gradient(180deg,#2b66bd 0%,#163763 100%);}
+.mode-btn-new.mode-friendly-new .m-title{color:#eaf2ff;}
+.mode-btn-new.mode-friendly-new .m-slot{background:#2d5085;color:#eaf2ff;text-shadow:0 1px 1px rgba(0,20,50,.5);}
+
+/* ===== Competitive (امتیازی - سبز) ===== */
+.mode-btn-new.mode-competitive-new .m-base{background:#0d4a10;}
+.mode-btn-new.mode-competitive-new .m-face{background:linear-gradient(180deg,#30bd2b 0%,#1c6316 100%);}
+.mode-btn-new.mode-competitive-new .m-title{color:#f2ffe8;}
+.mode-btn-new.mode-competitive-new .m-slot{background:#308533;color:#eaffea;text-shadow:0 1px 1px rgba(0,40,0,.5);}
+
 .bottom-nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:linear-gradient(180deg,rgba(30,74,138,.98),rgba(18,53,106,.98));display:flex;align-items:center;justify-content:space-around;z-index:20;border-top:2px solid #2a5a9a;}
 .nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:6px 0;flex:1;height:100%;}
 .nav-item.active{background:rgba(255,255,255,.08);}
@@ -169,7 +259,7 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 .shop-currency-icon{width:28px;height:28px;object-fit:contain;border-radius:50%;}
 .shop-currency-value{font-weight:900;font-size:16px;color:#fff;}
 
-/* ===== SHOP TABS (3 tabs) ===== */
+/* ===== SHOP TABS ===== */
 .shop-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 15px;background:rgba(0,0,0,.3);}
 .shop-tab{padding:12px 6px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;text-align:center;font-family:'Vazirmatn',Tahoma;}
 .shop-tab.active{background:linear-gradient(180deg,#3a9fd8,#2a7fb8);border-color:#4ab0e8;box-shadow:0 0 10px rgba(74,176,232,.5);}
