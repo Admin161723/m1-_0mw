@@ -1,5 +1,5 @@
 /* ============================================================ */
-/*  فایل: Safe Asli.js - نسخه نهایی با رفع باگ‌ها               */
+/*  فایل: Safe Asli.js - نسخه نهایی بدون پیام‌های اضافی          */
 /* ============================================================ */
 
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -81,16 +81,12 @@ async function addBanLog(phone, banData) {
   await saveUser(phone, user);
 }
 
-/* ===== تخصیص کد کاربری یکتا و ترتیبی ===== */
 async function getUniqueUserCode() {
   try {
     const allUsers = await getAllUsers();
     const usedCodes = new Set();
     for (const u of Object.values(allUsers)) {
-      if (u && u.userCode) {
-        const n = parseInt(u.userCode);
-        if (!isNaN(n) && n > 0) usedCodes.add(n);
-      }
+      if (u && u.userCode) { const n = parseInt(u.userCode); if (!isNaN(n) && n > 0) usedCodes.add(n); }
     }
     let counter = parseInt(await redisGet('user_code_counter')) || 0;
     let code = counter + 1;
@@ -128,15 +124,13 @@ async function removeFromWhitelist(ip) {
 
 async function fetchUserIP(forceRefresh) {
   try {
-    const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 3000);
+    const c = new AbortController(); const t = setTimeout(() => c.abort(), 3000);
     const res = await fetch('https://api.ipify.org?format=json', { signal: c.signal, cache: 'no-store' });
     clearTimeout(t);
     if (res.ok) { const data = await res.json(); if (data && data.ip) return String(data.ip).trim(); }
   } catch(e) {}
   try {
-    const c2 = new AbortController();
-    const t2 = setTimeout(() => c2.abort(), 3000);
+    const c2 = new AbortController(); const t2 = setTimeout(() => c2.abort(), 3000);
     const res2 = await fetch('https://api64.ipify.org?format=json', { signal: c2.signal, cache: 'no-store' });
     clearTimeout(t2);
     if (res2.ok) { const data2 = await res2.json(); if (data2 && data2.ip) return String(data2.ip).trim(); }
@@ -212,7 +206,6 @@ let pauseSync = false;
 let videoObserver = null;
 let myIP = null;
 let currentDeviceId = null;
-
 let localAvatarLock = 0;
 let localTemplateLock = 0;
 
@@ -464,7 +457,6 @@ async function changeUsername(){
     if(currentUserData.coins>=100){
       currentUserData.coins-=100; currentUserData.name=trimmedName;
       await saveUserData(); updateUIWithData(currentUserData);
-      showShopNotification('نام کاربری تغییر کرد و ۱۰۰ سکه کسر شد');
     } else showShopNotification('سکه کافی ندارید! (۱۰۰ سکه)','error');
   }
 }
@@ -550,7 +542,7 @@ async function sendNews(){
   news.push({id:Date.now(),title:t,content:c,date:new Date().toLocaleDateString('fa-IR'),sender:currentUserData.name});
   await saveNews(news);
   document.getElementById('newsTitleInput').value=''; document.getElementById('newsContentInput').value='';
-  await loadNews(); showShopNotification('اطلاعیه ارسال شد');
+  await loadNews();
 }
 
 let currentAdminTab = 'all';
@@ -806,12 +798,10 @@ document.addEventListener('DOMContentLoaded',()=>{
           const url = URL.createObjectURL(file);
           editingUserExclusiveAvatar = url;
           document.getElementById('exclusiveAvatarPreview').innerHTML='<video src="'+url+'" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
-          showShopNotification('ویدیو انتخاب شد');
       } else {
           compressImage(file,256,function(dataUrl){
             editingUserExclusiveAvatar=dataUrl;
             document.getElementById('exclusiveAvatarPreview').innerHTML='<img src="'+dataUrl+'" alt="exclusive">';
-            showShopNotification('آواتار انتخاب شد');
           });
       }
     });
@@ -822,7 +812,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       editingUserExclusiveAvatar=null;
       document.getElementById('exclusiveAvatarPreview').innerHTML='<span class="exclusive-avatar-placeholder">👤</span>';
       document.getElementById('exclusiveAvatarFile').value='';
-      showShopNotification('آواتار اختصاصی حذف خواهد شد');
     });
   }
 });
@@ -876,7 +865,6 @@ async function saveUserEdit(){
   }
   closeEditUser();
   await loadUsers();
-  showShopNotification('ذخیره شد');
 }
 
 async function banUser(type = 'account'){
@@ -987,8 +975,8 @@ async function updateServerToggleBtn(){
   else{btn.textContent='قطع سرور';btn.className='edit-btn ban';}
 }
 
-function confirmTournamentTime(){ showShopNotification('زمان مسابقه تایید شد'); }
-function confirmPrize(rank){ showShopNotification(`جایزه رتبه ${rank} تایید شد`); }
+function confirmTournamentTime(){ }
+function confirmPrize(rank){ }
 
 async function saveAllTournamentConfig() {
   if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
@@ -1032,10 +1020,10 @@ function addClanToBlacklist() {
   const clanName = prompt('نام یا تگ کلن را وارد کنید:');
   if (!clanName || !clanName.trim()) return;
   if (!window.clanBlacklist) window.clanBlacklist = [];
-  if (window.clanBlacklist.includes(clanName.trim())) { showShopNotification('این کلن قبلاً در لیست سیاه است', 'error'); return; }
-  window.clanBlacklist.push(clanName.trim()); renderBlacklist(); showShopNotification('کلن به لیست سیاه اضافه شد');
+  if (window.clanBlacklist.includes(clanName.trim())) return;
+  window.clanBlacklist.push(clanName.trim()); renderBlacklist();
 }
-function removeClanFromBlacklist(idx) { window.clanBlacklist.splice(idx, 1); renderBlacklist(); showShopNotification('کلن از لیست سیاه حذف شد'); }
+function removeClanFromBlacklist(idx) { window.clanBlacklist.splice(idx, 1); renderBlacklist(); }
 ['prize1Type', 'prize2Type', 'prize3Type'].forEach(id => {
   document.getElementById(id).addEventListener('change', function() {
     const rowId = id.replace('Type', 'FileRow');
@@ -1045,9 +1033,9 @@ function removeClanFromBlacklist(idx) { window.clanBlacklist.splice(idx, 1); ren
 ['prize1File', 'prize2File', 'prize3File'].forEach(id => {
   document.getElementById(id).addEventListener('change', function(e) {
     const file = e.target.files[0]; if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { showShopNotification('حجم فایل باید کمتر از 2MB باشد', 'error'); this.value = ''; return; }
+    if (file.size > 2 * 1024 * 1024) { this.value = ''; return; }
     const reader = new FileReader();
-    reader.onload = function(evt) { e.target.dataset.file = evt.target.result; showShopNotification('فایل آپلود شد'); };
+    reader.onload = function(evt) { e.target.dataset.file = evt.target.result; };
     reader.readAsDataURL(file);
   });
 });
@@ -1167,8 +1155,8 @@ function renderAvatars(){
       currentUserData.avatar = src;
       localAvatarLock = Date.now();
       updateGlobalAvatar(src);
-      saveAvatarToStorage(src).then(() => showShopNotification('آواتار تایید شد'));
       renderAvatars();
+      saveAvatarToStorage(src);
     });
   });
   observeVideos(grid);
@@ -1232,8 +1220,8 @@ function renderTemplates(){
       currentUserData.currentTemplate = src;
       localTemplateLock = Date.now();
       updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
-      saveTemplateToStorage(src).then(() => showShopNotification('قالب تایید شد'));
       renderTemplates();
+      saveTemplateToStorage(src);
     });
   });
 }
@@ -1259,7 +1247,6 @@ function handleAvatarClick(id){
   }else if(a.owned){
     updateGlobalAvatar(a.src);
     saveAvatarToStorage(a.src);
-    showShopNotification('آواتار انتخاب شد');
   }
 }
 
@@ -1285,7 +1272,6 @@ async function confirmPurchase(){
     updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
     renderTemplates();
     document.getElementById('purchaseModal').classList.remove('show');
-    showShopNotification('قالب خریداری و فعال شد!');
     selectedTemplate = null; templatePurchasePrice = 0;
     saveUserData();
     return;
@@ -1306,7 +1292,6 @@ async function confirmPurchase(){
       localAvatarLock = Date.now();
       renderAvatars();
       document.getElementById('purchaseModal').classList.remove('show');
-      showShopNotification('آواتار خریداری شد!');
       selectedAvatar = null; purchasePrice = 0;
       saveUserData();
     } else {
@@ -1577,7 +1562,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (newPass.length < 4) { showShopNotification('رمز عبور جدید باید حداقل ۴ کاراکتر باشد', 'error'); return; }
       currentUserData.password = newPass;
       await saveUserData();
-      showShopNotification('رمز عبور با موفقیت تغییر کرد');
       closeModal('changePasswordModal');
       document.getElementById('cpCurrentPass').value = '';
       document.getElementById('cpNewPass').value = '';
