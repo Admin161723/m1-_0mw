@@ -1,5 +1,5 @@
 /* ============================================================ */
-/*  فایل: Safe Asli.js - نسخه نهایی بدون پیام‌های اضافی          */
+/*  فایل: Safe Asli.js - نسخه نهایی                             */
 /* ============================================================ */
 
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -81,6 +81,7 @@ async function addBanLog(phone, banData) {
   await saveUser(phone, user);
 }
 
+/* کد کاربری یکتا و ترتیبی */
 async function getUniqueUserCode() {
   try {
     const allUsers = await getAllUsers();
