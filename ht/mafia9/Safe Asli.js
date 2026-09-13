@@ -304,12 +304,10 @@ function createMediaElement(src) {
 function buildAvatarWithTemplate(avatarSrc, templateSrc) {
   const wrapper = document.createElement('div');
   wrapper.className = 'avatar-with-template';
-
   const inner = document.createElement('div');
   inner.className = 'avatar-inner';
   inner.appendChild(createMediaElement(avatarSrc));
   wrapper.appendChild(inner);
-
   if (templateSrc) {
     const overlay = document.createElement('img');
     overlay.className = 'template-overlay';
@@ -325,26 +323,19 @@ function getCurrentTemplate() {
   return currentUserData.currentTemplate;
 }
 
-/* ===== INSTANT: به‌روزرسانی فوری آواتار بدون انتظار ===== */
 function updateGlobalAvatar(src) {
   const validSrc = getValidAvatar(src, currentPhone);
   const templateSrc = getCurrentTemplate();
-
   const mainContainer = document.getElementById('mainAvatarContainer');
   const profileContainer = document.getElementById('openAvatarShop');
   const showcaseContainer = document.getElementById('showcaseAvatarContainer');
   const templateShowcase = document.getElementById('templateShowcaseContainer');
-
   const buildContent = () => {
     const frag = document.createDocumentFragment();
-    if (templateSrc) {
-      frag.appendChild(buildAvatarWithTemplate(validSrc, templateSrc));
-    } else {
-      frag.appendChild(createMediaElement(validSrc));
-    }
+    if (templateSrc) frag.appendChild(buildAvatarWithTemplate(validSrc, templateSrc));
+    else frag.appendChild(createMediaElement(validSrc));
     return frag;
   };
-
   if(mainContainer) { mainContainer.innerHTML = ''; mainContainer.appendChild(buildContent()); observeVideos(mainContainer); }
   if(profileContainer) { profileContainer.innerHTML = ''; profileContainer.appendChild(buildContent()); observeVideos(profileContainer); }
   if(showcaseContainer) { showcaseContainer.innerHTML = ''; showcaseContainer.appendChild(buildContent()); observeVideos(showcaseContainer); }
@@ -380,12 +371,12 @@ function updateUIWithData(user) {
   document.getElementById('btnUserControl').style.display = perm.userControl ? 'block' : 'none';
   document.getElementById('btnWhitelistIP').style.display = perm.whitelist ? 'block' : 'none';
 
-  const s2 = document.getElementById('shopGemAmount'); if(s2) s2.textContent = toPersianNum(user.gems || 0);
-  const s3 = document.getElementById('shopGemAmount2'); if(s3) s3.textContent = toPersianNum(user.gems || 0);
-  const c2 = document.getElementById('shopGoldAmount'); if(c2) c2.textContent = toPersianNum(user.coins || 0);
-  const c3 = document.getElementById('shopGoldAmount2'); if(c3) c3.textContent = toPersianNum(user.coins || 0);
-  const d2 = document.getElementById('shopDollarAmount'); if(d2) d2.textContent = toPersianNum(user.dollars || 0);
-  const d3 = document.getElementById('shopDollarAmount2'); if(d3) d3.textContent = toPersianNum(user.dollars || 0);
+  const s1 = document.getElementById('shopGemAmount'); if(s1) s1.textContent = toPersianNum(user.gems || 0);
+  const s2 = document.getElementById('shopGemAmount2'); if(s2) s2.textContent = toPersianNum(user.gems || 0);
+  const c1 = document.getElementById('shopGoldAmount'); if(c1) c1.textContent = toPersianNum(user.coins || 0);
+  const c2 = document.getElementById('shopGoldAmount2'); if(c2) c2.textContent = toPersianNum(user.coins || 0);
+  const d1 = document.getElementById('shopDollarAmount'); if(d1) d1.textContent = toPersianNum(user.dollars || 0);
+  const d2 = document.getElementById('shopDollarAmount2'); if(d2) d2.textContent = toPersianNum(user.dollars || 0);
 }
 
 async function updateClanRank() {
@@ -620,11 +611,16 @@ async function setUserOnlineStatus(online) {
   await saveUser(currentPhone, user);
 }
 
+/* ============================================================ */
+/*  🎮 کنترل کاربر (INSTANT APPLY)                              */
+/* ============================================================ */
 async function forceUserLogin() {
   const phone = document.getElementById('controlUserPhone').value.trim();
   if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
-  const user = await getUser(phone); if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
   user.forceOnline = true; user.online = true;
+  user.forceLoginAt = Date.now();
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('✅ کاربر وارد بازی شد');
@@ -632,8 +628,10 @@ async function forceUserLogin() {
 async function forceUserLogout() {
   const phone = document.getElementById('controlUserPhone').value.trim();
   if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
-  const user = await getUser(phone); if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
   user.forceOnline = false; user.online = false;
+  user.forceLogoutAt = Date.now();
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('🚫 کاربر از بازی خارج شد');
@@ -642,7 +640,8 @@ async function clearUserData() {
   const phone = document.getElementById('controlUserPhone').value.trim();
   if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
   if (!confirm('پاک‌سازی کامل داده‌های این کاربر؟')) return;
-  const user = await getUser(phone); if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
   user.coins = 0; user.gems = 0; user.dollars = 0;
   user.cups = 0; user.hours = 0; user.xp = 0; user.level = 1;
   user.compWins = 0; user.friendWins = 0; user.monitorCount = 0;
@@ -655,7 +654,8 @@ async function clearUserSessionsFromPanel() {
   const phone = document.getElementById('controlUserPhone').value.trim();
   if (!phone) { showShopNotification('شماره موبایل را وارد کنید', 'error'); return; }
   if (!confirm('پاک کردن تاریخچه ورودهای این کاربر؟')) return;
-  const user = await getUser(phone); if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
+  const user = await getUser(phone);
+  if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
   user.loginHistory = [];
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
@@ -805,11 +805,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 
+/* ============================================================ */
+/*  💾 ذخیره ویرایش کاربر (APPLIES TO TARGET USER)             */
+/* ============================================================ */
 async function saveUserEdit(){
   if(!editingUserId)return;
   const perm=getPerm();
   const allUsers=await getAllUsers();
-  const u=allUsers[editingUserId]; if(!u){pauseSync=false;return;}
+  const u=allUsers[editingUserId];
+  if(!u){pauseSync=false;return;}
   u.name=document.getElementById('editUserName').value.trim()||u.name;
   const newCodeRaw = document.getElementById('editUserCode').value.trim();
   if(newCodeRaw) { const newCode = parseInt(newCodeRaw); if(newCode > 0) u.userCode = newCode; }
@@ -842,18 +846,30 @@ async function saveUserEdit(){
       else if (!u.avatar || u.avatar === u.exclusiveAvatar) u.avatar = 'Mafia2.png';
     }
   }
+  u.adminUpdatedAt = Date.now();
   allUsers[editingUserId]=u;
+  // Save directly to target user (NOT current user!)
+  await saveUser(editingUserId, u);
   await saveAllUsers(allUsers);
-  await saveUser(editingUserId,u);
-  if(editingUserId === currentPhone) { currentUserData = u; localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); }
-  closeEditUser(); await loadUsers(); showShopNotification('ذخیره شد');
+  if(editingUserId === currentPhone) {
+    currentUserData = u;
+    localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+    updateUIWithData(currentUserData);
+  }
+  closeEditUser();
+  await loadUsers();
+  showShopNotification('ذخیره شد ✅');
 }
 
+/* ============================================================ */
+/*  🚫 بن کاربر (APPLIES IMMEDIATELY)                          */
+/* ============================================================ */
 async function banUser(type = 'account'){
   if(!editingUserId)return;
   const perm=getPerm();
   const allUsers=await getAllUsers();
-  const u=allUsers[editingUserId]; if(!u)return;
+  const u=allUsers[editingUserId];
+  if(!u)return;
   if(editingUserId===CREATOR_PHONE){showShopNotification('نمی‌توانید سازنده را بن کنید','error');return;}
   const myLevel=RANK_LEVEL[(currentUserData.rank||'کاربر')]||0;
   const targetLevel=RANK_LEVEL[(u.rank||'کاربر')]||0;
@@ -869,34 +885,44 @@ async function banUser(type = 'account'){
     if (!deviceId) { showShopNotification('دستگاه کاربر یافت نشد', 'error'); return; }
     await setDeviceBan(deviceId, banData);
     await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'بن دستگاه', duration: dur, type: 'device' });
-    showShopNotification('دستگاه کاربر بن شد');
+    showShopNotification('📱 دستگاه کاربر بن شد');
   } else if (type === 'ip') {
     const ip = u.lastIP || u.registeredIP;
     if (!ip) { showShopNotification('IP کاربر یافت نشد', 'error'); return; }
     await setIPBan(ip, banData);
     await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'بن IP', duration: dur, type: 'ip' });
-    showShopNotification('IP کاربر بن شد');
+    showShopNotification('🌐 IP کاربر بن شد');
   } else {
-    await redisSet('ban:'+editingUserId,banData);
-    u.banned=true; allUsers[editingUserId]=u;
-    await saveAllUsers(allUsers); await saveUser(editingUserId,u);
+    await redisSet('ban:'+editingUserId, banData);
+    u.banned=true;
+    allUsers[editingUserId]=u;
+    await saveAllUsers(allUsers);
+    await saveUser(editingUserId, u);
     await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'تخلف از قوانین', duration: dur, type: 'account' });
-    showShopNotification('اکانت کاربر بن شد');
+    showShopNotification('⛔ اکانت کاربر بن شد');
   }
-  closeEditUser(); await loadUsers();
+  closeEditUser();
+  await loadUsers();
 }
 
 async function unbanUser(){
   if(!editingUserId)return;
   const allUsers=await getAllUsers();
-  const u=allUsers[editingUserId]; if(!u)return;
+  const u=allUsers[editingUserId];
+  if(!u)return;
   await redisDel('ban:'+editingUserId);
-  u.banned=false; allUsers[editingUserId]=u;
-  await saveAllUsers(allUsers); await saveUser(editingUserId,u);
-  const deviceId = u.lastDevice || u.registeredDevice; if(deviceId) await redisDel('device_ban:'+deviceId);
-  const ip = u.lastIP || u.registeredIP; if(ip) await redisDel('ip_ban:'+ip);
+  u.banned=false;
+  allUsers[editingUserId]=u;
+  await saveAllUsers(allUsers);
+  await saveUser(editingUserId, u);
+  const deviceId = u.lastDevice || u.registeredDevice;
+  if(deviceId) await redisDel('device_ban:'+deviceId);
+  const ip = u.lastIP || u.registeredIP;
+  if(ip) await redisDel('ip_ban:'+ip);
   await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'رفع بن کامل', duration: 'unbanned', type: 'account' });
-  closeEditUser(); await loadUsers(); showShopNotification('همه بن‌ها برداشته شد');
+  closeEditUser();
+  await loadUsers();
+  showShopNotification('✅ همه بن‌ها برداشته شد');
 }
 
 async function deleteAccount(){
@@ -904,13 +930,17 @@ async function deleteAccount(){
   const perm=getPerm();
   if(!perm.del){showShopNotification('دسترسی ندارید','error');return;}
   const allUsers=await getAllUsers();
-  const u=allUsers[editingUserId]; if(!u)return;
+  const u=allUsers[editingUserId];
+  if(!u)return;
   if(u.rank&&u.rank!=='کاربر'){showShopNotification('نمی‌توان مقام‌دار را حذف کرد','error');return;}
   if(!confirm('حذف کامل اکانت "'+(u.name||'کاربر')+'"؟'))return;
   delete allUsers[editingUserId];
   await saveAllUsers(allUsers);
-  await redisDel('user:'+editingUserId); await redisDel('ban:'+editingUserId);
-  closeEditUser(); await loadUsers(); showShopNotification('اکانت کامل حذف شد');
+  await redisDel('user:'+editingUserId);
+  await redisDel('ban:'+editingUserId);
+  closeEditUser();
+  await loadUsers();
+  showShopNotification('🗑️ اکانت کامل حذف شد');
 }
 
 async function wipeDatabase(){
@@ -922,21 +952,26 @@ async function wipeDatabase(){
     if(u.rank&&u.rank!=='کاربر')keep[p]=u;
     else{await redisDel('user:'+p);await redisDel('ban:'+p);}
   }
-  await saveAllUsers(keep); await loadUsers(); showShopNotification('دیتابیس پاک شد');
+  await saveAllUsers(keep);
+  await loadUsers();
+  showShopNotification('💥 دیتابیس پاک شد');
 }
 
+/* ============================================================ */
+/*  🔌 روشن/خاموش سرور (APPLIES IMMEDIATELY)                   */
+/* ============================================================ */
 async function toggleServer(){
   if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده','error');return;}
   const m=await getMaintenance();
   const isOn=m&&m.on;
   await setMaintenance(!isOn);
-  showShopNotification(!isOn?'سرور قطع شد 🔌':'سرور وصل شد ✅');
-  updateServerToggleBtn();
+  showShopNotification(!isOn?'🔌 سرور قطع شد':'✅ سرور وصل شد');
+  await updateServerToggleBtn();
 }
 async function updateServerToggleBtn(){
   const m=await getMaintenance();
   const btn=document.getElementById('btnServerToggle');
-  if(m&&m.on){btn.textContent=' وصل کردن سرور';btn.className='edit-btn unban';}
+  if(m&&m.on){btn.textContent='✅ وصل کردن سرور';btn.className='edit-btn unban';}
   else{btn.textContent='🔌 قطع سرور';btn.className='edit-btn ban';}
 }
 
@@ -1057,9 +1092,6 @@ function initAvatarShop(){
   templates.forEach(t => { t.owned = (currentUserData.ownedTemplates || []).includes(t.src); });
 }
 
-/* ============================================================ */
-/*  🎨 رندر آواتارها (INSTANT)                                  */
-/* ============================================================ */
 function renderAvatars(){
   const grid = document.getElementById('avatarGrid');
   let disp;
@@ -1080,7 +1112,6 @@ function renderAvatars(){
     const isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4') || a.src.endsWith('.mov');
     const isCurrent = (currentAvatarSrc === a.src);
     const cardClass = 'avatar-card ' + (a.owned ? 'owned ' : '') + (a.isMyExclusive ? 'exclusive ' : '') + (isCurrent ? 'is-selected' : '');
-
     let mediaHtml;
     if (currentAvatarSection === 'my' && currentTemplateSrc && a.owned) {
       const innerMedia = isVid
@@ -1092,7 +1123,6 @@ function renderAvatars(){
         ? `<video src="${a.src}" autoplay loop muted playsinline webkit-playsinline preload="metadata" onerror="avatarLoadError(this,'${a.src}')"></video>`
         : `<img src="${a.src}" loading="lazy" onerror="avatarLoadError(this,'${a.src}')">`;
     }
-
     let confirmBtn = '';
     if (currentAvatarSection === 'my' && a.owned) {
       confirmBtn = `<button class="cbtn cbtn-mini avatar-confirm-btn" data-src="${a.src}" data-id="${a.id}">✓ تایید</button>`;
@@ -1106,7 +1136,6 @@ function renderAvatars(){
     return `<div class="${cardClass}" data-id="${a.id}"><div class="avatar-image">${mediaHtml}</div>${priceHtml}${confirmBtn}</div>`;
   }).join('');
 
-  // click on buy
   grid.querySelectorAll('.avatar-card').forEach(c => {
     c.addEventListener('click', (e) => {
       if (e.target.closest('.avatar-confirm-btn')) return;
@@ -1117,30 +1146,21 @@ function renderAvatars(){
     });
   });
 
-  // INSTANT CONFIRM
   grid.querySelectorAll('.avatar-confirm-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       playClickSound();
       const src = btn.dataset.src;
       if (!src) return;
-      // INSTANT: update UI + storage, no reload
       currentUserData.avatar = src;
       updateGlobalAvatar(src);
-      // Save in background
-      saveAvatarToStorage(src).then(() => {
-        showShopNotification('✅ آواتار تایید شد');
-      });
-      // Immediate re-render
+      saveAvatarToStorage(src).then(() => showShopNotification('✅ آواتار تایید شد'));
       renderAvatars();
     });
   });
   observeVideos(grid);
 }
 
-/* ============================================================ */
-/*  🎨 رندر قالب‌ها (INSTANT)                                    */
-/* ============================================================ */
 function renderTemplates(){
   const grid = document.getElementById('templateGrid');
   let disp;
@@ -1179,7 +1199,6 @@ function renderTemplates(){
       ${priceHtml}${confirmBtn}</div>`;
   }).join('');
 
-  // click on buy
   grid.querySelectorAll('.template-card').forEach(c => {
     c.addEventListener('click', (e) => {
       if (e.target.closest('.template-confirm-btn')) return;
@@ -1191,19 +1210,15 @@ function renderTemplates(){
     });
   });
 
-  // INSTANT CONFIRM
   grid.querySelectorAll('.template-confirm-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       playClickSound();
       const src = btn.dataset.src;
       if (!src) return;
-      // INSTANT: set + update + render
       currentUserData.currentTemplate = src;
       updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
-      saveTemplateToStorage(src).then(() => {
-        showShopNotification('✅ قالب تایید شد');
-      });
+      saveTemplateToStorage(src).then(() => showShopNotification('✅ قالب تایید شد'));
       renderTemplates();
     });
   });
@@ -1234,7 +1249,6 @@ function handleAvatarClick(id){
   }
 }
 
-/* INSTANT PURCHASE */
 async function confirmPurchase(){
   playClickSound();
 
@@ -1252,8 +1266,6 @@ async function confirmPurchase(){
     currentUserData.gems = shopGems < 0 ? 0 : shopGems;
     selectedTemplate.owned = true;
     currentUserData.currentTemplate = selectedTemplate.src;
-
-    // INSTANT UPDATE
     updateUIWithData(currentUserData);
     updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
     renderTemplates();
@@ -1273,8 +1285,6 @@ async function confirmPurchase(){
         currentUserData.ownedAvatars.push(selectedAvatar.src);
       }
       currentUserData.gems = shopGems < 0 ? 0 : shopGems;
-
-      // INSTANT
       updateUIWithData(currentUserData);
       updateGlobalAvatar(selectedAvatar.src);
       currentUserData.avatar = selectedAvatar.src;
@@ -1404,9 +1414,6 @@ async function syncWithServerInBackground() {
   } catch (error) {}
 }
 
-/* ============================================================ */
-/*  🚀 شروع                                                     */
-/* ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) { window.location.href = 'index.html'; return; }
@@ -1443,19 +1450,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('templateBackBtn').addEventListener('click',()=>{playClickSound();document.getElementById('templateShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
   document.getElementById('editNameBtn').addEventListener('click',changeUsername);
 
-  // ===== ناوبری بین دو صفحه فروشگاه =====
-  document.getElementById('goTemplatesBtn').addEventListener('click',()=>{
+  // ===== Top tabs (آواتارها / قالب‌ها / 3D) =====
+  document.querySelectorAll('.shop-tab').forEach(t => t.addEventListener('click', function(){
     playClickSound();
-    document.getElementById('avatarShopPage').classList.remove('active');
-    document.getElementById('templateShopPage').classList.add('active');
-    renderTemplates();
-  });
-  document.getElementById('goAvatarsBtn').addEventListener('click',()=>{
-    playClickSound();
-    document.getElementById('templateShopPage').classList.remove('active');
-    document.getElementById('avatarShopPage').classList.add('active');
-    renderAvatars();
-  });
+    const tab = this.dataset.shoptab;
+    // Update active state on ALL shop tabs
+    document.querySelectorAll('.shop-tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.shop-tab[data-shoptab="' + tab + '"]').forEach(x => x.classList.add('active'));
+
+    if (tab === 'templates') {
+      document.getElementById('avatarShopPage').classList.remove('active');
+      document.getElementById('templateShopPage').classList.add('active');
+      renderTemplates();
+    } else if (tab === 'avatars') {
+      document.getElementById('templateShopPage').classList.remove('active');
+      document.getElementById('avatarShopPage').classList.add('active');
+      renderAvatars();
+    } else if (tab === '3d') {
+      showShopNotification('🎭 آواتار 3D به زودی...');
+    }
+  }));
 
   document.getElementById('navShop').addEventListener('click',()=>{playClickSound();window.location.href='Safe Foroshgahe.html';});
   document.getElementById('navGroup').addEventListener('click',()=>{playClickSound();window.location.href='Safe Goroh.html';});
@@ -1471,7 +1485,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(!p.panel){showShopNotification('دسترسی ندارید','error');return;}
     pauseSync = true;
     try {
-      await loadUsers(); await updateServerToggleBtn();
+      await loadUsers();
+      await updateServerToggleBtn();
       if (currentPhone === CREATOR_PHONE) { await loadTournamentConfig(); renderBlacklist(); }
       document.getElementById('usersSection').style.display = 'none';
       document.getElementById('userHistorySection').style.display = 'none';
@@ -1494,7 +1509,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cancelSearchBtn').addEventListener('click',cancelCompetitiveSearch);
   document.getElementById('enterGameBtn').addEventListener('click',enterCompetitiveGame);
 
-  // تب‌های آواتارها
   document.querySelectorAll('.avatar-section-tab').forEach(t=>t.addEventListener('click',function(){
     playClickSound();
     currentAvatarSection=this.dataset.section;
@@ -1503,7 +1517,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderAvatars();
   }));
 
-  // تب‌های قالب‌ها
   document.querySelectorAll('.template-tab').forEach(t=>t.addEventListener('click',function(){
     playClickSound();
     currentTemplateSection=this.dataset.tsection;
