@@ -1,6 +1,6 @@
 /* ============================================================ */
 /*  فایل: Safe Asli.js                                          */
-/*  منطق کامل صفحه اصلی بازی - نسخه نهایی                       */
+/*  منطق کامل صفحه اصلی بازی - نسخه نهایی با قالب‌ها            */
 /* ============================================================ */
 
 // ============================================================
@@ -89,12 +89,9 @@ async function addBanLog(phone, banData) {
 }
 
 // ============================================================
-//  وایت‌لیست IP - بدون کش، مستقیم از سرور
+//  وایت‌لیست IP
 // ============================================================
-async function getAllWhitelistIPs() {
-  return await redisGet('whitelist_ips') || {};
-}
-
+async function getAllWhitelistIPs() { return await redisGet('whitelist_ips') || {}; }
 async function isIPWhitelisted(ip, deviceId) {
   if (!ip && !deviceId) return false;
   try {
@@ -107,13 +104,11 @@ async function isIPWhitelisted(ip, deviceId) {
     return false;
   } catch(e) { return false; }
 }
-
 async function addToWhitelist(ip, note, byPhone) {
   var list = await getAllWhitelistIPs();
   list[ip] = { ip: ip, note: note || '', addedBy: byPhone || 'سازنده', addedAt: Date.now() };
   return await redisSet('whitelist_ips', list);
 }
-
 async function removeFromWhitelist(ip) {
   var list = await getAllWhitelistIPs();
   delete list[ip];
@@ -129,23 +124,15 @@ async function fetchUserIP(forceRefresh) {
     const t = setTimeout(() => c.abort(), 3000);
     const res = await fetch('https://api.ipify.org?format=json', { signal: c.signal, cache: 'no-store' });
     clearTimeout(t);
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.ip) return String(data.ip).trim();
-    }
+    if (res.ok) { const data = await res.json(); if (data && data.ip) return String(data.ip).trim(); }
   } catch(e) {}
-  
   try {
     const c2 = new AbortController();
     const t2 = setTimeout(() => c2.abort(), 3000);
     const res2 = await fetch('https://api64.ipify.org?format=json', { signal: c2.signal, cache: 'no-store' });
     clearTimeout(t2);
-    if (res2.ok) {
-      const data2 = await res2.json();
-      if (data2 && data2.ip) return String(data2.ip).trim();
-    }
+    if (res2.ok) { const data2 = await res2.json(); if (data2 && data2.ip) return String(data2.ip).trim(); }
   } catch(e) {}
-  
   return null;
 }
 
@@ -155,12 +142,7 @@ async function fetchUserIP(forceRefresh) {
 function getDeviceId() {
   let id = localStorage.getItem('__device_id__');
   if (!id) {
-    var parts = [
-      navigator.userAgent || 'ua', navigator.platform || 'plat',
-      screen.width + 'x' + screen.height, screen.colorDepth || 24,
-      navigator.language || 'fa', navigator.hardwareConcurrency || 4,
-      new Date().getTimezoneOffset()
-    ];
+    var parts = [navigator.userAgent || 'ua', navigator.platform || 'plat', screen.width + 'x' + screen.height, screen.colorDepth || 24, navigator.language || 'fa', navigator.hardwareConcurrency || 4, new Date().getTimezoneOffset()];
     var raw = parts.join('|'); var hash = 0;
     for (var i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash = hash & hash; }
     id = 'dev_' + Math.abs(hash) + '_' + Date.now().toString(36);
@@ -260,6 +242,21 @@ const avatars=[
   {id:905, src:'2002.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'}
 ];
 
+// ============================================================
+//  🎨 قالب‌ها (NEW)
+// ============================================================
+const templates=[
+  {id:'t1', src:'Ga1.webp', price:1500, name:'قالب طلایی'},
+  {id:'t2', src:'Ga2.webp', price:2000, name:'قالب الماسی'},
+  {id:'t3', src:'Ga3.webp', price:1000, name:'قالب نقره‌ای'}
+];
+
+let currentTemplateSection = 'my';
+let currentShopTab = 'avatars';
+let selectedTemplate = null;
+let templatePurchasePrice = 0;
+let purchaseMode = 'avatar'; // 'avatar' | 'template'
+
 window.avatarLoadError=function(img,src){img.style.display='none';const box=img.parentElement;if(box&&!box.querySelector('.avatar-missing')){const d=document.createElement('div');d.className='avatar-missing';d.innerHTML='❌<br>'+src;box.appendChild(d);}};
 
 function setupVideoObserver() {
@@ -273,6 +270,7 @@ function setupVideoObserver() {
   }, { threshold: 0.1 });
 }
 function observeVideos(container) {
+  if (!container) return;
   setupVideoObserver();
   container.querySelectorAll('video').forEach(v => videoObserver.observe(v));
 }
@@ -290,6 +288,8 @@ function sanitizeUserData(user, phone) {
   if (user.dollars < 0) user.dollars = 0;
   if (user.cups === undefined) user.cups = 0;
   if (user.hours === undefined) user.hours = 0;
+  if (!user.ownedTemplates) user.ownedTemplates = [];
+  if (!user.currentTemplate) user.currentTemplate = null;
   const xp = Math.floor((user.cups / 10) * 20 + (user.hours || 0) * 100);
   user.xp = xp;
   let level = 1;
@@ -323,14 +323,77 @@ function createMediaElement(src) {
   }
 }
 
+// ============================================================
+//  🎨 ساخت آواتار با قالب (NEW)
+// ============================================================
+function buildAvatarWithTemplate(avatarSrc, templateSrc) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'avatar-with-template';
+
+  const inner = document.createElement('div');
+  inner.className = 'avatar-inner';
+  inner.appendChild(createMediaElement(avatarSrc));
+  wrapper.appendChild(inner);
+
+  if (templateSrc) {
+    const overlay = document.createElement('img');
+    overlay.className = 'template-overlay';
+    overlay.src = templateSrc;
+    overlay.onerror = function(){ this.style.display='none'; };
+    wrapper.appendChild(overlay);
+  }
+
+  return wrapper;
+}
+
+function getCurrentTemplate() {
+  if (!currentUserData || !currentUserData.currentTemplate) return null;
+  const t = templates.find(x => x.id === currentUserData.currentTemplate || x.src === currentUserData.currentTemplate);
+  return t ? t.src : currentUserData.currentTemplate;
+}
+
+// ============================================================
+//  رندر آواتار با/بدون قالب در همه جای بازی
+// ============================================================
 function updateGlobalAvatar(src) {
   const validSrc = getValidAvatar(src, currentPhone);
+  const templateSrc = getCurrentTemplate();
+
   const mainContainer = document.getElementById('mainAvatarContainer');
   const profileContainer = document.getElementById('openAvatarShop');
   const showcaseContainer = document.getElementById('showcaseAvatarContainer');
-  if(mainContainer) { mainContainer.innerHTML = ''; mainContainer.appendChild(createMediaElement(validSrc)); observeVideos(mainContainer); }
-  if(profileContainer) { profileContainer.innerHTML = ''; profileContainer.appendChild(createMediaElement(validSrc)); observeVideos(profileContainer); }
-  if(showcaseContainer) { showcaseContainer.innerHTML = ''; showcaseContainer.appendChild(createMediaElement(validSrc)); observeVideos(showcaseContainer); }
+  const templateShowcase = document.getElementById('templateShowcaseContainer');
+
+  const buildContent = () => {
+    const frag = document.createDocumentFragment();
+    if (templateSrc) {
+      frag.appendChild(buildAvatarWithTemplate(validSrc, templateSrc));
+    } else {
+      frag.appendChild(createMediaElement(validSrc));
+    }
+    return frag;
+  };
+
+  if(mainContainer) {
+    mainContainer.innerHTML = '';
+    mainContainer.appendChild(buildContent());
+    observeVideos(mainContainer);
+  }
+  if(profileContainer) {
+    profileContainer.innerHTML = '';
+    profileContainer.appendChild(buildContent());
+    observeVideos(profileContainer);
+  }
+  if(showcaseContainer) {
+    showcaseContainer.innerHTML = '';
+    showcaseContainer.appendChild(buildContent());
+    observeVideos(showcaseContainer);
+  }
+  if(templateShowcase) {
+    templateShowcase.innerHTML = '';
+    templateShowcase.appendChild(buildContent());
+    observeVideos(templateShowcase);
+  }
 }
 
 function updateUIWithData(user) {
@@ -408,6 +471,16 @@ async function saveAvatarToStorage(src){
   currentUserData.avatar = src;
   await saveUserData();
   updateGlobalAvatar(currentUserData.avatar);
+}
+
+// ============================================================
+//  🎨 ذخیره قالب انتخاب‌شده (NEW)
+// ============================================================
+async function saveTemplateToStorage(src){
+  if(!currentUserData||!currentPhone)return;
+  currentUserData.currentTemplate = src;
+  await saveUserData();
+  updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
 }
 
 async function changeUsername(){
@@ -602,7 +675,7 @@ async function quickWhitelistUser(ip, deviceId, userName) {
   if (deviceId) confirmMsg += `Device: ${deviceId}\n`;
   confirmMsg += `\nکاربر: ${userName}`;
   if (!confirm(confirmMsg)) return;
-  
+
   var added = [];
   if (ip && ip !== 'نامشخص' && ip !== '-') {
     await addToWhitelist(ip, 'auto: ' + userName, currentPhone);
@@ -612,7 +685,7 @@ async function quickWhitelistUser(ip, deviceId, userName) {
     await addToWhitelist(deviceId, 'auto-dev: ' + userName, currentPhone);
     added.push('دستگاه');
   }
-  
+
   if (added.length > 0) {
     showShopNotification('✅ ' + added.join(' + ') + ' به وایت‌لیست اضافه شد');
   } else {
@@ -1123,6 +1196,7 @@ function initAvatarShop(){
   document.getElementById('shopDollarAmount').textContent=toPersianNum(shopDollars);
 
   if (!currentUserData.ownedAvatars) currentUserData.ownedAvatars = [];
+  if (!currentUserData.ownedTemplates) currentUserData.ownedTemplates = [];
   const rank = currentUserData.rank || 'کاربر';
   const exclusiveList = [
     { src: '655.webm', allowedRanks: ['سازنده'] },
@@ -1151,10 +1225,15 @@ function initAvatarShop(){
     else a.owned = false;
   });
   currentUserData.avatar = getValidAvatar(currentUserData.avatar || 'Mafia2.png', currentPhone);
+
+  // Templates ownership
+  templates.forEach(t => {
+    t.owned = (currentUserData.ownedTemplates || []).includes(t.src);
+  });
 }
 
 // ============================================================
-//  🎨 رندر آواتارها - نسخه نهایی با دکمه تایید و عکس جم
+//  🎨 رندر آواتارها
 // ============================================================
 function renderAvatars(){
   const grid = document.getElementById('avatarGrid');
@@ -1182,13 +1261,11 @@ function renderAvatars(){
     const isCurrent = (currentAvatarSrc === a.src);
     const cardClass = 'avatar-card ' + (a.owned ? 'owned ' : '') + (a.isMyExclusive ? 'exclusive ' : '') + (isCurrent ? 'is-selected' : '');
 
-    // دکمه تأیید فقط برای "آواتارهای من"
     let confirmBtn = '';
     if (currentAvatarSection === 'my' && a.owned) {
       confirmBtn = `<button class="cbtn cbtn-mini avatar-confirm-btn" data-src="${a.src}" data-id="${a.id}">✓ تایید</button>`;
     }
 
-    // بخش قیمت یا وضعیت
     let priceHtml = '';
     if (!a.owned) {
       priceHtml = `<div class="avatar-price"><img src="Jam99.webp" alt="جم"><span class="price-value">${toPersianNum(a.price)}</span></div>`;
@@ -1203,21 +1280,18 @@ function renderAvatars(){
     </div>`;
   }).join('');
 
-  // کلیک روی کارت (فقط در بخش خرید)
   grid.querySelectorAll('.avatar-card').forEach(c => {
     c.addEventListener('click', (e) => {
       if (e.target.closest('.avatar-confirm-btn')) return;
       const id = parseInt(c.dataset.id);
       const av = avatars.find(x => x.id === id);
       if (!av) return;
-
       if (currentAvatarSection === 'buy' && !av.owned) {
         handleAvatarClick(id);
       }
     });
   });
 
-  // کلیک روی دکمه تأیید
   grid.querySelectorAll('.avatar-confirm-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -1234,17 +1308,167 @@ function renderAvatars(){
   observeVideos(grid);
 }
 
+// ============================================================
+//  🎨 رندر قالب‌ها (NEW)
+// ============================================================
+function renderTemplates(){
+  const grid = document.getElementById('templateGrid');
+  let disp;
+  if (currentTemplateSection === 'my') {
+    disp = templates.filter(t => t.owned);
+  } else {
+    disp = templates.filter(t => !t.owned);
+  }
+
+  if (!disp.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">قالبی موجود نیست</div>';
+    return;
+  }
+
+  const currentT = currentUserData ? currentUserData.currentTemplate : null;
+  const avatarSrc = getValidAvatar((currentUserData && currentUserData.avatar) || 'Mafia2.png', currentPhone);
+
+  grid.innerHTML = disp.map(t => {
+    const isCurrent = (currentT === t.src);
+    const isVid = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4');
+    const avatarPreviewHtml = isVid
+      ? `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+      : `<img src="${avatarSrc}" onerror="this.src='Mafia2.png'">`;
+
+    const cardClass = 'template-card ' + (t.owned ? 'owned ' : '') + (isCurrent ? 'is-selected' : '');
+
+    let confirmBtn = '';
+    if (currentTemplateSection === 'my' && t.owned) {
+      confirmBtn = `<button class="cbtn cbtn-mini template-confirm-btn" data-src="${t.src}">✓ تایید</button>`;
+    }
+
+    let priceHtml = '';
+    if (!t.owned) {
+      priceHtml = `<div class="template-price"><img src="Jam99.webp" alt="جم"><span class="price-value">${toPersianNum(t.price)}</span></div>`;
+    } else {
+      priceHtml = `<div class="${isCurrent ? 'template-current-label' : 'template-owned-label'}">${isCurrent ? '⭐ قالب فعلی' : '✓ دارید'}</div>`;
+    }
+
+    return `<div class="${cardClass}" data-src="${t.src}">
+      <div class="template-preview">
+        <div class="preview-avatar">${avatarPreviewHtml}</div>
+        <img class="preview-frame" src="${t.src}" onerror="this.style.display='none'">
+      </div>
+      <div class="template-name">${t.name}</div>
+      ${priceHtml}
+      ${confirmBtn}
+    </div>`;
+  }).join('');
+
+  // click on card (buy section)
+  grid.querySelectorAll('.template-card').forEach(c => {
+    c.addEventListener('click', (e) => {
+      if (e.target.closest('.template-confirm-btn')) return;
+      if (currentTemplateSection !== 'buy') return;
+      const src = c.dataset.src;
+      const t = templates.find(x => x.src === src);
+      if (!t || t.owned) return;
+      handleTemplateClick(t);
+    });
+  });
+
+  // confirm btn (my section)
+  grid.querySelectorAll('.template-confirm-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      playClickSound();
+      const src = btn.dataset.src;
+      if (!src) return;
+      await saveTemplateToStorage(src);
+      showShopNotification('✅ قالب با موفقیت تایید شد');
+      renderTemplates();
+    });
+  });
+}
+
+function handleTemplateClick(t) {
+  selectedTemplate = t;
+  templatePurchasePrice = t.price;
+  purchaseMode = 'template';
+  document.getElementById('modalTitle').textContent = 'خرید قالب';
+  document.getElementById('modalText').textContent = 'آیا از خرید قالب «' + t.name + '» به قیمت ' + toPersianNum(t.price) + ' الماس اطمینان دارید؟';
+  document.getElementById('purchaseModal').classList.add('show');
+}
+
 function handleAvatarClick(id){
   const a=avatars.find(x=>x.id===id);
   if(!a)return;
   if(currentAvatarSection==='buy'&&!a.owned){
     selectedAvatar=a;purchasePrice=a.price;
+    purchaseMode = 'avatar';
+    document.getElementById('modalTitle').textContent = 'خرید آواتار';
     document.getElementById('modalText').textContent='آیا از خرید این آواتار به قیمت '+toPersianNum(purchasePrice)+' الماس اطمینان دارید؟';
     document.getElementById('purchaseModal').classList.add('show');
   }else if(a.owned){
     updateGlobalAvatar(a.src);
     saveAvatarToStorage(a.src);
     showShopNotification('آواتار انتخاب شد');
+  }
+}
+
+// ============================================================
+//  🎨 خرید قالب / آواتار (NEW)
+// ============================================================
+async function confirmPurchase(){
+  playClickSound();
+
+  // ===== خرید قالب =====
+  if (purchaseMode === 'template' && selectedTemplate) {
+    if (shopGems < templatePurchasePrice) {
+      document.getElementById('purchaseModal').classList.remove('show');
+      showShopNotification('الماس کافی ندارید!','error');
+      return;
+    }
+    shopGems -= templatePurchasePrice;
+    if (!currentUserData.ownedTemplates) currentUserData.ownedTemplates = [];
+    if (!currentUserData.ownedTemplates.includes(selectedTemplate.src)) {
+      currentUserData.ownedTemplates.push(selectedTemplate.src);
+    }
+    currentUserData.gems = shopGems < 0 ? 0 : shopGems;
+    selectedTemplate.owned = true;
+    currentUserData.currentTemplate = selectedTemplate.src;
+
+    await saveUserData();
+    updateUIWithData(currentUserData);
+    updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
+    renderTemplates();
+    document.getElementById('purchaseModal').classList.remove('show');
+    showShopNotification('قالب خریداری و فعال شد!');
+    selectedTemplate = null;
+    templatePurchasePrice = 0;
+    return;
+  }
+
+  // ===== خرید آواتار =====
+  if (purchaseMode === 'avatar' && selectedAvatar) {
+    if (shopGems >= purchasePrice) {
+      shopGems -= purchasePrice;
+      selectedAvatar.owned = true;
+      if (currentUserData) {
+        currentUserData.gems = shopGems < 0 ? 0 : shopGems;
+        if (!currentUserData.ownedAvatars) currentUserData.ownedAvatars = [];
+        if (!currentUserData.ownedAvatars.includes(selectedAvatar.src)) {
+          currentUserData.ownedAvatars.push(selectedAvatar.src);
+        }
+        await saveUserData();
+        updateUIWithData(currentUserData);
+      }
+      updateGlobalAvatar(selectedAvatar.src);
+      await saveAvatarToStorage(selectedAvatar.src);
+      renderAvatars();
+      document.getElementById('purchaseModal').classList.remove('show');
+      showShopNotification('آواتار خریداری شد!');
+      selectedAvatar = null;
+      purchasePrice = 0;
+    } else {
+      document.getElementById('purchaseModal').classList.remove('show');
+      showShopNotification('الماس کافی ندارید!','error');
+    }
   }
 }
 
@@ -1339,7 +1563,7 @@ async function checkAndDistributeTournamentPrizes() {
 }
 
 // ============================================================
-//  سینک با سرور (با معافیت وایت‌لیست)
+//  سینک با سرور
 // ============================================================
 async function syncWithServerInBackground() {
   try {
@@ -1423,8 +1647,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let localUser = null;
   try { localUser = localCache ? JSON.parse(localCache) : null; } catch(e) { localUser = null; }
   if (!localUser) {
-    localUser = { name: 'کاربر', coins: 0, gems: 0, dollars: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0, cups:0, hours:0, xp:0, compWins:0, friendWins:0, monitorCount:0, bestScore:0, mafiaWins:0, citizenWins:0 };
+    localUser = { name: 'کاربر', coins: 0, gems: 0, dollars: 0, avatar: 'Mafia2.png', rank: 'کاربر', userCode: '----', level: 1, score: 0, cups:0, hours:0, xp:0, compWins:0, friendWins:0, monitorCount:0, bestScore:0, mafiaWins:0, citizenWins:0, ownedTemplates:[], currentTemplate:null };
   }
+  if (!localUser.ownedTemplates) localUser.ownedTemplates = [];
+  if (!localUser.currentTemplate) localUser.currentTemplate = null;
   currentUserData = localUser;
   updateUIWithData(currentUserData);
   initAvatarShop();
@@ -1443,7 +1669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('openProfile').addEventListener('click',()=>{playClickSound();document.getElementById('profilePage').classList.add('active');updateGroupDisplay();});
   document.getElementById('backBtn').addEventListener('click',()=>{playClickSound();document.getElementById('profilePage').classList.remove('active');});
   document.getElementById('copyUserCode').addEventListener('click',()=>{playClickSound();copyToClipboard(document.getElementById('userCode').textContent,'کد کاربری کپی شد!');});
-  document.getElementById('openAvatarShop').addEventListener('click',()=>{playClickSound();document.getElementById('profilePage').classList.remove('active');document.getElementById('avatarShopPage').classList.add('active');renderAvatars();});
+  document.getElementById('openAvatarShop').addEventListener('click',()=>{playClickSound();document.getElementById('profilePage').classList.remove('active');document.getElementById('avatarShopPage').classList.add('active');renderAvatars();renderTemplates();});
   document.getElementById('shopBackBtn').addEventListener('click',()=>{playClickSound();document.getElementById('avatarShopPage').classList.remove('active');document.getElementById('profilePage').classList.add('active');});
   document.getElementById('editNameBtn').addEventListener('click',changeUsername);
 
@@ -1486,27 +1712,61 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnCompetitive').addEventListener('click',()=>{playClickSound();startCompetitiveSearch();});
   document.getElementById('cancelSearchBtn').addEventListener('click',cancelCompetitiveSearch);
   document.getElementById('enterGameBtn').addEventListener('click',enterCompetitiveGame);
-  document.querySelectorAll('.shop-tab').forEach(t=>t.addEventListener('click',function(){playClickSound();document.querySelectorAll('.shop-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');if(this.dataset.tab!=='avatars')showShopNotification('به زودی');}));
-  document.querySelectorAll('.avatar-section-tab').forEach(t=>t.addEventListener('click',function(){playClickSound();currentAvatarSection=this.dataset.section;document.querySelectorAll('.avatar-section-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');renderAvatars();}));
-  document.getElementById('modalCancelBtn').addEventListener('click',()=>{playClickSound();document.getElementById('purchaseModal').classList.remove('show');selectedAvatar=null;purchasePrice=0;});
-  document.getElementById('modalConfirmBtn').addEventListener('click',async()=>{
+
+  // ===== Shop Tabs (Avatars / Templates / 3D) =====
+  document.querySelectorAll('.shop-tab').forEach(t=>t.addEventListener('click',function(){
     playClickSound();
-    if(shopGems>=purchasePrice&&selectedAvatar){
-      shopGems-=purchasePrice;selectedAvatar.owned=true;
-      if(currentUserData){
-        currentUserData.gems=shopGems<0?0:shopGems;
-        if(!currentUserData.ownedAvatars)currentUserData.ownedAvatars=[];
-        if(!currentUserData.ownedAvatars.includes(selectedAvatar.src))currentUserData.ownedAvatars.push(selectedAvatar.src);
-        await saveUserData(); updateUIWithData(currentUserData);
-      }
-      updateGlobalAvatar(selectedAvatar.src);
-      await saveAvatarToStorage(selectedAvatar.src);
+    document.querySelectorAll('.shop-tab').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    const tab = this.dataset.tab;
+    currentShopTab = tab;
+
+    const avSection = document.getElementById('avatarsSection');
+    const tmplSection = document.getElementById('templatesSection');
+
+    if (tab === 'avatars') {
+      if (avSection) avSection.style.display = 'block';
+      if (tmplSection) tmplSection.style.display = 'none';
       renderAvatars();
-      document.getElementById('purchaseModal').classList.remove('show');
-      showShopNotification('آواتار خریداری شد!');
-      selectedAvatar=null;purchasePrice=0;
-    }else{document.getElementById('purchaseModal').classList.remove('show');showShopNotification('الماس کافی ندارید!','error');}
+    } else if (tab === 'templates') {
+      if (avSection) avSection.style.display = 'none';
+      if (tmplSection) tmplSection.style.display = 'block';
+      renderTemplates();
+    } else {
+      if (avSection) avSection.style.display = 'none';
+      if (tmplSection) tmplSection.style.display = 'none';
+      showShopNotification('به زودی');
+    }
+  }));
+
+  // ===== Avatar section tabs (my / buy) =====
+  document.querySelectorAll('.avatar-section-tab').forEach(t=>t.addEventListener('click',function(){
+    playClickSound();
+    currentAvatarSection=this.dataset.section;
+    document.querySelectorAll('.avatar-section-tab').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    renderAvatars();
+  }));
+
+  // ===== Template section tabs (my / buy) =====
+  document.querySelectorAll('.template-tab').forEach(t=>t.addEventListener('click',function(){
+    playClickSound();
+    currentTemplateSection=this.dataset.section;
+    document.querySelectorAll('.template-tab').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    renderTemplates();
+  }));
+
+  // ===== Purchase Modal buttons =====
+  document.getElementById('modalCancelBtn').addEventListener('click',()=>{
+    playClickSound();
+    document.getElementById('purchaseModal').classList.remove('show');
+    selectedAvatar=null;purchasePrice=0;
+    selectedTemplate=null;templatePurchasePrice=0;
+    purchaseMode='avatar';
   });
+  document.getElementById('modalConfirmBtn').addEventListener('click',confirmPurchase);
+
   document.getElementById('openChangePasswordBtn').addEventListener('click', () => {
       playClickSound(); closeModal('settingsModal');
       document.getElementById('cpPhone').value = currentPhone || '';
