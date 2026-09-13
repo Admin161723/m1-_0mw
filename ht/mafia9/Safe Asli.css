@@ -32,15 +32,11 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 
 /* ===== PROFILE AVATAR (with template support - CIRCLE) ===== */
 .profile-avatar{width:90px;height:90px;border-radius:50%;overflow:visible;background:transparent;position:relative;}
-
-/* avatar-with-template wrapper (circle) */
 .avatar-with-template{position:relative;width:100%;height:100%;border-radius:50%;}
 .avatar-with-template .avatar-inner{position:absolute;width:70%;height:70%;border-radius:50%;overflow:hidden;top:15%;left:15%;background:#1a3a6a;z-index:1;}
 .avatar-with-template .avatar-inner img,
 .avatar-with-template .avatar-inner video{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;}
 .avatar-with-template .template-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:10;border-radius:50%;}
-
-/* without template */
 .profile-avatar>img, .profile-avatar>video{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;border:3px solid #4a9eff;box-shadow:0 0 18px rgba(74,158,255,.5);}
 
 .profile-name-bar{background:rgba(26,74,138,.9);padding:4px 20px;border-radius:14px;border:1px solid #2a6aaa;display:flex;align-items:center;gap:6px;}
@@ -171,13 +167,15 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 .shop-currency{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.4);padding:6px 12px;border-radius:20px;border:2px solid rgba(255,255,255,.2);}
 .shop-currency-icon{width:28px;height:28px;object-fit:contain;border-radius:50%;}
 .shop-currency-value{font-weight:900;font-size:16px;color:#fff;}
-.shop-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 15px;background:rgba(0,0,0,.3);}
-.shop-tab{padding:12px 8px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;}
-.shop-tab.active{background:linear-gradient(180deg,#3a9fd8,#2a7fb8);}
+
+/* ===== SHOP NAV ROW (avatars/templates navigation) ===== */
+.shop-nav-row{display:flex;gap:8px;padding:10px 15px;background:rgba(0,0,0,.25);}
+.shop-nav-btn{flex:1;padding:12px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;text-align:center;transition:all .15s;}
+.shop-nav-btn.active{background:linear-gradient(180deg,#3a9fd8,#2a7fb8);border-color:#4ab0e8;box-shadow:0 0 10px rgba(74,176,232,.5);}
+.shop-nav-btn:active{transform:scale(.97);}
+
 .character-showcase{padding:15px;background:linear-gradient(180deg,#1a4a7a,#0d2f4a);border-top:2px solid #ffd700;border-bottom:2px solid #2a7fb8;margin:10px 15px;border-radius:15px;}
 .characters-container{display:flex;justify-content:center;align-items:center;height:120px;}
-
-/* ===== CHARACTER MAIN (showcase with template - CIRCLE) ===== */
 .character-main{width:100px;height:100px;border-radius:50%;background:transparent;overflow:visible;position:relative;}
 .character-main .avatar-with-template{width:100%;height:100%;}
 .character-main .avatar-with-template .avatar-inner{width:68%;height:68%;top:16%;left:16%;}
@@ -187,10 +185,9 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 .avatar-section-tab{flex:1;padding:12px 6px;background:linear-gradient(180deg,#1e4d7a,#0f2d4a);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
 .avatar-section-tab.active{background:linear-gradient(180deg,#3a9fd8,#2a7fb8);}
 
-/* ===== TEMPLATE SUB TABS ===== */
-.template-sub-tabs{display:flex;gap:8px;padding:10px 15px;background:rgba(0,0,0,.2);}
-.template-sub-tab{flex:1;padding:10px;background:rgba(255,255,255,.08);border:2px solid #2a7fb8;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
-.template-sub-tab.active{background:linear-gradient(180deg,#8e44ad,#6a1b9a);border-color:#9b59b6;}
+/* ===== TEMPLATE TABS ===== */
+.template-tab{flex:1;padding:12px;background:linear-gradient(180deg,#3d1f5a,#2a1540);border:2px solid #6a1b9a;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;}
+.template-tab.active{background:linear-gradient(180deg,#9b59b6,#6a1b9a);border-color:#b07fcf;}
 
 .avatar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:15px;}
 
@@ -202,6 +199,11 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 .avatar-card.is-selected{border-color:#f1c40f!important;box-shadow:0 0 18px rgba(241,196,15,.75);}
 .avatar-image{width:72px;height:72px;border-radius:50%;margin:0 auto 8px;overflow:hidden;border:2px solid rgba(255,255,255,.4);background:#123;display:flex;align-items:center;justify-content:center;}
 .avatar-image img, .avatar-image video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avatar-image .template-preview{width:100%;height:100%;position:relative;border-radius:50%;}
+.avatar-image .template-preview .preview-avatar{position:absolute;width:65%;height:65%;border-radius:50%;overflow:hidden;top:17.5%;left:17.5%;background:#1a3a6a;z-index:1;}
+.avatar-image .template-preview .preview-avatar img,
+.avatar-image .template-preview .preview-avatar video{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+.avatar-image .template-preview .preview-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:10;border-radius:50%;}
 .avatar-missing{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#ff8a8a;font-size:8px;font-weight:900;text-align:center;word-break:break-all;}
 .avatar-price{display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,.4);padding:6px 10px;border-radius:10px;}
 .avatar-price img{width:18px;height:18px;object-fit:contain;}
@@ -212,18 +214,18 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
 .template-card{background:linear-gradient(180deg,#8e44ad,#6a1b9a);border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:3px solid rgba(255,255,255,.3);position:relative;display:flex;flex-direction:column;justify-content:space-between;}
 .template-card.owned{border-color:#4CAF50;}
 .template-card.is-selected{border-color:#f1c40f!important;box-shadow:0 0 18px rgba(241,196,15,.75);}
-.template-preview{width:72px;height:72px;border-radius:50%;margin:0 auto 8px;position:relative;}
-.template-preview .preview-avatar{position:absolute;width:65%;height:65%;border-radius:50%;overflow:hidden;top:17.5%;left:17.5%;background:#1a3a6a;z-index:1;}
-.template-preview .preview-avatar img,
-.template-preview .preview-avatar video{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
-.template-preview .preview-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:10;border-radius:50%;}
+.template-preview-box{width:72px;height:72px;border-radius:50%;margin:0 auto 8px;position:relative;background:rgba(0,0,0,.3);}
+.template-preview-box .tp-avatar{position:absolute;width:65%;height:65%;border-radius:50%;overflow:hidden;top:17.5%;left:17.5%;background:#1a3a6a;z-index:1;}
+.template-preview-box .tp-avatar img,
+.template-preview-box .tp-avatar video{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+.template-preview-box .tp-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:10;border-radius:50%;}
 .template-name{color:#fff;font-size:11px;font-weight:900;margin-bottom:6px;text-align:center;}
 .template-price{display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,.4);padding:6px 10px;border-radius:10px;}
 .template-price img{width:18px;height:18px;object-fit:contain;}
 .template-owned-label{color:#4CAF50;font-weight:900;font-size:11px;margin-top:5px;}
 .template-current-label{color:#f1c40f;font-weight:900;font-size:11px;margin-top:5px;}
 
-/* ========== دکمه تأیید (cbtn) ========== */
+/* ========== دکمه تأیید (cbtn) - سریع ========== */
 .cbtn {
   position: relative;
   overflow: hidden;
@@ -239,7 +241,7 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
   padding: 16px 64px;
   text-shadow: 0 2px 2px rgba(0,60,0,.55);
   box-shadow: 0 6px 0 #2c7006, 0 12px 22px rgba(0,0,0,.45), inset 0 2px 3px rgba(255,255,255,.5);
-  transition: transform .12s ease, filter .12s ease;
+  transition: transform .08s ease, filter .08s ease;
 }
 .cbtn:hover { filter: brightness(1.08); }
 .cbtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2c7006, inset 0 3px 8px rgba(0,0,0,.35); }
@@ -264,6 +266,7 @@ input,textarea,select{font-size:16px!important;-webkit-user-select:text!importan
   margin-top: 6px;
   letter-spacing: 0;
   box-shadow: 0 3px 0 #2c7006, 0 5px 10px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.5);
+  transition: transform .06s, box-shadow .06s;
 }
 .cbtn-mini:active {
   transform: translateY(2px);
