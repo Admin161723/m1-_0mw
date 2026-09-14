@@ -16,6 +16,7 @@ var appCheckTimer = null;
 var isUserAway = false;
 var networkMonitorStarted = false;
 var overlayShown = false;
+var connectionChecking = false;
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -42,9 +43,8 @@ function ensureOverlays() {
     document.head.appendChild(s);
   }
   for (var id in OVERLAY_HTML) {
-    var el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement('div');
+    if (!document.getElementById(id)) {
+      var el = document.createElement('div');
       el.id = id;
       el.className = 'overlay-full hidden';
       el.innerHTML = OVERLAY_HTML[id];
@@ -119,25 +119,68 @@ async function getCreatorPhone() {
 function xhrPing(url, timeout) {
   return new Promise(function(resolve) {
     var done = false;
+    var xhr = new XMLHttpRequest();
+    var timer = setTimeout(function() {
+      if (!done) { done = true; try { xhr.abort(); } catch(e){} resolve(false); }
+    }, timeout || 3500);
     try {
-      var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
-      xhr.timeout = timeout || 4000;
-      xhr.onload = function() { if (!done) { done = true; resolve(xhr.status >= 200 && xhr.status < 400); } };
-      xhr.onerror = function() { if (!done) { done = true; resolve(false); } };
-      xhr.ontimeout = function() { if (!done) { done = true; resolve(false); } };
-      xhr.onabort = function() { if (!done) { done = true; resolve(false); } };
+      xhr.onload = function() { if (!done) { done = true; clearTimeout(timer); resolve(xhr.status >= 200 && xhr.status < 500); } };
+      xhr.onerror = function() { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
+      xhr.onabort = function() { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
+      xhr.ontimeout = function() { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
       xhr.send();
-    } catch(e) { if (!done) { done = true; resolve(false); } }
+    } catch(e) { if (!done) { done = true; clearTimeout(timer); resolve(false); } }
   });
+}
+
+async function fetchPing(url, timeout) {
+  try {
+    var c = new AbortController();
+    var t = setTimeout(function(){ c.abort(); }, timeout || 3500);
+    var r = await fetch(url, { signal: c.signal, cache: 'no-store', mode: 'no-cors' });
+    clearTimeout(t);
+    return true;
+  } catch(e) { return false; }
 }
 
 async function checkRealInternet() {
   if (!navigator.onLine) return false;
-  var ok1 = await xhrPing('https://api.ipify.org?format=json&_=' + Date.now(), 4000);
-  if (ok1) return true;
-  var ok2 = await xhrPing('https://www.google.com/generate_204?_=' + Date.now(), 4000);
-  return ok2;
+  var r1 = await Promise.race([
+    fetchPing('https://www.google.com/generate_204?_=' + Date.now(), 3500),
+    xhrPing('https://www.google.com/generate_204?_=' + Date.now(), 3500)
+  ]);
+  if (r1 === true) return true;
+  var r2 = await Promise.race([
+    fetchPing('https://api.ipify.org?format=json&_=' + Date.now(), 3500),
+    xhrPing('https://api.ipify.org?format=json&_=' + Date.now(), 3500)
+  ]);
+  return r2 === true;
+}
+
+async function verifyConnection() {
+  if (connectionChecking) return null;
+  connectionChecking = true;
+  try {
+    var isOnline = await checkRealInternet();
+    if (!isOnline) {
+      if (!overlayShown) {
+        showOfflineOverlay();
+        overlayShown = true;
+      }
+      return false;
+    } else {
+      if (overlayShown) {
+        hideOfflineOverlay();
+        overlayShown = false;
+        window.location.reload();
+        return true;
+      }
+      return true;
+    }
+  } finally {
+    connectionChecking = false;
+  }
 }
 
 function getDeviceId() {
@@ -354,17 +397,21 @@ async function reconnectUser() {
   } catch(e) {}
 }
 
-document.addEventListener('visibilitychange', function() {
+document.addEventListener('visibilitychange', async function() {
   if (document.hidden) {
     startAwayTimer();
   } else {
     cancelAwayTimer();
     reconnectUser();
-    if (!navigator.onLine) showOfflineOverlay();
+    await verifyConnection();
   }
 });
 window.addEventListener('blur', startAwayTimer);
-window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
+window.addEventListener('focus', async function(){
+  cancelAwayTimer();
+  reconnectUser();
+  await verifyConnection();
+});
 
 function isInsideApp() {
   try {
@@ -482,42 +529,16 @@ function startNetworkMonitor() {
 
   window.addEventListener('offline', function(){
     showOfflineOverlay();
+    overlayShown = true;
   });
 
   window.addEventListener('online', async function(){
-    var ok = await checkRealInternet();
-    if (ok) {
-      hideOfflineOverlay();
-      window.location.reload();
-    }
+    setTimeout(async function() { await verifyConnection(); }, 500);
   });
 
   setInterval(async function() {
-    if (!navigator.onLine) {
-      var e = document.getElementById('offlineOverlay');
-      var isHidden = !e || e.classList.contains('hidden');
-      if (isHidden) showOfflineOverlay();
-      return;
-    }
-    var e2 = document.getElementById('offlineOverlay');
-    if (e2 && !e2.classList.contains('hidden')) {
-      var ok = await checkRealInternet();
-      if (ok) {
-        hideOfflineOverlay();
-        window.location.reload();
-      }
-    }
-  }, 2000);
-}
-
-async function retryOffline() {
-  var ok = await checkRealInternet();
-  if (ok) {
-    hideOfflineOverlay();
-    window.location.reload();
-  } else {
-    showToast('اتصال اینترنت هنوز برقرار نشده است', 'error');
-  }
+    await verifyConnection();
+  }, 4000);
 }
 
 async function performSecurityChecks(phone) {
@@ -923,12 +944,14 @@ async function startBoot() {
 
     if (!navigator.onLine) {
       showOfflineOverlay();
+      overlayShown = true;
       return;
     }
 
     var realOnline = await checkRealInternet();
     if (!realOnline) {
       showOfflineOverlay();
+      overlayShown = true;
       return;
     }
 
@@ -1041,6 +1064,7 @@ async function startBoot() {
     try {
       ensureOverlays();
       showOfflineOverlay();
+      overlayShown = true;
     } catch(e) {}
   }
 }
