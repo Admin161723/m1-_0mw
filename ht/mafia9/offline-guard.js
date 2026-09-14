@@ -5,6 +5,49 @@
   var overlay = null;
   var isShown = false;
   var checkBusy = false;
+  var skipNextShow = false;
+
+  try {
+    if (localStorage.getItem('__og_skip__') === '1') {
+      skipNextShow = true;
+      localStorage.removeItem('__og_skip__');
+    }
+  } catch(e) {}
+
+  var OG_CSS = document.createElement('style');
+  OG_CSS.textContent = ''
+    + '.og-wrap{position:fixed !important;top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;'
+    + 'width:100vw !important;height:100vh !important;z-index:2147483647 !important;'
+    + 'background:rgba(0,0,0,0.85) !important;display:none !important;'
+    + 'align-items:center !important;justify-content:center !important;'
+    + 'padding:20px !important;box-sizing:border-box !important;direction:rtl !important;'
+    + 'font-family:Tahoma,Vazirmatn,sans-serif !important;}'
+    + '.og-dialog{width:340px;max-width:100%;border-radius:10px;padding:5px;'
+    + 'background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);'
+    + 'box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);'
+    + 'animation:ogPop .45s cubic-bezier(.2,1.4,.4,1) both;}'
+    + '@keyframes ogPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}'
+    + '.og-box{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);'
+    + 'border-radius:7px;padding:32px 22px 28px;text-align:center;position:relative;overflow:hidden;}'
+    + '.og-msg{color:#fff;font-size:18px;font-weight:700;line-height:1.9;'
+    + 'text-shadow:0 2px 3px rgba(0,0,0,.4);}'
+    + '.og-btn{position:relative;overflow:hidden;border:none;cursor:pointer;'
+    + 'margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);'
+    + 'color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;'
+    + 'text-shadow:0 2px 2px rgba(0,70,0,.55);'
+    + 'box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.55);'
+    + 'transition:transform .12s ease,filter .12s ease;'
+    + 'font-family:Tahoma,Vazirmatn,sans-serif;outline:none;}'
+    + '.og-btn:active{transform:translateY(4px);'
+    + 'box-shadow:0 2px 0 #36900a,inset 0 3px 8px rgba(0,0,0,.35);}'
+    + '.og-btn::after{content:"";position:absolute;top:-60%;left:-30%;width:38%;height:220%;'
+    + 'background:linear-gradient(100deg,transparent,rgba(255,255,255,.8),transparent);'
+    + 'transform:skewX(-20deg);animation:ogShine 2.4s ease-in-out infinite;}'
+    + '@keyframes ogShine{0%,55%{left:-40%;}100%{left:135%;}}'
+    + '.og-btn.og-loading{background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);'
+    + 'color:#5a3d00;text-shadow:none;box-shadow:0 5px 0 #a58a00,0 10px 18px rgba(0,0,0,.4);}'
+    + '.og-btn.og-loading::after{animation:none;display:none;}';
+  document.head.appendChild(OG_CSS);
 
   function getOverlay() {
     if (overlay) return overlay;
@@ -13,43 +56,25 @@
 
     overlay = document.createElement('div');
     overlay.id = '__og_overlay__';
+    overlay.className = 'og-wrap';
     overlay.innerHTML = ''
-      + '<div style="width:340px;max-width:100%;border-radius:10px;padding:5px;'
-      + 'background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);'
-      + 'box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);">'
-      + '<div style="background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);'
-      + 'border-radius:7px;padding:32px 22px 28px;text-align:center;font-family:Tahoma,Vazirmatn,sans-serif;">'
-      + '<div style="color:#fff;font-size:18px;font-weight:700;line-height:1.9;'
-      + 'text-shadow:0 2px 3px rgba(0,0,0,.4);">اتصال اینترنت شما<br>قطع شده است</div>'
-      + '<button id="__og_btn__" style="border:none;cursor:pointer;margin-top:28px;'
-      + 'background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);color:#fff;'
-      + 'font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;'
-      + 'font-family:Tahoma,Vazirmatn,sans-serif;'
-      + 'box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4);">تلاش مجدد</button>'
+      + '<div class="og-dialog">'
+      + '<div class="og-box">'
+      + '<div class="og-msg">اتصال اینترنت شما<br>قطع شده است</div>'
+      + '<button id="__og_btn__" class="og-btn">تلاش مجدد</button>'
       + '</div></div>';
-
-    overlay.style.cssText = ''
-      + 'position:fixed !important;'
-      + 'top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;'
-      + 'width:100vw !important;height:100vh !important;'
-      + 'z-index:2147483647 !important;'
-      + 'background:rgba(0,0,0,0.85) !important;'
-      + 'display:none !important;'
-      + 'align-items:center !important;justify-content:center !important;'
-      + 'padding:20px !important;box-sizing:border-box !important;'
-      + 'direction:rtl !important;';
 
     var target = document.body || document.documentElement;
     target.appendChild(overlay);
 
     var btn = document.getElementById('__og_btn__');
-    if (btn) {
-      btn.onclick = function() { onRetryClick(); };
-    }
+    if (btn) btn.onclick = onRetryClick;
+
     return overlay;
   }
 
   function show() {
+    if (skipNextShow) return;
     var o = getOverlay();
     o.style.setProperty('display', 'flex', 'important');
     isShown = true;
@@ -59,6 +84,24 @@
     if (!overlay) return;
     overlay.style.setProperty('display', 'none', 'important');
     isShown = false;
+  }
+
+  function setBtnLoading() {
+    var btn = document.getElementById('__og_btn__');
+    if (btn) {
+      btn.classList.add('og-loading');
+      btn.textContent = 'در حال بررسی...';
+      btn.disabled = true;
+    }
+  }
+
+  function setBtnNormal() {
+    var btn = document.getElementById('__og_btn__');
+    if (btn) {
+      btn.classList.remove('og-loading');
+      btn.textContent = 'تلاش مجدد';
+      btn.disabled = false;
+    }
   }
 
   function checkWithImage(cb) {
@@ -89,14 +132,6 @@
     checkWithImage(function(ok) {
       if (!ok) {
         if (!isShown) show();
-      } else {
-        if (isShown) {
-          var btn = document.getElementById('__og_btn__');
-          if (btn) {
-            btn.style.background = 'linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c)';
-            btn.textContent = 'ورود به بازی';
-          }
-        }
       }
       checkBusy = false;
     });
@@ -105,29 +140,41 @@
   function onRetryClick() {
     if (checkBusy) return;
     checkBusy = true;
+    setBtnLoading();
 
     if (!navigator.onLine) {
-      checkBusy = false;
+      setTimeout(function() {
+        setBtnNormal();
+        checkBusy = false;
+      }, 600);
       return;
     }
 
     checkWithImage(function(ok) {
       if (ok) {
+        try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
         try { window.location.reload(); } catch(e) {}
+      } else {
+        setBtnNormal();
+        checkBusy = false;
       }
-      checkBusy = false;
     });
   }
 
   function init() {
     getOverlay();
 
+    if (skipNextShow) {
+      skipNextShow = false;
+      hide();
+    }
+
     window.addEventListener('offline', function() {
       if (!isShown) show();
     });
 
     window.addEventListener('online', function() {
-      setTimeout(checkNow, 300);
+      setTimeout(checkNow, 500);
     });
 
     document.addEventListener('visibilitychange', function() {
@@ -140,7 +187,7 @@
 
     setInterval(checkNow, 1000);
 
-    setTimeout(checkNow, 300);
+    setTimeout(checkNow, 400);
   }
 
   if (document.readyState === 'loading') {
