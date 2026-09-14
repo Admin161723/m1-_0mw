@@ -1,4 +1,5 @@
-var PAGES = { game: 'Safe Asli Bazi.html' };
+var PAGES = { game: 'Safe Asli Bazi.html', ban: 'Ban.html' };
+var CREATOR_PHONE_FALLBACK = '09904844031';
 var tempPhone = null;
 var generatedOtp = null;
 var selectedAvatarSrc = "3000.webp";
@@ -12,6 +13,7 @@ var awayTimer = null;
 var AWAY_TIMEOUT_MS = 10000;
 var creatorPhoneCache = null;
 var appCheckTimer = null;
+var isUserAway = false;
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -77,13 +79,22 @@ async function getCreatorPhone() {
     var c = await redisGet('creator_phone');
     if (c && c.phone) { creatorPhoneCache = c.phone; return c.phone; }
   } catch(e) {}
-  return null;
+  creatorPhoneCache = CREATOR_PHONE_FALLBACK;
+  return CREATOR_PHONE_FALLBACK;
 }
 
 function getDeviceId() {
   var id = localStorage.getItem('__device_id__');
   if (!id) {
-    var parts = [navigator.userAgent || 'ua', navigator.platform || 'plat', screen.width + 'x' + screen.height, screen.colorDepth || 24, navigator.language || 'fa', navigator.hardwareConcurrency || 4, new Date().getTimezoneOffset()];
+    var parts = [
+      navigator.userAgent || 'ua',
+      navigator.platform || 'plat',
+      screen.width + 'x' + screen.height,
+      screen.colorDepth || 24,
+      navigator.language || 'fa',
+      navigator.hardwareConcurrency || 4,
+      new Date().getTimezoneOffset()
+    ];
     var raw = parts.join('|'); var hash = 0;
     for (var i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash = hash & hash; }
     id = 'dev_' + Math.abs(hash) + '_' + Date.now().toString(36);
@@ -148,7 +159,12 @@ async function logLoginSession(phone, ip, deviceId) {
     var user = await getUser(phone);
     if (!user) return;
     if (!user.loginHistory) user.loginHistory = [];
-    user.loginHistory.push({ time: Date.now(), ip: ip || 'unknown', device: deviceId || 'unknown', userAgent: navigator.userAgent || 'unknown' });
+    user.loginHistory.push({
+      time: Date.now(),
+      ip: ip || 'unknown',
+      device: deviceId || 'unknown',
+      userAgent: navigator.userAgent || 'unknown'
+    });
     if (user.loginHistory.length > 50) user.loginHistory = user.loginHistory.slice(-50);
     user.lastIP = ip;
     user.lastDevice = deviceId;
@@ -190,56 +206,54 @@ function detectMaliciousApps() {
   } catch(e) { return { detected: false }; }
 }
 
-function showMaliciousAlert(name) {
-  var overlay = document.getElementById('maliciousOverlay');
-  var text = document.getElementById('malText');
-  var code = document.getElementById('malCode');
-  if (overlay) {
-    if (name) {
-      text.innerHTML = 'شما یک برنامه یا فایل مخرب روی گوشی خود دارید:<br><b style="color:#ff5252;direction:ltr;display:inline-block;">' + name + '</b><br>لطفاً ابتدا آن را حذف کنید و سپس دوباره تلاش کنید.';
-      code.textContent = 'DETECTED: ' + name;
-    }
-    overlay.classList.remove('hidden');
-  }
-  appVerified = false;
-}
+function showEl(id) { var e = document.getElementById(id); if (e) e.classList.remove('hidden'); }
+function hideEl(id) { var e = document.getElementById(id); if (e) e.classList.add('hidden'); }
 
 function showOfflineOverlay() {
   var e = document.getElementById('offlineOverlay');
-  if (e) {
-    e.classList.remove('hidden');
-    var btn = e.querySelector('.retry-offline');
-    if (btn) {
+  if (e) e.classList.remove('hidden');
+  var btn = document.getElementById('offlineRetryBtn');
+  if (btn) {
+    if (navigator.onLine) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.textContent = 'تلاش مجدد';
+    } else {
       btn.disabled = true;
       btn.style.opacity = '0.5';
       btn.style.cursor = 'not-allowed';
       btn.textContent = 'در انتظار اینترنت...';
     }
   }
-  try { localStorage.setItem('__offline_now__', '1'); } catch(e) {}
 }
-function hideOfflineOverlay() {
-  var e = document.getElementById('offlineOverlay');
-  if (e) e.classList.add('hidden');
-  try { localStorage.removeItem('__offline_now__'); } catch(e) {}
+function hideOfflineOverlay() { hideEl('offlineOverlay'); }
+
+function showMaliciousAlert(name) {
+  var el = document.getElementById('malAppName');
+  if (el) el.textContent = name ? ('> ' + name + ' <') : '';
+  showEl('maliciousOverlay');
+  appVerified = false;
 }
-function showServerDownOverlay() { var e = document.getElementById('serverDownOverlay'); if (e) e.classList.remove('hidden'); }
+
+function showServerDownOverlay() { showEl('serverDownOverlay'); }
+
 function showIPBanOverlay(ban) {
-  var e = document.getElementById('ipBanOverlay');
   var r = document.getElementById('ipBanReason');
   if (r) r.textContent = 'دلیل: ' + ((ban && ban.reason) || 'تخلف از قوانین');
-  if (e) e.classList.remove('hidden');
+  showEl('ipBanOverlay');
 }
+
 function showDeviceLockOverlay(phone) {
-  var e = document.getElementById('deviceLockOverlay');
   var p = document.getElementById('deviceLockPhone');
   if (p) p.textContent = phone || '****';
-  if (e) e.classList.remove('hidden');
+  showEl('deviceLockOverlay');
 }
 
 function startAwayTimer() {
   clearTimeout(awayTimer);
   awayTimer = setTimeout(async function() {
+    isUserAway = true;
     try {
       var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
       if (!loggedIn || !loggedIn.phone) return;
@@ -257,38 +271,52 @@ function startAwayTimer() {
 }
 function cancelAwayTimer() { clearTimeout(awayTimer); awayTimer = null; }
 
+async function reconnectUser() {
+  if (!isUserAway) return;
+  isUserAway = false;
+  try {
+    var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+    if (!loggedIn || !loggedIn.phone) return;
+    var user = await getUser(loggedIn.phone);
+    if (user) {
+      user.online = true;
+      user.lastSeen = Date.now();
+      await saveUser(loggedIn.phone, user);
+      var allUsers = await getAllUsers();
+      allUsers[loggedIn.phone] = user;
+      await saveAllUsers(allUsers);
+    }
+  } catch(e) {}
+}
+
 document.addEventListener('visibilitychange', function() {
-  if (document.hidden) startAwayTimer(); else cancelAwayTimer();
+  if (document.hidden) startAwayTimer();
+  else { cancelAwayTimer(); reconnectUser(); }
 });
 window.addEventListener('blur', startAwayTimer);
-window.addEventListener('focus', cancelAwayTimer);
+window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
 
 function isInsideApp() {
   try {
     if (localStorage.getItem('currentLoggedInUser')) return true;
     if (localStorage.getItem('__MAFIA_OK__') === '1') return true;
-
     if (window.__MAFIA_APP_TOKEN__ === 'MAFIA_SECURE_' + new Date().getHours()) return true;
     if (window.__MAFIA_APP__ === true) return true;
-
     if (window.Android && typeof window.Android.getAppVersion === 'function') return true;
     if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') return true;
     if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') return true;
     if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) return true;
     if (window.cordova && window.cordova.platformId && window.cordova.platformId !== 'browser') return true;
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.mafiaApp) return true;
-
     var ua = navigator.userAgent || '';
     if (/; wv\)/.test(ua)) return true;
     if (ua.indexOf('MafiaApp') !== -1) return true;
     if (ua.indexOf('WebView') !== -1) return true;
     if (window.Android !== undefined) return true;
     if (window.chrome && window.chrome.webview) return true;
-
     if (window.location.protocol === 'file:') return true;
     if (window.location.protocol === 'app:') return true;
     if (navigator.standalone === true) return true;
-
     return false;
   } catch(e) { return false; }
 }
@@ -356,17 +384,25 @@ function showToast(message, type) {
 async function performSecurityChecks(phone) {
   currentIP = await fetchUserIP();
   currentDeviceId = getDeviceId();
+
   if (currentIP) {
     var ipBan = await checkIPBan(currentIP);
     if (ipBan) { showIPBanOverlay(ipBan); return { blocked: true }; }
   }
   var deviceBan = await checkDeviceBan(currentDeviceId);
   if (deviceBan) { showIPBanOverlay(deviceBan); return { blocked: true }; }
+
   if (phone) {
     var accBan = await getBanStatus(phone);
     if (accBan) {
-      var params = new URLSearchParams({ phone: phone, by: accBan.bannedBy || 'مدیریت', reason: accBan.reason || 'بدون دلیل', duration: accBan.duration || 'permanent', expires: accBan.expiresAt || '' });
-      window.location.href = 'Ban.html?' + params.toString();
+      var params = new URLSearchParams({
+        phone: phone,
+        by: accBan.bannedBy || 'مدیریت',
+        reason: accBan.reason || 'بدون دلیل',
+        duration: accBan.duration || 'permanent',
+        expires: accBan.expiresAt || ''
+      });
+      window.location.href = PAGES.ban + '?' + params.toString();
       return { blocked: true };
     }
   }
@@ -412,24 +448,36 @@ function showPage(pageId) {
 
 async function redirectToMainPage(userPhone) {
   if (!appVerified) { killApp(); return; }
-  if (!isInsideApp()) { killApp(); return; }
   if (isRedirecting) return;
+
   var creatorPhone = await getCreatorPhone();
   var isCreator = (creatorPhone && userPhone === creatorPhone);
+
   if (!isCreator) {
     try { var m = await getMaintenance(); if (m && m.on) { showServerDownOverlay(); return; } } catch(e) {}
   }
+
   isRedirecting = true;
+
   try {
     var ban = await getBanStatus(userPhone);
     if (ban) {
-      var params = new URLSearchParams({ phone: userPhone, by: ban.bannedBy || 'مدیریت', reason: ban.reason || 'بدون دلیل', duration: ban.duration || 'permanent', expires: ban.expiresAt || '' });
-      window.location.href = 'Ban.html?' + params.toString();
+      var params = new URLSearchParams({
+        phone: userPhone,
+        by: ban.bannedBy || 'مدیریت',
+        reason: ban.reason || 'بدون دلیل',
+        duration: ban.duration || 'permanent',
+        expires: ban.expiresAt || ''
+      });
+      window.location.href = PAGES.ban + '?' + params.toString();
       return;
     }
   } catch(e) {}
+
   if (!navigator.onLine) { showOfflineOverlay(); isRedirecting = false; return; }
+
   try { await logLoginSession(userPhone, currentIP, currentDeviceId); } catch(e) {}
+
   try {
     var user = await findUser(userPhone);
     if (user) {
@@ -438,10 +486,15 @@ async function redirectToMainPage(userPhone) {
         sessionStorage.setItem('currentUserRank', user.rank || 'کاربر');
         sessionStorage.setItem('currentUserName', user.name);
         sessionStorage.setItem('currentUserAvatar', user.avatar);
-        localStorage.setItem('currentLoggedInUser', JSON.stringify({ phone: userPhone, timestamp: Date.now(), name: user.name }));
+        localStorage.setItem('currentLoggedInUser', JSON.stringify({
+          phone: userPhone,
+          timestamp: Date.now(),
+          name: user.name
+        }));
       } catch(e) {}
     }
   } catch(e) {}
+
   window.location.href = PAGES.game;
 }
 
@@ -453,18 +506,20 @@ function unlockAudio() {
   }
 }
 function playClickSound() {
-  try { var s = document.getElementById('clickSound'); if (s) { s.currentTime = 0; s.play().catch(function(){}); } unlockAudio(); } catch(e) {}
+  try {
+    var s = document.getElementById('clickSound');
+    if (s) { s.currentTime = 0; s.play().catch(function(){}); }
+    unlockAudio();
+  } catch(e) {}
 }
 
 function retryOffline() {
   if (navigator.onLine) {
-    try { localStorage.removeItem('__offline_now__'); } catch(e) {}
     window.location.reload();
   } else {
     showToast('اتصال اینترنت هنوز برقرار نشده است', 'error');
   }
 }
-window.retryOffline = retryOffline;
 
 function bindEvents() {
   var checkPhoneBtn = document.getElementById('checkPhoneBtn');
@@ -474,28 +529,64 @@ function bindEvents() {
   var forgotPassBtn = document.getElementById('forgotPassBtn');
   var submitProfileBtn = document.getElementById('submitProfileBtn');
 
+  var offlineRetryBtn = document.getElementById('offlineRetryBtn');
+  if (offlineRetryBtn) offlineRetryBtn.addEventListener('click', function() {
+    playClickSound();
+    retryOffline();
+  });
+
+  var malRetryBtn = document.getElementById('malRetryBtn');
+  if (malRetryBtn) malRetryBtn.addEventListener('click', function() {
+    playClickSound();
+    window.location.reload();
+  });
+
+  var serverRetryBtn = document.getElementById('serverRetryBtn');
+  if (serverRetryBtn) serverRetryBtn.addEventListener('click', function() {
+    playClickSound();
+    window.location.reload();
+  });
+
   if (checkPhoneBtn) checkPhoneBtn.addEventListener('click', async function() {
     playClickSound();
     if (!appVerified) return;
-    if (!isInsideApp()) { killApp(); return; }
     if (!navigator.onLine) { showOfflineOverlay(); return; }
+
     var phone = document.getElementById('phoneInput').value.trim();
     var phoneError = document.getElementById('phoneError');
     if (!phone || phone.length < 10) { phoneError.innerText = 'شماره موبایل معتبر وارد کنید'; return; }
     phoneError.innerText = '';
+
     checkPhoneBtn.disabled = true;
     checkPhoneBtn.innerText = '...';
+
     var checks = await performSecurityChecks(phone);
-    if (checks.blocked) { checkPhoneBtn.disabled = false; checkPhoneBtn.innerText = 'ادامه'; return; }
+    if (checks.blocked) {
+      checkPhoneBtn.disabled = false;
+      checkPhoneBtn.innerText = 'ادامه';
+      return;
+    }
+
     var creatorPhone = await getCreatorPhone();
     var isCreator = (creatorPhone && phone === creatorPhone);
     if (!isCreator) {
-      try { var m = await getMaintenance(); if (m && m.on) { showServerDownOverlay(); checkPhoneBtn.disabled = false; checkPhoneBtn.innerText = 'ادامه'; return; } } catch(e) {}
+      try {
+        var m = await getMaintenance();
+        if (m && m.on) {
+          showServerDownOverlay();
+          checkPhoneBtn.disabled = false;
+          checkPhoneBtn.innerText = 'ادامه';
+          return;
+        }
+      } catch(e) {}
     }
+
     tempPhone = phone;
     var user = await findUser(phone);
+
     checkPhoneBtn.disabled = false;
     checkPhoneBtn.innerText = 'ادامه';
+
     if (user && user.fullProfile === true) {
       document.getElementById('stepPhone').style.display = 'none';
       document.getElementById('stepOtp').style.display = 'none';
@@ -503,7 +594,10 @@ function bindEvents() {
       document.getElementById('passError').innerText = '';
     } else {
       var locked = await getPhoneForDevice(currentDeviceId);
-      if (locked && locked.phone && locked.phone !== phone) { showDeviceLockOverlay(locked.phone); return; }
+      if (locked && locked.phone && locked.phone !== phone) {
+        showDeviceLockOverlay(locked.phone);
+        return;
+      }
       generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       showToast('کد تایید: ' + generatedOtp);
       document.getElementById('stepPhone').style.display = 'none';
@@ -535,19 +629,29 @@ function bindEvents() {
 
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
-    if (!isInsideApp()) { killApp(); return; }
     var pass = document.getElementById('passwordInput').value;
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
+
     var checks = await performSecurityChecks(tempPhone);
-    if (checks.blocked) { loginBtn.disabled = false; loginBtn.innerText = 'ورود'; return; }
+    if (checks.blocked) {
+      loginBtn.disabled = false;
+      loginBtn.innerText = 'ورود';
+      return;
+    }
+
     var user = await findUser(tempPhone);
     loginBtn.disabled = false;
     loginBtn.innerText = 'ورود';
+
     if (user && user.password === pass) {
       var locked = await getPhoneForDevice(currentDeviceId);
-      if (!locked) { await lockDeviceToPhone(currentDeviceId, tempPhone); }
-      else if (locked.phone !== tempPhone) { showDeviceLockOverlay(locked.phone); return; }
+      if (!locked) {
+        await lockDeviceToPhone(currentDeviceId, tempPhone);
+      } else if (locked.phone !== tempPhone) {
+        showDeviceLockOverlay(locked.phone);
+        return;
+      }
       await redirectToMainPage(tempPhone);
     } else {
       document.getElementById('passError').innerText = 'رمز عبور نادرست است';
@@ -562,49 +666,75 @@ function bindEvents() {
   var avatarCircle = document.getElementById('avatarCircle');
   var avatarMenu = document.getElementById('avatarMenu');
   var backdrop = document.getElementById('backdrop');
-  avatarMenu.innerHTML = '';
-  for (var i = 0; i < avatarList.length; i++) {
-    (function(src) {
-      var option = document.createElement('div');
-      option.className = 'avatar-option';
-      var img = document.createElement('img');
-      img.src = src;
-      img.onerror = function() { img.style.backgroundColor = '#555'; };
-      option.appendChild(img);
-      option.addEventListener('click', function() {
-        playClickSound();
-        var opts = document.querySelectorAll('.avatar-option');
-        for (var j = 0; j < opts.length; j++) opts[j].classList.remove('selected');
-        option.classList.add('selected');
-        selectedAvatarSrc = src;
-        document.getElementById('selectedAvatarImg').src = src;
-        avatarCircle.style.borderColor = '#2ecc71';
-        closeAvatarMenu();
-      });
-      avatarMenu.appendChild(option);
-    })(avatarList[i]);
+
+  if (avatarMenu) {
+    avatarMenu.innerHTML = '';
+    for (var i = 0; i < avatarList.length; i++) {
+      (function(src) {
+        var option = document.createElement('div');
+        option.className = 'avatar-option';
+        var img = document.createElement('img');
+        img.src = src;
+        img.onerror = function() { img.style.backgroundColor = '#555'; };
+        option.appendChild(img);
+        option.addEventListener('click', function() {
+          playClickSound();
+          var opts = document.querySelectorAll('.avatar-option');
+          for (var j = 0; j < opts.length; j++) opts[j].classList.remove('selected');
+          option.classList.add('selected');
+          selectedAvatarSrc = src;
+          document.getElementById('selectedAvatarImg').src = src;
+          avatarCircle.style.borderColor = '#2ecc71';
+          closeAvatarMenu();
+        });
+        avatarMenu.appendChild(option);
+      })(avatarList[i]);
+    }
   }
-  function openAvatarMenu() { playClickSound(); avatarMenu.classList.add('open'); backdrop.classList.add('show'); }
-  function closeAvatarMenu() { avatarMenu.classList.remove('open'); backdrop.classList.remove('show'); }
+
+  function openAvatarMenu() {
+    playClickSound();
+    if (avatarMenu) avatarMenu.classList.add('open');
+    if (backdrop) backdrop.classList.add('show');
+  }
+  function closeAvatarMenu() {
+    if (avatarMenu) avatarMenu.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('show');
+  }
+
   if (avatarCircle) avatarCircle.addEventListener('click', openAvatarMenu);
   if (backdrop) backdrop.addEventListener('click', closeAvatarMenu);
 
   if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function() {
     playClickSound();
-    if (!isInsideApp()) { killApp(); return; }
     var gameName = document.getElementById('gameName').value.trim();
     var age = document.getElementById('age').value.trim();
     var newPass = document.getElementById('newPassword').value.trim();
-    if (!gameName || !age || !newPass) { showToast('لطفاً نام، سن و رمز عبور را وارد کنید', 'error'); return; }
-    if (isNaN(age) || age < 5 || age > 99) { showToast('سن بین ۵ تا ۹۹ وارد کنید', 'error'); return; }
+
+    if (!gameName || !age || !newPass) {
+      showToast('لطفاً نام، سن و رمز عبور را وارد کنید', 'error');
+      return;
+    }
+    if (isNaN(age) || age < 5 || age > 99) {
+      showToast('سن بین ۵ تا ۹۹ وارد کنید', 'error');
+      return;
+    }
+
     var phone = tempPhone;
     if (!phone) { showToast('خطا در شماره تلفن', 'error'); return; }
+
     var checks = await performSecurityChecks(phone);
     if (checks.blocked) return;
+
     var locked = await getPhoneForDevice(currentDeviceId);
-    if (locked && locked.phone && locked.phone !== phone) { showDeviceLockOverlay(locked.phone); return; }
+    if (locked && locked.phone && locked.phone !== phone) {
+      showDeviceLockOverlay(locked.phone);
+      return;
+    }
+
     var ageNum = parseInt(age);
     var userCode = await getUniqueUserCode();
+
     var userData = {
       password: newPass,
       name: gameName,
@@ -631,7 +761,7 @@ function bindEvents() {
       ownedAvatars: [],
       ownedTemplates: [],
       currentTemplate: null,
-      online: false,
+      online: true,
       banned: false,
       lastUpdatedAt: Date.now(),
       createdAt: Date.now(),
@@ -639,8 +769,10 @@ function bindEvents() {
       registeredIP: currentIP,
       registeredDevice: currentDeviceId
     };
+
     submitProfileBtn.disabled = true;
     submitProfileBtn.innerText = '...';
+
     var saved = await saveUser(phone, userData);
     if (saved) {
       await lockDeviceToPhone(currentDeviceId, phone);
@@ -660,28 +792,23 @@ async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
 
+  var appCheckAttempts = 0;
+  var appConfirmed = false;
+  while (appCheckAttempts < 5) {
+    if (isInsideApp()) { appConfirmed = true; break; }
+    appCheckAttempts++;
+    await new Promise(function(r) { setTimeout(r, 200); });
+  }
+  if (!appConfirmed) { killApp(); return; }
+  startAppCheckLoop();
+
   var mal = detectMaliciousApps();
   if (mal.detected) { showMaliciousAlert(mal.name); return; }
-
-  var alreadyLoggedIn = false;
-  try { alreadyLoggedIn = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
-
-  if (!alreadyLoggedIn) {
-    var appCheckAttempts = 0;
-    var appConfirmed = false;
-    while (appCheckAttempts < 5) {
-      if (isInsideApp()) { appConfirmed = true; break; }
-      appCheckAttempts++;
-      await new Promise(function(r) { setTimeout(r, 200); });
-    }
-    if (!appConfirmed) { killApp(); return; }
-  }
-
-  startAppCheckLoop();
 
   try {
     currentIP = await fetchUserIP();
     currentDeviceId = getDeviceId();
+
     if (currentIP) {
       var ipBan = await checkIPBan(currentIP);
       if (ipBan) { showIPBanOverlay(ipBan); return; }
@@ -730,19 +857,23 @@ async function startBoot() {
         window.location.reload();
       }
     }
-  }, 1000);
+  }, 1500);
 
   setTimeout(async function() {
     var goMain = false;
     try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
+
     var loopGuard = 0;
     try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch(e) {}
     var now = Date.now();
+
     if (goMain && (now - loopGuard) > 15000) {
       try { sessionStorage.setItem('__lastMainJump', String(now)); } catch(e) {}
+
       try {
         var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
         var phone = loggedIn ? loggedIn.phone : null;
+
         if (phone) {
           if (currentIP) {
             var ipBan = await checkIPBan(currentIP);
@@ -750,13 +881,21 @@ async function startBoot() {
           }
           var deviceBan2 = await checkDeviceBan(currentDeviceId);
           if (deviceBan2) { showIPBanOverlay(deviceBan2); return; }
+
           var creatorPhone = await getCreatorPhone();
           var isCreator = (creatorPhone && phone === creatorPhone);
+
           if (!isCreator) {
             var accBan = await getBanStatus(phone);
             if (accBan) {
-              var params = new URLSearchParams({ phone: phone, by: accBan.bannedBy || 'مدیریت', reason: accBan.reason || 'بدون دلیل', duration: accBan.duration || 'permanent', expires: accBan.expiresAt || '' });
-              window.location.href = 'Ban.html?' + params.toString();
+              var params = new URLSearchParams({
+                phone: phone,
+                by: accBan.bannedBy || 'مدیریت',
+                reason: accBan.reason || 'بدون دلیل',
+                duration: accBan.duration || 'permanent',
+                expires: accBan.expiresAt || ''
+              });
+              window.location.href = PAGES.ban + '?' + params.toString();
               return;
             }
             var m2 = await getMaintenance();
@@ -764,6 +903,7 @@ async function startBoot() {
           }
         }
       } catch(e) {}
+
       window.location.replace(PAGES.game);
     } else {
       var lp = document.getElementById('loadingPage');
@@ -780,5 +920,8 @@ async function startBoot() {
 }
 
 lockInspect();
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startBoot);
-else startBoot();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startBoot);
+} else {
+  startBoot();
+}
