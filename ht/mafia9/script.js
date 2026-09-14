@@ -14,43 +14,77 @@ var AWAY_TIMEOUT_MS = 10000;
 var creatorPhoneCache = null;
 var appCheckTimer = null;
 var isUserAway = false;
-var networkMonitorStarted = false;
-var overlayShown = false;
-var connectionChecking = false;
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 var UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 var UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
-function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+var BAN_CSS = '.ban-overlay{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,0.9)!important;padding:20px!important;font-family:Tahoma,Vazirmatn,sans-serif!important;direction:rtl!important;box-sizing:border-box!important;}.ban-dialog{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);}.ban-box{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);border-radius:7px;padding:32px 22px 28px;text-align:center;}.ban-msg{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}.ban-ico{font-size:50px;margin-bottom:14px;}.ban-text{color:rgba(255,255,255,.85);font-size:12px;margin-top:14px;line-height:1.9;}.ban-btn{border:none;cursor:pointer;margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4);font-family:Tahoma,Vazirmatn,sans-serif;}';
 
-var OVERLAY_CSS = '.overlay-full{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:100vh!important;z-index:9999999!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,0.85)!important;-webkit-backdrop-filter:blur(6px)!important;backdrop-filter:blur(6px)!important;padding:20px!important;font-family:Vazirmatn,Tahoma,sans-serif!important;direction:rtl!important;box-sizing:border-box!important;}.overlay-full.hidden{display:none!important;}.dialog-offline{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);}.dbox-offline{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);border-radius:7px;padding:32px 22px 28px;text-align:center;}.dmsg-offline{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}.retry-offline{border:none;cursor:pointer;margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;text-shadow:0 2px 2px rgba(0,70,0,.55);box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4);font-family:Vazirmatn,Tahoma,sans-serif;}.dico-server{font-size:50px;margin-bottom:14px;}.dtext-server{color:rgba(255,255,255,.85);font-size:12px;margin-top:14px;line-height:1.9;}.dico-mal{font-size:60px;margin-bottom:14px;}.dtitle-mal{color:#ff5252;font-size:22px;font-weight:900;margin-bottom:12px;}.dtext-mal{color:rgba(255,255,255,.9);font-size:13px;line-height:2.1;}.dialog-mal{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ff5252,#d32f2f 50%,#b71c1c);box-shadow:0 0 28px rgba(244,67,54,.5),0 18px 40px rgba(0,0,0,.55);}.dbox-mal{background:linear-gradient(180deg,#1a1a2e,#0a0f1e 60%,#050810);border-radius:7px;padding:32px 22px 28px;text-align:center;}';
+function injectBanCSS() {
+  if (document.getElementById('__ban_css__')) return;
+  var s = document.createElement('style');
+  s.id = '__ban_css__';
+  s.textContent = BAN_CSS;
+  (document.head || document.documentElement).appendChild(s);
+}
 
-var OVERLAY_HTML = {
-  offlineOverlay: '<div class="dialog-offline"><div class="dbox-offline"><div class="dmsg-offline">اتصال اینترنت شما<br>قطع شده است</div><button class="retry-offline" id="offlineRetryBtn">تلاش مجدد</button></div></div>',
-  maliciousOverlay: '<div class="dialog-mal"><div class="dbox-mal"><div class="dico-mal">⛔</div><div class="dtitle-mal">دسترسی غیرمجاز</div><div class="dtext-mal">شما این برنامه را دارید<br><b id="malAppName" style="color:#ffe066;direction:ltr;display:inline-block;margin-top:8px;">&gt; ... &lt;</b><br>باید اول حذف کنید بعد دوباره تلاش کنید</div><button class="retry-offline" id="malRetryBtn">بررسی مجدد</button></div></div>',
-  serverDownOverlay: '<div class="dialog-offline"><div class="dbox-offline" style="background:linear-gradient(180deg,#e74c3c,#c0392b 60%,#a02a1a);"><div class="dico-server">🔌</div><div class="dmsg-offline">سرور موقتاً<br>قطع است</div><div class="dtext-server">لطفاً بعداً مراجعه کنید</div><button class="retry-offline" id="serverRetryBtn">تلاش مجدد</button></div></div>',
-  ipBanOverlay: '<div class="dialog-offline"><div class="dbox-offline" style="background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);"><div class="dico-server">🚫</div><div class="dmsg-offline">IP شما مسدود است</div><div class="dtext-server" id="ipBanReason">دلیل: تخلف از قوانین</div></div></div>',
-  deviceLockOverlay: '<div class="dialog-offline"><div class="dbox-offline" style="background:linear-gradient(180deg,#e65100,#bf360c 60%,#8f2400);"><div class="dico-server">📱</div><div class="dmsg-offline">این گوشی قبلاً<br>ثبت‌نام کرده است</div><div class="dtext-server">هر گوشی فقط یک اکانت می‌تواند داشته باشد<br>شماره: <span id="deviceLockPhone">****</span></div></div></div>'
-};
+function createOverlay(id, innerHTML) {
+  injectBanCSS();
+  var existing = document.getElementById(id);
+  if (existing) return existing;
+  var el = document.createElement('div');
+  el.id = id;
+  el.className = 'ban-overlay';
+  el.style.display = 'none';
+  el.innerHTML = innerHTML;
+  (document.body || document.documentElement).appendChild(el);
+  return el;
+}
 
-function ensureOverlays() {
-  if (!document.getElementById('__ovl_css__')) {
-    var s = document.createElement('style');
-    s.id = '__ovl_css__';
-    s.textContent = OVERLAY_CSS;
-    document.head.appendChild(s);
-  }
-  for (var id in OVERLAY_HTML) {
-    if (!document.getElementById(id)) {
-      var el = document.createElement('div');
-      el.id = id;
-      el.className = 'overlay-full hidden';
-      el.innerHTML = OVERLAY_HTML[id];
-      document.body.appendChild(el);
-    }
-  }
+function showMaliciousAlert(name) {
+  var html = '<div class="ban-dialog"><div class="ban-box" style="background:linear-gradient(180deg,#1a1a2e,#0a0f1e 60%,#050810);">'
+    + '<div class="ban-ico">⛔</div>'
+    + '<div class="ban-msg" style="color:#ff5252;">دسترسی غیرمجاز</div>'
+    + '<div class="ban-text">شما این برنامه را دارید<br><b style="color:#ffe066;direction:ltr;display:inline-block;margin-top:8px;">' + (name || '') + '</b><br>باید اول حذف کنید بعد دوباره تلاش کنید</div>'
+    + '<button class="ban-btn" onclick="location.reload()">بررسی مجدد</button>'
+    + '</div></div>';
+  var el = createOverlay('__mal_overlay__', html);
+  el.style.display = 'flex';
+  appVerified = false;
+}
+
+function showServerDownOverlay() {
+  var html = '<div class="ban-dialog"><div class="ban-box" style="background:linear-gradient(180deg,#e74c3c,#c0392b 60%,#a02a1a);">'
+    + '<div class="ban-ico">🔌</div>'
+    + '<div class="ban-msg">سرور موقتاً<br>قطع است</div>'
+    + '<div class="ban-text">لطفاً بعداً مراجعه کنید</div>'
+    + '<button class="ban-btn" onclick="location.reload()">تلاش مجدد</button>'
+    + '</div></div>';
+  var el = createOverlay('__server_overlay__', html);
+  el.style.display = 'flex';
+}
+
+function showIPBanOverlay(ban) {
+  var reason = (ban && ban.reason) ? ban.reason : 'تخلف از قوانین';
+  var html = '<div class="ban-dialog"><div class="ban-box">'
+    + '<div class="ban-ico">🚫</div>'
+    + '<div class="ban-msg">IP شما مسدود است</div>'
+    + '<div class="ban-text">دلیل: ' + reason + '</div>'
+    + '</div></div>';
+  var el = createOverlay('__ipban_overlay__', html);
+  el.style.display = 'flex';
+}
+
+function showDeviceLockOverlay(phone) {
+  var html = '<div class="ban-dialog"><div class="ban-box" style="background:linear-gradient(180deg,#e65100,#bf360c 60%,#8f2400);">'
+    + '<div class="ban-ico">📱</div>'
+    + '<div class="ban-msg">این گوشی قبلاً<br>ثبت‌نام کرده است</div>'
+    + '<div class="ban-text">هر گوشی فقط یک اکانت می‌تواند داشته باشد<br>شماره: ' + (phone || '****') + '</div>'
+    + '</div></div>';
+  var el = createOverlay('__devlock_overlay__', html);
+  el.style.display = 'flex';
 }
 
 async function upstashGet(url, token, k) {
@@ -114,73 +148,6 @@ async function getCreatorPhone() {
   } catch(e) {}
   creatorPhoneCache = CREATOR_PHONE_FALLBACK;
   return CREATOR_PHONE_FALLBACK;
-}
-
-function xhrPing(url, timeout) {
-  return new Promise(function(resolve) {
-    var done = false;
-    var xhr = new XMLHttpRequest();
-    var timer = setTimeout(function() {
-      if (!done) { done = true; try { xhr.abort(); } catch(e){} resolve(false); }
-    }, timeout || 3500);
-    try {
-      xhr.open('GET', url, true);
-      xhr.onload = function() { if (!done) { done = true; clearTimeout(timer); resolve(xhr.status >= 200 && xhr.status < 500); } };
-      xhr.onerror = function() { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
-      xhr.onabort = function() { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
-      xhr.ontimeout = function() { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
-      xhr.send();
-    } catch(e) { if (!done) { done = true; clearTimeout(timer); resolve(false); } }
-  });
-}
-
-async function fetchPing(url, timeout) {
-  try {
-    var c = new AbortController();
-    var t = setTimeout(function(){ c.abort(); }, timeout || 3500);
-    var r = await fetch(url, { signal: c.signal, cache: 'no-store', mode: 'no-cors' });
-    clearTimeout(t);
-    return true;
-  } catch(e) { return false; }
-}
-
-async function checkRealInternet() {
-  if (!navigator.onLine) return false;
-  var r1 = await Promise.race([
-    fetchPing('https://www.google.com/generate_204?_=' + Date.now(), 3500),
-    xhrPing('https://www.google.com/generate_204?_=' + Date.now(), 3500)
-  ]);
-  if (r1 === true) return true;
-  var r2 = await Promise.race([
-    fetchPing('https://api.ipify.org?format=json&_=' + Date.now(), 3500),
-    xhrPing('https://api.ipify.org?format=json&_=' + Date.now(), 3500)
-  ]);
-  return r2 === true;
-}
-
-async function verifyConnection() {
-  if (connectionChecking) return null;
-  connectionChecking = true;
-  try {
-    var isOnline = await checkRealInternet();
-    if (!isOnline) {
-      if (!overlayShown) {
-        showOfflineOverlay();
-        overlayShown = true;
-      }
-      return false;
-    } else {
-      if (overlayShown) {
-        hideOfflineOverlay();
-        overlayShown = false;
-        window.location.reload();
-        return true;
-      }
-      return true;
-    }
-  } finally {
-    connectionChecking = false;
-  }
 }
 
 function getDeviceId() {
@@ -306,58 +273,6 @@ function detectMaliciousApps() {
   } catch(e) { return { detected: false }; }
 }
 
-function showEl(id) {
-  ensureOverlays();
-  var e = document.getElementById(id);
-  if (e) e.classList.remove('hidden');
-}
-function hideEl(id) {
-  var e = document.getElementById(id);
-  if (e) e.classList.add('hidden');
-}
-
-function showOfflineOverlay() {
-  ensureOverlays();
-  var e = document.getElementById('offlineOverlay');
-  if (e) e.classList.remove('hidden');
-  overlayShown = true;
-}
-function hideOfflineOverlay() {
-  hideEl('offlineOverlay');
-  overlayShown = false;
-}
-
-function showMaliciousAlert(name) {
-  ensureOverlays();
-  var el = document.getElementById('malAppName');
-  if (el) el.textContent = name ? ('> ' + name + ' <') : '';
-  var e = document.getElementById('maliciousOverlay');
-  if (e) e.classList.remove('hidden');
-  appVerified = false;
-}
-
-function showServerDownOverlay() {
-  ensureOverlays();
-  var e = document.getElementById('serverDownOverlay');
-  if (e) e.classList.remove('hidden');
-}
-
-function showIPBanOverlay(ban) {
-  ensureOverlays();
-  var r = document.getElementById('ipBanReason');
-  if (r) r.textContent = 'دلیل: ' + ((ban && ban.reason) || 'تخلف از قوانین');
-  var e = document.getElementById('ipBanOverlay');
-  if (e) e.classList.remove('hidden');
-}
-
-function showDeviceLockOverlay(phone) {
-  ensureOverlays();
-  var p = document.getElementById('deviceLockPhone');
-  if (p) p.textContent = phone || '****';
-  var e = document.getElementById('deviceLockOverlay');
-  if (e) e.classList.remove('hidden');
-}
-
 function startAwayTimer() {
   clearTimeout(awayTimer);
   awayTimer = setTimeout(async function() {
@@ -397,21 +312,12 @@ async function reconnectUser() {
   } catch(e) {}
 }
 
-document.addEventListener('visibilitychange', async function() {
-  if (document.hidden) {
-    startAwayTimer();
-  } else {
-    cancelAwayTimer();
-    reconnectUser();
-    await verifyConnection();
-  }
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) startAwayTimer();
+  else { cancelAwayTimer(); reconnectUser(); }
 });
 window.addEventListener('blur', startAwayTimer);
-window.addEventListener('focus', async function(){
-  cancelAwayTimer();
-  reconnectUser();
-  await verifyConnection();
-});
+window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
 
 function isInsideApp() {
   try {
@@ -470,20 +376,6 @@ function lockInspect() {
     if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's' || e.key === 'P' || e.key === 'p')) { e.preventDefault(); killApp(); return false; }
   });
   document.addEventListener('dragstart', function(e){ e.preventDefault(); });
-  document.addEventListener('selectstart', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
-  document.addEventListener('copy', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
-  document.addEventListener('cut', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
-  document.addEventListener('paste', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
-  document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
-  document.addEventListener('gesturechange', function(e){ e.preventDefault(); });
-  document.addEventListener('gestureend', function(e){ e.preventDefault(); });
-  document.addEventListener('touchmove', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); }, { passive: false });
-  var lastTouchEnd = 0;
-  document.addEventListener('touchend', function(e) {
-    var now = Date.now();
-    if (now - lastTouchEnd <= 300 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
-    lastTouchEnd = now;
-  }, false);
 }
 
 function showToast(message, type) {
@@ -493,52 +385,6 @@ function showToast(message, type) {
   t.textContent = message;
   t.className = 'toast show' + (type === 'error' ? ' error' : '');
   setTimeout(function(){ t.classList.remove('show'); }, 3000);
-}
-
-function bindOverlayButtons() {
-  ensureOverlays();
-  var offlineBtn = document.getElementById('offlineRetryBtn');
-  if (offlineBtn) {
-    offlineBtn.onclick = null;
-    offlineBtn.addEventListener('click', function() {
-      try { playClickSound(); } catch(e) {}
-      window.location.reload();
-    });
-  }
-  var malBtn = document.getElementById('malRetryBtn');
-  if (malBtn) {
-    malBtn.onclick = null;
-    malBtn.addEventListener('click', function() {
-      try { playClickSound(); } catch(e) {}
-      window.location.reload();
-    });
-  }
-  var serverBtn = document.getElementById('serverRetryBtn');
-  if (serverBtn) {
-    serverBtn.onclick = null;
-    serverBtn.addEventListener('click', function() {
-      try { playClickSound(); } catch(e) {}
-      window.location.reload();
-    });
-  }
-}
-
-function startNetworkMonitor() {
-  if (networkMonitorStarted) return;
-  networkMonitorStarted = true;
-
-  window.addEventListener('offline', function(){
-    showOfflineOverlay();
-    overlayShown = true;
-  });
-
-  window.addEventListener('online', async function(){
-    setTimeout(async function() { await verifyConnection(); }, 500);
-  });
-
-  setInterval(async function() {
-    await verifyConnection();
-  }, 4000);
 }
 
 async function performSecurityChecks(phone) {
@@ -609,9 +455,6 @@ function showPage(pageId) {
 async function redirectToMainPage(userPhone) {
   if (!appVerified) { killApp(); return; }
   if (isRedirecting) return;
-
-  var online = await checkRealInternet();
-  if (!online) { showOfflineOverlay(); return; }
 
   var creatorPhone = await getCreatorPhone();
   var isCreator = (creatorPhone && userPhone === creatorPhone);
@@ -685,9 +528,6 @@ function bindEvents() {
   if (checkPhoneBtn) checkPhoneBtn.addEventListener('click', async function() {
     playClickSound();
     if (!appVerified) return;
-
-    var online = await checkRealInternet();
-    if (!online) { showOfflineOverlay(); return; }
 
     var phone = document.getElementById('phoneInput').value.trim();
     var phoneError = document.getElementById('phoneError');
@@ -766,10 +606,6 @@ function bindEvents() {
 
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
-
-    var online = await checkRealInternet();
-    if (!online) { showOfflineOverlay(); return; }
-
     var pass = document.getElementById('passwordInput').value;
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
@@ -848,10 +684,6 @@ function bindEvents() {
 
   if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function() {
     playClickSound();
-
-    var online = await checkRealInternet();
-    if (!online) { showOfflineOverlay(); return; }
-
     var gameName = document.getElementById('gameName').value.trim();
     var age = document.getElementById('age').value.trim();
     var newPass = document.getElementById('newPassword').value.trim();
@@ -938,29 +770,12 @@ async function startBoot() {
   window.__BOOT_OK__ = true;
 
   try {
-    ensureOverlays();
-    bindOverlayButtons();
-    startNetworkMonitor();
-
-    if (!navigator.onLine) {
-      showOfflineOverlay();
-      overlayShown = true;
-      return;
-    }
-
-    var realOnline = await checkRealInternet();
-    if (!realOnline) {
-      showOfflineOverlay();
-      overlayShown = true;
-      return;
-    }
-
     var appCheckAttempts = 0;
     var appConfirmed = false;
     while (appCheckAttempts < 5) {
       if (isInsideApp()) { appConfirmed = true; break; }
       appCheckAttempts++;
-      await sleep(200);
+      await new Promise(function(r) { setTimeout(r, 200); });
     }
     if (!appConfirmed) { killApp(); return; }
     startAppCheckLoop();
@@ -1060,13 +875,7 @@ async function startBoot() {
         } catch(e) {}
       }
     }, 3000);
-  } catch(err) {
-    try {
-      ensureOverlays();
-      showOfflineOverlay();
-      overlayShown = true;
-    } catch(e) {}
-  }
+  } catch(err) {}
 }
 
 lockInspect();
