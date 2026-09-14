@@ -2,10 +2,9 @@
   if (window.__OG_LOADED__) return;
   window.__OG_LOADED__ = true;
 
-  console.log('✅ offline-guard loaded');
-
   var overlay = null;
   var isShown = false;
+  var checkBusy = false;
 
   function getOverlay() {
     if (overlay) return overlay;
@@ -45,13 +44,8 @@
 
     var btn = document.getElementById('__og_btn__');
     if (btn) {
-      btn.onclick = function() {
-        console.log('🔄 retry clicked');
-        checkNow();
-      };
+      btn.onclick = function() { onRetryClick(); };
     }
-
-    console.log('✅ overlay created');
     return overlay;
   }
 
@@ -59,14 +53,12 @@
     var o = getOverlay();
     o.style.setProperty('display', 'flex', 'important');
     isShown = true;
-    console.log('🔴 OFFLINE overlay shown');
   }
 
   function hide() {
     if (!overlay) return;
     overlay.style.setProperty('display', 'none', 'important');
     isShown = false;
-    console.log('🟢 OFFLINE overlay hidden');
   }
 
   function checkWithImage(cb) {
@@ -84,62 +76,69 @@
     img.src = 'https://www.google.com/favicon.ico?_=' + Date.now();
   }
 
-  var checkBusy = false;
-  var failCount = 0;
-
   function checkNow() {
     if (checkBusy) return;
     checkBusy = true;
 
-    console.log('🔍 checking internet... onLine=' + navigator.onLine);
-
     if (!navigator.onLine) {
-      failCount = 99;
-      show();
+      if (!isShown) show();
       checkBusy = false;
       return;
     }
 
     checkWithImage(function(ok) {
-      console.log('🔍 image check result: ' + ok);
-      if (ok) {
-        failCount = 0;
-        if (isShown) {
-          hide();
-          try { window.location.reload(); } catch(e) {}
-        }
+      if (!ok) {
+        if (!isShown) show();
       } else {
-        failCount++;
-        if (failCount >= 2) show();
+        if (isShown) {
+          var btn = document.getElementById('__og_btn__');
+          if (btn) {
+            btn.style.background = 'linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c)';
+            btn.textContent = 'ورود به بازی';
+          }
+        }
+      }
+      checkBusy = false;
+    });
+  }
+
+  function onRetryClick() {
+    if (checkBusy) return;
+    checkBusy = true;
+
+    if (!navigator.onLine) {
+      checkBusy = false;
+      return;
+    }
+
+    checkWithImage(function(ok) {
+      if (ok) {
+        try { window.location.reload(); } catch(e) {}
       }
       checkBusy = false;
     });
   }
 
   function init() {
-    console.log('🚀 offline-guard init');
     getOverlay();
 
     window.addEventListener('offline', function() {
-      console.log('📡 offline event');
-      failCount = 99;
-      show();
+      if (!isShown) show();
     });
 
     window.addEventListener('online', function() {
-      console.log('📡 online event');
-      setTimeout(function() { checkNow(); }, 500);
-    });
-
-    document.addEventListener('visibilitychange', function() {
-      if (!document.hidden) setTimeout(checkNow, 300);
-    });
-
-    window.addEventListener('focus', function() {
       setTimeout(checkNow, 300);
     });
 
-    setInterval(checkNow, 2000);
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) setTimeout(checkNow, 200);
+    });
+
+    window.addEventListener('focus', function() {
+      setTimeout(checkNow, 200);
+    });
+
+    setInterval(checkNow, 1000);
 
     setTimeout(checkNow, 300);
   }
