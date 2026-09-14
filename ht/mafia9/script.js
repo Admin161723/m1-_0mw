@@ -265,53 +265,44 @@ window.addEventListener('focus', cancelAwayTimer);
 
 function isInsideApp() {
   try {
-    var score = 0;
+    if (localStorage.getItem('currentLoggedInUser')) return true;
+    if (localStorage.getItem('__MAFIA_OK__') === '1') return true;
+
+    if (window.__MAFIA_APP_TOKEN__ === 'MAFIA_SECURE_' + new Date().getHours()) return true;
+    if (window.__MAFIA_APP__ === true) return true;
+
+    if (window.Android && typeof window.Android.getAppVersion === 'function') return true;
+    if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') return true;
+    if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') return true;
+    if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) return true;
+    if (window.cordova && window.cordova.platformId && window.cordova.platformId !== 'browser') return true;
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.mafiaApp) return true;
+
     var ua = navigator.userAgent || '';
-    var plat = navigator.platform || '';
+    if (/; wv\)/.test(ua)) return true;
+    if (ua.indexOf('MafiaApp') !== -1) return true;
+    if (ua.indexOf('WebView') !== -1) return true;
+    if (window.Android !== undefined) return true;
+    if (window.chrome && window.chrome.webview) return true;
 
-    if (window.Android && typeof window.Android.getAppVersion === 'function') score += 5;
-    if (window.Android && typeof window.Android.isNativeApp === 'function') score += 5;
-    if (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') score += 5;
-    if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') score += 5;
-    if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') score += 5;
-    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.mafiaApp) score += 5;
-    if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) score += 5;
-    if (window.cordova && window.cordova.platformId && window.cordova.platformId !== 'browser') score += 5;
-    if (window.PhoneGap) score += 3;
+    if (window.location.protocol === 'file:') return true;
+    if (window.location.protocol === 'app:') return true;
+    if (navigator.standalone === true) return true;
 
-    if (window.__MAFIA_APP_TOKEN__ === 'MAFIA_SECURE_' + new Date().getHours()) score += 10;
-
-    if (/; wv\)/.test(ua)) score += 2;
-    if (window.chrome && window.chrome.webview) score += 4;
-    if (window.AndroidExec) score += 5;
-    if (window._cordovaNative) score += 5;
-
-    if (window.location.protocol === 'file:') score += 3;
-    if (window.location.protocol === 'app:') score += 3;
-    if (window.location.protocol === 'capacitor:') score += 5;
-
-    if (ua.indexOf('MafiaApp/') !== -1) score += 3;
-    if (navigator.standalone === true) score += 2;
-
-    if (document.referrer && document.referrer.indexOf('http') === 0) score -= 10;
-
-    if (window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth) score += 1;
-
-    if (plat.indexOf('Win') !== -1 || plat.indexOf('Mac') !== -1 || plat.indexOf('Linux') !== -1) score -= 5;
-
-    return score >= 8;
+    return false;
   } catch(e) { return false; }
 }
 
 function startAppCheckLoop() {
   if (appCheckTimer) clearInterval(appCheckTimer);
   appCheckTimer = setInterval(function() {
+    if (localStorage.getItem('currentLoggedInUser')) return;
     if (!isInsideApp()) {
       clearInterval(appCheckTimer);
       appCheckTimer = null;
       killApp();
     }
-  }, 2000);
+  }, 3000);
 }
 
 function killApp() {
@@ -672,15 +663,19 @@ async function startBoot() {
   var mal = detectMaliciousApps();
   if (mal.detected) { showMaliciousAlert(mal.name); return; }
 
-  var appCheckAttempts = 0;
-  var appConfirmed = false;
-  while (appCheckAttempts < 5) {
-    if (isInsideApp()) { appConfirmed = true; break; }
-    appCheckAttempts++;
-    await new Promise(function(r) { setTimeout(r, 200); });
-  }
+  var alreadyLoggedIn = false;
+  try { alreadyLoggedIn = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
 
-  if (!appConfirmed) { killApp(); return; }
+  if (!alreadyLoggedIn) {
+    var appCheckAttempts = 0;
+    var appConfirmed = false;
+    while (appCheckAttempts < 5) {
+      if (isInsideApp()) { appConfirmed = true; break; }
+      appCheckAttempts++;
+      await new Promise(function(r) { setTimeout(r, 200); });
+    }
+    if (!appConfirmed) { killApp(); return; }
+  }
 
   startAppCheckLoop();
 
