@@ -53,62 +53,12 @@
 <div class="avatar-menu" id="avatarMenu"></div>
 <div id="backdrop" class="backdrop"></div>
 
-<div id="offlineOverlay" class="overlay-full hidden">
-    <div class="dialog-offline">
-        <div class="dbox-offline">
-            <div class="dmsg-offline">اتصال اینترنت شما<br>قطع شده است</div>
-            <button class="retry-offline" id="offlineRetryBtn">تلاش مجدد</button>
-        </div>
-    </div>
-</div>
-
-<div id="maliciousOverlay" class="overlay-full hidden">
-    <div class="dialog-mal">
-        <div class="dbox-mal">
-            <div class="dico-mal">⛔</div>
-            <div class="dtitle-mal">دسترسی غیرمجاز</div>
-            <div class="dtext-mal">شما این برنامه را دارید<br><b id="malAppName" style="color:#ffe066;direction:ltr;display:inline-block;margin-top:8px;">> ... <</b><br>باید اول حذف کنید بعد دوباره تلاش کنید</div>
-            <button class="retry-offline" id="malRetryBtn">بررسی مجدد</button>
-        </div>
-    </div>
-</div>
-
-<div id="serverDownOverlay" class="overlay-full hidden">
-    <div class="dialog-offline">
-        <div class="dbox-offline" style="background:linear-gradient(180deg,#e74c3c,#c0392b 60%,#a02a1a);">
-            <div class="dico-server">🔌</div>
-            <div class="dmsg-offline">سرور موقتاً<br>قطع است</div>
-            <div class="dtext-server">لطفاً بعداً مراجعه کنید</div>
-            <button class="retry-offline" id="serverRetryBtn">تلاش مجدد</button>
-        </div>
-    </div>
-</div>
-
-<div id="ipBanOverlay" class="overlay-full hidden">
-    <div class="dialog-offline">
-        <div class="dbox-offline" style="background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);">
-            <div class="dico-server">🚫</div>
-            <div class="dmsg-offline">IP شما مسدود است</div>
-            <div class="dtext-server" id="ipBanReason">دلیل: تخلف از قوانین</div>
-        </div>
-    </div>
-</div>
-
-<div id="deviceLockOverlay" class="overlay-full hidden">
-    <div class="dialog-offline">
-        <div class="dbox-offline" style="background:linear-gradient(180deg,#e65100,#bf360c 60%,#8f2400);">
-            <div class="dico-server">📱</div>
-            <div class="dmsg-offline">این گوشی قبلاً<br>ثبت‌نام کرده است</div>
-            <div class="dtext-server">هر گوشی فقط یک اکانت می‌تواند داشته باشد<br>شماره: <span id="deviceLockPhone">****</span></div>
-        </div>
-    </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
 <audio id="bgMusic" loop preload="auto"><source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg"></audio>
 
+<script src="offline-guard.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
