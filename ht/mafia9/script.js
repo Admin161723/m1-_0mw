@@ -14,6 +14,8 @@ var AWAY_TIMEOUT_MS = 10000;
 var creatorPhoneCache = null;
 var appCheckTimer = null;
 var isUserAway = false;
+var networkMonitorStarted = false;
+var isReallyOnline = true;
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -81,6 +83,23 @@ async function getCreatorPhone() {
   } catch(e) {}
   creatorPhoneCache = CREATOR_PHONE_FALLBACK;
   return CREATOR_PHONE_FALLBACK;
+}
+
+async function checkRealInternet() {
+  if (!navigator.onLine) { isReallyOnline = false; return false; }
+  try {
+    var c = new AbortController();
+    var t = setTimeout(function(){c.abort();}, 4000);
+    var r = await fetch('https://api.ipify.org?format=json&_=' + Date.now(), {
+      signal: c.signal, cache: 'no-store'
+    });
+    clearTimeout(t);
+    isReallyOnline = r.ok;
+    return r.ok;
+  } catch(e) {
+    isReallyOnline = false;
+    return false;
+  }
 }
 
 function getDeviceId() {
@@ -214,17 +233,10 @@ function showOfflineOverlay() {
   if (e) e.classList.remove('hidden');
   var btn = document.getElementById('offlineRetryBtn');
   if (btn) {
-    if (navigator.onLine) {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-      btn.textContent = 'تلاش مجدد';
-    } else {
-      btn.disabled = true;
-      btn.style.opacity = '0.5';
-      btn.style.cursor = 'not-allowed';
-      btn.textContent = 'در انتظار اینترنت...';
-    }
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.textContent = 'تلاش مجدد';
   }
 }
 function hideOfflineOverlay() { hideEl('offlineOverlay'); }
@@ -381,6 +393,69 @@ function showToast(message, type) {
   setTimeout(function(){ t.classList.remove('show'); }, 3000);
 }
 
+function bindOverlayButtons() {
+  var offlineBtn = document.getElementById('offlineRetryBtn');
+  if (offlineBtn) offlineBtn.addEventListener('click', function() {
+    playClickSound();
+    retryOffline();
+  });
+  var malBtn = document.getElementById('malRetryBtn');
+  if (malBtn) malBtn.addEventListener('click', function() {
+    playClickSound();
+    window.location.reload();
+  });
+  var serverBtn = document.getElementById('serverRetryBtn');
+  if (serverBtn) serverBtn.addEventListener('click', function() {
+    playClickSound();
+    window.location.reload();
+  });
+}
+
+function startNetworkMonitor() {
+  if (networkMonitorStarted) return;
+  networkMonitorStarted = true;
+
+  window.addEventListener('offline', function(){
+    showOfflineOverlay();
+  });
+
+  window.addEventListener('online', async function(){
+    var ok = await checkRealInternet();
+    if (ok) {
+      hideOfflineOverlay();
+      window.location.reload();
+    }
+  });
+
+  setInterval(async function() {
+    var overlay = document.getElementById('offlineOverlay');
+    var isHidden = !overlay || overlay.classList.contains('hidden');
+
+    if (!navigator.onLine) {
+      if (isHidden) showOfflineOverlay();
+      return;
+    }
+
+    if (!isHidden) {
+      var ok = await checkRealInternet();
+      if (ok) {
+        hideOfflineOverlay();
+        window.location.reload();
+      }
+    }
+  }, 3000);
+}
+
+async function retryOffline() {
+  var ok = await checkRealInternet();
+  if (ok) {
+    hideOfflineOverlay();
+    window.location.reload();
+  } else {
+    showToast('اتصال اینترنت هنوز برقرار نشده است', 'error');
+  }
+}
+
 async function performSecurityChecks(phone) {
   currentIP = await fetchUserIP();
   currentDeviceId = getDeviceId();
@@ -450,6 +525,9 @@ async function redirectToMainPage(userPhone) {
   if (!appVerified) { killApp(); return; }
   if (isRedirecting) return;
 
+  var online = await checkRealInternet();
+  if (!online) { showOfflineOverlay(); return; }
+
   var creatorPhone = await getCreatorPhone();
   var isCreator = (creatorPhone && userPhone === creatorPhone);
 
@@ -473,8 +551,6 @@ async function redirectToMainPage(userPhone) {
       return;
     }
   } catch(e) {}
-
-  if (!navigator.onLine) { showOfflineOverlay(); isRedirecting = false; return; }
 
   try { await logLoginSession(userPhone, currentIP, currentDeviceId); } catch(e) {}
 
@@ -513,14 +589,6 @@ function playClickSound() {
   } catch(e) {}
 }
 
-function retryOffline() {
-  if (navigator.onLine) {
-    window.location.reload();
-  } else {
-    showToast('اتصال اینترنت هنوز برقرار نشده است', 'error');
-  }
-}
-
 function bindEvents() {
   var checkPhoneBtn = document.getElementById('checkPhoneBtn');
   var verifyOtpBtn = document.getElementById('verifyOtpBtn');
@@ -529,28 +597,12 @@ function bindEvents() {
   var forgotPassBtn = document.getElementById('forgotPassBtn');
   var submitProfileBtn = document.getElementById('submitProfileBtn');
 
-  var offlineRetryBtn = document.getElementById('offlineRetryBtn');
-  if (offlineRetryBtn) offlineRetryBtn.addEventListener('click', function() {
-    playClickSound();
-    retryOffline();
-  });
-
-  var malRetryBtn = document.getElementById('malRetryBtn');
-  if (malRetryBtn) malRetryBtn.addEventListener('click', function() {
-    playClickSound();
-    window.location.reload();
-  });
-
-  var serverRetryBtn = document.getElementById('serverRetryBtn');
-  if (serverRetryBtn) serverRetryBtn.addEventListener('click', function() {
-    playClickSound();
-    window.location.reload();
-  });
-
   if (checkPhoneBtn) checkPhoneBtn.addEventListener('click', async function() {
     playClickSound();
     if (!appVerified) return;
-    if (!navigator.onLine) { showOfflineOverlay(); return; }
+
+    var online = await checkRealInternet();
+    if (!online) { showOfflineOverlay(); return; }
 
     var phone = document.getElementById('phoneInput').value.trim();
     var phoneError = document.getElementById('phoneError');
@@ -629,6 +681,10 @@ function bindEvents() {
 
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
+
+    var online = await checkRealInternet();
+    if (!online) { showOfflineOverlay(); return; }
+
     var pass = document.getElementById('passwordInput').value;
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
@@ -707,6 +763,10 @@ function bindEvents() {
 
   if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function() {
     playClickSound();
+
+    var online = await checkRealInternet();
+    if (!online) { showOfflineOverlay(); return; }
+
     var gameName = document.getElementById('gameName').value.trim();
     var age = document.getElementById('age').value.trim();
     var newPass = document.getElementById('newPassword').value.trim();
@@ -802,6 +862,15 @@ async function startBoot() {
   if (!appConfirmed) { killApp(); return; }
   startAppCheckLoop();
 
+  bindOverlayButtons();
+  startNetworkMonitor();
+
+  var online = await checkRealInternet();
+  if (!online) {
+    showOfflineOverlay();
+    return;
+  }
+
   var mal = detectMaliciousApps();
   if (mal.detected) { showMaliciousAlert(mal.name); return; }
 
@@ -838,26 +907,6 @@ async function startBoot() {
   for (var i = 0; i < imgs.length; i++) {
     imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
   }
-
-  if (!navigator.onLine) showOfflineOverlay();
-
-  window.addEventListener('offline', function(){ showOfflineOverlay(); });
-  window.addEventListener('online', function(){
-    hideOfflineOverlay();
-    setTimeout(function(){ window.location.reload(); }, 300);
-  });
-
-  setInterval(function() {
-    if (!navigator.onLine) {
-      showOfflineOverlay();
-    } else {
-      var overlay = document.getElementById('offlineOverlay');
-      if (overlay && !overlay.classList.contains('hidden')) {
-        hideOfflineOverlay();
-        window.location.reload();
-      }
-    }
-  }, 1500);
 
   setTimeout(async function() {
     var goMain = false;
