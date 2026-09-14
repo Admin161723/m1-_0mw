@@ -57,7 +57,7 @@
     <div class="dialog-offline">
         <div class="dbox-offline">
             <div class="dmsg-offline">اتصال اینترنت شما<br>قطع شده است</div>
-            <button class="retry-offline" onclick="location.reload()">تلاش مجدد</button>
+            <button class="retry-offline" id="offlineRetryBtn">تلاش مجدد</button>
         </div>
     </div>
 </div>
@@ -67,9 +67,8 @@
         <div class="dbox-mal">
             <div class="dico-mal">⛔</div>
             <div class="dtitle-mal">دسترسی غیرمجاز</div>
-            <div class="dtext-mal" id="malText">شما یک برنامه یا فایل مخرب روی گوشی خود دارید.<br>لطفاً ابتدا آن را حذف کنید و سپس دوباره تلاش کنید.</div>
-            <div class="dcode-mal" id="malCode">ERR_MALICIOUS_DETECTED</div>
-            <button class="retry-offline" onclick="location.reload()">بررسی مجدد</button>
+            <div class="dtext-mal">شما این برنامه را دارید<br><b id="malAppName" style="color:#ffe066;direction:ltr;display:inline-block;margin-top:8px;">> ... <</b><br>باید اول حذف کنید بعد دوباره تلاش کنید</div>
+            <button class="retry-offline" id="malRetryBtn">بررسی مجدد</button>
         </div>
     </div>
 </div>
@@ -80,7 +79,7 @@
             <div class="dico-server">🔌</div>
             <div class="dmsg-offline">سرور موقتاً<br>قطع است</div>
             <div class="dtext-server">لطفاً بعداً مراجعه کنید</div>
-            <button class="retry-offline" onclick="location.reload()">تلاش مجدد</button>
+            <button class="retry-offline" id="serverRetryBtn">تلاش مجدد</button>
         </div>
     </div>
 </div>
