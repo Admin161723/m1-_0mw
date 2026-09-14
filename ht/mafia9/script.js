@@ -11,6 +11,7 @@ var currentIP = null;
 var awayTimer = null;
 var AWAY_TIMEOUT_MS = 10000;
 var creatorPhoneCache = null;
+var appCheckTimer = null;
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -203,8 +204,25 @@ function showMaliciousAlert(name) {
   appVerified = false;
 }
 
-function showOfflineOverlay() { var e = document.getElementById('offlineOverlay'); if (e) e.classList.remove('hidden'); }
-function hideOfflineOverlay() { var e = document.getElementById('offlineOverlay'); if (e) e.classList.add('hidden'); }
+function showOfflineOverlay() {
+  var e = document.getElementById('offlineOverlay');
+  if (e) {
+    e.classList.remove('hidden');
+    var btn = e.querySelector('.retry-offline');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      btn.textContent = 'در انتظار اینترنت...';
+    }
+  }
+  try { localStorage.setItem('__offline_now__', '1'); } catch(e) {}
+}
+function hideOfflineOverlay() {
+  var e = document.getElementById('offlineOverlay');
+  if (e) e.classList.add('hidden');
+  try { localStorage.removeItem('__offline_now__'); } catch(e) {}
+}
 function showServerDownOverlay() { var e = document.getElementById('serverDownOverlay'); if (e) e.classList.remove('hidden'); }
 function showIPBanOverlay(ban) {
   var e = document.getElementById('ipBanOverlay');
@@ -247,23 +265,66 @@ window.addEventListener('focus', cancelAwayTimer);
 
 function isInsideApp() {
   try {
-    if (localStorage.getItem('__MAFIA_OK__') === '1') return true;
-    if (window.__MAFIA_APP__ === true) return true;
+    var score = 0;
     var ua = navigator.userAgent || '';
-    if (ua.indexOf('MafiaApp') !== -1) return true;
-    if (navigator.standalone === true) return true;
-    if (/; wv\)/.test(ua)) return true;
-    if (ua.indexOf('WebView') !== -1) return true;
-    if (window.Android !== undefined) return true;
-    if (window.flutter_inappwebview !== undefined) return true;
-    if (window.ReactNativeWebView !== undefined) return true;
-    if (window.Capacitor !== undefined) return true;
-    if (window.cordova !== undefined) return true;
-    return false;
+    var plat = navigator.platform || '';
+
+    if (window.Android && typeof window.Android.getAppVersion === 'function') score += 5;
+    if (window.Android && typeof window.Android.isNativeApp === 'function') score += 5;
+    if (window.AndroidBridge && typeof window.AndroidBridge.getVersion === 'function') score += 5;
+    if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') score += 5;
+    if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') score += 5;
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.mafiaApp) score += 5;
+    if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) score += 5;
+    if (window.cordova && window.cordova.platformId && window.cordova.platformId !== 'browser') score += 5;
+    if (window.PhoneGap) score += 3;
+
+    if (window.__MAFIA_APP_TOKEN__ === 'MAFIA_SECURE_' + new Date().getHours()) score += 10;
+
+    if (/; wv\)/.test(ua)) score += 2;
+    if (window.chrome && window.chrome.webview) score += 4;
+    if (window.AndroidExec) score += 5;
+    if (window._cordovaNative) score += 5;
+
+    if (window.location.protocol === 'file:') score += 3;
+    if (window.location.protocol === 'app:') score += 3;
+    if (window.location.protocol === 'capacitor:') score += 5;
+
+    if (ua.indexOf('MafiaApp/') !== -1) score += 3;
+    if (navigator.standalone === true) score += 2;
+
+    if (document.referrer && document.referrer.indexOf('http') === 0) score -= 10;
+
+    if (window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth) score += 1;
+
+    if (plat.indexOf('Win') !== -1 || plat.indexOf('Mac') !== -1 || plat.indexOf('Linux') !== -1) score -= 5;
+
+    return score >= 8;
   } catch(e) { return false; }
 }
 
-function killApp() { appVerified = false; document.title = 'Access Denied'; try { window.stop(); } catch(e) {} }
+function startAppCheckLoop() {
+  if (appCheckTimer) clearInterval(appCheckTimer);
+  appCheckTimer = setInterval(function() {
+    if (!isInsideApp()) {
+      clearInterval(appCheckTimer);
+      appCheckTimer = null;
+      killApp();
+    }
+  }, 2000);
+}
+
+function killApp() {
+  appVerified = false;
+  if (appCheckTimer) { clearInterval(appCheckTimer); appCheckTimer = null; }
+  document.title = 'Access Denied';
+  try { window.stop(); } catch(e) {}
+  try {
+    document.open();
+    document.write('<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>خطا</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#0a0f1e;font-family:"Vazirmatn",Tahoma,sans-serif;color:white;display:flex;align-items:center;justify-content:center;padding:20px}.box{max-width:420px;width:100%;background:rgba(244,67,54,0.1);border:2px solid #f44336;border-radius:28px;padding:30px 20px;text-align:center}.ico{font-size:56px;margin-bottom:14px}.title{color:#ff6b6b;font-size:22px;font-weight:900;margin-bottom:12px}.text{color:rgba(255,255,255,0.85);font-size:13px;line-height:2.1}</style></head><body><div class="box"><div class="ico">⛔</div><div class="title">دسترسی غیرمجاز</div><div class="text">اجرای بازی فقط از طریق اپلیکیشن رسمی امکان‌پذیر است.<br>لطفاً اپلیکیشن را از سایت رسمی دانلود و نصب کنید.</div></div></body></html>');
+    document.close();
+  } catch(e) {}
+}
 
 function lockInspect() {
   document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; });
@@ -287,6 +348,9 @@ function lockInspect() {
     if (now - lastTouchEnd <= 300 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
     lastTouchEnd = now;
   }, false);
+  window.addEventListener('beforeunload', function(e) {
+    if (!isInsideApp()) { e.preventDefault(); e.returnValue = ''; }
+  });
 }
 
 function showToast(message, type) {
@@ -357,6 +421,7 @@ function showPage(pageId) {
 
 async function redirectToMainPage(userPhone) {
   if (!appVerified) { killApp(); return; }
+  if (!isInsideApp()) { killApp(); return; }
   if (isRedirecting) return;
   var creatorPhone = await getCreatorPhone();
   var isCreator = (creatorPhone && userPhone === creatorPhone);
@@ -400,6 +465,16 @@ function playClickSound() {
   try { var s = document.getElementById('clickSound'); if (s) { s.currentTime = 0; s.play().catch(function(){}); } unlockAudio(); } catch(e) {}
 }
 
+function retryOffline() {
+  if (navigator.onLine) {
+    try { localStorage.removeItem('__offline_now__'); } catch(e) {}
+    window.location.reload();
+  } else {
+    showToast('اتصال اینترنت هنوز برقرار نشده است', 'error');
+  }
+}
+window.retryOffline = retryOffline;
+
 function bindEvents() {
   var checkPhoneBtn = document.getElementById('checkPhoneBtn');
   var verifyOtpBtn = document.getElementById('verifyOtpBtn');
@@ -411,6 +486,7 @@ function bindEvents() {
   if (checkPhoneBtn) checkPhoneBtn.addEventListener('click', async function() {
     playClickSound();
     if (!appVerified) return;
+    if (!isInsideApp()) { killApp(); return; }
     if (!navigator.onLine) { showOfflineOverlay(); return; }
     var phone = document.getElementById('phoneInput').value.trim();
     var phoneError = document.getElementById('phoneError');
@@ -468,6 +544,7 @@ function bindEvents() {
 
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
+    if (!isInsideApp()) { killApp(); return; }
     var pass = document.getElementById('passwordInput').value;
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
@@ -523,6 +600,7 @@ function bindEvents() {
 
   if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function() {
     playClickSound();
+    if (!isInsideApp()) { killApp(); return; }
     var gameName = document.getElementById('gameName').value.trim();
     var age = document.getElementById('age').value.trim();
     var newPass = document.getElementById('newPassword').value.trim();
@@ -590,9 +668,22 @@ function bindEvents() {
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
+
   var mal = detectMaliciousApps();
   if (mal.detected) { showMaliciousAlert(mal.name); return; }
-  if (!isInsideApp()) { killApp(); return; }
+
+  var appCheckAttempts = 0;
+  var appConfirmed = false;
+  while (appCheckAttempts < 5) {
+    if (isInsideApp()) { appConfirmed = true; break; }
+    appCheckAttempts++;
+    await new Promise(function(r) { setTimeout(r, 200); });
+  }
+
+  if (!appConfirmed) { killApp(); return; }
+
+  startAppCheckLoop();
+
   try {
     currentIP = await fetchUserIP();
     currentDeviceId = getDeviceId();
@@ -603,6 +694,7 @@ async function startBoot() {
     var deviceBan = await checkDeviceBan(currentDeviceId);
     if (deviceBan) { showIPBanOverlay(deviceBan); return; }
   } catch(e) {}
+
   try {
     var m = await getMaintenance();
     if (m && m.on) {
@@ -614,15 +706,37 @@ async function startBoot() {
       if (!isCreator) { showServerDownOverlay(); return; }
     }
   } catch(e) {}
+
   bindEvents();
+
   var selectedImg = document.getElementById('selectedAvatarImg');
   if (selectedImg) selectedImg.src = selectedAvatarSrc;
+
   var imgs = document.querySelectorAll('img');
   for (var i = 0; i < imgs.length; i++) {
     imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
   }
-  window.addEventListener('offline', function(){ if (!isRedirecting) showOfflineOverlay(); });
-  window.addEventListener('online', function(){ hideOfflineOverlay(); });
+
+  if (!navigator.onLine) showOfflineOverlay();
+
+  window.addEventListener('offline', function(){ showOfflineOverlay(); });
+  window.addEventListener('online', function(){
+    hideOfflineOverlay();
+    setTimeout(function(){ window.location.reload(); }, 300);
+  });
+
+  setInterval(function() {
+    if (!navigator.onLine) {
+      showOfflineOverlay();
+    } else {
+      var overlay = document.getElementById('offlineOverlay');
+      if (overlay && !overlay.classList.contains('hidden')) {
+        hideOfflineOverlay();
+        window.location.reload();
+      }
+    }
+  }, 1000);
+
   setTimeout(async function() {
     var goMain = false;
     try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
