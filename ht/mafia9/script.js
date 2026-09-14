@@ -15,12 +15,43 @@ var creatorPhoneCache = null;
 var appCheckTimer = null;
 var isUserAway = false;
 var networkMonitorStarted = false;
-var isReallyOnline = true;
+var overlayShown = false;
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 var UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 var UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+
+function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+var OVERLAY_CSS = '.overlay-full{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:100vh!important;z-index:9999999!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,0.85)!important;-webkit-backdrop-filter:blur(6px)!important;backdrop-filter:blur(6px)!important;padding:20px!important;font-family:Vazirmatn,Tahoma,sans-serif!important;direction:rtl!important;box-sizing:border-box!important;}.overlay-full.hidden{display:none!important;}.dialog-offline{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);}.dbox-offline{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);border-radius:7px;padding:32px 22px 28px;text-align:center;}.dmsg-offline{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}.retry-offline{border:none;cursor:pointer;margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;text-shadow:0 2px 2px rgba(0,70,0,.55);box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4);font-family:Vazirmatn,Tahoma,sans-serif;}.dico-server{font-size:50px;margin-bottom:14px;}.dtext-server{color:rgba(255,255,255,.85);font-size:12px;margin-top:14px;line-height:1.9;}.dico-mal{font-size:60px;margin-bottom:14px;}.dtitle-mal{color:#ff5252;font-size:22px;font-weight:900;margin-bottom:12px;}.dtext-mal{color:rgba(255,255,255,.9);font-size:13px;line-height:2.1;}.dialog-mal{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ff5252,#d32f2f 50%,#b71c1c);box-shadow:0 0 28px rgba(244,67,54,.5),0 18px 40px rgba(0,0,0,.55);}.dbox-mal{background:linear-gradient(180deg,#1a1a2e,#0a0f1e 60%,#050810);border-radius:7px;padding:32px 22px 28px;text-align:center;}';
+
+var OVERLAY_HTML = {
+  offlineOverlay: '<div class="dialog-offline"><div class="dbox-offline"><div class="dmsg-offline">اتصال اینترنت شما<br>قطع شده است</div><button class="retry-offline" id="offlineRetryBtn">تلاش مجدد</button></div></div>',
+  maliciousOverlay: '<div class="dialog-mal"><div class="dbox-mal"><div class="dico-mal">⛔</div><div class="dtitle-mal">دسترسی غیرمجاز</div><div class="dtext-mal">شما این برنامه را دارید<br><b id="malAppName" style="color:#ffe066;direction:ltr;display:inline-block;margin-top:8px;">&gt; ... &lt;</b><br>باید اول حذف کنید بعد دوباره تلاش کنید</div><button class="retry-offline" id="malRetryBtn">بررسی مجدد</button></div></div>',
+  serverDownOverlay: '<div class="dialog-offline"><div class="dbox-offline" style="background:linear-gradient(180deg,#e74c3c,#c0392b 60%,#a02a1a);"><div class="dico-server">🔌</div><div class="dmsg-offline">سرور موقتاً<br>قطع است</div><div class="dtext-server">لطفاً بعداً مراجعه کنید</div><button class="retry-offline" id="serverRetryBtn">تلاش مجدد</button></div></div>',
+  ipBanOverlay: '<div class="dialog-offline"><div class="dbox-offline" style="background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);"><div class="dico-server">🚫</div><div class="dmsg-offline">IP شما مسدود است</div><div class="dtext-server" id="ipBanReason">دلیل: تخلف از قوانین</div></div></div>',
+  deviceLockOverlay: '<div class="dialog-offline"><div class="dbox-offline" style="background:linear-gradient(180deg,#e65100,#bf360c 60%,#8f2400);"><div class="dico-server">📱</div><div class="dmsg-offline">این گوشی قبلاً<br>ثبت‌نام کرده است</div><div class="dtext-server">هر گوشی فقط یک اکانت می‌تواند داشته باشد<br>شماره: <span id="deviceLockPhone">****</span></div></div></div>'
+};
+
+function ensureOverlays() {
+  if (!document.getElementById('__ovl_css__')) {
+    var s = document.createElement('style');
+    s.id = '__ovl_css__';
+    s.textContent = OVERLAY_CSS;
+    document.head.appendChild(s);
+  }
+  for (var id in OVERLAY_HTML) {
+    var el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = id;
+      el.className = 'overlay-full hidden';
+      el.innerHTML = OVERLAY_HTML[id];
+      document.body.appendChild(el);
+    }
+  }
+}
 
 async function upstashGet(url, token, k) {
   try {
@@ -85,21 +116,28 @@ async function getCreatorPhone() {
   return CREATOR_PHONE_FALLBACK;
 }
 
+function xhrPing(url, timeout) {
+  return new Promise(function(resolve) {
+    var done = false;
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = timeout || 4000;
+      xhr.onload = function() { if (!done) { done = true; resolve(xhr.status >= 200 && xhr.status < 400); } };
+      xhr.onerror = function() { if (!done) { done = true; resolve(false); } };
+      xhr.ontimeout = function() { if (!done) { done = true; resolve(false); } };
+      xhr.onabort = function() { if (!done) { done = true; resolve(false); } };
+      xhr.send();
+    } catch(e) { if (!done) { done = true; resolve(false); } }
+  });
+}
+
 async function checkRealInternet() {
-  if (!navigator.onLine) { isReallyOnline = false; return false; }
-  try {
-    var c = new AbortController();
-    var t = setTimeout(function(){c.abort();}, 4000);
-    var r = await fetch('https://api.ipify.org?format=json&_=' + Date.now(), {
-      signal: c.signal, cache: 'no-store'
-    });
-    clearTimeout(t);
-    isReallyOnline = r.ok;
-    return r.ok;
-  } catch(e) {
-    isReallyOnline = false;
-    return false;
-  }
+  if (!navigator.onLine) return false;
+  var ok1 = await xhrPing('https://api.ipify.org?format=json&_=' + Date.now(), 4000);
+  if (ok1) return true;
+  var ok2 = await xhrPing('https://www.google.com/generate_204?_=' + Date.now(), 4000);
+  return ok2;
 }
 
 function getDeviceId() {
@@ -225,41 +263,56 @@ function detectMaliciousApps() {
   } catch(e) { return { detected: false }; }
 }
 
-function showEl(id) { var e = document.getElementById(id); if (e) e.classList.remove('hidden'); }
-function hideEl(id) { var e = document.getElementById(id); if (e) e.classList.add('hidden'); }
+function showEl(id) {
+  ensureOverlays();
+  var e = document.getElementById(id);
+  if (e) e.classList.remove('hidden');
+}
+function hideEl(id) {
+  var e = document.getElementById(id);
+  if (e) e.classList.add('hidden');
+}
 
 function showOfflineOverlay() {
+  ensureOverlays();
   var e = document.getElementById('offlineOverlay');
   if (e) e.classList.remove('hidden');
-  var btn = document.getElementById('offlineRetryBtn');
-  if (btn) {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.textContent = 'تلاش مجدد';
-  }
+  overlayShown = true;
 }
-function hideOfflineOverlay() { hideEl('offlineOverlay'); }
+function hideOfflineOverlay() {
+  hideEl('offlineOverlay');
+  overlayShown = false;
+}
 
 function showMaliciousAlert(name) {
+  ensureOverlays();
   var el = document.getElementById('malAppName');
   if (el) el.textContent = name ? ('> ' + name + ' <') : '';
-  showEl('maliciousOverlay');
+  var e = document.getElementById('maliciousOverlay');
+  if (e) e.classList.remove('hidden');
   appVerified = false;
 }
 
-function showServerDownOverlay() { showEl('serverDownOverlay'); }
+function showServerDownOverlay() {
+  ensureOverlays();
+  var e = document.getElementById('serverDownOverlay');
+  if (e) e.classList.remove('hidden');
+}
 
 function showIPBanOverlay(ban) {
+  ensureOverlays();
   var r = document.getElementById('ipBanReason');
   if (r) r.textContent = 'دلیل: ' + ((ban && ban.reason) || 'تخلف از قوانین');
-  showEl('ipBanOverlay');
+  var e = document.getElementById('ipBanOverlay');
+  if (e) e.classList.remove('hidden');
 }
 
 function showDeviceLockOverlay(phone) {
+  ensureOverlays();
   var p = document.getElementById('deviceLockPhone');
   if (p) p.textContent = phone || '****';
-  showEl('deviceLockOverlay');
+  var e = document.getElementById('deviceLockOverlay');
+  if (e) e.classList.remove('hidden');
 }
 
 function startAwayTimer() {
@@ -302,8 +355,13 @@ async function reconnectUser() {
 }
 
 document.addEventListener('visibilitychange', function() {
-  if (document.hidden) startAwayTimer();
-  else { cancelAwayTimer(); reconnectUser(); }
+  if (document.hidden) {
+    startAwayTimer();
+  } else {
+    cancelAwayTimer();
+    reconnectUser();
+    if (!navigator.onLine) showOfflineOverlay();
+  }
 });
 window.addEventListener('blur', startAwayTimer);
 window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
@@ -379,9 +437,6 @@ function lockInspect() {
     if (now - lastTouchEnd <= 300 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
     lastTouchEnd = now;
   }, false);
-  window.addEventListener('beforeunload', function(e) {
-    if (!isInsideApp()) { e.preventDefault(); e.returnValue = ''; }
-  });
 }
 
 function showToast(message, type) {
@@ -394,21 +449,31 @@ function showToast(message, type) {
 }
 
 function bindOverlayButtons() {
+  ensureOverlays();
   var offlineBtn = document.getElementById('offlineRetryBtn');
-  if (offlineBtn) offlineBtn.addEventListener('click', function() {
-    playClickSound();
-    retryOffline();
-  });
+  if (offlineBtn) {
+    offlineBtn.onclick = null;
+    offlineBtn.addEventListener('click', function() {
+      try { playClickSound(); } catch(e) {}
+      window.location.reload();
+    });
+  }
   var malBtn = document.getElementById('malRetryBtn');
-  if (malBtn) malBtn.addEventListener('click', function() {
-    playClickSound();
-    window.location.reload();
-  });
+  if (malBtn) {
+    malBtn.onclick = null;
+    malBtn.addEventListener('click', function() {
+      try { playClickSound(); } catch(e) {}
+      window.location.reload();
+    });
+  }
   var serverBtn = document.getElementById('serverRetryBtn');
-  if (serverBtn) serverBtn.addEventListener('click', function() {
-    playClickSound();
-    window.location.reload();
-  });
+  if (serverBtn) {
+    serverBtn.onclick = null;
+    serverBtn.addEventListener('click', function() {
+      try { playClickSound(); } catch(e) {}
+      window.location.reload();
+    });
+  }
 }
 
 function startNetworkMonitor() {
@@ -428,22 +493,21 @@ function startNetworkMonitor() {
   });
 
   setInterval(async function() {
-    var overlay = document.getElementById('offlineOverlay');
-    var isHidden = !overlay || overlay.classList.contains('hidden');
-
     if (!navigator.onLine) {
+      var e = document.getElementById('offlineOverlay');
+      var isHidden = !e || e.classList.contains('hidden');
       if (isHidden) showOfflineOverlay();
       return;
     }
-
-    if (!isHidden) {
+    var e2 = document.getElementById('offlineOverlay');
+    if (e2 && !e2.classList.contains('hidden')) {
       var ok = await checkRealInternet();
       if (ok) {
         hideOfflineOverlay();
         window.location.reload();
       }
     }
-  }, 3000);
+  }, 2000);
 }
 
 async function retryOffline() {
@@ -852,120 +916,133 @@ async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
 
-  var appCheckAttempts = 0;
-  var appConfirmed = false;
-  while (appCheckAttempts < 5) {
-    if (isInsideApp()) { appConfirmed = true; break; }
-    appCheckAttempts++;
-    await new Promise(function(r) { setTimeout(r, 200); });
-  }
-  if (!appConfirmed) { killApp(); return; }
-  startAppCheckLoop();
-
-  bindOverlayButtons();
-  startNetworkMonitor();
-
-  var online = await checkRealInternet();
-  if (!online) {
-    showOfflineOverlay();
-    return;
-  }
-
-  var mal = detectMaliciousApps();
-  if (mal.detected) { showMaliciousAlert(mal.name); return; }
-
   try {
-    currentIP = await fetchUserIP();
-    currentDeviceId = getDeviceId();
+    ensureOverlays();
+    bindOverlayButtons();
+    startNetworkMonitor();
 
-    if (currentIP) {
-      var ipBan = await checkIPBan(currentIP);
-      if (ipBan) { showIPBanOverlay(ipBan); return; }
+    if (!navigator.onLine) {
+      showOfflineOverlay();
+      return;
     }
-    var deviceBan = await checkDeviceBan(currentDeviceId);
-    if (deviceBan) { showIPBanOverlay(deviceBan); return; }
-  } catch(e) {}
 
-  try {
-    var m = await getMaintenance();
-    if (m && m.on) {
-      var loggedIn = null;
-      try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
-      var phone = loggedIn ? loggedIn.phone : null;
-      var creatorPhone = await getCreatorPhone();
-      var isCreator = (creatorPhone && phone === creatorPhone);
-      if (!isCreator) { showServerDownOverlay(); return; }
+    var realOnline = await checkRealInternet();
+    if (!realOnline) {
+      showOfflineOverlay();
+      return;
     }
-  } catch(e) {}
 
-  bindEvents();
+    var appCheckAttempts = 0;
+    var appConfirmed = false;
+    while (appCheckAttempts < 5) {
+      if (isInsideApp()) { appConfirmed = true; break; }
+      appCheckAttempts++;
+      await sleep(200);
+    }
+    if (!appConfirmed) { killApp(); return; }
+    startAppCheckLoop();
 
-  var selectedImg = document.getElementById('selectedAvatarImg');
-  if (selectedImg) selectedImg.src = selectedAvatarSrc;
+    var mal = detectMaliciousApps();
+    if (mal.detected) { showMaliciousAlert(mal.name); return; }
 
-  var imgs = document.querySelectorAll('img');
-  for (var i = 0; i < imgs.length; i++) {
-    imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
-  }
+    try {
+      currentIP = await fetchUserIP();
+      currentDeviceId = getDeviceId();
 
-  setTimeout(async function() {
-    var goMain = false;
-    try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
+      if (currentIP) {
+        var ipBan = await checkIPBan(currentIP);
+        if (ipBan) { showIPBanOverlay(ipBan); return; }
+      }
+      var deviceBan = await checkDeviceBan(currentDeviceId);
+      if (deviceBan) { showIPBanOverlay(deviceBan); return; }
+    } catch(e) {}
 
-    var loopGuard = 0;
-    try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch(e) {}
-    var now = Date.now();
-
-    if (goMain && (now - loopGuard) > 15000) {
-      try { sessionStorage.setItem('__lastMainJump', String(now)); } catch(e) {}
-
-      try {
-        var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+    try {
+      var m = await getMaintenance();
+      if (m && m.on) {
+        var loggedIn = null;
+        try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
         var phone = loggedIn ? loggedIn.phone : null;
+        var creatorPhone = await getCreatorPhone();
+        var isCreator = (creatorPhone && phone === creatorPhone);
+        if (!isCreator) { showServerDownOverlay(); return; }
+      }
+    } catch(e) {}
 
-        if (phone) {
-          if (currentIP) {
-            var ipBan = await checkIPBan(currentIP);
-            if (ipBan) { showIPBanOverlay(ipBan); return; }
-          }
-          var deviceBan2 = await checkDeviceBan(currentDeviceId);
-          if (deviceBan2) { showIPBanOverlay(deviceBan2); return; }
+    bindEvents();
 
-          var creatorPhone = await getCreatorPhone();
-          var isCreator = (creatorPhone && phone === creatorPhone);
+    var selectedImg = document.getElementById('selectedAvatarImg');
+    if (selectedImg) selectedImg.src = selectedAvatarSrc;
 
-          if (!isCreator) {
-            var accBan = await getBanStatus(phone);
-            if (accBan) {
-              var params = new URLSearchParams({
-                phone: phone,
-                by: accBan.bannedBy || 'مدیریت',
-                reason: accBan.reason || 'بدون دلیل',
-                duration: accBan.duration || 'permanent',
-                expires: accBan.expiresAt || ''
-              });
-              window.location.href = PAGES.ban + '?' + params.toString();
-              return;
-            }
-            var m2 = await getMaintenance();
-            if (m2 && m2.on) { showServerDownOverlay(); return; }
-          }
-        }
-      } catch(e) {}
-
-      window.location.replace(PAGES.game);
-    } else {
-      var lp = document.getElementById('loadingPage');
-      if (lp) lp.classList.add('hidden');
-      var ap = document.getElementById('authPage');
-      if (ap) ap.classList.remove('hidden');
-      try {
-        document.getElementById('stepPhone').style.display = 'block';
-        document.getElementById('stepPassword').style.display = 'none';
-        document.getElementById('stepOtp').style.display = 'none';
-      } catch(e) {}
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
     }
-  }, 3000);
+
+    setTimeout(async function() {
+      var goMain = false;
+      try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
+
+      var loopGuard = 0;
+      try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch(e) {}
+      var now = Date.now();
+
+      if (goMain && (now - loopGuard) > 15000) {
+        try { sessionStorage.setItem('__lastMainJump', String(now)); } catch(e) {}
+
+        try {
+          var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+          var phone = loggedIn ? loggedIn.phone : null;
+
+          if (phone) {
+            if (currentIP) {
+              var ipBan = await checkIPBan(currentIP);
+              if (ipBan) { showIPBanOverlay(ipBan); return; }
+            }
+            var deviceBan2 = await checkDeviceBan(currentDeviceId);
+            if (deviceBan2) { showIPBanOverlay(deviceBan2); return; }
+
+            var creatorPhone = await getCreatorPhone();
+            var isCreator = (creatorPhone && phone === creatorPhone);
+
+            if (!isCreator) {
+              var accBan = await getBanStatus(phone);
+              if (accBan) {
+                var params = new URLSearchParams({
+                  phone: phone,
+                  by: accBan.bannedBy || 'مدیریت',
+                  reason: accBan.reason || 'بدون دلیل',
+                  duration: accBan.duration || 'permanent',
+                  expires: accBan.expiresAt || ''
+                });
+                window.location.href = PAGES.ban + '?' + params.toString();
+                return;
+              }
+              var m2 = await getMaintenance();
+              if (m2 && m2.on) { showServerDownOverlay(); return; }
+            }
+          }
+        } catch(e) {}
+
+        window.location.replace(PAGES.game);
+      } else {
+        var lp = document.getElementById('loadingPage');
+        if (lp) lp.classList.add('hidden');
+        var ap = document.getElementById('authPage');
+        if (ap) ap.classList.remove('hidden');
+        try {
+          document.getElementById('stepPhone').style.display = 'block';
+          document.getElementById('stepPassword').style.display = 'none';
+          document.getElementById('stepOtp').style.display = 'none';
+        } catch(e) {}
+      }
+    }, 3000);
+  } catch(err) {
+    try {
+      ensureOverlays();
+      showOfflineOverlay();
+    } catch(e) {}
+  }
 }
 
 lockInspect();
