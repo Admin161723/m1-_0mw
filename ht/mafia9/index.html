@@ -6,9 +6,6 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0f1e">
 <title>ورود به بازی</title>
 <link rel="stylesheet" href="style.css">
@@ -22,7 +19,7 @@
 
 <div id="authPage" class="page hidden">
     <img class="logo" src="InShot_20260527_210904646.png" alt="logo" onerror="this.style.display='none'">
-    <div class="card" id="authCard">
+    <div class="card">
         <div id="stepPhone">
             <div class="input-group"><input type="tel" id="phoneInput" placeholder="شماره موبایل" maxlength="11" inputmode="numeric"></div>
             <button class="btn" id="checkPhoneBtn">ادامه</button>
@@ -53,24 +50,65 @@
     </div>
 </div>
 
-<div id="errorPage" class="page hidden">
-    <div class="error-box">
-        <div class="error-ico">⛔</div>
-        <div class="error-title">خطا! دسترسی غیرمجاز</div>
-        <div class="error-text">اجرای بازی فقط از طریق <b>اپلیکیشن رسمی</b> امکان‌پذیر است.</div>
-        <div class="error-code">ERR_UNAUTHORIZED_CLIENT #403</div>
+<div class="avatar-menu" id="avatarMenu"></div>
+<div id="backdrop" class="backdrop"></div>
+
+<div id="offlineOverlay" class="overlay-full hidden">
+    <div class="dialog-offline">
+        <div class="dbox-offline">
+            <div class="dmsg-offline">اتصال اینترنت شما<br>قطع شده است</div>
+            <button class="retry-offline" onclick="location.reload()">تلاش مجدد</button>
+        </div>
     </div>
 </div>
 
-<div id="backdrop" class="backdrop"></div>
+<div id="maliciousOverlay" class="overlay-full hidden">
+    <div class="dialog-mal">
+        <div class="dbox-mal">
+            <div class="dico-mal">⛔</div>
+            <div class="dtitle-mal">دسترسی غیرمجاز</div>
+            <div class="dtext-mal" id="malText">شما یک برنامه یا فایل مخرب روی گوشی خود دارید.<br>لطفاً ابتدا آن را حذف کنید و سپس دوباره تلاش کنید.</div>
+            <div class="dcode-mal" id="malCode">ERR_MALICIOUS_DETECTED</div>
+            <button class="retry-offline" onclick="location.reload()">بررسی مجدد</button>
+        </div>
+    </div>
+</div>
+
+<div id="serverDownOverlay" class="overlay-full hidden">
+    <div class="dialog-offline">
+        <div class="dbox-offline" style="background:linear-gradient(180deg,#e74c3c,#c0392b 60%,#a02a1a);">
+            <div class="dico-server">🔌</div>
+            <div class="dmsg-offline">سرور موقتاً<br>قطع است</div>
+            <div class="dtext-server">لطفاً بعداً مراجعه کنید</div>
+            <button class="retry-offline" onclick="location.reload()">تلاش مجدد</button>
+        </div>
+    </div>
+</div>
+
+<div id="ipBanOverlay" class="overlay-full hidden">
+    <div class="dialog-offline">
+        <div class="dbox-offline" style="background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);">
+            <div class="dico-server">🚫</div>
+            <div class="dmsg-offline">IP شما مسدود است</div>
+            <div class="dtext-server" id="ipBanReason">دلیل: تخلف از قوانین</div>
+        </div>
+    </div>
+</div>
+
+<div id="deviceLockOverlay" class="overlay-full hidden">
+    <div class="dialog-offline">
+        <div class="dbox-offline" style="background:linear-gradient(180deg,#e65100,#bf360c 60%,#8f2400);">
+            <div class="dico-server">📱</div>
+            <div class="dmsg-offline">این گوشی قبلاً<br>ثبت‌نام کرده است</div>
+            <div class="dtext-server">هر گوشی فقط یک اکانت می‌تواند داشته باشد<br>شماره: <span id="deviceLockPhone">****</span></div>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<audio id="clickSound" preload="auto">
-    <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
-</audio>
-<audio id="bgMusic" loop preload="auto">
-    <source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg">
-</audio>
+<audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
+<audio id="bgMusic" loop preload="auto"><source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg"></audio>
 
 <script src="script.js"></script>
 </body>
