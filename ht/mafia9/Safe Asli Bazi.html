@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#041228">
 <title>بازی پلیس | صفحه اصلی</title>
 <link rel="stylesheet" href="Safe Asli.css">
+<script src="offline-guard.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div class="game-container" id="gameContainer">
@@ -47,7 +50,6 @@
     <div class="side-btn" id="btnAdmin" style="display:none;"><div class="side-btn-icon-wrap"><div class="icon-admin">⚡</div></div><div class="side-btn-label">مدیریت</div></div>
   </div>
 
-  <!-- ============ دکمه‌های جدید دوستانه و امتیازی ============ -->
   <div class="bottom-modes">
     <button class="mode-btn-new mode-friendly-new" id="btnFriendly">
       <div class="m-base"></div>
@@ -398,6 +400,7 @@
 
 <audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
 
+<script src="firebase-live.js"></script>
 <script src="Safe Asli.js"></script>
 </body>
 </html>
