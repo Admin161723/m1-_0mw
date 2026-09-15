@@ -136,7 +136,7 @@
     img.onerror = function() {
       if (!done) { done = true; clearTimeout(timer); cb(false); }
     };
-    img.src = 'https://www.google.com/favicon.ico?_=' + Date.now();
+    img.src = 'https://api.ipify.org?format=json&_=' + Date.now();
   }
 
   function checkNow() {
