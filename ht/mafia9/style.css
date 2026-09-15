@@ -6,11 +6,13 @@ body{font-family:'Vazirmatn','Segoe UI',Tahoma,sans-serif;background:#0a0f1e!imp
 input,textarea,select{font-size:16px!important;-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation!important;}
 img,a,button,div{-webkit-user-drag:none!important;user-drag:none!important;}
 
-.page{width:100%;max-width:420px;height:100vh;height:100dvh;background-image:url('Pas99.webp');background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#0a0f1e;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;transition:opacity 0.3s ease;overflow:hidden!important;touch-action:none!important;flex-shrink:0;}
+.page{width:100%;max-width:420px;height:100vh;height:100dvh;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:#0a0f1e;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;transition:opacity 0.3s ease;overflow:hidden!important;touch-action:none!important;flex-shrink:0;}
 .hidden{display:none!important;}
-#loadingPage{justify-content:center;}
-#authPage{justify-content:flex-start;padding-top:80px;}
-#profilePage{justify-content:center;}
+
+/* ⚡ پس‌زمینه هر صفحه جدا */
+#loadingPage{background-image:url('Pas99.webp');justify-content:center;}
+#authPage{background-image:url('64f994ba-91b1-419b-bba3-b8646f7b222d.png');justify-content:flex-start;padding-top:80px;}
+#profilePage{background-image:url('64f994ba-91b1-419b-bba3-b8646f7b222d.png');justify-content:center;}
 
 .loading-circle{position:absolute;bottom:20px;left:20px;width:28px;height:28px;border:2.5px solid rgba(255,255,255,0.4);border-top:2.5px solid rgba(255,255,255,0.9);border-radius:50%;animation:spin 0.7s linear infinite;}
 @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
@@ -51,7 +53,7 @@ input::placeholder{color:rgba(255,255,255,0.6);}
 .overlay-full.hidden{display:none!important;}
 
 .dialog-offline{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);animation:dpop .5s cubic-bezier(.2,1.4,.4,1) both;}
-@keyframes dpop{from{transform:scale(.7);opacity:0;}}
+@keyframes dpop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
 .dbox-offline{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);border-radius:7px;padding:32px 22px 28px;text-align:center;position:relative;overflow:hidden;}
 .dmsg-offline{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}
 .dico-server{font-size:50px;margin-bottom:14px;}
