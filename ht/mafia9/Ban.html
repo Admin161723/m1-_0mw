@@ -395,7 +395,7 @@ input::placeholder {
 <!-- صفحه لودینگ -->
 <div id="loadingPage" class="page">
     <div class="loading-circle"></div>
-    <div class="version">2.0.0</div>
+    <div class="version">2.0.1</div>
 </div>
 
 <!-- صفحه ورود/ثبت‌نام -->
@@ -466,6 +466,9 @@ var audioUnlocked = false;
 
 var currentDeviceId = null;
 var currentIP = null;
+var banDetected = false;
+var banCheckInFlight = false;
+var banPollingInterval = null;
 
 // ============================================================
 //  اتصال به Redis
@@ -545,22 +548,34 @@ async function redisDel(key) {
     return true;
 }
 
-async function redisIncr(key) {
-    var val = await redisGet(key);
-    var num = parseInt(val) || 0;
-    num++;
-    await redisSet(key, num);
-    return num;
-}
-
 async function getUser(phone) { return await redisGet('user:' + phone); }
 async function saveUser(phone, userData) { return await redisSet('user:' + phone, userData); }
 async function getAllUsers() { return await redisGet('all_users') || {}; }
 async function saveAllUsers(users) { return await redisSet('all_users', users); }
 async function getMaintenance() { return await redisGet('server_maintenance'); }
 
+// ============================================================
+//  ⚡ سیستم بن پیشرفته
+// ============================================================
 async function getBanStatus(phone) {
+    if (!phone) return null;
     var ban = await redisGet('ban:' + phone);
+    if (ban && ban.isBanned) {
+        // ⚠️ چک انقضا - اگر منقضی شده، حذف کن
+        if (ban.expiresAt && ban.duration !== 'permanent' && ban.duration !== 'دائمی') {
+            if (new Date(ban.expiresAt).getTime() < Date.now()) {
+                try { await redisDel('ban:' + phone); } catch (e) {}
+                return null;
+            }
+        }
+        return ban;
+    }
+    return null;
+}
+
+async function getIPBan(ip) {
+    if (!ip) return null;
+    var ban = await redisGet('ip_ban:' + ip);
     if (ban && ban.isBanned) {
         if (ban.expiresAt && ban.duration !== 'permanent' && ban.duration !== 'دائمی') {
             if (new Date(ban.expiresAt).getTime() < Date.now()) return null;
@@ -570,8 +585,85 @@ async function getBanStatus(phone) {
     return null;
 }
 
-async function getIPBan(ip) { return await redisGet('ip_ban:' + ip); }
-async function getDeviceBan(deviceId) { return await redisGet('device_ban:' + deviceId); }
+async function getDeviceBan(deviceId) {
+    if (!deviceId) return null;
+    var ban = await redisGet('device_ban:' + deviceId);
+    if (ban && ban.isBanned) {
+        if (ban.expiresAt && ban.duration !== 'permanent' && ban.duration !== 'دائمی') {
+            if (new Date(ban.expiresAt).getTime() < Date.now()) return null;
+        }
+        return ban;
+    }
+    return null;
+}
+
+// ⚠️ چک فوری بن - روی هر کلیک، لمس، focus
+async function immediateBanCheck(specificPhone) {
+    if (banDetected || isRedirecting) return true;
+    if (banCheckInFlight) return false;
+    banCheckInFlight = true;
+    try {
+        var phoneToCheck = specificPhone || tempPhone || null;
+
+        // اگر کاربر لاگین کرده، شماره‌اش رو از localStorage بگیر
+        if (!phoneToCheck) {
+            try {
+                var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+                if (loggedIn && loggedIn.phone) phoneToCheck = loggedIn.phone;
+            } catch (e) {}
+        }
+
+        // چک بن اکانت
+        if (phoneToCheck && phoneToCheck !== CREATOR_PHONE) {
+            var accBan = await getBanStatus(phoneToCheck);
+            if (accBan) {
+                banDetected = true;
+                redirectToBan(accBan, phoneToCheck, 'account');
+                banCheckInFlight = false;
+                return true;
+            }
+        }
+
+        // چک بن دستگاه
+        if (currentDeviceId) {
+            var devBan = await getDeviceBan(currentDeviceId);
+            if (devBan) {
+                banDetected = true;
+                redirectToBan(devBan, phoneToCheck || '', 'device');
+                banCheckInFlight = false;
+                return true;
+            }
+        }
+
+        // چک بن IP (اگر وایت‌لیست نباشه)
+        if (currentIP) {
+            var isWhite = await isIPWhitelisted(currentIP);
+            if (!isWhite) {
+                var ipBan = await getIPBan(currentIP);
+                if (ipBan) {
+                    banDetected = true;
+                    redirectToBan(ipBan, phoneToCheck || '', 'ip');
+                    banCheckInFlight = false;
+                    return true;
+                }
+            }
+        }
+    } catch (e) {}
+    banCheckInFlight = false;
+    return false;
+}
+
+// ⚠️ پولینگ بن - هر ۱ ثانیه
+function startBanPolling() {
+    if (banPollingInterval) clearInterval(banPollingInterval);
+    banPollingInterval = setInterval(function () {
+        if (banDetected || isRedirecting) {
+            clearInterval(banPollingInterval);
+            return;
+        }
+        immediateBanCheck();
+    }, 1000);
+}
 
 async function getPhoneForDevice(deviceId) {
     if (!deviceId) return null;
@@ -591,23 +683,65 @@ async function isIPWhitelisted(ip) {
     return !!list[ip];
 }
 
+// ⚠️ چند منبع IP
+async function fetchUserIP() {
+    var sources = [
+        'https://api.ipify.org?format=json',
+        'https://api64.ipify.org?format=json',
+        'https://ipapi.co/json/',
+        'https://api.my-ip.io/ip.json'
+    ];
+    for (var i = 0; i < sources.length; i++) {
+        try {
+            var c = new AbortController();
+            var t = setTimeout(function () { c.abort(); }, 3500);
+            var r = await fetch(sources[i], { signal: c.signal, cache: 'no-store' });
+            clearTimeout(t);
+            if (r.ok) {
+                var d = await r.json();
+                var ip = d.ip || d.query || d.IP || null;
+                if (ip && String(ip).trim() && String(ip).trim() !== 'undefined') {
+                    return String(ip).trim();
+                }
+            }
+        } catch (e) {}
+    }
+    return null;
+}
+
+// ⚠️ تاریخ ورود دقیق
 async function logLoginSession(phone, ip, deviceId) {
     try {
         var user = await getUser(phone);
         if (!user) return;
         if (!user.loginHistory) user.loginHistory = [];
+
+        var now = Date.now();
+        var last = user.loginHistory[user.loginHistory.length - 1];
+        if (last && (now - (last.timestamp || last.time || 0)) < 5000) return;
+
+        var faDate = new Date(now).toLocaleString('fa-IR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        });
+
         user.loginHistory.push({
-            time: Date.now(),
-            ip: ip || 'unknown',
-            device: deviceId || 'unknown',
+            time: now,
+            timestamp: now,
+            date: faDate,
+            ip: ip || 'نامشخص',
+            device: deviceId || 'نامشخص',
             userAgent: navigator.userAgent || 'unknown'
         });
-        if (user.loginHistory.length > 50) {
-            user.loginHistory = user.loginHistory.slice(-50);
+        if (user.loginHistory.length > 100) {
+            user.loginHistory = user.loginHistory.slice(-100);
         }
         user.lastIP = ip;
         user.lastDevice = deviceId;
-        user.lastLogin = Date.now();
+        user.lastLogin = now;
+        user.lastLoginDate = faDate;
+        user.lastUpdatedAt = now;
         await saveUser(phone, user);
 
         var allUsers = await getAllUsers();
@@ -665,17 +799,6 @@ function getDeviceId() {
         localStorage.setItem('__device_id__', id);
     }
     return id;
-}
-
-async function fetchUserIP() {
-    try {
-        var c = new AbortController();
-        var t = setTimeout(function () { c.abort(); }, 4000);
-        var res = await fetch('https://api.ipify.org?format=json', { signal: c.signal });
-        clearTimeout(t);
-        var data = await res.json();
-        return data.ip || null;
-    } catch (e) { return null; }
 }
 
 function isInsideApp() {
@@ -762,51 +885,66 @@ function showToast(message, type) {
 function redirectToOffline() {
     if (isRedirecting) return;
     isRedirecting = true;
-    window.location.href = PAGES.off;
+    window.location.replace(PAGES.off);
 }
 
+// ⚠️ ریدایرکت به Ban.html با location.replace
 function redirectToBan(banData, phone, type) {
     if (isRedirecting) return;
     isRedirecting = true;
+    banDetected = true;
+
+    // ذخیره علامت بن در localStorage
+    try {
+        localStorage.setItem('__banned__', '1');
+        localStorage.setItem('__ban_data__', JSON.stringify({
+            phone: phone || '',
+            type: type || 'account',
+            at: Date.now()
+        }));
+    } catch (e) {}
+
     var params = new URLSearchParams({
         phone: phone || '',
-        by: banData.bannedBy || 'مدیریت',
+        by: banData.bannedBy || banData.by || 'مدیریت',
         reason: banData.reason || 'بدون دلیل',
         duration: banData.duration || 'permanent',
         expires: banData.expiresAt || '',
         createdAt: banData.bannedAt || banData.createdAt || '',
         type: type || banData.type || 'account'
     });
-    window.location.href = PAGES.ban + '?' + params.toString();
+
+    // ⚠️ location.replace - برگشت با Back کار نمی‌کنه
+    window.location.replace(PAGES.ban + '?' + params.toString());
 }
 
+// ⚠️ چک کامل امنیتی قبل از هر عملیات
 async function performSecurityChecks(phone) {
     if (!currentIP) currentIP = await fetchUserIP();
     if (!currentDeviceId) currentDeviceId = getDeviceId();
 
     var isWhitelisted = await isIPWhitelisted(currentIP);
 
+    // چک بن IP
     if (currentIP && !isWhitelisted) {
         var ipBan = await getIPBan(currentIP);
-        if (ipBan && ipBan.isBanned) {
-            if (!ipBan.expiresAt || new Date(ipBan.expiresAt).getTime() > Date.now()) {
-                redirectToBan(ipBan, phone, 'ip');
-                return { blocked: true, reason: 'ip_ban' };
-            }
+        if (ipBan) {
+            redirectToBan(ipBan, phone, 'ip');
+            return { blocked: true, reason: 'ip_ban' };
         }
     }
 
+    // چک بن دستگاه
     if (currentDeviceId) {
         var deviceBan = await getDeviceBan(currentDeviceId);
-        if (deviceBan && deviceBan.isBanned) {
-            if (!deviceBan.expiresAt || new Date(deviceBan.expiresAt).getTime() > Date.now()) {
-                redirectToBan(deviceBan, phone, 'device');
-                return { blocked: true, reason: 'device_ban' };
-            }
+        if (deviceBan) {
+            redirectToBan(deviceBan, phone, 'device');
+            return { blocked: true, reason: 'device_ban' };
         }
     }
 
-    if (phone) {
+    // چک بن اکانت
+    if (phone && phone !== CREATOR_PHONE) {
         var accountBan = await getBanStatus(phone);
         if (accountBan) {
             redirectToBan(accountBan, phone, 'account');
@@ -877,6 +1015,10 @@ async function redirectToMainPage(userPhone) {
     if (!appVerified) { killApp(); return; }
     if (isRedirecting) return;
 
+    // ⚠️ چک بن فوری قبل از هر کاری
+    var banCheck = await immediateBanCheck(userPhone);
+    if (banCheck) return;
+
     if (userPhone !== CREATOR_PHONE) {
         try {
             var m = await getMaintenance();
@@ -886,11 +1028,6 @@ async function redirectToMainPage(userPhone) {
     }
 
     isRedirecting = true;
-
-    try {
-        var ban = await getBanStatus(userPhone);
-        if (ban) { redirectToBan(ban, userPhone, 'account'); return; }
-    } catch (e) {}
 
     if (!navigator.onLine) { redirectToOffline(); return; }
 
@@ -918,10 +1055,7 @@ async function redirectToMainPage(userPhone) {
         }
     } catch (e) {}
 
-    window.location.href = PAGES.game;
-    setTimeout(function () {
-        try { window.location.replace(PAGES.game); } catch (e) {}
-    }, 500);
+    window.location.replace(PAGES.game);
 }
 
 function unlockAudio() {
@@ -963,6 +1097,14 @@ function bindEvents() {
         checkPhoneBtn.disabled = true;
         checkPhoneBtn.innerText = '...';
 
+        // ⚠️ چک بن فوری برای این شماره
+        var banCheck = await immediateBanCheck(phone);
+        if (banCheck) {
+            checkPhoneBtn.disabled = false;
+            checkPhoneBtn.innerText = 'ادامه';
+            return;
+        }
+
         var checks = await performSecurityChecks(phone);
         if (checks.blocked) {
             checkPhoneBtn.disabled = false;
@@ -1003,8 +1145,12 @@ function bindEvents() {
         }
     });
 
-    if (verifyOtpBtn) verifyOtpBtn.addEventListener('click', function () {
+    if (verifyOtpBtn) verifyOtpBtn.addEventListener('click', async function () {
         playClickSound();
+        // ⚠️ چک بن فوری
+        var banCheck = await immediateBanCheck(tempPhone);
+        if (banCheck) return;
+
         var enteredOtp = document.getElementById('otpInput').value.trim();
         if (enteredOtp === generatedOtp) {
             showPage('profilePage');
@@ -1028,6 +1174,14 @@ function bindEvents() {
         var pass = document.getElementById('passwordInput').value;
         loginBtn.disabled = true;
         loginBtn.innerText = '...';
+
+        // ⚠️ چک بن فوری
+        var banCheck = await immediateBanCheck(tempPhone);
+        if (banCheck) {
+            loginBtn.disabled = false;
+            loginBtn.innerText = 'ورود';
+            return;
+        }
 
         var checks = await performSecurityChecks(tempPhone);
         if (checks.blocked) {
@@ -1125,6 +1279,10 @@ function bindEvents() {
         var phone = tempPhone;
         if (!phone) { showToast('خطا در شماره تلفن', 'error'); return; }
 
+        // ⚠️ چک بن فوری
+        var banCheck = await immediateBanCheck(phone);
+        if (banCheck) return;
+
         var checks = await performSecurityChecks(phone);
         if (checks.blocked) return;
 
@@ -1135,6 +1293,13 @@ function bindEvents() {
         }
 
         var ageNum = parseInt(age);
+        var now = Date.now();
+        var faDate = new Date(now).toLocaleString('fa-IR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        });
+
         var userData = {
             password: newPass,
             name: gameName,
@@ -1146,9 +1311,15 @@ function bindEvents() {
             canAccessTeen: ageNum < 18,
             coins: 200,
             gems: 10,
-            registeredAt: Date.now(),
+            registeredAt: now,
+            registeredDate: faDate,
             registeredIP: currentIP,
-            registeredDevice: currentDeviceId
+            registeredDevice: currentDeviceId,
+            lastIP: currentIP,
+            lastDevice: currentDeviceId,
+            lastLogin: now,
+            lastLoginDate: faDate,
+            lastUpdatedAt: now
         };
 
         submitProfileBtn.disabled = true;
@@ -1182,31 +1353,15 @@ async function startBoot() {
     window.__BOOT_OK__ = true;
     if (!isInsideApp()) { killApp(); return; }
 
+    // ⚠️ گرفتن IP و Device از چند منبع
     currentIP = await fetchUserIP();
     currentDeviceId = getDeviceId();
 
-    try {
-        var isWhitelisted = await isIPWhitelisted(currentIP);
+    // ⚠️ چک بن فوری در بوت - اولین کار
+    var bootBanCheck = await immediateBanCheck();
+    if (bootBanCheck) return;
 
-        if (currentIP && !isWhitelisted) {
-            var ipBan = await getIPBan(currentIP);
-            if (ipBan && ipBan.isBanned) {
-                if (!ipBan.expiresAt || new Date(ipBan.expiresAt).getTime() > Date.now()) {
-                    redirectToBan(ipBan, null, 'ip');
-                    return;
-                }
-            }
-        }
-
-        var deviceBan = await getDeviceBan(currentDeviceId);
-        if (deviceBan && deviceBan.isBanned) {
-            if (!deviceBan.expiresAt || new Date(deviceBan.expiresAt).getTime() > Date.now()) {
-                redirectToBan(deviceBan, null, 'device');
-                return;
-            }
-        }
-    } catch (e) {}
-
+    // چک سرور قطع
     try {
         var m = await getMaintenance();
         if (m && m.on) {
@@ -1224,6 +1379,14 @@ async function startBoot() {
     await initSpecialAccounts();
     bindEvents();
 
+    // ⚠️ شروع پولینگ بن
+    startBanPolling();
+
+    // ⚠️ چک بن فوری روی هر کلیک، لمس، کیبورد
+    document.addEventListener('click', function () { immediateBanCheck(); }, true);
+    document.addEventListener('touchstart', function () { immediateBanCheck(); }, true);
+    document.addEventListener('keydown', function () { immediateBanCheck(); }, true);
+
     var selectedImg = document.getElementById('selectedAvatarImg');
     if (selectedImg) selectedImg.src = selectedAvatarSrc;
 
@@ -1236,6 +1399,10 @@ async function startBoot() {
     });
 
     setTimeout(async function () {
+        // ⚠️ چک بن قبل از هر تصمیم
+        var preCheck = await immediateBanCheck();
+        if (preCheck) return;
+
         var goMain = false;
         try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch (e) {}
         var loopGuard = 0;
@@ -1250,30 +1417,13 @@ async function startBoot() {
                 var phone = loggedIn ? loggedIn.phone : null;
 
                 if (phone) {
+                    // ⚠️ چک بن فوری برای این شماره
+                    var banCheck2 = await immediateBanCheck(phone);
+                    if (banCheck2) return;
+
                     var isWhitelisted3 = await isIPWhitelisted(currentIP);
 
-                    if (currentIP && !isWhitelisted3) {
-                        var ipBan3 = await getIPBan(currentIP);
-                        if (ipBan3 && ipBan3.isBanned) {
-                            if (!ipBan3.expiresAt || new Date(ipBan3.expiresAt).getTime() > Date.now()) {
-                                redirectToBan(ipBan3, phone, 'ip');
-                                return;
-                            }
-                        }
-                    }
-
-                    var deviceBan3 = await getDeviceBan(currentDeviceId);
-                    if (deviceBan3 && deviceBan3.isBanned) {
-                        if (!deviceBan3.expiresAt || new Date(deviceBan3.expiresAt).getTime() > Date.now()) {
-                            redirectToBan(deviceBan3, phone, 'device');
-                            return;
-                        }
-                    }
-
                     if (phone !== CREATOR_PHONE) {
-                        var accBan3 = await getBanStatus(phone);
-                        if (accBan3) { redirectToBan(accBan3, phone, 'account'); return; }
-
                         var m3 = await getMaintenance();
                         if (m3 && m3.on && !isWhitelisted3) { showServerDown(); return; }
                     }
@@ -1294,6 +1444,34 @@ async function startBoot() {
         }
     }, 3000);
 }
+
+// ⚠️ چک بن روی برگشت به صفحه
+document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) {
+        immediateBanCheck();
+    }
+});
+
+window.addEventListener('focus', function () {
+    immediateBanCheck();
+});
+
+// ⚠️ چک بن قبل از بستن صفحه
+window.addEventListener('pageshow', function (event) {
+    // اگر از bfcache برگشت
+    if (event.persisted) {
+        immediateBanCheck();
+    }
+});
+
+// ⚠️ جلوگیری از برگشت با Back به صفحه قبلی
+window.addEventListener('popstate', function () {
+    if (banDetected) {
+        // در Ban.html هستیم یا باید باشیم
+        return;
+    }
+    immediateBanCheck();
+});
 
 lockInspect();
 if (document.readyState === 'loading') {
