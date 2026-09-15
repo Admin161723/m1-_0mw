@@ -2,10 +2,17 @@
   if (window.__OG_LOADED__) return;
   window.__OG_LOADED__ = true;
 
-  var overlay = null;
-  var isShown = false;
-  var checkBusy = false;
-  var currentMode = 'offline';
+  var CREATOR_PHONE = '09904844031';
+
+  function isCreator() {
+    try {
+      var loggedIn = localStorage.getItem('currentLoggedInUser');
+      if (!loggedIn) return false;
+      var data = JSON.parse(loggedIn);
+      if (!data || !data.phone) return false;
+      return String(data.phone) === CREATOR_PHONE;
+    } catch(e) { return false; }
+  }
 
   function isGamePage() {
     try {
@@ -16,6 +23,11 @@
       return true;
     } catch(e) { return false; }
   }
+
+  var overlay = null;
+  var isShown = false;
+  var checkBusy = false;
+  var currentMode = 'offline';
 
   var OG_CSS = document.createElement('style');
   OG_CSS.textContent = ''
@@ -82,6 +94,7 @@
   }
 
   function show() {
+    if (isCreator() && isGamePage()) return;
     var o = getOverlay();
     o.style.setProperty('display', 'flex', 'important');
     isShown = true;
@@ -157,7 +170,6 @@
     checkBusy = true;
     setBtnLoading();
 
-    // ⚡ حالت Away → مستقیم برو به index.html (بدون چک کردن)
     if (currentMode === 'away') {
       setTimeout(function() {
         try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
@@ -166,7 +178,6 @@
       return;
     }
 
-    // حالت offline → چک کن اینترنت هست یا نه
     if (!navigator.onLine) {
       setTimeout(function() {
         setBtnNormal();
@@ -179,11 +190,9 @@
       if (ok) {
         try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
         if (isGamePage()) {
-          // تو صفحه بازی هستیم → برو به index.html
           try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
           try { window.location.href = 'index.html'; } catch(e) {}
         } else {
-          // تو صفحه لاگین هستیم → reload کن
           try { window.location.reload(); } catch(e) {}
         }
       } else {
@@ -193,8 +202,8 @@
     });
   }
 
-  // ⚡ تابع جدید: نمایش پیام "ارتباط با سرور قطع شده"
   function showAway() {
+    if (isCreator() && isGamePage()) return;
     currentMode = 'away';
     setMessage('ارتباط شما با سرور<br>قطع شده است');
     setBtnNormal();
@@ -237,4 +246,5 @@
   window.ogShow = show;
   window.ogHide = hide;
   window.ogShowAway = showAway;
+  window.ogIsCreator = isCreator;
 })();
