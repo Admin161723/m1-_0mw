@@ -20,73 +20,6 @@ var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc
 var UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 var UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
-var BAN_CSS = '.ban-overlay{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,0.9)!important;padding:20px!important;font-family:Tahoma,Vazirmatn,sans-serif!important;direction:rtl!important;box-sizing:border-box!important;}.ban-dialog{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);}.ban-box{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);border-radius:7px;padding:32px 22px 28px;text-align:center;}.ban-msg{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}.ban-ico{font-size:50px;margin-bottom:14px;}.ban-text{color:rgba(255,255,255,.85);font-size:12px;margin-top:14px;line-height:1.9;}.ban-btn{border:none;cursor:pointer;margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4);font-family:Tahoma,Vazirmatn,sans-serif;}';
-
-function injectBanCSS() {
-  if (document.getElementById('__ban_css__')) return;
-  var s = document.createElement('style');
-  s.id = '__ban_css__';
-  s.textContent = BAN_CSS;
-  (document.head || document.documentElement).appendChild(s);
-}
-
-function createOverlay(id, innerHTML) {
-  injectBanCSS();
-  var existing = document.getElementById(id);
-  if (existing) return existing;
-  var el = document.createElement('div');
-  el.id = id;
-  el.className = 'ban-overlay';
-  el.style.display = 'none';
-  el.innerHTML = innerHTML;
-  (document.body || document.documentElement).appendChild(el);
-  return el;
-}
-
-function showMaliciousAlert(name) {
-  var html = '<div class="ban-dialog"><div class="ban-box" style="background:linear-gradient(180deg,#1a1a2e,#0a0f1e 60%,#050810);">'
-    + '<div class="ban-ico">⛔</div>'
-    + '<div class="ban-msg" style="color:#ff5252;">دسترسی غیرمجاز</div>'
-    + '<div class="ban-text">شما این برنامه را دارید<br><b style="color:#ffe066;direction:ltr;display:inline-block;margin-top:8px;">' + (name || '') + '</b><br>باید اول حذف کنید بعد دوباره تلاش کنید</div>'
-    + '<button class="ban-btn" onclick="location.reload()">بررسی مجدد</button>'
-    + '</div></div>';
-  var el = createOverlay('__mal_overlay__', html);
-  el.style.display = 'flex';
-  appVerified = false;
-}
-
-function showServerDownOverlay() {
-  var html = '<div class="ban-dialog"><div class="ban-box" style="background:linear-gradient(180deg,#e74c3c,#c0392b 60%,#a02a1a);">'
-    + '<div class="ban-ico">🔌</div>'
-    + '<div class="ban-msg">سرور موقتاً<br>قطع است</div>'
-    + '<div class="ban-text">لطفاً بعداً مراجعه کنید</div>'
-    + '<button class="ban-btn" onclick="location.reload()">تلاش مجدد</button>'
-    + '</div></div>';
-  var el = createOverlay('__server_overlay__', html);
-  el.style.display = 'flex';
-}
-
-function showIPBanOverlay(ban) {
-  var reason = (ban && ban.reason) ? ban.reason : 'تخلف از قوانین';
-  var html = '<div class="ban-dialog"><div class="ban-box">'
-    + '<div class="ban-ico">🚫</div>'
-    + '<div class="ban-msg">IP شما مسدود است</div>'
-    + '<div class="ban-text">دلیل: ' + reason + '</div>'
-    + '</div></div>';
-  var el = createOverlay('__ipban_overlay__', html);
-  el.style.display = 'flex';
-}
-
-function showDeviceLockOverlay(phone) {
-  var html = '<div class="ban-dialog"><div class="ban-box" style="background:linear-gradient(180deg,#e65100,#bf360c 60%,#8f2400);">'
-    + '<div class="ban-ico">📱</div>'
-    + '<div class="ban-msg">این گوشی قبلاً<br>ثبت‌نام کرده است</div>'
-    + '<div class="ban-text">هر گوشی فقط یک اکانت می‌تواند داشته باشد<br>شماره: ' + (phone || '****') + '</div>'
-    + '</div></div>';
-  var el = createOverlay('__devlock_overlay__', html);
-  el.style.display = 'flex';
-}
-
 async function upstashGet(url, token, k) {
   try {
     var c = new AbortController(); var t = setTimeout(function(){c.abort();}, 5000);
@@ -273,6 +206,36 @@ function detectMaliciousApps() {
   } catch(e) { return { detected: false }; }
 }
 
+function showEl(id) {
+  var e = document.getElementById(id);
+  if (e) e.classList.remove('hidden');
+}
+function hideEl(id) {
+  var e = document.getElementById(id);
+  if (e) e.classList.add('hidden');
+}
+
+function showMaliciousAlert(name) {
+  var el = document.getElementById('malAppName');
+  if (el) el.textContent = name ? ('> ' + name + ' <') : '';
+  showEl('maliciousOverlay');
+  appVerified = false;
+}
+
+function showServerDownOverlay() { showEl('serverDownOverlay'); }
+
+function showIPBanOverlay(ban) {
+  var r = document.getElementById('ipBanReason');
+  if (r) r.textContent = 'دلیل: ' + ((ban && ban.reason) || 'تخلف از قوانین');
+  showEl('ipBanOverlay');
+}
+
+function showDeviceLockOverlay(phone) {
+  var p = document.getElementById('deviceLockPhone');
+  if (p) p.textContent = phone || '****';
+  showEl('deviceLockOverlay');
+}
+
 function startAwayTimer() {
   clearTimeout(awayTimer);
   awayTimer = setTimeout(async function() {
@@ -376,6 +339,20 @@ function lockInspect() {
     if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's' || e.key === 'P' || e.key === 'p')) { e.preventDefault(); killApp(); return false; }
   });
   document.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  document.addEventListener('selectstart', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+  document.addEventListener('copy', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+  document.addEventListener('cut', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+  document.addEventListener('paste', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); });
+  document.addEventListener('gestureend', function(e){ e.preventDefault(); });
+  document.addEventListener('touchmove', function(e){ if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); }, { passive: false });
+  var lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    var now = Date.now();
+    if (now - lastTouchEnd <= 300 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+    lastTouchEnd = now;
+  }, false);
 }
 
 function showToast(message, type) {
@@ -390,6 +367,10 @@ function showToast(message, type) {
 async function performSecurityChecks(phone) {
   currentIP = await fetchUserIP();
   currentDeviceId = getDeviceId();
+
+  // ⚡ سازنده معاف از همه بن‌ها
+  var isCreatorPhone = (phone === '09904844031');
+  if (isCreatorPhone) return { blocked: false };
 
   if (currentIP) {
     var ipBan = await checkIPBan(currentIP);
@@ -457,7 +438,7 @@ async function redirectToMainPage(userPhone) {
   if (isRedirecting) return;
 
   var creatorPhone = await getCreatorPhone();
-  var isCreator = (creatorPhone && userPhone === creatorPhone);
+  var isCreator = (userPhone === '09904844031') || (creatorPhone && userPhone === creatorPhone);
 
   if (!isCreator) {
     try { var m = await getMaintenance(); if (m && m.on) { showServerDownOverlay(); return; } } catch(e) {}
@@ -467,7 +448,7 @@ async function redirectToMainPage(userPhone) {
 
   try {
     var ban = await getBanStatus(userPhone);
-    if (ban) {
+    if (ban && !isCreator) {
       var params = new URLSearchParams({
         phone: userPhone,
         by: ban.bannedBy || 'مدیریت',
@@ -545,7 +526,7 @@ function bindEvents() {
     }
 
     var creatorPhone = await getCreatorPhone();
-    var isCreator = (creatorPhone && phone === creatorPhone);
+    var isCreator = (phone === '09904844031') || (creatorPhone && phone === creatorPhone);
     if (!isCreator) {
       try {
         var m = await getMaintenance();
@@ -571,7 +552,7 @@ function bindEvents() {
       document.getElementById('passError').innerText = '';
     } else {
       var locked = await getPhoneForDevice(currentDeviceId);
-      if (locked && locked.phone && locked.phone !== phone) {
+      if (locked && locked.phone && locked.phone !== phone && !isCreator) {
         showDeviceLockOverlay(locked.phone);
         return;
       }
@@ -622,12 +603,15 @@ function bindEvents() {
     loginBtn.innerText = 'ورود';
 
     if (user && user.password === pass) {
-      var locked = await getPhoneForDevice(currentDeviceId);
-      if (!locked) {
-        await lockDeviceToPhone(currentDeviceId, tempPhone);
-      } else if (locked.phone !== tempPhone) {
-        showDeviceLockOverlay(locked.phone);
-        return;
+      var isCreatorPhone = (tempPhone === '09904844031');
+      if (!isCreatorPhone) {
+        var locked = await getPhoneForDevice(currentDeviceId);
+        if (!locked) {
+          await lockDeviceToPhone(currentDeviceId, tempPhone);
+        } else if (locked.phone !== tempPhone) {
+          showDeviceLockOverlay(locked.phone);
+          return;
+        }
       }
       await redirectToMainPage(tempPhone);
     } else {
@@ -700,13 +684,17 @@ function bindEvents() {
     var phone = tempPhone;
     if (!phone) { showToast('خطا در شماره تلفن', 'error'); return; }
 
+    var isCreatorPhone = (phone === '09904844031');
+
     var checks = await performSecurityChecks(phone);
     if (checks.blocked) return;
 
-    var locked = await getPhoneForDevice(currentDeviceId);
-    if (locked && locked.phone && locked.phone !== phone) {
-      showDeviceLockOverlay(locked.phone);
-      return;
+    if (!isCreatorPhone) {
+      var locked = await getPhoneForDevice(currentDeviceId);
+      if (locked && locked.phone && locked.phone !== phone) {
+        showDeviceLockOverlay(locked.phone);
+        return;
+      }
     }
 
     var ageNum = parseInt(age);
@@ -717,13 +705,13 @@ function bindEvents() {
       name: gameName,
       age: ageNum,
       avatar: selectedAvatarSrc,
-      rank: 'کاربر',
+      rank: isCreatorPhone ? 'سازنده' : 'کاربر',
       userCode: userCode,
       fullProfile: true,
       canAccessAdult: ageNum >= 18,
       canAccessTeen: ageNum < 18,
-      coins: 200,
-      gems: 10,
+      coins: isCreatorPhone ? 999 : 200,
+      gems: isCreatorPhone ? 999 : 10,
       dollars: 0,
       cups: 0,
       hours: 0,
@@ -752,7 +740,9 @@ function bindEvents() {
 
     var saved = await saveUser(phone, userData);
     if (saved) {
-      await lockDeviceToPhone(currentDeviceId, phone);
+      if (!isCreatorPhone) {
+        await lockDeviceToPhone(currentDeviceId, phone);
+      }
       var allUsers = await getAllUsers();
       allUsers[phone] = userData;
       await saveAllUsers(allUsers);
@@ -769,70 +759,83 @@ async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
 
+  var appCheckAttempts = 0;
+  var appConfirmed = false;
+  while (appCheckAttempts < 5) {
+    if (isInsideApp()) { appConfirmed = true; break; }
+    appCheckAttempts++;
+    await new Promise(function(r) { setTimeout(r, 200); });
+  }
+  if (!appConfirmed) { killApp(); return; }
+  startAppCheckLoop();
+
+  var mal = detectMaliciousApps();
+  if (mal.detected) { showMaliciousAlert(mal.name); return; }
+
   try {
-    var appCheckAttempts = 0;
-    var appConfirmed = false;
-    while (appCheckAttempts < 5) {
-      if (isInsideApp()) { appConfirmed = true; break; }
-      appCheckAttempts++;
-      await new Promise(function(r) { setTimeout(r, 200); });
-    }
-    if (!appConfirmed) { killApp(); return; }
-    startAppCheckLoop();
+    currentIP = await fetchUserIP();
+    currentDeviceId = getDeviceId();
 
-    var mal = detectMaliciousApps();
-    if (mal.detected) { showMaliciousAlert(mal.name); return; }
-
+    var loggedInPhone = null;
     try {
-      currentIP = await fetchUserIP();
-      currentDeviceId = getDeviceId();
+      var li = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+      if (li && li.phone) loggedInPhone = li.phone;
+    } catch(e) {}
 
+    var isCreatorOnDevice = (loggedInPhone === '09904844031');
+
+    if (!isCreatorOnDevice) {
       if (currentIP) {
         var ipBan = await checkIPBan(currentIP);
         if (ipBan) { showIPBanOverlay(ipBan); return; }
       }
       var deviceBan = await checkDeviceBan(currentDeviceId);
       if (deviceBan) { showIPBanOverlay(deviceBan); return; }
-    } catch(e) {}
-
-    try {
-      var m = await getMaintenance();
-      if (m && m.on) {
-        var loggedIn = null;
-        try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
-        var phone = loggedIn ? loggedIn.phone : null;
-        var creatorPhone = await getCreatorPhone();
-        var isCreator = (creatorPhone && phone === creatorPhone);
-        if (!isCreator) { showServerDownOverlay(); return; }
-      }
-    } catch(e) {}
-
-    bindEvents();
-
-    var selectedImg = document.getElementById('selectedAvatarImg');
-    if (selectedImg) selectedImg.src = selectedAvatarSrc;
-
-    var imgs = document.querySelectorAll('img');
-    for (var i = 0; i < imgs.length; i++) {
-      imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
     }
+  } catch(e) {}
 
-    setTimeout(async function() {
-      var goMain = false;
-      try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
+  try {
+    var m = await getMaintenance();
+    if (m && m.on) {
+      var loggedIn = null;
+      try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
+      var phone = loggedIn ? loggedIn.phone : null;
+      var creatorPhone = await getCreatorPhone();
+      var isCreator = (phone === '09904844031') || (creatorPhone && phone === creatorPhone);
+      if (!isCreator) { showServerDownOverlay(); return; }
+    }
+  } catch(e) {}
 
-      var loopGuard = 0;
-      try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch(e) {}
-      var now = Date.now();
+  bindEvents();
 
-      if (goMain && (now - loopGuard) > 15000) {
-        try { sessionStorage.setItem('__lastMainJump', String(now)); } catch(e) {}
+  var selectedImg = document.getElementById('selectedAvatarImg');
+  if (selectedImg) selectedImg.src = selectedAvatarSrc;
 
-        try {
-          var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
-          var phone = loggedIn ? loggedIn.phone : null;
+  var imgs = document.querySelectorAll('img');
+  for (var i = 0; i < imgs.length; i++) {
+    imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
+  }
 
-          if (phone) {
+  setTimeout(async function() {
+    var goMain = false;
+    try { goMain = !!localStorage.getItem('currentLoggedInUser'); } catch(e) {}
+
+    var loopGuard = 0;
+    try { loopGuard = parseInt(sessionStorage.getItem('__lastMainJump') || '0', 10); } catch(e) {}
+    var now = Date.now();
+
+    if (goMain && (now - loopGuard) > 15000) {
+      try { sessionStorage.setItem('__lastMainJump', String(now)); } catch(e) {}
+
+      try {
+        var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
+        var phone = loggedIn ? loggedIn.phone : null;
+
+        if (phone) {
+          var creatorPhone = await getCreatorPhone();
+          var isCreator = (phone === '09904844031') || (creatorPhone && phone === creatorPhone);
+
+          if (!isCreator) {
             if (currentIP) {
               var ipBan = await checkIPBan(currentIP);
               if (ipBan) { showIPBanOverlay(ipBan); return; }
@@ -840,42 +843,37 @@ async function startBoot() {
             var deviceBan2 = await checkDeviceBan(currentDeviceId);
             if (deviceBan2) { showIPBanOverlay(deviceBan2); return; }
 
-            var creatorPhone = await getCreatorPhone();
-            var isCreator = (creatorPhone && phone === creatorPhone);
-
-            if (!isCreator) {
-              var accBan = await getBanStatus(phone);
-              if (accBan) {
-                var params = new URLSearchParams({
-                  phone: phone,
-                  by: accBan.bannedBy || 'مدیریت',
-                  reason: accBan.reason || 'بدون دلیل',
-                  duration: accBan.duration || 'permanent',
-                  expires: accBan.expiresAt || ''
-                });
-                window.location.href = PAGES.ban + '?' + params.toString();
-                return;
-              }
-              var m2 = await getMaintenance();
-              if (m2 && m2.on) { showServerDownOverlay(); return; }
+            var accBan = await getBanStatus(phone);
+            if (accBan) {
+              var params = new URLSearchParams({
+                phone: phone,
+                by: accBan.bannedBy || 'مدیریت',
+                reason: accBan.reason || 'بدون دلیل',
+                duration: accBan.duration || 'permanent',
+                expires: accBan.expiresAt || ''
+              });
+              window.location.href = PAGES.ban + '?' + params.toString();
+              return;
             }
+            var m2 = await getMaintenance();
+            if (m2 && m2.on) { showServerDownOverlay(); return; }
           }
-        } catch(e) {}
+        }
+      } catch(e) {}
 
-        window.location.replace(PAGES.game);
-      } else {
-        var lp = document.getElementById('loadingPage');
-        if (lp) lp.classList.add('hidden');
-        var ap = document.getElementById('authPage');
-        if (ap) ap.classList.remove('hidden');
-        try {
-          document.getElementById('stepPhone').style.display = 'block';
-          document.getElementById('stepPassword').style.display = 'none';
-          document.getElementById('stepOtp').style.display = 'none';
-        } catch(e) {}
-      }
-    }, 3000);
-  } catch(err) {}
+      window.location.replace(PAGES.game);
+    } else {
+      var lp = document.getElementById('loadingPage');
+      if (lp) lp.classList.add('hidden');
+      var ap = document.getElementById('authPage');
+      if (ap) ap.classList.remove('hidden');
+      try {
+        document.getElementById('stepPhone').style.display = 'block';
+        document.getElementById('stepPassword').style.display = 'none';
+        document.getElementById('stepOtp').style.display = 'none';
+      } catch(e) {}
+    }
+  }, 3000);
 }
 
 lockInspect();
