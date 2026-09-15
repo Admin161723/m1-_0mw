@@ -437,61 +437,36 @@ function showPage(pageId) {
 }
 
 /* ============================================================ */
-/*  ⚡ redirectToMainPage - 5 روش ریدایرکت                      */
+/*  ⚡ ریدایرکت ساده و قطعی                                     */
 /* ============================================================ */
-function forceRedirect(targetUrl) {
-  console.log('🎯 Force redirect to:', targetUrl);
-
-  // روش 1
+function goToGame() {
+  var target = 'Safe Asli Bazi.html';
+  console.log('🎯 Going to:', target);
+  
   try {
-    console.log('➡️ Method 1: location.replace');
-    window.location.replace(targetUrl);
-  } catch(e) { console.log('❌ M1 failed:', e); }
-
-  // روش 2
+    // روش 1: مستقیم
+    window.location.href = target;
+  } catch(e) {
+    console.log('❌ href failed:', e);
+  }
+  
+  // روش 2: بعد از 300ms
   setTimeout(function() {
     try {
-      console.log('➡️ Method 2: location.href');
-      window.location.href = targetUrl;
-    } catch(e) { console.log('❌ M2 failed:', e); }
-  }, 150);
-
-  // روش 3
+      window.location.replace(target);
+    } catch(e) {}
+  }, 300);
+  
+  // روش 3: لینک
   setTimeout(function() {
     try {
-      console.log('➡️ Method 3: location.assign');
-      window.location.assign(targetUrl);
-    } catch(e) { console.log('❌ M3 failed:', e); }
-  }, 400);
-
-  // روش 4
-  setTimeout(function() {
-    try {
-      console.log('➡️ Method 4: hidden link click');
       var a = document.createElement('a');
-      a.href = targetUrl;
-      a.style.display = 'none';
-      a.rel = 'noopener';
+      a.href = target;
       document.body.appendChild(a);
       a.click();
-    } catch(e) { console.log('❌ M4 failed:', e); }
+      document.body.removeChild(a);
+    } catch(e) {}
   }, 700);
-
-  // روش 5
-  setTimeout(function() {
-    try {
-      console.log('➡️ Method 5: window.open');
-      window.open(targetUrl, '_self');
-    } catch(e) { console.log('❌ M5 failed:', e); }
-  }, 1100);
-
-  // روش 6
-  setTimeout(function() {
-    try {
-      console.log('➡️ Method 6: document.location');
-      document.location.href = targetUrl;
-    } catch(e) { console.log('❌ M6 failed:', e); }
-  }, 1500);
 }
 
 async function redirectToMainPage(userPhone) {
@@ -499,41 +474,40 @@ async function redirectToMainPage(userPhone) {
   if (!appVerified) { killApp(); return; }
   isRedirecting = true;
 
-  // ذخیره سریع لاگین
+  // ⚡ 1. فوراً لاگین رو ذخیره کن (بدون await)
   try {
-    var user = null;
-    try { user = await getUser(userPhone); } catch(e) {}
-    if (user) {
-      try {
-        sessionStorage.setItem('currentUserPhone', userPhone);
-        sessionStorage.setItem('currentUserRank', user.rank || 'کاربر');
-        sessionStorage.setItem('currentUserName', user.name);
-        sessionStorage.setItem('currentUserAvatar', user.avatar);
-        localStorage.setItem('user_cache_' + userPhone, JSON.stringify(user));
-      } catch(e) {}
-    }
     localStorage.setItem('currentLoggedInUser', JSON.stringify({
       phone: userPhone,
       timestamp: Date.now(),
-      name: (user && user.name) || 'کاربر'
+      name: 'کاربر'
     }));
-    console.log('✅ Login cached');
-  } catch(e) {
-    console.log('❌ Cache error:', e);
+  } catch(e) {}
+
+  // ⚡ 2. فوراً برو بازی (بدون انتظار برای Redis)
+  goToGame();
+
+  // ⚡ 3. اطلاعات رو تو پس‌زمینه بگیر و cache کن (بدون بلاک کردن)
+  setTimeout(async function() {
     try {
-      localStorage.setItem('currentLoggedInUser', JSON.stringify({
-        phone: userPhone,
-        timestamp: Date.now(),
-        name: 'کاربر'
-      }));
-    } catch(e2) {}
-  }
-
-  // پس‌زمینه لاگ سشن
-  try { logLoginSession(userPhone, currentIP, currentDeviceId); } catch(e) {}
-
-  // ریدایرکت
-  forceRedirect(PAGES.game);
+      var user = await getUser(userPhone);
+      if (user) {
+        try {
+          sessionStorage.setItem('currentUserPhone', userPhone);
+          sessionStorage.setItem('currentUserRank', user.rank || 'کاربر');
+          sessionStorage.setItem('currentUserName', user.name);
+          sessionStorage.setItem('currentUserAvatar', user.avatar);
+          localStorage.setItem('user_cache_' + userPhone, JSON.stringify(user));
+          // آپدیت لاگین با نام
+          localStorage.setItem('currentLoggedInUser', JSON.stringify({
+            phone: userPhone,
+            timestamp: Date.now(),
+            name: user.name
+          }));
+        } catch(e) {}
+      }
+      logLoginSession(userPhone, currentIP, currentDeviceId);
+    } catch(e) {}
+  }, 100);
 }
 
 function unlockAudio() {
@@ -813,14 +787,14 @@ function bindEvents() {
 }
 
 /* ============================================================ */
-/*  startBoot                                                   */
+/*  ⚡ startBoot - فوری، بدون انتظار                            */
 /* ============================================================ */
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
   console.log('🎬 startBoot');
 
-  // ⚡ اگه از قبل لاگین هست، سریع برو
+  // ⚡⚡⚡ اول چک کن لاگین هست؟ اگه آره فوراً برو بازی
   var hasLogin = false;
   try {
     var li = localStorage.getItem('currentLoggedInUser');
@@ -831,47 +805,25 @@ async function startBoot() {
   } catch(e) {}
 
   if (hasLogin) {
-    console.log('✅ User already logged in, redirecting...');
-    setTimeout(function() {
-      forceRedirect(PAGES.game);
-    }, 200);
+    console.log('✅ Already logged in - going to game');
+    goToGame();
     return;
   }
 
-  // چک اپ
-  var appCheckAttempts = 0;
-  var appConfirmed = false;
-  while (appCheckAttempts < 5) {
-    if (isInsideApp()) { appConfirmed = true; break; }
-    appCheckAttempts++;
-    await new Promise(function(r) { setTimeout(r, 100); });
-  }
-  if (!appConfirmed) { killApp(); return; }
-  startAppCheckLoop();
-
-  // چک برنامه مخرب
-  var mal = detectMaliciousApps();
-  if (mal.detected) { showMaliciousAlert(mal.name); return; }
-
-  // چک IP و Device
+  // ⚡⚡⚡ کاربر جدید - فوراً صفحه لاگین رو نشون بده
+  console.log('📝 New user - showing login');
+  
+  var lp = document.getElementById('loadingPage');
+  if (lp) lp.classList.add('hidden');
+  var ap = document.getElementById('authPage');
+  if (ap) ap.classList.remove('hidden');
   try {
-    currentIP = await fetchUserIP();
-    currentDeviceId = getDeviceId();
-
-    if (currentIP) {
-      var ipBan = await checkIPBan(currentIP);
-      if (ipBan) { showIPBanOverlay(ipBan); return; }
-    }
-    var deviceBan = await checkDeviceBan(currentDeviceId);
-    if (deviceBan) { showIPBanOverlay(deviceBan); return; }
+    document.getElementById('stepPhone').style.display = 'block';
+    document.getElementById('stepPassword').style.display = 'none';
+    document.getElementById('stepOtp').style.display = 'none';
   } catch(e) {}
 
-  // چک سرور
-  try {
-    var m = await getMaintenance();
-    if (m && m.on) { showServerDownOverlay(); return; }
-  } catch(e) {}
-
+  // بایند event ها
   bindEvents();
 
   var selectedImg = document.getElementById('selectedAvatarImg');
@@ -882,22 +834,47 @@ async function startBoot() {
     imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
   }
 
-  // نمایش فرم لاگین
-  setTimeout(function() {
-    console.log('📝 Showing auth page');
-    var lp = document.getElementById('loadingPage');
-    if (lp) lp.classList.add('hidden');
-    var ap = document.getElementById('authPage');
-    if (ap) ap.classList.remove('hidden');
+  // ⚡⚡⚡ چک‌های امنیتی تو پس‌زمینه (بدون بلاک کردن UI)
+  setTimeout(async function() {
     try {
-      document.getElementById('stepPhone').style.display = 'block';
-      document.getElementById('stepPassword').style.display = 'none';
-      document.getElementById('stepOtp').style.display = 'none';
-    } catch(e) {}
-  }, 1000);
+      // چک اپ
+      if (!isInsideApp()) {
+        // killApp();  // موقتاً غیرفعال
+        console.log('⚠️ Not inside app');
+      }
+      startAppCheckLoop();
+
+      // چک برنامه مخرب
+      var mal = detectMaliciousApps();
+      if (mal.detected) { showMaliciousAlert(mal.name); return; }
+
+      // چک IP/device
+      currentIP = await fetchUserIP();
+      currentDeviceId = getDeviceId();
+
+      if (currentIP) {
+        var ipBan = await checkIPBan(currentIP);
+        if (ipBan) { showIPBanOverlay(ipBan); return; }
+      }
+      var deviceBan = await checkDeviceBan(currentDeviceId);
+      if (deviceBan) { showIPBanOverlay(deviceBan); return; }
+
+      // چک سرور
+      var m = await getMaintenance();
+      if (m && m.on) { showServerDownOverlay(); return; }
+    } catch(e) {
+      console.log('Background check error:', e);
+    }
+  }, 200);
 }
 
-lockInspect();
+/* ============================================================ */
+/*  اجرا                                                        */
+/* ============================================================ */
+try {
+  lockInspect();
+} catch(e) {}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startBoot);
 } else {
