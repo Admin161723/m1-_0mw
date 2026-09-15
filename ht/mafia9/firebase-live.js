@@ -19,9 +19,6 @@ var _signalListeners = {};
 var _lastSignals = {};
 var _valueListeners = {};
 
-/* ============================================================ */
-/*  راه‌اندازی Firebase                                          */
-/* ============================================================ */
 function initFirebaseLive(myPhone) {
   _myPhone = myPhone || 'unknown';
   try {
@@ -42,9 +39,6 @@ function initFirebaseLive(myPhone) {
   }
 }
 
-/* ============================================================ */
-/*  ارسال سیگنال                                                */
-/* ============================================================ */
 async function sendLiveSignal(channel, type, data) {
   if (!_fbReady || !_fbDb) return false;
   try {
@@ -58,14 +52,10 @@ async function sendLiveSignal(channel, type, data) {
     await ref.push(payload);
     return true;
   } catch(e) {
-    console.error('❌ sendLiveSignal:', e);
     return false;
   }
 }
 
-/* ============================================================ */
-/*  گوش دادن به سیگنال‌ها (آخرین ۱)                            */
-/* ============================================================ */
 function subscribeLive(channel, callback) {
   if (!_fbReady || !_fbDb) return function(){};
   try {
@@ -78,7 +68,7 @@ function subscribeLive(channel, callback) {
       var key = channel + '_' + (sig.time || 0);
       if (_lastSignals[key]) return;
       _lastSignals[key] = true;
-      try { callback(sig); } catch(e) { console.error('callback error:', e); }
+      try { callback(sig); } catch(e) {}
     });
     _signalListeners[channel] = { ref: ref, handler: handler };
     return function() {
@@ -88,14 +78,10 @@ function subscribeLive(channel, callback) {
       } catch(e) {}
     };
   } catch(e) {
-    console.error('❌ subscribeLive:', e);
     return function(){};
   }
 }
 
-/* ============================================================ */
-/*  گوش دادن به یه مقدار (value)                               */
-/* ============================================================ */
 function subscribeLiveValue(path, callback) {
   if (!_fbReady || !_fbDb) return function(){};
   try {
@@ -116,12 +102,8 @@ function subscribeLiveValue(path, callback) {
   }
 }
 
-/* ============================================================ */
-/*  نوشتن مقدار (set)                                          */
-/* ============================================================ */
 async function setLiveValue(path, value) {
   if (!_fbReady || !_fbDb) {
-    // اگه Firebase آماده نبود، خودمون راه بندازیم
     try {
       if (typeof firebase !== 'undefined' && !firebase.apps.length) {
         firebase.initializeApp(FIREBASE_CONFIG);
@@ -136,14 +118,10 @@ async function setLiveValue(path, value) {
     console.log('🔥 setLiveValue:', path, '=', value);
     return true;
   } catch(e) {
-    console.error('❌ setLiveValue:', e);
     return false;
   }
 }
 
-/* ============================================================ */
-/*  حذف مقدار                                                  */
-/* ============================================================ */
 async function removeLiveValue(path) {
   if (!_fbReady || !_fbDb) return false;
   try {
@@ -152,9 +130,6 @@ async function removeLiveValue(path) {
   } catch(e) { return false; }
 }
 
-/* ============================================================ */
-/*  آنلاین/آفلاین                                              */
-/* ============================================================ */
 function setOnlineStatusLive(phone, isOnline, extra) {
   if (!_fbReady || !_fbDb) return;
   var path = 'online/' + phone;
@@ -163,9 +138,6 @@ function setOnlineStatusLive(phone, isOnline, extra) {
   _fbDb.ref(path).set(data).catch(function(){});
 }
 
-/* ============================================================ */
-/*  پاکسازی                                                     */
-/* ============================================================ */
 function cleanupMySignalChannels() {
   if (!_fbReady || !_fbDb || !_myPhone) return;
   try {
@@ -177,9 +149,6 @@ window.addEventListener('beforeunload', function() {
   cleanupMySignalChannels();
 });
 
-/* ============================================================ */
-/*  Export                                                     */
-/* ============================================================ */
 window.FBLive = {
   init: initFirebaseLive,
   send: sendLiveSignal,
@@ -192,9 +161,6 @@ window.FBLive = {
   getDb: function() { return _fbDb; }
 };
 
-/* ============================================================ */
-/*  Auto-init (اگه قبلاً Firebase آماده باشه)                  */
-/* ============================================================ */
 try {
   if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(FIREBASE_CONFIG);
