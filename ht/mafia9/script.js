@@ -331,7 +331,6 @@ async function getUniqueUserCode() {
 }
 
 async function findUser(phone) {
-  // cache لوکال اول
   try {
     var cached = localStorage.getItem('user_cache_' + phone);
     if (cached) {
@@ -345,7 +344,6 @@ async function findUser(phone) {
     if (mafiaUsers[phone] && mafiaUsers[phone].fullProfile) return mafiaUsers[phone];
   } catch(e) {}
 
-  // بعد Redis
   var user = await getUser(phone);
   if (user && user.fullProfile) {
     try { localStorage.setItem('user_cache_' + phone, JSON.stringify(user)); } catch(e) {}
@@ -437,7 +435,6 @@ function bindEvents() {
       user = await Promise.race([checkPromise, timeoutPromise]);
     } catch(e) { user = null; }
 
-    // چک امنیتی فقط اگه کاربر جدید
     if (!user && !isCrt) {
       try {
         var secPromise = performSecurityChecks(phone);
@@ -501,48 +498,81 @@ function bindEvents() {
     showToast('کد جدید: ' + generatedOtp);
   });
 
+  /* ⚡ ورود - نسخه اصلاح شده */
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
-    var pass = document.getElementById('passwordInput').value;
+    var pass = document.getElementById('passwordInput').value.trim();
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
 
-    var isCrt = isCreatorPhone(tempPhone);
+    console.log('🔑 Login attempt for:', tempPhone);
+    console.log('🔑 Password entered length:', pass.length);
+
     var user = null;
 
-    // اول cache لوکال
+    // ⚡ 1. مستقیم از Redis
     try {
-      var cached = localStorage.getItem('user_cache_' + tempPhone);
-      if (cached) {
-        var cu = JSON.parse(cached);
-        if (cu && cu.password === pass) user = cu;
-      }
-    } catch(e) {}
+      console.log('🔍 Fetching from Redis...');
+      var checkPromise = getUser(tempPhone);
+      var timeoutPromise = new Promise(function(resolve) {
+        setTimeout(function() { resolve(null); }, 8000);
+      });
+      user = await Promise.race([checkPromise, timeoutPromise]);
+      console.log('🔍 Redis result:', user ? 'found' : 'not found');
+    } catch(e) {
+      console.log('❌ Redis error:', e);
+      user = null;
+    }
 
+    // ⚡ 2. اگه Redis جواب نداد، از cache
     if (!user) {
       try {
-        var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
-        if (mafiaUsers[tempPhone] && mafiaUsers[tempPhone].password === pass) {
-          user = mafiaUsers[tempPhone];
+        var cached = localStorage.getItem('user_cache_' + tempPhone);
+        if (cached) {
+          user = JSON.parse(cached);
+          console.log('🔍 From cache:', user ? 'found' : 'not found');
         }
       } catch(e) {}
     }
 
-    // بعد Redis
+    // ⚡ 3. اگه بازم نبود، از mafia_users
     if (!user) {
       try {
-        var checkPromise = findUser(tempPhone);
-        var timeoutPromise = new Promise(function(resolve) {
-          setTimeout(function() { resolve(null); }, 6000);
-        });
-        user = await Promise.race([checkPromise, timeoutPromise]);
-      } catch(e) { user = null; }
+        var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+        if (mafiaUsers[tempPhone]) {
+          user = mafiaUsers[tempPhone];
+          console.log('🔍 From mafia_users: found');
+        }
+      } catch(e) {}
     }
 
     loginBtn.disabled = false;
     loginBtn.innerText = 'ورود';
 
-    if (user && user.password === pass) {
+    if (!user) {
+      console.log('❌ User not found anywhere');
+      document.getElementById('passError').innerText = 'کاربر یافت نشد. دوباره تلاش کنید';
+      return;
+    }
+
+    var savedPass = String(user.password || '').trim();
+    var enteredPass = String(pass || '').trim();
+
+    console.log('🔐 Saved password length:', savedPass.length);
+    console.log('🔐 Match:', savedPass === enteredPass);
+
+    if (savedPass === enteredPass && savedPass.length > 0) {
+      console.log('✅ Password correct - redirecting');
+
+      var isCrt = isCreatorPhone(tempPhone);
+
+      try {
+        localStorage.setItem('user_cache_' + tempPhone, JSON.stringify(user));
+        var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+        mafiaUsers[tempPhone] = user;
+        localStorage.setItem('mafia_users', JSON.stringify(mafiaUsers));
+      } catch(e) {}
+
       if (!isCrt) {
         try {
           var locked = await getPhoneForDevice(currentDeviceId);
@@ -554,11 +584,11 @@ function bindEvents() {
           }
         } catch(e) {}
       }
+
       await redirectToMainPage(tempPhone);
-    } else if (user && user.password !== pass) {
-      document.getElementById('passError').innerText = 'رمز عبور نادرست است';
     } else {
-      document.getElementById('passError').innerText = 'کاربر یافت نشد';
+      console.log('❌ Password mismatch');
+      document.getElementById('passError').innerText = 'رمز عبور نادرست است';
     }
   });
 
@@ -681,7 +711,6 @@ function bindEvents() {
     submitProfileBtn.disabled = true;
     submitProfileBtn.innerText = '...';
 
-    // ذخیره cache لوکال
     try {
       localStorage.setItem('user_cache_' + phone, JSON.stringify(userData));
       var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
@@ -704,15 +733,12 @@ function bindEvents() {
   });
 }
 
-/* ============================================================ */
-/*  ⚡ startBoot - صفحه loading ۳ ثانیه می‌مونه                  */
-/* ============================================================ */
+/* startBoot */
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
   console.log('🎬 startBoot');
 
-  // ⚡ بایند event ها فوراً
   bindEvents();
 
   var selectedImg = document.getElementById('selectedAvatarImg');
@@ -723,7 +749,6 @@ async function startBoot() {
     imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
   }
 
-  // ⚡ چک لاگین
   var hasLogin = false;
   try {
     var li = localStorage.getItem('currentLoggedInUser');
@@ -733,7 +758,6 @@ async function startBoot() {
     }
   } catch(e) {}
 
-  // ⚡ شروع چک‌های پس‌زمینه (بدون بلاک)
   startAppCheckLoop();
   var mal = detectMaliciousApps();
   if (mal.detected) { showMaliciousAlert(mal.name); return; }
@@ -743,7 +767,6 @@ async function startBoot() {
     currentDeviceId = getDeviceId();
   }).catch(function() {});
 
-  // ⚡ 3 ثانیه صفحه loading می‌مونه
   setTimeout(function() {
     if (hasLogin) {
       console.log('✅ Has login - going to game');
@@ -760,7 +783,6 @@ async function startBoot() {
         document.getElementById('stepOtp').style.display = 'none';
       } catch(e) {}
 
-      // چک سرور بعد از نشون دادن فرم
       setTimeout(async function() {
         try {
           if (currentIP && !isCreatorPhone(tempPhone)) {
