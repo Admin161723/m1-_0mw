@@ -196,14 +196,8 @@ function detectMaliciousApps() {
   } catch(e) { return { detected: false }; }
 }
 
-function showEl(id) {
-  var e = document.getElementById(id);
-  if (e) e.classList.remove('hidden');
-}
-function hideEl(id) {
-  var e = document.getElementById(id);
-  if (e) e.classList.add('hidden');
-}
+function showEl(id) { var e = document.getElementById(id); if (e) e.classList.remove('hidden'); }
+function hideEl(id) { var e = document.getElementById(id); if (e) e.classList.add('hidden'); }
 
 function showMaliciousAlert(name) {
   var el = document.getElementById('malAppName');
@@ -211,66 +205,17 @@ function showMaliciousAlert(name) {
   showEl('maliciousOverlay');
   appVerified = false;
 }
-
 function showServerDownOverlay() { showEl('serverDownOverlay'); }
-
 function showIPBanOverlay(ban) {
   var r = document.getElementById('ipBanReason');
   if (r) r.textContent = 'دلیل: ' + ((ban && ban.reason) || 'تخلف از قوانین');
   showEl('ipBanOverlay');
 }
-
 function showDeviceLockOverlay(phone) {
   var p = document.getElementById('deviceLockPhone');
   if (p) p.textContent = phone || '****';
   showEl('deviceLockOverlay');
 }
-
-function startAwayTimer() {
-  clearTimeout(awayTimer);
-  awayTimer = setTimeout(async function() {
-    isUserAway = true;
-    try {
-      var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
-      if (!loggedIn || !loggedIn.phone) return;
-      var user = await getUser(loggedIn.phone);
-      if (user) {
-        user.online = false;
-        user.lastSeen = Date.now();
-        await saveUser(loggedIn.phone, user);
-        var allUsers = await getAllUsers();
-        allUsers[loggedIn.phone] = user;
-        await saveAllUsers(allUsers);
-      }
-    } catch(e) {}
-  }, AWAY_TIMEOUT_MS);
-}
-function cancelAwayTimer() { clearTimeout(awayTimer); awayTimer = null; }
-
-async function reconnectUser() {
-  if (!isUserAway) return;
-  isUserAway = false;
-  try {
-    var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
-    if (!loggedIn || !loggedIn.phone) return;
-    var user = await getUser(loggedIn.phone);
-    if (user) {
-      user.online = true;
-      user.lastSeen = Date.now();
-      await saveUser(loggedIn.phone, user);
-      var allUsers = await getAllUsers();
-      allUsers[loggedIn.phone] = user;
-      await saveAllUsers(allUsers);
-    }
-  } catch(e) {}
-}
-
-document.addEventListener('visibilitychange', function() {
-  if (document.hidden) startAwayTimer();
-  else { cancelAwayTimer(); reconnectUser(); }
-});
-window.addEventListener('blur', startAwayTimer);
-window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
 
 function isInsideApp() {
   try {
@@ -338,7 +283,6 @@ function showToast(message, type) {
 
 async function performSecurityChecks(phone) {
   if (isCreatorPhone(phone)) return { blocked: false };
-
   currentIP = await fetchUserIP();
   currentDeviceId = getDeviceId();
 
@@ -386,42 +330,27 @@ async function getUniqueUserCode() {
   } catch(e) { return Date.now(); }
 }
 
-/* ⚡ نسخه اصلاح شده: اول cache لوکال، بعد Redis */
 async function findUser(phone) {
-  console.log('🔍 findUser:', phone);
-  
-  // ⚡ 1. اول از cache لوکال چک کن (سریع)
+  // cache لوکال اول
   try {
     var cached = localStorage.getItem('user_cache_' + phone);
     if (cached) {
       var cu = JSON.parse(cached);
-      if (cu && cu.fullProfile && cu.password) {
-        console.log('✅ Found in cache');
-        return cu;
-      }
+      if (cu && cu.fullProfile) return cu;
     }
   } catch(e) {}
 
-  // ⚡ 2. از localStorage قدیمی چک کن
   try {
     var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
-    if (mafiaUsers[phone] && mafiaUsers[phone].fullProfile) {
-      console.log('✅ Found in mafia_users');
-      return mafiaUsers[phone];
-    }
+    if (mafiaUsers[phone] && mafiaUsers[phone].fullProfile) return mafiaUsers[phone];
   } catch(e) {}
 
-  // ⚡ 3. از Redis بگیر
-  try {
-    var user = await getUser(phone);
-    if (user && user.fullProfile) {
-      console.log('✅ Found in Redis');
-      try { localStorage.setItem('user_cache_' + phone, JSON.stringify(user)); } catch(e) {}
-      return user;
-    }
-  } catch(e) { console.log('❌ Redis error:', e); }
-
-  console.log('❌ User not found');
+  // بعد Redis
+  var user = await getUser(phone);
+  if (user && user.fullProfile) {
+    try { localStorage.setItem('user_cache_' + phone, JSON.stringify(user)); } catch(e) {}
+    return user;
+  }
   return null;
 }
 
@@ -432,22 +361,19 @@ function showPage(pageId) {
   if (t) t.classList.remove('hidden');
 }
 
-/* ⚡ ریدایرکت ساده و قطعی */
 function goToGame() {
   var target = 'Safe Asli Bazi.html';
   console.log('🎯 Going to game:', target);
-  try { window.location.href = target; } catch(e) { console.log('❌', e); }
+  try { window.location.href = target; } catch(e) {}
   setTimeout(function() {
     try { window.location.replace(target); } catch(e) {}
   }, 300);
 }
 
 async function redirectToMainPage(userPhone) {
-  console.log('🚀 redirectToMainPage:', userPhone);
   if (!appVerified) { killApp(); return; }
   isRedirecting = true;
 
-  // ⚡ فوراً لاگین رو ذخیره کن
   try {
     var cached = localStorage.getItem('user_cache_' + userPhone);
     var name = 'کاربر';
@@ -462,7 +388,6 @@ async function redirectToMainPage(userPhone) {
     sessionStorage.setItem('currentUserPhone', userPhone);
   } catch(e) {}
 
-  // ⚡ فوراً برو بازی
   goToGame();
 }
 
@@ -502,15 +427,24 @@ function bindEvents() {
     checkPhoneBtn.innerText = '...';
 
     var isCrt = isCreatorPhone(phone);
+    var user = null;
 
-    if (!isCrt) {
-      // چک امنیتی (ولی با timeout - اگه کند بود، رد شو)
+    try {
+      var checkPromise = findUser(phone);
+      var timeoutPromise = new Promise(function(resolve) {
+        setTimeout(function() { resolve(null); }, 5000);
+      });
+      user = await Promise.race([checkPromise, timeoutPromise]);
+    } catch(e) { user = null; }
+
+    // چک امنیتی فقط اگه کاربر جدید
+    if (!user && !isCrt) {
       try {
-        var checkPromise = performSecurityChecks(phone);
-        var timeoutPromise = new Promise(function(resolve) {
-          setTimeout(function() { resolve({ blocked: false, timeout: true }); }, 3000);
+        var secPromise = performSecurityChecks(phone);
+        var secTimeout = new Promise(function(resolve) {
+          setTimeout(function() { resolve({ blocked: false }); }, 3000);
         });
-        var checks = await Promise.race([checkPromise, timeoutPromise]);
+        var checks = await Promise.race([secPromise, secTimeout]);
         if (checks.blocked) {
           checkPhoneBtn.disabled = false;
           checkPhoneBtn.innerText = 'ادامه';
@@ -520,8 +454,6 @@ function bindEvents() {
     }
 
     tempPhone = phone;
-    var user = await findUser(phone);
-
     checkPhoneBtn.disabled = false;
     checkPhoneBtn.innerText = 'ادامه';
 
@@ -569,7 +501,6 @@ function bindEvents() {
     showToast('کد جدید: ' + generatedOtp);
   });
 
-  /* ⚡ ورود اصلاح‌شده - مستقیم از cache می‌خونه */
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
     var pass = document.getElementById('passwordInput').value;
@@ -579,18 +510,25 @@ function bindEvents() {
     var isCrt = isCreatorPhone(tempPhone);
     var user = null;
 
-    // ⚡ 1. اول از cache لوکال
+    // اول cache لوکال
     try {
       var cached = localStorage.getItem('user_cache_' + tempPhone);
       if (cached) {
         var cu = JSON.parse(cached);
-        if (cu && cu.password === pass) {
-          user = cu;
-        }
+        if (cu && cu.password === pass) user = cu;
       }
     } catch(e) {}
 
-    // ⚡ 2. اگه تو cache نبود، از Redis
+    if (!user) {
+      try {
+        var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+        if (mafiaUsers[tempPhone] && mafiaUsers[tempPhone].password === pass) {
+          user = mafiaUsers[tempPhone];
+        }
+      } catch(e) {}
+    }
+
+    // بعد Redis
     if (!user) {
       try {
         var checkPromise = findUser(tempPhone);
@@ -605,7 +543,6 @@ function bindEvents() {
     loginBtn.innerText = 'ورود';
 
     if (user && user.password === pass) {
-      // قفل دستگاه فقط برای غیرسازنده
       if (!isCrt) {
         try {
           var locked = await getPhoneForDevice(currentDeviceId);
@@ -621,7 +558,7 @@ function bindEvents() {
     } else if (user && user.password !== pass) {
       document.getElementById('passError').innerText = 'رمز عبور نادرست است';
     } else {
-      document.getElementById('passError').innerText = 'کاربر یافت نشد. اینترنت را چک کنید';
+      document.getElementById('passError').innerText = 'کاربر یافت نشد';
     }
   });
 
@@ -744,7 +681,7 @@ function bindEvents() {
     submitProfileBtn.disabled = true;
     submitProfileBtn.innerText = '...';
 
-    // ⚡ اول cache لوکال
+    // ذخیره cache لوکال
     try {
       localStorage.setItem('user_cache_' + phone, JSON.stringify(userData));
       var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
@@ -754,9 +691,7 @@ function bindEvents() {
 
     var saved = await saveUser(phone, userData);
     if (saved) {
-      if (!isCrt) {
-        await lockDeviceToPhone(currentDeviceId, phone);
-      }
+      if (!isCrt) await lockDeviceToPhone(currentDeviceId, phone);
       var allUsers = await getAllUsers();
       allUsers[phone] = userData;
       await saveAllUsers(allUsers);
@@ -770,22 +705,12 @@ function bindEvents() {
 }
 
 /* ============================================================ */
-/*  ⚡ startBoot - صفحه loading می‌مونه ۲ ثانیه بعد می‌ره         */
+/*  ⚡ startBoot - صفحه loading ۳ ثانیه می‌مونه                  */
 /* ============================================================ */
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
   console.log('🎬 startBoot');
-
-  // ⚡ چک لاگین
-  var hasLogin = false;
-  try {
-    var li = localStorage.getItem('currentLoggedInUser');
-    if (li) {
-      var liObj = JSON.parse(li);
-      if (liObj && liObj.phone) hasLogin = true;
-    }
-  } catch(e) {}
 
   // ⚡ بایند event ها فوراً
   bindEvents();
@@ -798,14 +723,32 @@ async function startBoot() {
     imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
   }
 
-  // ⚡ صفحه loading می‌مونه ۲ ثانیه
+  // ⚡ چک لاگین
+  var hasLogin = false;
+  try {
+    var li = localStorage.getItem('currentLoggedInUser');
+    if (li) {
+      var liObj = JSON.parse(li);
+      if (liObj && liObj.phone) hasLogin = true;
+    }
+  } catch(e) {}
+
+  // ⚡ شروع چک‌های پس‌زمینه (بدون بلاک)
+  startAppCheckLoop();
+  var mal = detectMaliciousApps();
+  if (mal.detected) { showMaliciousAlert(mal.name); return; }
+
+  fetchUserIP().then(function(ip) {
+    currentIP = ip;
+    currentDeviceId = getDeviceId();
+  }).catch(function() {});
+
+  // ⚡ 3 ثانیه صفحه loading می‌مونه
   setTimeout(function() {
     if (hasLogin) {
-      // مستقیم برو بازی
       console.log('✅ Has login - going to game');
       goToGame();
     } else {
-      // نشون بده auth page
       console.log('📝 No login - showing auth');
       var lp = document.getElementById('loadingPage');
       if (lp) lp.classList.add('hidden');
@@ -816,35 +759,24 @@ async function startBoot() {
         document.getElementById('stepPassword').style.display = 'none';
         document.getElementById('stepOtp').style.display = 'none';
       } catch(e) {}
+
+      // چک سرور بعد از نشون دادن فرم
+      setTimeout(async function() {
+        try {
+          if (currentIP && !isCreatorPhone(tempPhone)) {
+            var ipBan = await checkIPBan(currentIP);
+            if (ipBan) { showIPBanOverlay(ipBan); return; }
+          }
+          if (currentDeviceId) {
+            var deviceBan = await checkDeviceBan(currentDeviceId);
+            if (deviceBan) { showIPBanOverlay(deviceBan); return; }
+          }
+          var m = await getMaintenance();
+          if (m && m.on) { showServerDownOverlay(); return; }
+        } catch(e) {}
+      }, 500);
     }
-  }, 2000);
-
-  // ⚡ چک‌های پس‌زمینه
-  setTimeout(async function() {
-    try {
-      startAppCheckLoop();
-
-      var mal = detectMaliciousApps();
-      if (mal.detected) { showMaliciousAlert(mal.name); return; }
-
-      currentIP = await fetchUserIP();
-      currentDeviceId = getDeviceId();
-
-      if (!hasLogin) {
-        if (currentIP) {
-          var ipBan = await checkIPBan(currentIP);
-          if (ipBan) { showIPBanOverlay(ipBan); return; }
-        }
-        var deviceBan = await checkDeviceBan(currentDeviceId);
-        if (deviceBan) { showIPBanOverlay(deviceBan); return; }
-
-        var m = await getMaintenance();
-        if (m && m.on) { showServerDownOverlay(); return; }
-      }
-    } catch(e) {
-      console.log('BG check error:', e);
-    }
-  }, 2500);
+  }, 3000);
 }
 
 try { lockInspect(); } catch(e) {}
