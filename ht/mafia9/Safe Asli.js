@@ -1,5 +1,5 @@
 /* ============================================================ */
-/*  فایل: Safe Asli.js - نسخه نهایی نهایی                        */
+/*  Safe Asli.js - نسخه نهایی با Firebase Live                  */
 /* ============================================================ */
 
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -81,7 +81,6 @@ async function addBanLog(phone, banData) {
   await saveUser(phone, user);
 }
 
-/* ===== تخصیص کد کاربری یکتا و ترتیبی ===== */
 async function getUniqueUserCode() {
   try {
     const allUsers = await getAllUsers();
@@ -96,7 +95,6 @@ async function getUniqueUserCode() {
 }
 window.getUniqueUserCode = getUniqueUserCode;
 
-/* ===== بازنشانی کامل کدهای کاربری (دکمه ادمین) ===== */
 async function resetAllUserCodes() {
   if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
   if (!confirm('همه کدهای کاربری حذف و از ۱ به ترتیب بر اساس زمان ثبت‌نام داده می‌شوند؟')) return;
@@ -127,11 +125,11 @@ async function resetAllUserCodes() {
       updateUIWithData(currentUserData);
     }
     await loadUsers();
+    sendLiveSignal('users', 'codes_reset', {});
   } catch(e) { showShopNotification('خطا در بازنشانی', 'error'); }
 }
 window.resetAllUserCodes = resetAllUserCodes;
 
-/* ===== تخصیص خودکار کد به کاربر بدون کد ===== */
 async function assignCodeIfMissing(phone, user) {
   if (!user) return user;
   if (user.userCode && !isNaN(parseInt(user.userCode)) && parseInt(user.userCode) > 0) return user;
@@ -201,9 +199,7 @@ function getDeviceId() {
 }
 
 let isRedirecting=false;
-function redirectToOffline(){if(isRedirecting)return;isRedirecting=true;window.location.href='off.html';}
 function redirectToBan(b,p){if(isRedirecting)return;isRedirecting=true;const params=new URLSearchParams({phone:p,by:b.bannedBy||'مدیریت',reason:b.reason||'بدون دلیل',duration:b.duration||'1d',expires:b.expiresAt||'',createdAt:b.createdAt||b.bannedAt||''});window.location.href='Ban.html?'+params.toString();}
-window.addEventListener('offline',()=>{if(!isRedirecting)redirectToOffline();});
 
 function toPersianNum(n){const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];return String(n).replace(/[0-9]/g,w=>p[+w]);}
 
@@ -258,6 +254,9 @@ let myIP = null;
 let currentDeviceId = null;
 let localAvatarLock = 0;
 let localTemplateLock = 0;
+let _liveSubscriptions = [];
+let _lastKnownServerTime = 0;
+let _signalDebounce = {};
 
 const avatars=[
   {id:1, src:'3000.webp', price:0, owned:false, free:true},
@@ -408,9 +407,6 @@ function updateGlobalAvatar(src) {
   if(templateShowcase) { templateShowcase.innerHTML = ''; templateShowcase.appendChild(buildContent()); observeVideos(templateShowcase); }
 }
 
-/* ============================================================ */
-/*  ⚡ آپدیت UI - shopGems/shopGold/shopDollars هم آپدیت میشن  */
-/* ============================================================ */
 function updateUIWithData(user) {
   document.getElementById('displayCoins').textContent = toPersianNum(user.coins || 0);
   document.getElementById('displayGems').textContent = toPersianNum(user.gems || 0);
@@ -440,7 +436,6 @@ function updateUIWithData(user) {
   document.getElementById('btnUserControl').style.display = perm.userControl ? 'block' : 'none';
   document.getElementById('btnWhitelistIP').style.display = perm.whitelist ? 'block' : 'none';
 
-  // ✅ آپدیت shopGems/shopGold/shopDollars (مهم برای خرید!)
   shopGold = user.coins || 0;
   shopGems = user.gems || 0;
   shopDollars = user.dollars || 0;
@@ -478,7 +473,7 @@ async function updateClanRank() {
 }
 
 /* ============================================================ */
-/*  💾 ذخیره داده - همیشه ذخیره کن، آخرین تغییر برنده است      */
+/*  💾 ذخیره داده - با سیگنال زنده                             */
 /* ============================================================ */
 async function saveUserData(){
   if(!currentUserData||!currentPhone)return;
@@ -486,15 +481,17 @@ async function saveUserData(){
   if(document.getElementById('adminModal').classList.contains('active')) return;
   if(document.getElementById('editUserModal').classList.contains('active')) return;
 
-  // ⚡ آخرین زمان تغییر
   currentUserData.lastUpdatedAt = Date.now();
   currentUserData = sanitizeUserData(currentUserData, currentPhone);
   localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
   await saveUser(currentPhone,currentUserData);
-  
+
   const allUsers=await getAllUsers();
   allUsers[currentPhone]=currentUserData;
   await saveAllUsers(allUsers);
+
+  // ⚡ سیگنال زنده بفرست
+  sendLiveSignal('user_' + currentPhone, 'updated', { phone: currentPhone, at: currentUserData.lastUpdatedAt });
 }
 
 async function saveAvatarToStorage(src){
@@ -608,17 +605,18 @@ async function sendNews(){
   await saveNews(news);
   document.getElementById('newsTitleInput').value=''; document.getElementById('newsContentInput').value='';
   await loadNews();
+  // ⚡ سیگنال زنده به همه کاربران
+  sendLiveSignal('global', 'news_updated', { at: Date.now() });
 }
 
 let currentAdminTab = 'all';
 let currentUserList = [];
 let viewingUserHistory = null;
 
-/* ===== بارگذاری لیست کاربران - با کش سریع ===== */
 async function loadAdminUsers() {
   const container = document.getElementById('adminUserListContainer');
-  if (container) container.innerHTML = '<div style="color:#aaa;padding:20px;text-align:center;">در حال بارگذاری...<div class="loading-spinner"></div></div>';
-  
+  if (container) container.innerHTML = '<div style="color:#aaa;padding:20px;text-align:center;">در حال بارگذاری...</div>';
+
   const allUsers = await getAllUsers();
   currentUserList = Object.entries(allUsers).map(([phone, u]) => ({ phone, ...u }));
   renderAdminUsers(currentUserList);
@@ -681,6 +679,7 @@ async function clearUserSessions(phone) {
   const allUsers = await getAllUsers(); allUsers[phone] = user; await saveAllUsers(allUsers);
   showShopNotification('تاریخچه ورود پاک شد');
   openUserHistory(phone);
+  sendLiveSignal('user_' + phone, 'updated', { phone: phone });
 }
 function closeUserHistory() {
   document.getElementById('userHistorySection').style.display = 'none';
@@ -694,6 +693,10 @@ async function setUserOnlineStatus(online) {
   if (myIP) user.lastIP = myIP;
   if (currentDeviceId) user.lastDevice = currentDeviceId;
   await saveUser(currentPhone, user);
+  // ⚡ سیگنال زنده آنلاین/آفلاین
+  if (window.FBLive && window.FBLive.isReady()) {
+    window.FBLive.setOnline(currentPhone, online, { name: user.name, rank: user.rank });
+  }
 }
 
 async function forceUserLogin() {
@@ -707,6 +710,7 @@ async function forceUserLogin() {
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('کاربر وارد بازی شد');
+  sendLiveSignal('user_' + phone, 'force_login', { phone: phone });
 }
 async function forceUserLogout() {
   const phone = document.getElementById('controlUserPhone').value.trim();
@@ -719,6 +723,7 @@ async function forceUserLogout() {
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('کاربر از بازی خارج شد');
+  sendLiveSignal('user_' + phone, 'force_logout', { phone: phone });
 }
 async function clearUserData() {
   const phone = document.getElementById('controlUserPhone').value.trim();
@@ -734,6 +739,7 @@ async function clearUserData() {
   await saveUser(phone, user);
   const all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('داده‌های کاربر پاک شد');
+  sendLiveSignal('user_' + phone, 'updated', { phone: phone });
 }
 async function clearUserSessionsFromPanel() {
   const phone = document.getElementById('controlUserPhone').value.trim();
@@ -887,9 +893,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 
-/* ============================================================ */
-/*  💾 ذخیره ویرایش کاربر - همیشه روی کاربر هدف ذخیره میشه     */
-/* ============================================================ */
 async function saveUserEdit(){
   if(!editingUserId)return;
   const perm=getPerm();
@@ -930,13 +933,14 @@ async function saveUserEdit(){
     }
   }
 
-  // ✅ زمان آخرین تغییر
   u.lastUpdatedAt = Date.now();
   allUsers[editingUserId]=u;
 
-  // ✅ ذخیره روی کاربر هدف
   await saveUser(editingUserId, u);
   await saveAllUsers(allUsers);
+
+  // ⚡ سیگنال زنده به کاربر هدف
+  sendLiveSignal('user_' + editingUserId, 'admin_edit', { phone: editingUserId });
 
   if(editingUserId === currentPhone) {
     currentUserData = u;
@@ -987,6 +991,8 @@ async function banUser(type = 'account'){
     await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'تخلف از قوانین', duration: dur, type: 'account' });
     showShopNotification('اکانت کاربر بن شد');
   }
+  // ⚡ سیگنال زنده
+  sendLiveSignal('user_' + editingUserId, 'banned', { phone: editingUserId });
   closeEditUser();
   await loadUsers();
 }
@@ -1007,6 +1013,7 @@ async function unbanUser(){
   const ip = u.lastIP || u.registeredIP;
   if(ip) await redisDel('ip_ban:'+ip);
   await addBanLog(editingUserId, { time: Date.now(), by: currentUserData.name, reason: 'رفع بن کامل', duration: 'unbanned', type: 'account' });
+  sendLiveSignal('user_' + editingUserId, 'unbanned', { phone: editingUserId });
   closeEditUser();
   await loadUsers();
   showShopNotification('همه بن‌ها برداشته شد');
@@ -1025,6 +1032,7 @@ async function deleteAccount(){
   await saveAllUsers(allUsers);
   await redisDel('user:'+editingUserId);
   await redisDel('ban:'+editingUserId);
+  sendLiveSignal('user_' + editingUserId, 'deleted', { phone: editingUserId });
   closeEditUser();
   await loadUsers();
   showShopNotification('اکانت کامل حذف شد');
@@ -1042,6 +1050,7 @@ async function wipeDatabase(){
   await saveAllUsers(keep);
   await loadUsers();
   showShopNotification('دیتابیس پاک شد');
+  sendLiveSignal('global', 'db_wiped', {});
 }
 
 async function toggleServer(){
@@ -1051,6 +1060,8 @@ async function toggleServer(){
   await setMaintenance(!isOn);
   showShopNotification(!isOn?'سرور قطع شد':'سرور وصل شد');
   await updateServerToggleBtn();
+  // ⚡ سیگنال زنده به همه
+  sendLiveSignal('global', 'server_toggle', { on: !isOn });
 }
 async function updateServerToggleBtn(){
   const m=await getMaintenance();
@@ -1083,6 +1094,7 @@ async function saveAllTournamentConfig() {
   };
   await saveTournamentConfigData(cfg);
   showShopNotification('تنظیمات مسابقات ذخیره شد');
+  sendLiveSignal('global', 'tournament_updated', {});
 }
 window.clanBlacklist = [];
 
@@ -1334,17 +1346,12 @@ function handleAvatarClick(id){
   }
 }
 
-/* ============================================================ */
-/*  🛒 خرید - از مقدار زنده shopGems استفاده می‌کنه             */
-/* ============================================================ */
 async function confirmPurchase(){
   playClickSound();
 
-  // ⚡ از سرور آخرین مقدار رو بگیر (تا مطمئن باشیم درست هست)
   try {
     const freshUser = await getUser(currentPhone);
     if (freshUser) {
-      // اگه ادمین تغییر داده یا کاربر مقدار جدید داره، از سرور استفاده کن
       if (freshUser.coins !== undefined) {
         currentUserData.coins = freshUser.coins;
         currentUserData.gems = freshUser.gems;
@@ -1377,9 +1384,9 @@ async function confirmPurchase(){
     renderTemplates();
     document.getElementById('purchaseModal').classList.remove('show');
     selectedTemplate = null; templatePurchasePrice = 0;
-    // ⚡ ذخیره فوری
     await saveUser(currentPhone, currentUserData);
     const allU = await getAllUsers(); allU[currentPhone] = currentUserData; await saveAllUsers(allU);
+    sendLiveSignal('user_' + currentPhone, 'purchased', { phone: currentPhone });
     return;
   }
 
@@ -1400,9 +1407,9 @@ async function confirmPurchase(){
       renderAvatars();
       document.getElementById('purchaseModal').classList.remove('show');
       selectedAvatar = null; purchasePrice = 0;
-      // ⚡ ذخیره فوری
       await saveUser(currentPhone, currentUserData);
       const allU = await getAllUsers(); allU[currentPhone] = currentUserData; await saveAllUsers(allU);
+      sendLiveSignal('user_' + currentPhone, 'purchased', { phone: currentPhone });
     } else {
       document.getElementById('purchaseModal').classList.remove('show');
       showShopNotification('الماس کافی ندارید!','error');
@@ -1484,16 +1491,13 @@ async function checkAndDistributeTournamentPrizes() {
   } catch (e) {}
 }
 
-/* ============================================================ */
-/*  🔄 سینک با سرور - فقط وقتی سرور جدیدتره بگیر              */
-/* ============================================================ */
 async function syncWithServerInBackground() {
   try {
     if(pauseSync) return;
     if(document.getElementById('adminModal').classList.contains('active')) return;
     if(document.getElementById('editUserModal').classList.contains('active')) return;
     if(document.getElementById('purchaseModal').classList.contains('show')) return;
-    
+
     myIP = await fetchUserIP(); if (!myIP) return;
     currentDeviceId = getDeviceId();
     var isWhitelisted = await isIPWhitelisted(myIP, currentDeviceId);
@@ -1514,10 +1518,9 @@ async function syncWithServerInBackground() {
       var db = await getDeviceBan(currentDeviceId);
       if(db && db.isBanned) { if (!db.expiresAt || new Date(db.expiresAt).getTime() > Date.now()) { document.getElementById('deviceBanOverlay').classList.add('show'); return; } }
     }
-    
+
     await checkAndDistributeTournamentPrizes();
-    
-    // ⚡ فقط user self رو بگیر
+
     var serverUser = await getUser(currentPhone);
     if (!serverUser) {
       var localCache = localStorage.getItem('user_cache_' + currentPhone);
@@ -1527,22 +1530,16 @@ async function syncWithServerInBackground() {
       } else { window.location.href = 'index.html'; return; }
     }
 
-    // ✅ اگه کاربر کد نداره، خودکار بده
     if (!serverUser.userCode || isNaN(parseInt(serverUser.userCode)) || parseInt(serverUser.userCode) <= 0) {
       serverUser = await assignCodeIfMissing(currentPhone, serverUser);
     }
 
-    // ⚡ چک زمان‌ها
     const serverTime = serverUser.lastUpdatedAt || 0;
     const localTime = currentUserData.lastUpdatedAt || 0;
 
-    // اگه کاربر تازه خرید کرده (لوکال جدیدتر) و خرید انجام داده → از لوکال نگه دار
-    // اگه سرور جدیدتره → از سرور بگیر
     if (serverTime > localTime) {
-      // سرور جدیدتر → از سرور بگیر
       currentUserData = sanitizeUserData({ ...currentUserData, ...serverUser }, currentPhone);
     } else {
-      // لوکال جدیدتر یا مساوی → از لوکال نگه دار، ولی فیلدهای general از سرور بگیر
       currentUserData = sanitizeUserData({
         ...serverUser,
         coins: currentUserData.coins,
@@ -1557,31 +1554,105 @@ async function syncWithServerInBackground() {
       }, currentPhone);
     }
 
-    currentUserData.lastIP = myIP; 
+    currentUserData.lastIP = myIP;
     currentUserData.lastDevice = currentDeviceId;
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
     updateUIWithData(currentUserData);
-    
+
     updateServerToggleBtn();
   } catch (error) {}
 }
 
+/* ============================================================ */
+/*  🎧 راه‌اندازی سیگنال‌های زنده                               */
+/* ============================================================ */
+function setupLiveSubscriptions() {
+  if (!window.FBLive || !window.FBLive.isReady()) return;
+
+  // 1. پیام‌های سراسری (اطلاعیه، سرور، بازنشانی کدها)
+  _liveSubscriptions.push(window.FBLive.subscribe('global', async function(sig) {
+    if (sig.type === 'news_updated') {
+      await loadNews();
+      showShopNotification('📢 اطلاعیه جدید');
+    } else if (sig.type === 'server_toggle') {
+      await syncWithServerInBackground();
+    } else if (sig.type === 'codes_reset') {
+      // کد خودم رو دوباره بگیر
+      const fresh = await getUser(currentPhone);
+      if (fresh) {
+        currentUserData.userCode = fresh.userCode;
+        localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+        updateUIWithData(currentUserData);
+      }
+    } else if (sig.type === 'db_wiped') {
+      const still = await getUser(currentPhone);
+      if (!still) { localStorage.removeItem('currentLoggedInUser'); window.location.href = 'index.html'; }
+    } else if (sig.type === 'tournament_updated') {
+      loadTournamentConfig();
+    }
+  }));
+
+  // 2. سیگنال‌های مربوط به خودم
+  _liveSubscriptions.push(window.FBLive.subscribe('user_' + currentPhone, async function(sig) {
+    // ادمین چیزی تغییر داده → از سرور بخون
+    const fresh = await getUser(currentPhone);
+    if (!fresh) { localStorage.removeItem('currentLoggedInUser'); window.location.href = 'index.html'; return; }
+
+    if (sig.type === 'banned') {
+      const ban = await getBanStatus(currentPhone);
+      if (ban) redirectToBan(ban, currentPhone);
+      return;
+    }
+    if (sig.type === 'force_logout') {
+      localStorage.removeItem('currentLoggedInUser');
+      window.location.href = 'index.html';
+      return;
+    }
+    if (sig.type === 'force_login') {
+      return;
+    }
+    if (sig.type === 'deleted') {
+      localStorage.removeItem('currentLoggedInUser');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // آپدیت عمومی از سرور
+    if (fresh.lastUpdatedAt > (currentUserData.lastUpdatedAt || 0)) {
+      currentUserData = sanitizeUserData({ ...currentUserData, ...fresh }, currentPhone);
+      localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+      updateUIWithData(currentUserData);
+      showShopNotification('🔄 اطلاعات به‌روزرسانی شد');
+    }
+  }));
+
+  console.log('✅ Live subscriptions active');
+}
+
+/* ============================================================ */
+/*  🚀 راه‌اندازی                                                */
+/* ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
   const loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) { window.location.href = 'index.html'; return; }
   let phone = null;
   try { phone = JSON.parse(loggedIn).phone; } catch(e) { window.location.href = 'index.html'; return; }
   currentPhone = phone;
+
+  // ⚡ Firebase رو با شماره من راه‌اندازی کن
+  if (window.FBLive) {
+    window.FBLive.init(currentPhone);
+  }
+
   await checkWhitelistNow();
-  
-  // ⚡ قبل از هر چیز، اگه کاربر کد نداره، بده
+
   try {
     const u = await getUser(currentPhone);
     if (u && (!u.userCode || isNaN(parseInt(u.userCode)) || parseInt(u.userCode) <= 0)) {
       await assignCodeIfMissing(currentPhone, u);
     }
   } catch(e) {}
-  
+
   const localCache = localStorage.getItem('user_cache_' + currentPhone);
   let localUser = null;
   try { localUser = localCache ? JSON.parse(localCache) : null; } catch(e) { localUser = null; }
@@ -1594,10 +1665,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   currentUserData = localUser;
   updateUIWithData(currentUserData);
   initAvatarShop();
-  setTimeout(() => { syncWithServerInBackground(); setUserOnlineStatus(true); }, 0);
-  
-  // ⚡ سینک سریع
-  setInterval(syncWithServerInBackground, 2000);
+  setTimeout(() => {
+    syncWithServerInBackground();
+    setUserOnlineStatus(true);
+    setupLiveSubscriptions();
+  }, 0);
+
+  setInterval(syncWithServerInBackground, 3000);
   setInterval(() => { setUserOnlineStatus(!document.hidden); }, 30000);
 
   document.getElementById('menuBtn').addEventListener('click',e=>{e.stopPropagation();playClickSound();const d=document.getElementById('menuDropdown');d.classList.contains('active')?closeModal('menuDropdown'):(document.getElementById('menuOverlay').classList.add('active'),d.classList.add('active'));});
@@ -1721,10 +1795,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 document.addEventListener('visibilitychange', async () => {
   if (document.hidden) { setUserOnlineStatus(false); }
-  else { 
-    setUserOnlineStatus(true); 
+  else {
+    setUserOnlineStatus(true);
     await checkWhitelistNow();
     await syncWithServerInBackground();
+  }
+});
+
+window.addEventListener('beforeunload', function() {
+  if (currentPhone) {
+    try {
+      if (window.FBLive && window.FBLive.isReady()) {
+        window.FBLive.setOnline(currentPhone, false, {});
+      }
+    } catch(e) {}
   }
 });
 
