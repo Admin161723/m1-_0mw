@@ -219,12 +219,11 @@ function showDeviceLockOverlay(phone) {
 }
 
 /* ============================================================ */
-/*  ⚡⚡⚡ قفل کامل سرور - همه چیز بلاک می‌شه                    */
+/*  قفل کامل سرور                                              */
 /* ============================================================ */
 function blockEvent(e) {
   if (!serverLocked) return;
   var target = e.target;
-  // فقط overlay مجاز
   if (target && target.closest && target.closest('#serverDownOverlay')) return;
   e.preventDefault();
   e.stopPropagation();
@@ -236,7 +235,6 @@ function blockKeyEvent(e) {
   if (!serverLocked) return;
   var k = e.key || '';
   var kc = e.keyCode || 0;
-  // back, escape, tab, hardware
   if (kc === 4 || kc === 27 || kc === 82 || kc === 3 || kc === 187 || k === 'Escape' || k === 'GoBack' || k === 'BrowserBack') {
     e.preventDefault();
     e.stopPropagation();
@@ -248,9 +246,7 @@ function blockKeyEvent(e) {
 }
 
 function blockBackButton() {
-  try {
-    history.pushState(null, null, location.href);
-  } catch(e) {}
+  try { history.pushState(null, null, location.href); } catch(e) {}
 }
 
 function onPopState() {
@@ -267,7 +263,6 @@ function lockServerForever() {
   serverLocked = true;
   console.log('🔒 SERVER LOCKED');
 
-  // 1. بلاک همه eventها (capture phase)
   document.addEventListener('click', blockEvent, true);
   document.addEventListener('touchstart', blockEvent, true);
   document.addEventListener('touchmove', blockEvent, true);
@@ -279,11 +274,9 @@ function lockServerForever() {
   document.addEventListener('keyup', blockKeyEvent, true);
   document.addEventListener('contextmenu', blockEvent, true);
 
-  // 2. بلاک back button
   blockBackButton();
   window.addEventListener('popstate', onPopState);
 
-  // 3. مخفی کردن همه صفحات
   try {
     var pages = document.querySelectorAll('.page, .overlay-full, #authPage, #loadingPage, #profilePage, #newsModal, #adminModal, #editUserModal, #avatarShopPage, #templateShopPage');
     for (var i = 0; i < pages.length; i++) {
@@ -294,7 +287,6 @@ function lockServerForever() {
     }
   } catch(e) {}
 
-  // 4. ساخت/نمایش overlay اختصاصی
   var overlay = document.getElementById('serverDownOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -328,13 +320,11 @@ function lockServerForever() {
     + 'touch-action:none !important;'
     + 'user-select:none !important;';
 
-  // 5. بلاک اسکرول
   try {
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
   } catch(e) {}
 
-  // 6. re-push state برای بلاک back
   setInterval(function() {
     if (serverLocked) {
       try { history.pushState(null, null, location.href); } catch(e) {}
@@ -342,29 +332,6 @@ function lockServerForever() {
   }, 1000);
 }
 
-/* ⚡ چک سرور - اگه روشن بود، قفل کن */
-async function checkServerAndLock() {
-  try {
-    var m = await getMaintenance();
-    if (m && m.on === true) {
-      // سازنده معاف؟
-      var loggedIn = null;
-      try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
-      var phone = loggedIn ? loggedIn.phone : null;
-      if (isCreatorPhone(phone)) {
-        console.log('👑 سازنده معاف از قفل سرور');
-        return;
-      }
-      lockServerForever();
-      return true;
-    }
-  } catch(e) {}
-  return false;
-}
-
-/* ============================================================ */
-/*  isInsideApp                                                */
-/* ============================================================ */
 function isInsideApp() {
   try {
     if (localStorage.getItem('currentLoggedInUser')) return true;
@@ -524,12 +491,21 @@ async function redirectToMainPage(userPhone) {
   if (!appVerified) { killApp(); return; }
   if (serverLocked) return;
 
-  // ⚡ چک سرور قبل از رفتن به بازی
-  var m = null;
-  try { m = await getMaintenance(); } catch(e) {}
-  if (m && m.on === true && !isCreatorPhone(userPhone)) {
-    lockServerForever();
-    return;
+  // چک سرور از Firebase (سریع)
+  if (window.__fbdb) {
+    try {
+      var down = await new Promise(function(resolve) {
+        var done = false;
+        var timeout = setTimeout(function() { if (!done) { done = true; resolve(false); } }, 1500);
+        window.__fbdb.ref('server_state/on').once('value').then(function(snap) {
+          if (!done) { done = true; clearTimeout(timeout); resolve(snap.val() === true); }
+        }).catch(function() { if (!done) { done = true; clearTimeout(timeout); resolve(false); } });
+      });
+      if (down && !isCreatorPhone(userPhone)) {
+        lockServerForever();
+        return;
+      }
+    } catch(e) {}
   }
 
   isRedirecting = true;
@@ -785,6 +761,7 @@ function bindEvents() {
   if (avatarCircle) avatarCircle.addEventListener('click', openAvatarMenu);
   if (backdrop) backdrop.addEventListener('click', closeAvatarMenu);
 
+  /* ⚡ submitProfileBtn - با حفظ اطلاعات کاربران قدیمی */
   if (submitProfileBtn) submitProfileBtn.addEventListener('click', async function() {
     if (serverLocked) return;
     playClickSound();
@@ -806,6 +783,69 @@ function bindEvents() {
 
     var isCrt = isCreatorPhone(phone);
 
+    // ⚡ چک کن کاربر قبلاً وجود داره
+    var existingUser = null;
+    try {
+      var checkPromise = getUser(phone);
+      var timeoutPromise = new Promise(function(resolve) {
+        setTimeout(function() { resolve(null); }, 6000);
+      });
+      existingUser = await Promise.race([checkPromise, timeoutPromise]);
+    } catch(e) {}
+
+    if (!existingUser) {
+      try {
+        var cached = localStorage.getItem('user_cache_' + phone);
+        if (cached) existingUser = JSON.parse(cached);
+      } catch(e) {}
+    }
+    if (!existingUser) {
+      try {
+        var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+        if (mafiaUsers[phone]) existingUser = mafiaUsers[phone];
+      } catch(e) {}
+    }
+
+    // ⚡ کاربر قدیمی → اطلاعات قبلی حفظ بشه
+    if (existingUser && existingUser.fullProfile === true) {
+      console.log('✅ کاربر قبلی - اطلاعات حفظ میشه');
+
+      existingUser.name = gameName;
+      existingUser.age = parseInt(age);
+      existingUser.password = newPass;
+      existingUser.avatar = existingUser.avatar || selectedAvatarSrc;
+
+      if (isCrt && existingUser.rank !== 'سازنده') {
+        existingUser.rank = 'سازنده';
+      }
+
+      existingUser.lastUpdatedAt = Date.now();
+
+      submitProfileBtn.disabled = true;
+      submitProfileBtn.innerText = '...';
+
+      try {
+        localStorage.setItem('user_cache_' + phone, JSON.stringify(existingUser));
+        var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
+        mafiaUsers[phone] = existingUser;
+        localStorage.setItem('mafia_users', JSON.stringify(mafiaUsers));
+      } catch(e) {}
+
+      var saved2 = await saveUser(phone, existingUser);
+      if (saved2) {
+        var allUsers2 = await getAllUsers();
+        allUsers2[phone] = existingUser;
+        await saveAllUsers(allUsers2);
+        await redirectToMainPage(phone);
+      } else {
+        showToast('خطا در ذخیره اطلاعات', 'error');
+        submitProfileBtn.disabled = false;
+        submitProfileBtn.innerText = 'تایید و ادامه';
+      }
+      return;
+    }
+
+    // ⚡ کاربر جدید
     if (!isCrt) {
       var checks = await performSecurityChecks(phone);
       if (checks.blocked) return;
@@ -872,12 +912,72 @@ function bindEvents() {
 }
 
 /* ============================================================ */
-/*  ⚡ startBoot - اول چک سرور، اگه قطع بود قفل کن                */
+/*  startBoot - چک سرور از Firebase                             */
 /* ============================================================ */
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
   console.log('🎬 startBoot');
+
+  // Firebase رو وصل کن
+  try {
+    if (typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) {
+        firebase.initializeApp({
+          apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
+          authDomain: "mafiasu-681c7.firebaseapp.com",
+          databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
+          projectId: "mafiasu-681c7",
+          storageBucket: "mafiasu-681c7.firebasestorage.app",
+          messagingSenderId: "180192927804",
+          appId: "1:180192927804:web:e0c501a0d20af3b6892339"
+        });
+      }
+      window.__fbdb = firebase.database();
+      console.log('✅ Firebase ready');
+    }
+  } catch(e) { console.log('❌ Firebase init:', e); }
+
+  // چک سریع سرور از Firebase
+  var serverIsDown = false;
+  if (window.__fbdb) {
+    try {
+      serverIsDown = await new Promise(function(resolve) {
+        var done = false;
+        var timeout = setTimeout(function() {
+          if (!done) { done = true; resolve(false); }
+        }, 1500);
+
+        window.__fbdb.ref('server_state/on').once('value').then(function(snap) {
+          if (!done) {
+            done = true;
+            clearTimeout(timeout);
+            var val = snap.val();
+            console.log('🔥 Firebase server_state:', val);
+            resolve(val === true);
+          }
+        }).catch(function() {
+          if (!done) { done = true; clearTimeout(timeout); resolve(false); }
+        });
+      });
+    } catch(e) {}
+  }
+
+  // اگه سرور قطع بود → قفل کن
+  var loggedInPhone = null;
+  try {
+    var li = localStorage.getItem('currentLoggedInUser');
+    if (li) {
+      var liObj = JSON.parse(li);
+      if (liObj && liObj.phone) loggedInPhone = liObj.phone;
+    }
+  } catch(e) {}
+
+  if (serverIsDown && !isCreatorPhone(loggedInPhone)) {
+    console.log('🔒 سرور قطع - کاربر بلاک شد');
+    lockServerForever();
+    return;
+  }
 
   bindEvents();
 
@@ -898,20 +998,8 @@ async function startBoot() {
     currentDeviceId = getDeviceId();
   }).catch(function() {});
 
-  // ⚡⚡⚡ اول سرور رو چک کن
-  var locked = await checkServerAndLock();
-  if (locked) return;
+  var hasLogin = loggedInPhone !== null;
 
-  var hasLogin = false;
-  try {
-    var li = localStorage.getItem('currentLoggedInUser');
-    if (li) {
-      var liObj = JSON.parse(li);
-      if (liObj && liObj.phone) hasLogin = true;
-    }
-  } catch(e) {}
-
-  // ۳ ثانیه loading
   setTimeout(function() {
     if (serverLocked) return;
 
@@ -932,20 +1020,18 @@ async function startBoot() {
     }
   }, 3000);
 
-  // ⚡ چک مداوم سرور هر ۵ ثانیه
-  if (serverCheckTimer) clearInterval(serverCheckTimer);
-  serverCheckTimer = setInterval(async function() {
+  // چک زنده Firebase
+  if (window.__fbdb) {
     try {
-      var m = await getMaintenance();
-      if (m && m.on === true) {
-        var loggedIn = null;
-        try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
-        var phone = loggedIn ? loggedIn.phone : null;
-        if (isCreatorPhone(phone)) return;
-        lockServerForever();
-      }
+      window.__fbdb.ref('server_state/on').on('value', function(snap) {
+        var val = snap.val();
+        console.log('🔥 Live server_state:', val);
+        if (val === true && !isCreatorPhone(loggedInPhone)) {
+          lockServerForever();
+        }
+      });
     } catch(e) {}
-  }, 5000);
+  }
 }
 
 try { lockInspect(); } catch(e) {}
