@@ -5,14 +5,17 @@
   var overlay = null;
   var isShown = false;
   var checkBusy = false;
-  var skipNextShow = false;
+  var currentMode = 'offline';
 
-  try {
-    if (localStorage.getItem('__og_skip__') === '1') {
-      skipNextShow = true;
-      localStorage.removeItem('__og_skip__');
-    }
-  } catch(e) {}
+  function isGamePage() {
+    try {
+      var path = String(window.location.pathname || '').toLowerCase();
+      var href = String(window.location.href || '').toLowerCase();
+      if (path.indexOf('index.html') !== -1 || href.indexOf('index.html') !== -1) return false;
+      if (path === '/' || path === '' || /\/$/.test(path)) return false;
+      return true;
+    } catch(e) { return false; }
+  }
 
   var OG_CSS = document.createElement('style');
   OG_CSS.textContent = ''
@@ -60,7 +63,7 @@
     overlay.innerHTML = ''
       + '<div class="og-dialog">'
       + '<div class="og-box">'
-      + '<div class="og-msg">اتصال اینترنت شما<br>قطع شده است</div>'
+      + '<div class="og-msg" id="__og_msg__">اتصال اینترنت شما<br>قطع شده است</div>'
       + '<button id="__og_btn__" class="og-btn">تلاش مجدد</button>'
       + '</div></div>';
 
@@ -73,8 +76,12 @@
     return overlay;
   }
 
+  function setMessage(html) {
+    var m = document.getElementById('__og_msg__');
+    if (m) m.innerHTML = html;
+  }
+
   function show() {
-    if (skipNextShow) return;
     var o = getOverlay();
     o.style.setProperty('display', 'flex', 'important');
     isShown = true;
@@ -124,14 +131,22 @@
     checkBusy = true;
 
     if (!navigator.onLine) {
-      if (!isShown) show();
+      if (!isShown) {
+        currentMode = 'offline';
+        setMessage('اتصال اینترنت شما<br>قطع شده است');
+        show();
+      }
       checkBusy = false;
       return;
     }
 
     checkWithImage(function(ok) {
       if (!ok) {
-        if (!isShown) show();
+        if (!isShown) {
+          currentMode = 'offline';
+          setMessage('اتصال اینترنت شما<br>قطع شده است');
+          show();
+        }
       }
       checkBusy = false;
     });
@@ -142,18 +157,35 @@
     checkBusy = true;
     setBtnLoading();
 
+    // ⚡ حالت Away → مستقیم برو به index.html (بدون چک کردن)
+    if (currentMode === 'away') {
+      setTimeout(function() {
+        try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
+        try { window.location.href = 'index.html'; } catch(e) {}
+      }, 400);
+      return;
+    }
+
+    // حالت offline → چک کن اینترنت هست یا نه
     if (!navigator.onLine) {
       setTimeout(function() {
         setBtnNormal();
         checkBusy = false;
-      }, 600);
+      }, 700);
       return;
     }
 
     checkWithImage(function(ok) {
       if (ok) {
         try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
-        try { window.location.reload(); } catch(e) {}
+        if (isGamePage()) {
+          // تو صفحه بازی هستیم → برو به index.html
+          try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
+          try { window.location.href = 'index.html'; } catch(e) {}
+        } else {
+          // تو صفحه لاگین هستیم → reload کن
+          try { window.location.reload(); } catch(e) {}
+        }
       } else {
         setBtnNormal();
         checkBusy = false;
@@ -161,15 +193,20 @@
     });
   }
 
+  // ⚡ تابع جدید: نمایش پیام "ارتباط با سرور قطع شده"
+  function showAway() {
+    currentMode = 'away';
+    setMessage('ارتباط شما با سرور<br>قطع شده است');
+    setBtnNormal();
+    show();
+  }
+
   function init() {
     getOverlay();
 
-    if (skipNextShow) {
-      skipNextShow = false;
-      hide();
-    }
-
     window.addEventListener('offline', function() {
+      currentMode = 'offline';
+      setMessage('اتصال اینترنت شما<br>قطع شده است');
       if (!isShown) show();
     });
 
@@ -185,7 +222,7 @@
       setTimeout(checkNow, 200);
     });
 
-    setInterval(checkNow, 1000);
+    setInterval(checkNow, 1500);
 
     setTimeout(checkNow, 400);
   }
@@ -199,4 +236,5 @@
   window.ogCheck = checkNow;
   window.ogShow = show;
   window.ogHide = hide;
+  window.ogShowAway = showAway;
 })();
