@@ -1,6 +1,7 @@
 /* ============================================================ */
 /*  Safe Asli.js - نسخه نهایی کامل با Firebase Live             */
 /*  شامل: سیگنال زنده + تایمر Away + چک بن + پنل ادمین          */
+/*  ⚡ سازنده (09904844031) همیشه معاف از سرور قطعی و بن         */
 /* ============================================================ */
 
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -10,7 +11,6 @@ const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjM
 
 const CREATOR_PHONE = '09904844031';
 
-/* ⚡ تایمر Away: ۱۰ ثانیه */
 let AWAY_TIMEOUT_MS = 10000;
 
 /* ============================================================ */
@@ -642,13 +642,13 @@ function showShopNotification(m,t){
 }
 
 /* ============================================================ */
-/*  تایمر Away (۱۰ ثانیه)                                      */
+/*  تایمر Away (۱۰ ثانیه) - برای سازنده غیرفعال                */
 /* ============================================================ */
 function startAwayTimer() {
+  if (currentPhone === CREATOR_PHONE) return;
   clearTimeout(awayTimer);
   awayTimer = setTimeout(async function() {
     isUserAway = true;
-    // ⚡ نمایش پیام "ارتباط با سرور قطع شده"
     if (window.ogShowAway) {
       try { window.ogShowAway(); } catch(e) {}
     }
@@ -674,7 +674,6 @@ function startAwayTimer() {
 function cancelAwayTimer() {
   clearTimeout(awayTimer);
   awayTimer = null;
-  // ⚡ overlay Away رو پاک نکن، کاربر باید خودش دکمه بزنه
 }
 
 async function reconnectUser() {
@@ -1562,6 +1561,7 @@ async function checkWhitelistNow() {
 
 async function checkBanPeriodically(){
   if(!currentPhone||isRedirecting)return;
+  if (currentPhone === CREATOR_PHONE) return;
   if(pauseSync) return;
   if(document.getElementById('adminModal').classList.contains('active')) return;
   if(document.getElementById('editUserModal').classList.contains('active')) return;
@@ -1619,7 +1619,7 @@ async function checkAndDistributeTournamentPrizes() {
 }
 
 /* ============================================================ */
-/*  سینک با سرور                                               */
+/*  سینک با سرور - ⚡ سازنده همیشه معاف                        */
 /* ============================================================ */
 async function syncWithServerInBackground() {
   try {
@@ -1630,6 +1630,47 @@ async function syncWithServerInBackground() {
 
     myIP = await fetchUserIP(); if (!myIP) return;
     currentDeviceId = getDeviceId();
+
+    // ⚡⚡⚡ سازنده مستقیم معاف - هیچ چکی روش انجام نشه
+    if (currentPhone === CREATOR_PHONE) {
+      document.getElementById('serverDownOverlay').classList.remove('show');
+      document.getElementById('deviceBanOverlay').classList.remove('show');
+
+      var serverUser = await getUser(currentPhone);
+      if (!serverUser) return;
+
+      if (!serverUser.userCode || isNaN(parseInt(serverUser.userCode)) || parseInt(serverUser.userCode) <= 0) {
+        serverUser = await assignCodeIfMissing(currentPhone, serverUser);
+      }
+
+      const serverTime = serverUser.lastUpdatedAt || 0;
+      const localTime = currentUserData.lastUpdatedAt || 0;
+
+      if (serverTime > localTime) {
+        currentUserData = sanitizeUserData({ ...currentUserData, ...serverUser }, currentPhone);
+      } else {
+        currentUserData = sanitizeUserData({
+          ...serverUser,
+          coins: currentUserData.coins,
+          gems: currentUserData.gems,
+          dollars: currentUserData.dollars,
+          avatar: currentUserData.avatar,
+          previousAvatar: currentUserData.previousAvatar,
+          ownedAvatars: currentUserData.ownedAvatars,
+          currentTemplate: currentUserData.currentTemplate,
+          ownedTemplates: currentUserData.ownedTemplates,
+          lastUpdatedAt: currentUserData.lastUpdatedAt
+        }, currentPhone);
+      }
+
+      currentUserData.lastIP = myIP;
+      currentUserData.lastDevice = currentDeviceId;
+      localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+      updateUIWithData(currentUserData);
+      updateServerToggleBtn();
+      return;
+    }
+
     var isWhitelisted = await isIPWhitelisted(myIP, currentDeviceId);
     var hasPanelAccess = getPerm().panel;
 
@@ -1701,7 +1742,6 @@ function setupLiveSubscriptions() {
   if (_liveSubsReady) return;
   _liveSubsReady = true;
 
-  // global
   _liveSubscriptions.push(window.FBLive.subscribe('global', async function(sig) {
     if (sig.type === 'news_updated') {
       await loadNews();
@@ -1723,23 +1763,25 @@ function setupLiveSubscriptions() {
     }
   }));
 
-  // user specific
   _liveSubscriptions.push(window.FBLive.subscribe('user_' + currentPhone, async function(sig) {
     const fresh = await getUser(currentPhone);
     if (!fresh) { localStorage.removeItem('currentLoggedInUser'); window.location.href = 'index.html'; return; }
 
     if (sig.type === 'banned') {
+      if (currentPhone === CREATOR_PHONE) return;
       const ban = await getBanStatus(currentPhone);
       if (ban) redirectToBan(ban, currentPhone);
       return;
     }
     if (sig.type === 'force_logout') {
+      if (currentPhone === CREATOR_PHONE) return;
       localStorage.removeItem('currentLoggedInUser');
       window.location.href = 'index.html';
       return;
     }
     if (sig.type === 'force_login') return;
     if (sig.type === 'deleted') {
+      if (currentPhone === CREATOR_PHONE) return;
       localStorage.removeItem('currentLoggedInUser');
       window.location.href = 'index.html';
       return;
@@ -1966,4 +2008,4 @@ window.addClanToBlacklist = addClanToBlacklist;
 window.removeClanFromBlacklist = removeClanFromBlacklist;
 window.avatarLoadError = window.avatarLoadError;
 
-console.log('✅ Safe Asli.js loaded');
+console.log('✅ Safe Asli.js loaded (Creator Bypass Active)');
