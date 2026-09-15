@@ -1,6 +1,6 @@
 (function() {
   if (window.__OG_LOADED__) return;
-  window.__OG_LOADED__ = true;
+  window.__OG_LOADED__ = false;
 
   // ⚡⚡⚡ BYPASS موقت - الان true هست، بعد از لاگین کن false ⚡⚡⚡
   var TEMP_BYPASS = true;
