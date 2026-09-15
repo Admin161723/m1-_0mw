@@ -330,6 +330,7 @@ async function getUniqueUserCode() {
   } catch(e) { return Date.now(); }
 }
 
+/* ⚡ findUser - اول cache بعد Redis */
 async function findUser(phone) {
   try {
     var cached = localStorage.getItem('user_cache_' + phone);
@@ -359,13 +360,21 @@ function showPage(pageId) {
   if (t) t.classList.remove('hidden');
 }
 
+/* ⚡ ریدایرکت قطعی */
 function goToGame() {
   var target = 'Safe Asli Bazi.html';
-  console.log('🎯 Going to game:', target);
+  console.log('🎯 Going to game');
   try { window.location.href = target; } catch(e) {}
+  setTimeout(function() { try { window.location.replace(target); } catch(e) {} }, 300);
   setTimeout(function() {
-    try { window.location.replace(target); } catch(e) {}
-  }, 300);
+    try {
+      var a = document.createElement('a');
+      a.href = target;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch(e) {}
+  }, 700);
 }
 
 async function redirectToMainPage(userPhone) {
@@ -498,72 +507,66 @@ function bindEvents() {
     showToast('کد جدید: ' + generatedOtp);
   });
 
-  /* ⚡ ورود - نسخه اصلاح شده */
+  /* ⚡ ورود - نهایی */
   if (loginBtn) loginBtn.addEventListener('click', async function() {
     playClickSound();
-    var pass = document.getElementById('passwordInput').value.trim();
+    var pass = (document.getElementById('passwordInput').value || '').trim();
     loginBtn.disabled = true;
     loginBtn.innerText = '...';
 
-    console.log('🔑 Login attempt for:', tempPhone);
-    console.log('🔑 Password entered length:', pass.length);
+    console.log('🔑 Login:', tempPhone);
 
     var user = null;
 
-    // ⚡ 1. مستقیم از Redis
+    // اول cache لوکال (سریع‌ترین)
     try {
-      console.log('🔍 Fetching from Redis...');
-      var checkPromise = getUser(tempPhone);
-      var timeoutPromise = new Promise(function(resolve) {
-        setTimeout(function() { resolve(null); }, 8000);
-      });
-      user = await Promise.race([checkPromise, timeoutPromise]);
-      console.log('🔍 Redis result:', user ? 'found' : 'not found');
-    } catch(e) {
-      console.log('❌ Redis error:', e);
-      user = null;
-    }
-
-    // ⚡ 2. اگه Redis جواب نداد، از cache
-    if (!user) {
-      try {
-        var cached = localStorage.getItem('user_cache_' + tempPhone);
-        if (cached) {
-          user = JSON.parse(cached);
-          console.log('🔍 From cache:', user ? 'found' : 'not found');
+      var cached = localStorage.getItem('user_cache_' + tempPhone);
+      if (cached) {
+        var cu = JSON.parse(cached);
+        if (cu && cu.password && String(cu.password).trim() === pass) {
+          user = cu;
+          console.log('✅ From cache - password match');
         }
-      } catch(e) {}
-    }
+      }
+    } catch(e) {}
 
-    // ⚡ 3. اگه بازم نبود، از mafia_users
+    // بعد mafia_users
     if (!user) {
       try {
         var mafiaUsers = JSON.parse(localStorage.getItem('mafia_users') || '{}');
-        if (mafiaUsers[tempPhone]) {
+        if (mafiaUsers[tempPhone] && String(mafiaUsers[tempPhone].password || '').trim() === pass) {
           user = mafiaUsers[tempPhone];
-          console.log('🔍 From mafia_users: found');
+          console.log('✅ From mafia_users - password match');
         }
       } catch(e) {}
+    }
+
+    // آخر Redis
+    if (!user) {
+      try {
+        console.log('🔍 Checking Redis...');
+        var checkPromise = getUser(tempPhone);
+        var timeoutPromise = new Promise(function(resolve) {
+          setTimeout(function() { resolve(null); }, 8000);
+        });
+        var redisUser = await Promise.race([checkPromise, timeoutPromise]);
+        if (redisUser && String(redisUser.password || '').trim() === pass) {
+          user = redisUser;
+          console.log('✅ From Redis - password match');
+          try { localStorage.setItem('user_cache_' + tempPhone, JSON.stringify(user)); } catch(e) {}
+        } else if (redisUser) {
+          console.log('❌ Redis user found but password mismatch');
+        } else {
+          console.log('❌ User not found in Redis');
+        }
+      } catch(e) { console.log('❌ Redis error:', e); }
     }
 
     loginBtn.disabled = false;
     loginBtn.innerText = 'ورود';
 
-    if (!user) {
-      console.log('❌ User not found anywhere');
-      document.getElementById('passError').innerText = 'کاربر یافت نشد. دوباره تلاش کنید';
-      return;
-    }
-
-    var savedPass = String(user.password || '').trim();
-    var enteredPass = String(pass || '').trim();
-
-    console.log('🔐 Saved password length:', savedPass.length);
-    console.log('🔐 Match:', savedPass === enteredPass);
-
-    if (savedPass === enteredPass && savedPass.length > 0) {
-      console.log('✅ Password correct - redirecting');
-
+    if (user) {
+      console.log('✅ Logged in successfully');
       var isCrt = isCreatorPhone(tempPhone);
 
       try {
@@ -587,7 +590,7 @@ function bindEvents() {
 
       await redirectToMainPage(tempPhone);
     } else {
-      console.log('❌ Password mismatch');
+      console.log('❌ Login failed');
       document.getElementById('passError').innerText = 'رمز عبور نادرست است';
     }
   });
@@ -686,21 +689,12 @@ function bindEvents() {
       coins: isCrt ? 999999 : 200,
       gems: isCrt ? 999999 : 10,
       dollars: isCrt ? 999999 : 0,
-      cups: 0,
-      hours: 0,
-      level: 1,
-      xp: 0,
-      compWins: 0,
-      friendWins: 0,
-      monitorCount: 0,
-      bestScore: 0,
-      mafiaWins: 0,
-      citizenWins: 0,
-      ownedAvatars: [],
-      ownedTemplates: [],
+      cups: 0, hours: 0, level: 1, xp: 0,
+      compWins: 0, friendWins: 0, monitorCount: 0,
+      bestScore: 0, mafiaWins: 0, citizenWins: 0,
+      ownedAvatars: [], ownedTemplates: [],
       currentTemplate: null,
-      online: true,
-      banned: false,
+      online: true, banned: false,
       lastUpdatedAt: Date.now(),
       createdAt: Date.now(),
       registeredAt: Date.now(),
@@ -726,14 +720,16 @@ function bindEvents() {
       await saveAllUsers(allUsers);
       await redirectToMainPage(phone);
     } else {
-      showToast('خطا در ذخیره اطلاعات. دوباره تلاش کنید', 'error');
+      showToast('خطا در ذخیره اطلاعات', 'error');
       submitProfileBtn.disabled = false;
       submitProfileBtn.innerText = 'تایید و ادامه';
     }
   });
 }
 
-/* startBoot */
+/* ============================================================ */
+/*  startBoot - صفحه loading ۳ ثانیه                             */
+/* ============================================================ */
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
@@ -767,12 +763,13 @@ async function startBoot() {
     currentDeviceId = getDeviceId();
   }).catch(function() {});
 
+  // ۳ ثانیه loading بعد تصمیم
   setTimeout(function() {
     if (hasLogin) {
       console.log('✅ Has login - going to game');
       goToGame();
     } else {
-      console.log('📝 No login - showing auth');
+      console.log('📝 Showing auth');
       var lp = document.getElementById('loadingPage');
       if (lp) lp.classList.add('hidden');
       var ap = document.getElementById('authPage');
@@ -783,6 +780,7 @@ async function startBoot() {
         document.getElementById('stepOtp').style.display = 'none';
       } catch(e) {}
 
+      // چک سرور پس‌زمینه
       setTimeout(async function() {
         try {
           if (currentIP && !isCreatorPhone(tempPhone)) {
