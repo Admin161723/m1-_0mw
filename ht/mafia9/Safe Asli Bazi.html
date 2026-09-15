@@ -71,6 +71,7 @@
     <div class="nav-item" id="navGroup"><img src="Goroh.webp" class="nav-icon" alt="گروه‌ها"><span class="nav-label">گروه‌ها</span></div>
   </div>
 
+  <!-- مودال اطلاعیه‌ها -->
   <div class="modal-overlay" id="newsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">اطلاعیه‌ها</div><div class="modal-close" onclick="closeModal('newsModal')">✕</div></div>
@@ -87,9 +88,10 @@
     </div>
   </div>
 
+  <!-- پنل مدیریت -->
   <div class="modal-overlay" id="adminModal">
-    <div class="modal-box" style="max-width:400px;">
-      <div class="modal-header"><div class="modal-title">پنل مدیریت</div><div class="modal-close" onclick="closeAdminModal()">✕</div></div>
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-header"><div class="modal-title">پنل مدیریت</div><div class="modal-close" onclick="window.closeAdminModal && window.closeAdminModal()">✕</div></div>
       <div class="modal-body">
         <div class="admin-tools" id="adminTools" style="display:none;">
           <div class="admin-tools-title">ابزارهای سازنده</div>
@@ -100,9 +102,12 @@
             <button class="edit-btn info" id="btnUserControl">کنترل کاربر</button>
             <button class="edit-btn unban" id="btnWhitelistIP">لیست سفید IP</button>
             <button class="edit-btn warn" id="btnResetCodes">🔄 بازنشانی کدهای کاربری</button>
+            <button class="edit-btn info" id="btnClanPrizes" style="background:linear-gradient(180deg,#ff9800,#e65100);">🏆 جوایز کلن‌ها</button>
+            <button class="edit-btn info" id="btnUserLogs" style="background:linear-gradient(180deg,#4caf50,#2e7d32);">📋 لاگ کاربران</button>
           </div>
         </div>
 
+        <!-- بخش کنترل کاربر -->
         <div id="userControlSection" style="display:none;margin-bottom:15px;">
           <div class="edit-field"><label class="edit-label">شماره موبایل کاربر:</label><input type="tel" class="edit-input" id="controlUserPhone" placeholder="09xxxxxxxxx"></div>
           <div class="edit-actions" style="flex-wrap:wrap;">
@@ -113,6 +118,7 @@
           </div>
         </div>
 
+        <!-- بخش وایت‌لیست IP -->
         <div id="whitelistSection" style="display:none;margin-bottom:15px;">
           <div class="ip-add-section">
             <div class="edit-field"><label class="edit-label">IP کاربر:</label><input type="text" class="edit-input" id="whitelistIPInput" placeholder="IP را وارد کنید"></div>
@@ -125,25 +131,48 @@
           </div>
         </div>
 
+        <!-- بخش کاربران -->
         <div id="usersSection" style="display:none;">
-          <input type="text" class="admin-search" id="userSearchInput" placeholder="جستجو با کد کاربری...">
+          <input type="text" class="admin-search" id="userSearchInput" placeholder="جستجو با کد کاربری یا شماره...">
           <div class="admin-tabs">
             <span class="admin-tab active" data-tab="all">همه</span>
             <span class="admin-tab" data-tab="online">آنلاین</span>
             <span class="admin-tab" data-tab="offline">آفلاین</span>
             <span class="admin-tab" data-tab="banned">بن شده</span>
-            <span class="admin-tab" data-tab="reports">گزارش‌ها</span>
-            <span class="admin-tab" data-tab="lobby">تایید لابی</span>
           </div>
           <div class="admin-list-container" id="adminUserListContainer"></div>
         </div>
 
+        <!-- بخش تاریخچه کاربر -->
         <div id="userHistorySection" style="display:none;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <span style="color:#fff;font-weight:700;" id="historyUserName">کاربر</span>
-            <button class="edit-btn cancel" onclick="closeUserHistory()" style="padding:4px 12px;font-size:12px;">بازگشت</button>
+            <button class="edit-btn cancel" onclick="window.closeUserHistory && window.closeUserHistory()" style="padding:4px 12px;font-size:12px;">بازگشت</button>
           </div>
           <div id="historyContent"></div>
+        </div>
+
+        <!-- بخش جوایز کلن‌ها -->
+        <div id="clanPrizesSection" style="display:none;margin-bottom:15px;">
+          <div style="background:rgba(255,152,0,.1);border:2px solid #ff9800;border-radius:12px;padding:14px;margin-bottom:10px;">
+            <div style="color:#ffb74d;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;">🏆 جوایز مسابقات کلن‌ها</div>
+            <div class="edit-field"><label class="edit-label">عنوان جایزه:</label><input type="text" class="edit-input" id="clanPrizeTitle" placeholder="مثلاً: جایزه رتبه ۱"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">
+              <div class="edit-field"><label class="edit-label">از رتبه:</label><input type="number" class="edit-input" id="clanPrizeFrom" min="1" value="1"></div>
+              <div class="edit-field"><label class="edit-label">تا رتبه:</label><input type="number" class="edit-input" id="clanPrizeTo" min="1" value="3"></div>
+            </div>
+            <div class="edit-field"><label class="edit-label">توضیحات جایزه:</label><input type="text" class="edit-input" id="clanPrizeDesc" placeholder="مثلاً: ۵۰۰ الماس"></div>
+            <div class="edit-field"><label class="edit-label">مدت زمان (ساعت - خالی=دائمی):</label><input type="number" class="edit-input" id="clanPrizeHours" min="0" placeholder="72"></div>
+            <button class="edit-btn save" onclick="window.addClanPrize && window.addClanPrize()" style="width:100%;margin-top:6px;">➕ افزودن جایزه</button>
+          </div>
+          <div style="color:#4fc3f7;font-size:12px;font-weight:700;margin-bottom:8px;">جایزه‌های فعلی:</div>
+          <div id="clanPrizesList"></div>
+        </div>
+
+        <!-- بخش لاگ کاربران -->
+        <div id="userLogsSection" style="display:none;margin-bottom:15px;">
+          <div style="color:#4caf50;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;">📋 لاگ ورود و اطلاعات کاربران</div>
+          <div id="userLogsList" style="max-height:400px;overflow-y:auto;"></div>
         </div>
 
         <div class="user-list" id="userList" style="display:none;"></div>
@@ -151,6 +180,7 @@
     </div>
   </div>
 
+  <!-- مودال ویرایش کاربر -->
   <div class="edit-user-modal" id="editUserModal">
     <div class="edit-user-content">
       <div class="edit-user-title">ویرایش کامل کاربر</div>
@@ -161,7 +191,14 @@
       <div class="edit-field" id="fieldDollars"><label class="edit-label">دولار:</label><input type="number" class="edit-input" id="editUserDollars" min="0"></div>
       <div class="edit-field" id="fieldRank"><label class="edit-label">مقام:</label>
         <select class="edit-input" id="editUserRole">
-          <option value="کاربر">کاربر</option><option value="ناظر">ناظر</option><option value="ادمین">ادمین</option><option value="گرداننده">گرداننده</option><option value="پشتیبانی">پشتیبانی</option><option value="سازنده">سازنده</option><option value="ادمین ارشد">ادمین ارشد</option><option value="ناظر ارشد">ناظر ارشد</option>
+          <option value="کاربر">کاربر</option>
+          <option value="ناظر">ناظر</option>
+          <option value="ناظر ارشد">ناظر ارشد</option>
+          <option value="ادمین">ادمین</option>
+          <option value="ادمین ارشد">ادمین ارشد</option>
+          <option value="گرداننده">گرداننده</option>
+          <option value="پشتیبانی">پشتیبانی</option>
+          <option value="سازنده">سازنده</option>
         </select>
       </div>
       <div class="edit-field" id="fieldStats"><label class="edit-label">آمار بازی:</label>
@@ -179,7 +216,11 @@
       </div>
       <div class="edit-field"><label class="edit-label">مدت بن:</label><select class="edit-input" id="editBanDuration"></select></div>
       <div class="edit-field" id="fieldBanType"><label class="edit-label">نوع بن:</label>
-        <select class="edit-input" id="editBanType"><option value="account">بن اکانت</option><option value="device">بن دستگاه</option><option value="ip">بن IP</option></select>
+        <select class="edit-input" id="editBanType">
+          <option value="account">بن اکانت</option>
+          <option value="device">بن دستگاه</option>
+          <option value="ip">بن IP</option>
+        </select>
       </div>
 
       <div class="exclusive-avatar-section" id="fieldExclusive" style="display:none;">
@@ -198,10 +239,14 @@
         <button class="edit-btn unban" id="btnUnbanUser" style="display:none;">رفع بن</button>
       </div>
       <div class="edit-actions" id="rowDelete"><button class="edit-btn danger" id="btnDeleteAccount">حذف کامل اکانت</button></div>
-      <div class="edit-actions"><button class="edit-btn cancel" onclick="closeEditUser()">انصراف</button><button class="edit-btn save" onclick="saveUserEdit()">ذخیره</button></div>
+      <div class="edit-actions">
+        <button class="edit-btn cancel" onclick="window.closeEditUser && window.closeEditUser()">انصراف</button>
+        <button class="edit-btn save" id="btnSaveUserEdit">ذخیره</button>
+      </div>
     </div>
   </div>
 
+  <!-- صفحه پروفایل -->
   <div class="profile-page" id="profilePage">
     <div class="profile-page-header"><button class="back-btn" id="backBtn">‹</button><span class="profile-page-title">پروفایل</span></div>
     <div class="profile-info-section">
@@ -240,6 +285,7 @@
     </div>
   </div>
 
+  <!-- فروشگاه آواتار -->
   <div class="avatar-shop-page" id="avatarShopPage">
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="shopBackBtn">‹</div>
@@ -268,6 +314,7 @@
     <div class="avatar-grid" id="avatarGrid"></div>
   </div>
 
+  <!-- فروشگاه قالب -->
   <div class="avatar-shop-page" id="templateShopPage">
     <div class="shop-top-bar">
       <div class="shop-back-btn" id="templateBackBtn">‹</div>
@@ -296,6 +343,7 @@
     <div class="avatar-grid" id="templateGrid"></div>
   </div>
 
+  <!-- مودال خرید -->
   <div class="shop-modal" id="purchaseModal">
     <div class="shop-modal-content">
       <div class="shop-modal-title" id="modalTitle">خرید</div>
@@ -307,6 +355,7 @@
     </div>
   </div>
 
+  <!-- مودال تنظیمات -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تنظیمات</div><div class="modal-close" onclick="closeModal('settingsModal')">✕</div></div>
@@ -318,6 +367,7 @@
     </div>
   </div>
 
+  <!-- مودال تغییر رمز -->
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal-box">
       <div class="modal-header"><div class="modal-title">تغییر رمز عبور</div><div class="modal-close" onclick="closeModal('changePasswordModal')">✕</div></div>
@@ -325,13 +375,18 @@
         <div class="edit-field"><label class="edit-label">شماره موبایل:</label><input type="tel" class="edit-input" id="cpPhone" placeholder="09xxxxxxxxx"></div>
         <div class="edit-field"><label class="edit-label">رمز فعلی:</label><input type="password" class="edit-input" id="cpCurrentPass" placeholder="رمز فعلی"></div>
         <div class="edit-field"><label class="edit-label">رمز جدید:</label><input type="password" class="edit-input" id="cpNewPass" placeholder="رمز جدید"></div>
-        <div class="edit-actions"><button class="edit-btn cancel" onclick="closeModal('changePasswordModal')">انصراف</button><button class="edit-btn save" id="submitPasswordChange">تغییر رمز</button></div>
+        <div class="edit-actions">
+          <button class="edit-btn cancel" onclick="closeModal('changePasswordModal')">انصراف</button>
+          <button class="edit-btn save" id="submitPasswordChange">تغییر رمز</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- نوتیفیکیشن -->
   <div class="shop-notification" id="shopNotification"></div>
 
+  <!-- جستجو امتیازی -->
   <div class="competitive-overlay" id="competitiveOverlay">
     <div class="competitive-content">
       <div class="competitive-title">در حال انتظار بازیکن...</div>
@@ -339,17 +394,20 @@
     </div>
   </div>
 
+  <!-- بازی شروع شد -->
   <div class="game-started-overlay" id="gameStartedOverlay">
     <h1>بازی شروع شد!</h1>
     <button class="game-start-btn" id="enterGameBtn">ورود به بازی</button>
   </div>
 
+  <!-- سرور قطع -->
   <div class="server-down-overlay" id="serverDownOverlay">
     <div class="server-down-icon">🔌</div>
     <div class="server-down-title">سرور قطع است</div>
     <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
   </div>
 
+  <!-- دستگاه بن شده -->
   <div class="device-ban-overlay" id="deviceBanOverlay">
     <div class="device-ban-icon" style="font-size:60px;">📱</div>
     <div class="device-ban-title">دستگاه شما بن شده است</div>
