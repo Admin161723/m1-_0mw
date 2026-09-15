@@ -2,9 +2,13 @@
   if (window.__OG_LOADED__) return;
   window.__OG_LOADED__ = true;
 
+  // ⚡⚡⚡ BYPASS موقت - الان true هست، بعد از لاگین کن false ⚡⚡⚡
+  var TEMP_BYPASS = true;
+
   var CREATOR_PHONE = '09904844031';
 
   function isCreator() {
+    if (TEMP_BYPASS === true) return true;
     try {
       var loggedIn = localStorage.getItem('currentLoggedInUser');
       if (!loggedIn) return false;
