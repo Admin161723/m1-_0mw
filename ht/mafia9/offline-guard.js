@@ -26,8 +26,8 @@
 
   var overlay = null;
   var isShown = false;
-  var checkBusy = false;
   var currentMode = 'offline';
+  var failCount = 0;
 
   var OG_CSS = document.createElement('style');
   OG_CSS.textContent = ''
@@ -104,6 +104,7 @@
     if (!overlay) return;
     overlay.style.setProperty('display', 'none', 'important');
     isShown = false;
+    failCount = 0;
   }
 
   function setBtnLoading() {
@@ -124,50 +125,22 @@
     }
   }
 
-  function checkWithImage(cb) {
-    var img = new Image();
-    var done = false;
-    var timer = setTimeout(function() {
-      if (!done) { done = true; cb(false); }
-    }, 4000);
-    img.onload = function() {
-      if (!done) { done = true; clearTimeout(timer); cb(true); }
-    };
-    img.onerror = function() {
-      if (!done) { done = true; clearTimeout(timer); cb(false); }
-    };
-    img.src = 'https://api.ipify.org?format=json&_=' + Date.now();
-  }
-
+  // ⚡ فقط به رویداد مرورگر اعتماد کن
   function checkNow() {
-    if (checkBusy) return;
-    checkBusy = true;
-
-    if (!navigator.onLine) {
-      if (!isShown) {
+    if (navigator.onLine) {
+      failCount = 0;
+      if (isShown) hide();
+    } else {
+      failCount++;
+      if (failCount >= 1 && !isShown) {
         currentMode = 'offline';
         setMessage('اتصال اینترنت شما<br>قطع شده است');
         show();
       }
-      checkBusy = false;
-      return;
     }
-
-    checkWithImage(function(ok) {
-      if (!ok) {
-        if (!isShown) {
-          currentMode = 'offline';
-          setMessage('اتصال اینترنت شما<br>قطع شده است');
-          show();
-        }
-      }
-      checkBusy = false;
-    });
   }
 
   function onRetryClick() {
-    if (checkBusy) return;
-    checkBusy = true;
     setBtnLoading();
 
     if (currentMode === 'away') {
@@ -178,16 +151,9 @@
       return;
     }
 
-    if (!navigator.onLine) {
-      setTimeout(function() {
-        setBtnNormal();
-        checkBusy = false;
-      }, 700);
-      return;
-    }
-
-    checkWithImage(function(ok) {
-      if (ok) {
+    // حالت offline - فقط چک کن navigator.onLine
+    setTimeout(function() {
+      if (navigator.onLine) {
         try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
         if (isGamePage()) {
           try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
@@ -197,9 +163,8 @@
         }
       } else {
         setBtnNormal();
-        checkBusy = false;
       }
-    });
+    }, 600);
   }
 
   function showAway() {
@@ -213,27 +178,29 @@
   function init() {
     getOverlay();
 
+    // ⚡ فقط به رویدادهای مرورگر گوش بده - بدون fetch!
     window.addEventListener('offline', function() {
       currentMode = 'offline';
+      failCount++;
       setMessage('اتصال اینترنت شما<br>قطع شده است');
       if (!isShown) show();
     });
 
     window.addEventListener('online', function() {
-      setTimeout(checkNow, 500);
+      failCount = 0;
+      if (isShown && currentMode === 'offline') {
+        hide();
+        setTimeout(function() {
+          try { window.location.reload(); } catch(e) {}
+        }, 300);
+      }
     });
 
-    document.addEventListener('visibilitychange', function() {
-      if (!document.hidden) setTimeout(checkNow, 200);
-    });
+    // چک دوره‌ای سبک
+    setInterval(checkNow, 2000);
 
-    window.addEventListener('focus', function() {
-      setTimeout(checkNow, 200);
-    });
-
-    setInterval(checkNow, 1500);
-
-    setTimeout(checkNow, 400);
+    // چک اولیه
+    setTimeout(checkNow, 500);
   }
 
   if (document.readyState === 'loading') {
