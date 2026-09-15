@@ -27,7 +27,8 @@
   var overlay = null;
   var isShown = false;
   var currentMode = 'offline';
-  var failCount = 0;
+  var offlineFailCount = 0;
+  var checkBusy = false;
 
   var OG_CSS = document.createElement('style');
   OG_CSS.textContent = ''
@@ -104,7 +105,7 @@
     if (!overlay) return;
     overlay.style.setProperty('display', 'none', 'important');
     isShown = false;
-    failCount = 0;
+    offlineFailCount = 0;
   }
 
   function setBtnLoading() {
@@ -125,19 +126,59 @@
     }
   }
 
-  // ⚡ فقط به رویداد مرورگر اعتماد کن
-  function checkNow() {
-    if (navigator.onLine) {
-      failCount = 0;
-      if (isShown) hide();
-    } else {
-      failCount++;
-      if (failCount >= 1 && !isShown) {
-        currentMode = 'offline';
-        setMessage('اتصال اینترنت شما<br>قطع شده است');
-        show();
+  // ⚡ چک واقعی از یه سرور مطمئن (jsdelivr تو ایران کار می‌کنه)
+  function realCheck() {
+    return new Promise(function(resolve) {
+      var img = new Image();
+      var done = false;
+      var timer = setTimeout(function() {
+        if (!done) { done = true; resolve(false); }
+      }, 3500);
+      img.onload = function() {
+        if (!done) { done = true; clearTimeout(timer); resolve(true); }
+      };
+      img.onerror = function() {
+        if (!done) { done = true; clearTimeout(timer); resolve(false); }
+      };
+      img.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?_=' + Date.now();
+    });
+  }
+
+  // ⚡ چک اصلی - اگه navigator.onLine گفت آنلاینیم، همون قبوله
+  async function checkNow() {
+    if (checkBusy) return;
+    checkBusy = true;
+
+    try {
+      // 1. اگه مرورگر گفت آنلاینیم → قبول کن
+      if (navigator.onLine === true) {
+        offlineFailCount = 0;
+        if (isShown && currentMode === 'offline') hide();
+        checkBusy = false;
+        return;
       }
+
+      // 2. مرورگر گفت آفلاینیم → یه چک واقعی بزن
+      var reallyOnline = await realCheck();
+      if (reallyOnline) {
+        // مرورگر اشتباه گفت، ما واقعاً آنلاینیم
+        offlineFailCount = 0;
+        if (isShown && currentMode === 'offline') hide();
+      } else {
+        // واقعاً آفلاینیم
+        offlineFailCount++;
+        if (offlineFailCount >= 2 && !isShown) {
+          currentMode = 'offline';
+          setMessage('اتصال اینترنت شما<br>قطع شده است');
+          show();
+        }
+      }
+    } catch(e) {
+      // خطا تو چک → فرض کن آنلاینیم
+      offlineFailCount = 0;
     }
+
+    checkBusy = false;
   }
 
   function onRetryClick() {
@@ -151,9 +192,9 @@
       return;
     }
 
-    // حالت offline - فقط چک کن navigator.onLine
-    setTimeout(function() {
-      if (navigator.onLine) {
+    // حالت offline
+    realCheck().then(function(ok) {
+      if (ok) {
         try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
         if (isGamePage()) {
           try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
@@ -164,7 +205,9 @@
       } else {
         setBtnNormal();
       }
-    }, 600);
+    }).catch(function() {
+      setBtnNormal();
+    });
   }
 
   function showAway() {
@@ -178,16 +221,16 @@
   function init() {
     getOverlay();
 
-    // ⚡ فقط به رویدادهای مرورگر گوش بده - بدون fetch!
+    // رویداد مرورگر
     window.addEventListener('offline', function() {
-      currentMode = 'offline';
-      failCount++;
-      setMessage('اتصال اینترنت شما<br>قطع شده است');
-      if (!isShown) show();
+      // بلافاصله نشون نده، منتظر چک واقعی باش
+      setTimeout(function() {
+        checkNow();
+      }, 1500);
     });
 
     window.addEventListener('online', function() {
-      failCount = 0;
+      offlineFailCount = 0;
       if (isShown && currentMode === 'offline') {
         hide();
         setTimeout(function() {
@@ -196,11 +239,11 @@
       }
     });
 
-    // چک دوره‌ای سبک
-    setInterval(checkNow, 2000);
+    // چک دوره‌ای
+    setInterval(checkNow, 3000);
 
-    // چک اولیه
-    setTimeout(checkNow, 500);
+    // چک اولیه بعد از ۱ ثانیه (که اپ لود شه)
+    setTimeout(checkNow, 1000);
   }
 
   if (document.readyState === 'loading') {
