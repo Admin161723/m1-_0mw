@@ -1,5 +1,5 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل - پنل ادمین کار می‌کنه      */
+/*  Safe Asli.js - نسخه نهایی کامل - همه چیز کار می‌کنه         */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -23,8 +23,6 @@ var pauseSync = false;
 var videoObserver = null;
 var myIP = null;
 var currentDeviceId = null;
-var localAvatarLock = 0;
-var localTemplateLock = 0;
 var awayTimer = null;
 var isUserAway = false;
 var gameServerLocked = false;
@@ -33,7 +31,6 @@ var currentAdminTab = 'all';
 var currentUserList = [];
 var viewingUserHistory = null;
 
-/* Firebase config */
 var FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
   authDomain: "mafiasu-681c7.firebaseapp.com",
@@ -145,7 +142,6 @@ async function addBanLog(phone, banData) {
   if (user.banHistory.length > 50) user.banHistory.shift();
   await saveUser(phone, user);
 }
-
 async function getUniqueUserCode() {
   try {
     var allUsers = await getAllUsers();
@@ -160,7 +156,6 @@ async function getUniqueUserCode() {
     return code;
   } catch(e) { return Date.now(); }
 }
-
 async function resetAllUserCodes() {
   if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
   if (!confirm('همه کدها بازنشانی شود؟')) return;
@@ -191,7 +186,6 @@ async function resetAllUserCodes() {
     await loadUsers();
   } catch(e) { showShopNotification('خطا', 'error'); }
 }
-
 async function assignCodeIfMissing(phone, user) {
   if (!user) return user;
   if (user.userCode && parseInt(user.userCode) > 0) return user;
@@ -206,7 +200,6 @@ async function assignCodeIfMissing(phone, user) {
   } catch(e) {}
   return user;
 }
-
 async function getAllWhitelistIPs() { return await redisGet('whitelist_ips') || {}; }
 async function isIPWhitelisted(ip, deviceId) {
   if (!ip && !deviceId) return false;
@@ -229,7 +222,6 @@ async function removeFromWhitelist(ip) {
   delete list[ip];
   return await redisSet('whitelist_ips', list);
 }
-
 async function fetchUserIP() {
   try {
     var c = new AbortController(); var t = setTimeout(function(){c.abort();}, 3000);
@@ -239,7 +231,6 @@ async function fetchUserIP() {
   } catch(e) {}
   return null;
 }
-
 function getDeviceId() {
   var id = localStorage.getItem('__device_id__');
   if (!id) {
@@ -251,16 +242,13 @@ function getDeviceId() {
   }
   return id;
 }
-
 function redirectToBan(b,p){
   if(isRedirecting)return;
   isRedirecting=true;
   var params=new URLSearchParams({phone:p,by:b.bannedBy||'مدیریت',reason:b.reason||'بدون دلیل',duration:b.duration||'1d',expires:b.expiresAt||''});
   window.location.href='Ban.html?'+params.toString();
 }
-
 function toPersianNum(n){var p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];return String(n).replace(/[0-9]/g,function(w){return p[+w];});}
-
 function getRoleTick(role){
   if(!role)return null;
   var r=role.trim();
@@ -296,8 +284,7 @@ var DUR_MS = {'1h':3600000,'1d':86400000,'7d':604800000,'2w':1209600000,'1m':259
 
 function getPerm(){
   var rank=(currentUserData&&currentUserData.rank)||'کاربر';
-  var isCreator=(currentPhone===CREATOR_PHONE)||rank==='سازنده';
-  if(isCreator)return RANK_PERM['سازنده'];
+  if(currentPhone===CREATOR_PHONE||rank==='سازنده')return RANK_PERM['سازنده'];
   return RANK_PERM[rank]||{panel:false};
 }
 function fillBanOptions(max){
@@ -319,7 +306,6 @@ function fillBanOptions(max){
 
 var GROUP_ICONS = {
   shield: '<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>',
-  lion: '<svg viewBox="0 0 24 24"><path d="M7 4c-1.1 0-2 .9-2 2v1c-1.1 0-2 .9-2 2v7c0 2.76 2.24 5 5 5h8c2.76 0 5-2.24 5-5V9c0-1.1-.9-2-2-2V6c0-1.1-.9-2-2-2H7z"/></svg>',
   crown: '<svg viewBox="0 0 24 24"><path d="M12 1L9 9l-7 3 2 9h16l2-9-7-3-3-8z"/></svg>',
   star: '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
 };
@@ -350,11 +336,11 @@ var avatars=[
   {id:22, src:'618.webp', price:300, owned:false},
   {id:23, src:'619.webp', price:100, owned:false},
   {id:24, src:'620.webp', price:200, owned:false},
-  {id:901, src:'655.webm', price:0, owned:false, exclusive:true, name:'اختصاصی سازنده'},
-  {id:902, src:'2000.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت ارشد'},
-  {id:903, src:'2003.webm', price:0, owned:false, exclusive:true, name:'اختصاصی مدیریت ارشد'},
-  {id:904, src:'2001.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'},
-  {id:905, src:'2002.webm', price:0, owned:false, exclusive:true, name:'اختصاصی ادمین'}
+  {id:901, src:'655.webm', price:0, owned:false, exclusive:true},
+  {id:902, src:'2000.webm', price:0, owned:false, exclusive:true},
+  {id:903, src:'2003.webm', price:0, owned:false, exclusive:true},
+  {id:904, src:'2001.webm', price:0, owned:false, exclusive:true},
+  {id:905, src:'2002.webm', price:0, owned:false, exclusive:true}
 ];
 
 var templates=[
@@ -369,7 +355,7 @@ window.avatarLoadError=function(img,src){
   if(box&&!box.querySelector('.avatar-missing')){
     var d=document.createElement('div');
     d.className='avatar-missing';
-    d.innerHTML='❌<br>'+src;
+    d.innerHTML='❌';
     box.appendChild(d);
   }
 };
@@ -401,7 +387,6 @@ function sanitizeUserData(user, phone) {
   if (user.cups === undefined) user.cups = 0;
   if (user.hours === undefined) user.hours = 0;
   if (!user.ownedTemplates) user.ownedTemplates = [];
-  if (!user.currentTemplate) user.currentTemplate = null;
   var xp = Math.floor((user.cups / 10) * 20 + (user.hours || 0) * 100);
   user.xp = xp;
   var level = 1;
@@ -420,51 +405,41 @@ function createMediaElement(src) {
   if (isVideo) {
     var v = document.createElement('video');
     v.src = src; v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
-    v.preload = 'metadata';
     v.setAttribute('muted', 'muted');
     v.setAttribute('playsinline', 'playsinline');
     v.style.objectFit = 'cover';
     return v;
-  } else {
-    var i = document.createElement('img');
-    i.src = src;
-    i.onerror = function(){ this.style.display='none'; };
-    return i;
   }
-}
-
-function buildAvatarWithTemplate(avatarSrc, templateSrc) {
-  var wrapper = document.createElement('div');
-  wrapper.className = 'avatar-with-template';
-  var inner = document.createElement('div');
-  inner.className = 'avatar-inner';
-  inner.appendChild(createMediaElement(avatarSrc));
-  wrapper.appendChild(inner);
-  if (templateSrc) {
-    var overlay = document.createElement('img');
-    overlay.className = 'template-overlay';
-    overlay.src = templateSrc;
-    wrapper.appendChild(overlay);
-  }
-  return wrapper;
-}
-
-function getCurrentTemplate() {
-  if (!currentUserData || !currentUserData.currentTemplate) return null;
-  return currentUserData.currentTemplate;
+  var i = document.createElement('img');
+  i.src = src;
+  i.onerror = function(){ this.style.display='none'; };
+  return i;
 }
 
 function updateGlobalAvatar(src) {
   var validSrc = getValidAvatar(src, currentPhone);
-  var templateSrc = getCurrentTemplate();
+  var templateSrc = (currentUserData && currentUserData.currentTemplate) || null;
   var mainContainer = document.getElementById('mainAvatarContainer');
   var profileContainer = document.getElementById('openAvatarShop');
   var showcaseContainer = document.getElementById('showcaseAvatarContainer');
   var templateShowcase = document.getElementById('templateShowcaseContainer');
   function buildContent() {
     var frag = document.createDocumentFragment();
-    if (templateSrc) frag.appendChild(buildAvatarWithTemplate(validSrc, templateSrc));
-    else frag.appendChild(createMediaElement(validSrc));
+    if (templateSrc) {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'avatar-with-template';
+      var inner = document.createElement('div');
+      inner.className = 'avatar-inner';
+      inner.appendChild(createMediaElement(validSrc));
+      wrapper.appendChild(inner);
+      var overlay = document.createElement('img');
+      overlay.className = 'template-overlay';
+      overlay.src = templateSrc;
+      wrapper.appendChild(overlay);
+      frag.appendChild(wrapper);
+    } else {
+      frag.appendChild(createMediaElement(validSrc));
+    }
     return frag;
   }
   if(mainContainer) { mainContainer.innerHTML = ''; mainContainer.appendChild(buildContent()); observeVideos(mainContainer); }
@@ -491,27 +466,21 @@ function updateUIWithData(user) {
   setText('statBestScore', toPersianNum(user.bestScore || 0));
   setText('statMafiaWins', toPersianNum(user.mafiaWins || 0));
   setText('statCitizenWins', toPersianNum(user.citizenWins || 0));
-
   updateGlobalAvatar(user.avatar || 'Mafia2.png');
   var tk = getRoleTick(user.rank);
   if(tk){applyTick(document.getElementById('mainUserTick'), tk); applyTick(document.getElementById('profileUserTick'), tk);}
-
   var perm = getPerm();
   var btnAdmin = document.getElementById('btnAdmin');
   if(btnAdmin) btnAdmin.style.display = perm.panel ? 'flex' : 'none';
   var adminTools = document.getElementById('adminTools');
   if(adminTools) adminTools.style.display = perm.server ? 'block' : 'none';
-  var tcfg = document.getElementById('tournamentConfig');
-  if(tcfg) tcfg.style.display = (currentPhone === CREATOR_PHONE) ? 'block' : 'none';
   var btnUC = document.getElementById('btnUserControl');
   if(btnUC) btnUC.style.display = perm.userControl ? 'block' : 'none';
   var btnWL = document.getElementById('btnWhitelistIP');
   if(btnWL) btnWL.style.display = perm.whitelist ? 'block' : 'none';
-
   shopGold = user.coins || 0;
   shopGems = user.gems || 0;
   shopDollars = user.dollars || 0;
-
   var s1 = document.getElementById('shopGemAmount'); if(s1) s1.textContent = toPersianNum(shopGems);
   var s2 = document.getElementById('shopGemAmount2'); if(s2) s2.textContent = toPersianNum(shopGems);
   var c1 = document.getElementById('shopGoldAmount'); if(c1) c1.textContent = toPersianNum(shopGold);
@@ -536,18 +505,16 @@ async function saveUserData(){
 
 async function saveAvatarToStorage(src){
   if(!currentUserData||!currentPhone)return;
-  if (src === '655.webm' && currentPhone !== CREATOR_PHONE) { showShopNotification('اختصاصی سازنده', 'error'); return; }
+  if (src === '655.webm' && currentPhone !== CREATOR_PHONE) return;
   if (currentUserData.avatar && currentUserData.avatar !== src) currentUserData.previousAvatar = currentUserData.avatar;
   currentUserData.avatar = src;
   await saveUserData();
 }
-
 async function saveTemplateToStorage(src){
   if(!currentUserData||!currentPhone)return;
   currentUserData.currentTemplate = src;
   await saveUserData();
 }
-
 async function changeUsername(){
   var nn=prompt("نام جدید (حداکثر ۲۰ کاراکتر):");
   if(nn && nn.trim()!==""){
@@ -559,17 +526,12 @@ async function changeUsername(){
     } else showShopNotification('۱۰۰ سکه نیاز است','error');
   }
 }
-
 function copyToClipboard(t,m){
-  navigator.clipboard.writeText(t).then(function(){showShopNotification(m||'کپی شد!');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
-    document.execCommand('copy');document.body.removeChild(ta);
-    showShopNotification(m||'کپی شد!');
-  });
+  try { navigator.clipboard.writeText(t).then(function(){showShopNotification(m||'کپی شد!');}); } catch(e) {}
 }
 function closeModal(id){var e=document.getElementById(id);if(e)e.classList.remove('active');}
-function closeEditUser(){var e=document.getElementById('editUserModal');if(e)e.classList.remove('active');editingUserId=null;editingUserExclusiveAvatar=null; pauseSync = false;}
-function closeAdminModal(){var e=document.getElementById('adminModal');if(e)e.classList.remove('active'); pauseSync = false;}
+function closeEditUser(){var e=document.getElementById('editUserModal');if(e)e.classList.remove('active');editingUserId=null;editingUserExclusiveAvatar=null;pauseSync=false;}
+function closeAdminModal(){var e=document.getElementById('adminModal');if(e)e.classList.remove('active');pauseSync=false;}
 function showShopNotification(m,t){
   var n=document.getElementById('shopNotification');
   if(!n)return;
@@ -577,19 +539,51 @@ function showShopNotification(m,t){
   n.className='shop-notification show'+(t==='error'?' error':'');
   setTimeout(function(){n.classList.remove('show');},3000);
 }
-
-function lockServerForeverInGame() {
-  if (gameServerLocked) return;
-  gameServerLocked = true;
-  document.addEventListener('click', function(e){ e.preventDefault(); return false; }, true);
-  document.addEventListener('touchstart', function(e){ e.preventDefault(); return false; }, true);
-  var overlay = document.getElementById('serverDownOverlay');
-  if (overlay) {
-    overlay.classList.add('show');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;';
-  }
+function playClickSound() {
+  try { var s = document.getElementById('clickSound'); if (s) { s.currentTime = 0; s.play().catch(function(){}); } } catch (e) {}
 }
 
+/* ============================================================ */
+/*  Group Display                                              */
+/* ============================================================ */
+async function findUserGroup(phone){
+  try{
+    var groups=await getGroups();
+    for(var i=0;i<groups.length;i++){
+      var g=groups[i];
+      if(!g)continue;
+      if(g.owner===phone)return g;
+      if(g.members&&g.members.indexOf(phone)>-1)return g;
+      if(g.deputies&&g.deputies.indexOf(phone)>-1)return g;
+    }
+    return null;
+  }catch(e){return null;}
+}
+async function updateGroupDisplay(){
+  var nameEl=document.getElementById('profileGroupName');
+  var badgeEl=document.getElementById('profileGroupBadge');
+  if(!nameEl||!badgeEl)return;
+  try{
+    nameEl.textContent='در حال بارگذاری...';
+    badgeEl.className='clan-badge no-group';
+    badgeEl.innerHTML='❌';
+    if(!currentPhone)return;
+    var group=await findUserGroup(currentPhone);
+    if(group){
+      nameEl.textContent=group.name||'گروه';
+      badgeEl.className='clan-badge has-group';
+      badgeEl.innerHTML = getGroupIcon(group.logo||'shield');
+    }else{
+      nameEl.textContent='بدون گروه';
+      badgeEl.className='clan-badge no-group';
+      badgeEl.innerHTML='❌';
+    }
+  }catch(e){}
+}
+
+/* ============================================================ */
+/*  Away Timer                                                  */
+/* ============================================================ */
 function startAwayTimer() {
   if (currentPhone === CREATOR_PHONE) return;
   clearTimeout(awayTimer);
@@ -604,9 +598,6 @@ function startAwayTimer() {
         user.online = false;
         user.lastSeen = Date.now();
         await saveUser(loggedIn.phone, user);
-        var allUsers = await getAllUsers();
-        allUsers[loggedIn.phone] = user;
-        await saveAllUsers(allUsers);
       }
       setFBOnline(loggedIn.phone, false, {});
     } catch(e) {}
@@ -620,14 +611,7 @@ async function reconnectUser() {
     var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
     if (!loggedIn || !loggedIn.phone) return;
     var user = await getUser(loggedIn.phone);
-    if (user) {
-      user.online = true;
-      user.lastSeen = Date.now();
-      await saveUser(loggedIn.phone, user);
-      var allUsers = await getAllUsers();
-      allUsers[loggedIn.phone] = user;
-      await saveAllUsers(allUsers);
-    }
+    if (user) { user.online = true; user.lastSeen = Date.now(); await saveUser(loggedIn.phone, user); }
     setFBOnline(loggedIn.phone, true, {});
   } catch(e) {}
 }
@@ -639,35 +623,34 @@ window.addEventListener('blur', startAwayTimer);
 window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
 
 /* ============================================================ */
-/*  پنل مدیریت - نسخه قطعی                                      */
+/*  Server Lock                                                 */
+/* ============================================================ */
+function lockServerForeverInGame() {
+  if (gameServerLocked) return;
+  gameServerLocked = true;
+  document.addEventListener('click', function(e){ e.preventDefault(); return false; }, true);
+  document.addEventListener('touchstart', function(e){ e.preventDefault(); return false; }, true);
+  var overlay = document.getElementById('serverDownOverlay');
+  if (overlay) {
+    overlay.classList.add('show');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;';
+  }
+}
+
+/* ============================================================ */
+/*  Admin Panel                                                */
 /* ============================================================ */
 function openAdminPanel() {
-  console.log('🎯 openAdminPanel');
-
   var modal = document.getElementById('adminModal');
-  if (!modal) { alert('پنل ادمین پیدا نشد'); return; }
-
-  // toggle
-  if (modal.classList.contains('active')) {
-    modal.classList.remove('active');
-    pauseSync = false;
-    return;
-  }
-
+  if (!modal) return;
+  if (modal.classList.contains('active')) { modal.classList.remove('active'); pauseSync = false; return; }
   pauseSync = true;
-
-  // مخفی بخش‌ها
   var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if (el) el.style.display = 'none';
   }
-
-  // نمایش
   modal.classList.add('active');
-  console.log('✅ panel opened');
-
-  // دکمه سرور
   setTimeout(function() {
     getMaintenance().then(function(m) {
       var btn = document.getElementById('btnServerToggle');
@@ -677,21 +660,14 @@ function openAdminPanel() {
       }
     }).catch(function(){});
   }, 100);
-
-  // لود کاربران
-  setTimeout(function() {
-    loadUsers().catch(function(e){ console.log('loadUsers err:', e); });
-  }, 100);
-
-  // تنظیمات مسابقات
+  setTimeout(function() { loadUsers(); }, 100);
   if (currentPhone === CREATOR_PHONE) {
     setTimeout(function() {
-      try { loadTournamentConfig(); } catch(e) {}
-      try { renderBlacklist(); } catch(e) {}
+      loadTournamentConfig();
+      renderBlacklist();
     }, 200);
   }
 }
-window.openAdminPanel = openAdminPanel;
 
 async function loadUsers() {
   var container = document.getElementById('adminUserListContainer');
@@ -708,8 +684,6 @@ async function loadUsers() {
     if (container) container.innerHTML = '<div style="color:#f44336;padding:20px;text-align:center;">خطا</div>';
   }
 }
-window.loadUsers = loadUsers;
-window.loadAdminUsers = loadUsers;
 
 function renderAdminUsers(list) {
   var container = document.getElementById('adminUserListContainer');
@@ -721,12 +695,10 @@ function renderAdminUsers(list) {
   if (currentAdminTab === 'online') filtered = filtered.filter(function(u) { return u.online === true; });
   else if (currentAdminTab === 'offline') filtered = filtered.filter(function(u) { return !u.online; });
   else if (currentAdminTab === 'banned') filtered = filtered.filter(function(u) { return u.banned === true; });
-
   if (!filtered.length) {
     container.innerHTML = '<div style="color:#aaa;padding:20px;text-align:center;">کاربری یافت نشد</div>';
     return;
   }
-
   var html = '';
   for (var i = 0; i < filtered.length; i++) {
     var u = filtered[i];
@@ -736,7 +708,6 @@ function renderAdminUsers(list) {
     html += '<div class="info">';
     html += '<span class="name">' + (u.name || 'کاربر') + ' (کد: ' + (toPersianNum(u.userCode) || '----') + ')</span>';
     html += '<span class="detail">' + u.phone + ' | ' + (u.rank || 'کاربر') + '</span>';
-    html += '<span class="detail">IP: ' + (u.lastIP || '-') + '</span>';
     html += '</div>';
     html += '<span class="status ' + statusClass + '">' + statusText + '</span>';
     html += '</div>';
@@ -765,22 +736,17 @@ async function openUserHistory(phone) {
     content.innerHTML = html;
   } catch(e) {}
 }
-window.openUserHistory = openUserHistory;
-
 function closeUserHistory() {
   document.getElementById('userHistorySection').style.display = 'none';
   document.getElementById('usersSection').style.display = 'block';
   loadUsers();
 }
-window.closeUserHistory = closeUserHistory;
 
 async function openEditUser(id) {
   var allUsers = await getAllUsers();
   var u = allUsers[id]; if (!u) return;
-
   editingUserId = id; pauseSync = true;
   editingUserExclusiveAvatar = u.exclusiveAvatar || null;
-
   var setVal = function(eid, val) { var e = document.getElementById(eid); if (e) e.value = val; };
   setVal('editUserName', u.name || '');
   setVal('editUserCode', u.userCode || '');
@@ -797,11 +763,10 @@ async function openEditUser(id) {
   setVal('editUserMafiaWins', u.mafiaWins || 0);
   setVal('editUserCitizenWins', u.citizenWins || 0);
   setVal('editUserBestScore', u.bestScore || 0);
-
   var preview = document.getElementById('exclusiveAvatarPreview');
   if (preview) {
     if (u.exclusiveAvatar) {
-      if (u.exclusiveAvatar.indexOf('.webm') > -1 || u.exclusiveAvatar.indexOf('.mp4') > -1) {
+      if (u.exclusiveAvatar.indexOf('.webm') > -1) {
         preview.innerHTML = '<video src="' + u.exclusiveAvatar + '" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
       } else {
         preview.innerHTML = '<img src="' + u.exclusiveAvatar + '">';
@@ -810,7 +775,6 @@ async function openEditUser(id) {
       preview.innerHTML = '<span class="exclusive-avatar-placeholder">👤</span>';
     }
   }
-
   var perm = getPerm();
   var setDisp = function(eid, show) { var e = document.getElementById(eid); if (e) e.style.display = show ? 'block' : 'none'; };
   setDisp('fieldCoins', perm.coins);
@@ -820,18 +784,14 @@ async function openEditUser(id) {
   setDisp('fieldStats', perm.stats);
   setDisp('fieldExclusive', perm.exclusive);
   var rd = document.getElementById('rowDelete'); if (rd) rd.style.display = perm.del ? 'flex' : 'none';
-
   fillBanOptions(perm.banMax || '1d');
-
   var bb = document.getElementById('btnBanUser');
   var ub = document.getElementById('btnUnbanUser');
   var bs = await getBanStatus(id);
   if (bs || u.banned) { if (bb) bb.style.display = 'none'; if (ub) ub.style.display = 'block'; }
   else { if (bb) bb.style.display = 'block'; if (ub) ub.style.display = 'none'; }
-
   document.getElementById('editUserModal').classList.add('active');
 }
-window.openEditUser = openEditUser;
 
 async function saveUserEdit() {
   if (!editingUserId) return;
@@ -839,7 +799,6 @@ async function saveUserEdit() {
   var allUsers = await getAllUsers();
   var u = allUsers[editingUserId];
   if (!u) { pauseSync = false; return; }
-
   var getVal = function(eid) { var e = document.getElementById(eid); return e ? e.value : ''; };
   u.name = getVal('editUserName').trim() || u.name;
   var newCode = parseInt(getVal('editUserCode'));
@@ -863,7 +822,6 @@ async function saveUserEdit() {
   allUsers[editingUserId] = u;
   await saveUser(editingUserId, u);
   await saveAllUsers(allUsers);
-
   if (editingUserId === currentPhone) {
     currentUserData = u;
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
@@ -873,7 +831,6 @@ async function saveUserEdit() {
   await loadUsers();
   showShopNotification('✅ ذخیره شد');
 }
-window.saveUserEdit = saveUserEdit;
 
 async function banUser(type) {
   type = type || 'account';
@@ -883,10 +840,8 @@ async function banUser(type) {
   var u = allUsers[editingUserId];
   if (!u) return;
   if (editingUserId === CREATOR_PHONE) { showShopNotification('سازنده بن نمیشه', 'error'); return; }
-
   var dur = document.getElementById('editBanDuration').value;
   var banData = { isBanned: true, phone: editingUserId, bannedBy: currentUserData.name, reason: 'تخلف', duration: dur, bannedAt: new Date().toISOString(), expiresAt: DUR_MS[dur] ? new Date(Date.now() + DUR_MS[dur]).toISOString() : null };
-
   if (type === 'device') {
     var devId = u.lastDevice || u.registeredDevice;
     if (!devId) { showShopNotification('دستگاه یافت نشد', 'error'); return; }
@@ -978,10 +933,8 @@ async function forceUserLogin() {
   if (!phone) { showShopNotification('شماره را وارد کنید', 'error'); return; }
   var user = await getUser(phone);
   if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
-  user.online = true;
-  user.lastUpdatedAt = Date.now();
+  user.online = true; user.lastUpdatedAt = Date.now();
   await saveUser(phone, user);
-  var all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('کاربر وارد شد');
 }
 async function forceUserLogout() {
@@ -989,10 +942,8 @@ async function forceUserLogout() {
   if (!phone) { showShopNotification('شماره را وارد کنید', 'error'); return; }
   var user = await getUser(phone);
   if (!user) { showShopNotification('کاربر یافت نشد', 'error'); return; }
-  user.online = false;
-  user.lastUpdatedAt = Date.now();
+  user.online = false; user.lastUpdatedAt = Date.now();
   await saveUser(phone, user);
-  var all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('کاربر خارج شد');
 }
 async function clearUserData() {
@@ -1003,9 +954,7 @@ async function clearUserData() {
   if (!user) return;
   user.coins = 0; user.gems = 0; user.dollars = 0;
   user.cups = 0; user.hours = 0; user.xp = 0; user.level = 1;
-  user.lastUpdatedAt = Date.now();
   await saveUser(phone, user);
-  var all = await getAllUsers(); all[phone] = user; await saveAllUsers(all);
   showShopNotification('پاک شد');
 }
 async function clearUserSessionsFromPanel() {
@@ -1042,13 +991,110 @@ async function refreshWhitelistUI() {
   if (!ips.length) { container.innerHTML = '<div style="color:#888;font-size:11px;text-align:center;padding:8px;">خالی</div>'; return; }
   var html = '';
   for (var i = 0; i < ips.length; i++) {
-    var ip = ips[i];
-    var info = list[ip] || {};
-    html += '<div class="whitelist-item"><span style="direction:ltr;">' + ip + '</span><button onclick="window.removeWhitelistIP && window.removeWhitelistIP(\'' + ip + '\')">حذف</button></div>';
+    html += '<div class="whitelist-item"><span style="direction:ltr;">' + ips[i] + '</span><button onclick="window.removeWhitelistIP && window.removeWhitelistIP(\'' + ips[i] + '\')">حذف</button></div>';
   }
   container.innerHTML = html;
 }
 
+async function quickWhitelistUser(ip, deviceId, userName){
+  if (!ip && !deviceId) return;
+  if (!confirm('افزودن به وایت‌لیست؟ ' + userName)) return;
+  if (ip && ip !== 'نامشخص' && ip !== '-') await addToWhitelist(ip, 'auto: ' + userName, currentPhone);
+  if (deviceId && deviceId !== 'نامشخص' && deviceId !== '-') await addToWhitelist(deviceId, 'auto-dev: ' + userName, currentPhone);
+  showShopNotification('اضافه شد');
+}
+async function clearUserSessions(phone){
+  if (!confirm('پاک کردن تاریخچه ورود؟')) return;
+  var user = await getUser(phone); if (!user) return;
+  user.loginHistory = [];
+  await saveUser(phone, user);
+  showShopNotification('پاک شد');
+  openUserHistory(phone);
+}
+
+/* ============================================================ */
+/*  Tournament Config                                          */
+/* ============================================================ */
+async function loadTournamentConfig(){
+  try{
+    var cfg=await getTournamentConfig();
+    if(!cfg)return;
+    var durEl=document.getElementById('tournamentDuration');
+    if(cfg.duration && durEl) durEl.value=cfg.duration;
+    if(cfg.rank1){
+      var e1=document.getElementById('prize1Type'); if(e1)e1.value=cfg.rank1.type;
+      var e2=document.getElementById('prize1Value'); if(e2)e2.value=cfg.rank1.value||'';
+    }
+    if(cfg.rank2){
+      var e3=document.getElementById('prize2Type'); if(e3)e3.value=cfg.rank2.type;
+      var e4=document.getElementById('prize2Value'); if(e4)e4.value=cfg.rank2.value||'';
+    }
+    if(cfg.rank3){
+      var e5=document.getElementById('prize3Type'); if(e5)e5.value=cfg.rank3.type;
+      var e6=document.getElementById('prize3Value'); if(e6)e6.value=cfg.rank3.value||'';
+    }
+    if(cfg.rank4_10){
+      var e7=document.getElementById('prize4Type'); if(e7)e7.value=cfg.rank4_10.type;
+      var e8=document.getElementById('prize4Value'); if(e8)e8.value=cfg.rank4_10.value||'';
+    }
+    if(cfg.blacklist){
+      window.clanBlacklist=cfg.blacklist;
+      renderBlacklist();
+    }
+  }catch(e){}
+}
+function renderBlacklist(){
+  var container=document.getElementById('blacklistItems');
+  if(!container)return;
+  if(!window.clanBlacklist||window.clanBlacklist.length===0){
+    container.innerHTML='<div style="color:rgba(255,255,255,.5);font-size:11px;text-align:center;">خالی</div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<window.clanBlacklist.length;i++){
+    html+='<div class="clan-blacklist-item"><span>'+window.clanBlacklist[i]+'</span><button onclick="window.removeClanFromBlacklist && window.removeClanFromBlacklist('+i+')">حذف</button></div>';
+  }
+  container.innerHTML=html;
+}
+function addClanToBlacklist(){
+  var name=prompt('نام یا تگ کلن:');
+  if(!name||!name.trim())return;
+  if(!window.clanBlacklist)window.clanBlacklist=[];
+  if(window.clanBlacklist.indexOf(name.trim())>-1)return;
+  window.clanBlacklist.push(name.trim());
+  renderBlacklist();
+}
+function removeClanFromBlacklist(idx){
+  if(!window.clanBlacklist)return;
+  window.clanBlacklist.splice(idx,1);
+  renderBlacklist();
+}
+function confirmTournamentTime(){}
+function confirmPrize(rank){}
+async function saveAllTournamentConfig(){
+  if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده','error');return;}
+  var durEl=document.getElementById('tournamentDuration');
+  var duration=durEl?durEl.value:'weekly';
+  var endTime=Date.now();
+  if(duration==='weekly')endTime+=7*24*60*60*1000;
+  else if(duration==='monthly')endTime+=30*24*60*60*1000;
+  else if(duration==='seasonal')endTime+=90*24*60*60*1000;
+  var cfg={
+    duration:duration, endTime:endTime, distributed:false,
+    rank1:{type:(document.getElementById('prize1Type')||{}).value||'gem', value:parseInt((document.getElementById('prize1Value')||{}).value)||0},
+    rank2:{type:(document.getElementById('prize2Type')||{}).value||'gem', value:parseInt((document.getElementById('prize2Value')||{}).value)||0},
+    rank3:{type:(document.getElementById('prize3Type')||{}).value||'gem', value:parseInt((document.getElementById('prize3Value')||{}).value)||0},
+    rank4_10:{type:(document.getElementById('prize4Type')||{}).value||'gem', value:parseInt((document.getElementById('prize4Value')||{}).value)||0},
+    blacklist:window.clanBlacklist||[]
+  };
+  await saveTournamentConfigData(cfg);
+  showShopNotification('ذخیره شد');
+}
+window.clanBlacklist = window.clanBlacklist || [];
+
+/* ============================================================ */
+/*  News                                                        */
+/* ============================================================ */
 async function loadNews(){
   var news=await getNews();
   var list=document.getElementById('newsList');
@@ -1062,7 +1108,7 @@ async function loadNews(){
   if(!list)return;
   if(!news.length){list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.6);padding:20px;">خالی</div>';return;}
   list.innerHTML=news.slice().reverse().map(function(it){
-    return '<div class="news-item" onclick="window.markNewsAsRead && window.markNewsAsRead('+it.id+')"><div class="news-title">'+it.title+'</div><div class="news-content">'+it.content+'</div><div class="news-date">'+it.date+' - '+(it.sender||'مدیریت')+'</div></div>';
+    return '<div class="news-item" onclick="window.markNewsAsRead && window.markNewsAsRead('+it.id+')"><div class="news-title">'+it.title+'</div><div class="news-content">'+it.content+'</div><div class="news-date">'+it.date+'</div></div>';
   }).join('');
 }
 function markNewsAsRead(id){
@@ -1070,8 +1116,6 @@ function markNewsAsRead(id){
   var read=JSON.parse(localStorage.getItem(key)||'[]');
   if(!read.includes(id)){read.push(id);localStorage.setItem(key,JSON.stringify(read));loadNews();}
 }
-window.markNewsAsRead = markNewsAsRead;
-
 async function sendNews(){
   var t=document.getElementById('newsTitleInput').value.trim();
   var c=document.getElementById('newsContentInput').value.trim();
@@ -1082,9 +1126,12 @@ async function sendNews(){
   document.getElementById('newsTitleInput').value='';
   document.getElementById('newsContentInput').value='';
   await loadNews();
-  showShopNotification('اطلاعیه ارسال شد');
+  showShopNotification('ارسال شد');
 }
 
+/* ============================================================ */
+/*  Avatar Shop                                                */
+/* ============================================================ */
 function initAvatarShop(){
   if(!currentUserData)return;
   shopGold=currentUserData.coins||0;
@@ -1100,11 +1147,11 @@ function initAvatarShop(){
     { src: '2002.webm', allowedRanks: ['ادمین','ناظر'] }
   ];
   exclusiveList.forEach(function(ex){
-    var isAllowed = ex.allowedRanks.includes(rank);
+    var isAllowed = ex.allowedRanks.indexOf(rank) > -1;
     var key = 'ex_' + ex.src;
     var avObj = avatars.find(function(a){ return a.src === ex.src; });
     if (isAllowed) {
-      if (!currentUserData.ownedAvatars.includes(key)) currentUserData.ownedAvatars.push(key);
+      if (currentUserData.ownedAvatars.indexOf(key) === -1) currentUserData.ownedAvatars.push(key);
       if (avObj) avObj.owned = true;
     } else {
       currentUserData.ownedAvatars = currentUserData.ownedAvatars.filter(function(k){ return k !== key; });
@@ -1114,10 +1161,10 @@ function initAvatarShop(){
   var owned = currentUserData.ownedAvatars || [];
   avatars.forEach(function(a){
     if (a.free) a.owned = true;
-    else if (owned.includes('ex_' + a.src) || owned.includes(a.src)) a.owned = true;
+    else if (owned.indexOf('ex_' + a.src) > -1 || owned.indexOf(a.src) > -1) a.owned = true;
     else a.owned = false;
   });
-  templates.forEach(function(t){ t.owned = (currentUserData.ownedTemplates || []).includes(t.src); });
+  templates.forEach(function(t){ t.owned = (currentUserData.ownedTemplates || []).indexOf(t.src) > -1; });
 }
 
 function renderAvatars(){
@@ -1133,7 +1180,7 @@ function renderAvatars(){
   if(!disp.length){ grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">آواتاری نیست</div>'; return; }
   var currentAvatarSrc = currentUserData ? currentUserData.avatar : '';
   grid.innerHTML = disp.map(function(a){
-    var isVid = a.src.endsWith('.webm') || a.src.endsWith('.mp4');
+    var isVid = a.src.indexOf('.webm') > -1 || a.src.indexOf('.mp4') > -1;
     var isCurrent = (currentAvatarSrc === a.src);
     var cardClass = 'avatar-card ' + (a.owned ? 'owned ' : '') + (isCurrent ? 'is-selected' : '');
     var mediaHtml = isVid ? '<video src="'+a.src+'" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>' : '<img src="'+a.src+'" style="width:100%;height:100%;object-fit:cover;">';
@@ -1197,7 +1244,6 @@ function handleTemplateClick(t) {
   document.getElementById('modalText').textContent = 'خرید ' + t.name + ' به قیمت ' + toPersianNum(t.price) + ' الماس؟';
   document.getElementById('purchaseModal').classList.add('show');
 }
-
 function handleAvatarClick(id){
   var a=avatars.find(function(x){return x.id===id;});
   if(!a)return;
@@ -1211,7 +1257,6 @@ function handleAvatarClick(id){
     saveAvatarToStorage(a.src);
   }
 }
-
 async function confirmPurchase(){
   playClickSound();
   if (purchaseMode === 'template' && selectedTemplate) {
@@ -1245,10 +1290,9 @@ async function confirmPurchase(){
   }
 }
 
-function playClickSound() {
-  try { var clickSound = document.getElementById('clickSound'); if (clickSound) { clickSound.currentTime = 0; clickSound.play().catch(function(){}); } } catch (e) {}
-}
-
+/* ============================================================ */
+/*  Server Sync                                                */
+/* ============================================================ */
 async function setUserOnlineStatus(online) {
   if (!currentPhone) return;
   var user = await getUser(currentPhone); if (!user) return;
@@ -1291,33 +1335,18 @@ async function syncWithServerInBackground() {
     var eu = document.getElementById('editUserModal'); if(eu && eu.classList.contains('active')) return;
     myIP = await fetchUserIP(); if (!myIP) return;
     currentDeviceId = getDeviceId();
-
     if (currentPhone === CREATOR_PHONE) {
       var so = document.getElementById('serverDownOverlay'); if(so) so.classList.remove('show');
       var serverUser = await getUser(currentPhone);
       if (!serverUser) return;
       if (!serverUser.userCode || isNaN(parseInt(serverUser.userCode))) serverUser = await assignCodeIfMissing(currentPhone, serverUser);
-      var st = serverUser.lastUpdatedAt || 0;
-      var lt = currentUserData.lastUpdatedAt || 0;
-      if (st > lt) {
-        currentUserData = sanitizeUserData(Object.assign({}, currentUserData, serverUser), currentPhone);
-      } else {
-        currentUserData = sanitizeUserData(Object.assign({}, serverUser, {
-          coins: currentUserData.coins, gems: currentUserData.gems, dollars: currentUserData.dollars,
-          avatar: currentUserData.avatar, previousAvatar: currentUserData.previousAvatar,
-          ownedAvatars: currentUserData.ownedAvatars, currentTemplate: currentUserData.currentTemplate,
-          ownedTemplates: currentUserData.ownedTemplates, lastUpdatedAt: currentUserData.lastUpdatedAt
-        }), currentPhone);
-      }
       currentUserData.lastIP = myIP; currentUserData.lastDevice = currentDeviceId;
       localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
       updateUIWithData(currentUserData);
       return;
     }
-
     var isWhitelisted = await isIPWhitelisted(myIP, currentDeviceId);
     var hasPanelAccess = getPerm().panel;
-
     if (!isWhitelisted) {
       if (fbReady && fbDb) {
         try {
@@ -1331,27 +1360,16 @@ async function syncWithServerInBackground() {
       var ban = await getBanStatus(currentPhone);
       if(ban){redirectToBan(ban,currentPhone); return;}
     }
-
     var sUser = await getUser(currentPhone);
     if (!sUser) {
       var cache = localStorage.getItem('user_cache_' + currentPhone);
-      if (cache) { try { sUser = JSON.parse(cache); await saveUser(currentPhone, sUser); } catch(e) { window.location.href = 'index.html'; return; } }
-      else { window.location.href = 'index.html'; return; }
+      if (cache) { try { sUser = JSON.parse(cache); await saveUser(currentPhone, sUser); } catch(e) { return; } }
+      else return;
     }
     if (!sUser.userCode || isNaN(parseInt(sUser.userCode))) sUser = await assignCodeIfMissing(currentPhone, sUser);
-
-    var st2 = sUser.lastUpdatedAt || 0;
-    var lt2 = currentUserData.lastUpdatedAt || 0;
-    if (st2 > lt2) {
-      currentUserData = sanitizeUserData(Object.assign({}, currentUserData, sUser), currentPhone);
-    } else {
-      currentUserData = sanitizeUserData(Object.assign({}, sUser, {
-        coins: currentUserData.coins, gems: currentUserData.gems, dollars: currentUserData.dollars,
-        avatar: currentUserData.avatar, previousAvatar: currentUserData.previousAvatar,
-        ownedAvatars: currentUserData.ownedAvatars, currentTemplate: currentUserData.currentTemplate,
-        ownedTemplates: currentUserData.ownedTemplates, lastUpdatedAt: currentUserData.lastUpdatedAt
-      }), currentPhone);
-    }
+    var st = sUser.lastUpdatedAt || 0;
+    var lt = currentUserData.lastUpdatedAt || 0;
+    if (st > lt) currentUserData = sanitizeUserData(Object.assign({}, currentUserData, sUser), currentPhone);
     currentUserData.lastIP = myIP; currentUserData.lastDevice = currentDeviceId;
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
     updateUIWithData(currentUserData);
@@ -1365,10 +1383,6 @@ function setupLiveSubscriptions() {
   window.FBLive.subscribe('global', async function(sig) {
     if (sig.type === 'news_updated') { await loadNews(); showShopNotification('📢 اطلاعیه جدید'); }
     else if (sig.type === 'server_toggle') { await syncWithServerInBackground(); }
-    else if (sig.type === 'db_wiped') {
-      var still = await getUser(currentPhone);
-      if (!still) { localStorage.removeItem('currentLoggedInUser'); window.location.href = 'index.html'; }
-    }
   });
   window.FBLive.subscribe('user_' + currentPhone, async function(sig) {
     if (sig.type === 'banned' && currentPhone !== CREATOR_PHONE) {
@@ -1377,16 +1391,13 @@ function setupLiveSubscriptions() {
     } else if (sig.type === 'force_logout' && currentPhone !== CREATOR_PHONE) {
       localStorage.removeItem('currentLoggedInUser');
       window.location.href = 'index.html';
-    } else if (sig.type === 'admin_edit') {
-      var fresh = await getUser(currentPhone);
-      if (fresh) { currentUserData = fresh; updateUIWithData(currentUserData); }
     }
   });
 }
 
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
 /*  راه‌اندازی                                                   */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
 document.addEventListener('DOMContentLoaded', async function() {
   var loggedIn = localStorage.getItem('currentLoggedInUser');
   if (!loggedIn) { window.location.href = 'index.html'; return; }
@@ -1401,10 +1412,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   try {
     var u = await getUser(currentPhone);
-    if (u && (!u.userCode || isNaN(parseInt(u.userCode)))) {
-      await assignCodeIfMissing(currentPhone, u);
+    if (u) {
+      if (!u.userCode || isNaN(parseInt(u.userCode))) u = await assignCodeIfMissing(currentPhone, u);
+      currentUserData = u;
     }
-    if (u) currentUserData = u;
   } catch(e) {}
 
   if (!currentUserData) {
@@ -1427,9 +1438,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   setInterval(syncWithServerInBackground, 3000);
   setInterval(function() { setUserOnlineStatus(!document.hidden); }, 30000);
   setInterval(checkBanPeriodically, 5000);
-  setInterval(updateGroupDisplay, 30000);
 
-  /* bind دکمه‌ها */
   var bind = function(id, fn) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('click', fn);
@@ -1480,7 +1489,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   bind('btnShowUsersList', function(){ document.getElementById('usersSection').style.display='block'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('userControlSection').style.display='none'; document.getElementById('whitelistSection').style.display='none'; loadUsers(); });
   bind('btnUserControl', function(){ document.getElementById('userControlSection').style.display='block'; document.getElementById('usersSection').style.display='none'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('whitelistSection').style.display='none'; });
 
-  /* دکمه ادمین */
   var btnAdmin = document.getElementById('btnAdmin');
   if (btnAdmin) {
     btnAdmin.onclick = function(e) {
@@ -1491,7 +1499,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
   }
 
-  /* دکمه تغییر رمز */
   bind('submitPasswordChange', async function() {
     playClickSound();
     var p = document.getElementById('cpPhone').value.trim();
@@ -1506,7 +1513,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     showShopNotification('رمز تغییر کرد');
   });
 
-  /* تب‌های ادمین */
   document.querySelectorAll('.admin-tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
       document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('active'); });
@@ -1518,7 +1524,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   var usi = document.getElementById('userSearchInput');
   if (usi) usi.addEventListener('input', function() { loadUsers(); });
 
-  /* تب‌های shop */
   document.querySelectorAll('.shop-tab').forEach(function(t) {
     t.addEventListener('click', function() {
       playClickSound();
@@ -1555,26 +1560,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   });
 
-  /* slider صدا */
   var vs = document.getElementById('gameVolumeSlider');
   if (vs) vs.addEventListener('input', function() {
     var bg = document.getElementById('bgMusic');
     if (bg) bg.volume = this.value / 100;
   });
 
-  console.log('✅ Safe Asli.js loaded - admin ready');
+  console.log('✅ Safe Asli.js loaded');
 });
 
 document.addEventListener('visibilitychange', async function() {
   if (document.hidden) setUserOnlineStatus(false);
-  else { setUserOnlineStatus(true); await checkWhitelistNow(); await syncWithServerInBackground(); }
+  else { setUserOnlineStatus(true); await checkWhitelistNow(); }
 });
 
 window.addEventListener('beforeunload', function() {
   if (currentPhone) { try { setFBOnline(currentPhone, false, {}); } catch(e) {} }
 });
 
-/* expose */
 window.closeModal = closeModal;
 window.closeAdminModal = closeAdminModal;
 window.closeEditUser = closeEditUser;
@@ -1596,9 +1599,19 @@ window.clearUserData = clearUserData;
 window.clearUserSessionsFromPanel = clearUserSessionsFromPanel;
 window.addWhitelistIP = addWhitelistIP;
 window.removeWhitelistIP = removeWhitelistIP;
+window.quickWhitelistUser = quickWhitelistUser;
+window.clearUserSessions = clearUserSessions;
 window.resetAllUserCodes = resetAllUserCodes;
 window.markNewsAsRead = markNewsAsRead;
 window.sendNews = sendNews;
 window.loadNews = loadNews;
+window.updateGroupDisplay = updateGroupDisplay;
+window.loadTournamentConfig = loadTournamentConfig;
+window.renderBlacklist = renderBlacklist;
+window.addClanToBlacklist = addClanToBlacklist;
+window.removeClanFromBlacklist = removeClanFromBlacklist;
+window.confirmTournamentTime = confirmTournamentTime;
+window.confirmPrize = confirmPrize;
+window.saveAllTournamentConfig = saveAllTournamentConfig;
 window.updateUIWithData = updateUIWithData;
 window.playClickSound = playClickSound;
