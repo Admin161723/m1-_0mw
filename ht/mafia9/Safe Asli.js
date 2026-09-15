@@ -1,6 +1,5 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل با همه قابلیت‌ها              */
-/*  ✅ لوگو گروه + رتبه کلن + پنل جوایز + لاگ کاربران + Realtime   */
+/*  Safe Asli.js - نسخه نهایی کامل                              */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -31,7 +30,6 @@ var isRedirecting = false;
 var currentAdminTab = 'all';
 var currentUserList = [];
 var viewingUserHistory = null;
-var currentClanPrizeTab = 'list';
 
 var FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -69,12 +67,7 @@ function setFBOnline(phone, isOnline, extra) {
 function sendLive(channel, type, data) {
   if (!fbReady || !fbDb) return;
   try {
-    fbDb.ref('signals/' + channel).push({
-      type: type || 'update',
-      data: data || {},
-      from: fbPhone,
-      time: Date.now()
-    });
+    fbDb.ref('signals/' + channel).push({ type: type || 'update', data: data || {}, from: fbPhone, time: Date.now() });
   } catch(e) {}
 }
 
@@ -135,8 +128,6 @@ async function getMaintenance(){return await redisGet('server_maintenance');}
 async function setMaintenance(on){return await redisSet('server_maintenance',{on:on,at:Date.now()});}
 async function getTournamentConfig(){return await redisGet('tournament_config')||{};}
 async function saveTournamentConfigData(cfg){return await redisSet('tournament_config',cfg);}
-async function getClanPrizes(){return await redisGet('clan_prizes')||[];}
-async function saveClanPrizes(list){return await redisSet('clan_prizes',list);}
 async function getBanStatus(p){
   var b=await redisGet('ban:'+p);
   if(b&&b.isBanned){
@@ -279,17 +270,6 @@ function toPersianNum(n){var p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹
 function formatDate(ts){
   if (!ts) return '----';
   try { return new Date(ts).toLocaleString('fa-IR'); } catch(e) { return '----'; }
-}
-function formatDuration(ms){
-  if (!ms || ms < 0) return '0';
-  var s = Math.floor(ms / 1000);
-  var m = Math.floor(s / 60);
-  var h = Math.floor(m / 60);
-  var d = Math.floor(h / 24);
-  if (d > 0) return d + ' روز و ' + (h % 24) + ' ساعت';
-  if (h > 0) return h + ' ساعت و ' + (m % 60) + ' دقیقه';
-  if (m > 0) return m + ' دقیقه';
-  return s + ' ثانیه';
 }
 function getRoleTick(role){
   if(!role)return null;
@@ -578,7 +558,7 @@ function playClickSound() {
 }
 
 /* ============================================================ */
-/*  ⚡ نمایش گروه با لوگو واقعی                                  */
+/*  گروه + لوگو                                                */
 /* ============================================================ */
 async function findUserGroup(phone){
   try{
@@ -593,7 +573,6 @@ async function findUserGroup(phone){
     return null;
   }catch(e){return null;}
 }
-
 async function updateGroupDisplay(){
   var nameEl=document.getElementById('profileGroupName');
   var badgeEl=document.getElementById('profileGroupBadge');
@@ -608,24 +587,13 @@ async function updateGroupDisplay(){
       nameEl.textContent=group.name||'گروه';
       badgeEl.className='clan-badge has-group';
       badgeEl.innerHTML = '';
-      // ⚡ اگه لوگو عکس بود، نمایش بده
-      if (group.logo && typeof group.logo === 'string' && (group.logo.indexOf('.webp') > -1 || group.logo.indexOf('.png') > -1 || group.logo.indexOf('.jpg') > -1 || group.logo.indexOf('.jpeg') > -1 || group.logo.indexOf('data:image') > -1)) {
+      if (group.logo && typeof group.logo === 'string' && (group.logo.indexOf('.webp') > -1 || group.logo.indexOf('.png') > -1 || group.logo.indexOf('.jpg') > -1 || group.logo.indexOf('data:image') > -1)) {
         var img = document.createElement('img');
         img.src = group.logo;
         img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;';
-        img.onerror = function() {
-          badgeEl.innerHTML = getGroupIcon('shield');
-        };
+        img.onerror = function() { badgeEl.innerHTML = getGroupIcon('shield'); };
         badgeEl.appendChild(img);
-      } else if (group.logo && group.logo.length > 50) {
-        // احتمالاً base64
-        var img2 = document.createElement('img');
-        img2.src = 'data:image/png;base64,' + group.logo;
-        img2.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;';
-        img2.onerror = function() { badgeEl.innerHTML = getGroupIcon('shield'); };
-        badgeEl.appendChild(img2);
       } else {
-        // آیکون SVG
         badgeEl.innerHTML = getGroupIcon(group.logo || 'shield');
       }
       userGroupCache=group;
@@ -634,15 +602,11 @@ async function updateGroupDisplay(){
       badgeEl.className='clan-badge no-group';
       badgeEl.innerHTML='❌';
     }
-  }catch(e){
-    nameEl.textContent='بدون گروه';
-    badgeEl.className='clan-badge no-group';
-    badgeEl.innerHTML='❌';
-  }
+  }catch(e){}
 }
 
 /* ============================================================ */
-/*  ⚡ رتبه‌بندی کلن‌ها (کار می‌کنه)                              */
+/*  رتبه‌بندی کلن‌ها                                              */
 /* ============================================================ */
 async function getClanRanking(){
   try {
@@ -670,7 +634,6 @@ async function getClanRanking(){
     return ranking;
   } catch(e) { return []; }
 }
-
 async function updateClanRank(){
   var el = document.getElementById('statClanRank');
   if (!el) return;
@@ -684,38 +647,25 @@ async function updateClanRank(){
     el.textContent = myRank ? toPersianNum(myRank.rank) : '-';
   } catch(e) { el.textContent = '-'; }
 }
-
-/* ============================================================ */
-/*  ⚡ رتبه‌بندی کلن‌ها برای "برترین‌ها"                          */
-/* ============================================================ */
 async function showClanRankingModal(){
   var modal = document.getElementById('clanRankingModal');
   if (!modal) {
-    // بساز
     modal = document.createElement('div');
     modal.id = 'clanRankingModal';
     modal.className = 'modal-overlay';
-    modal.innerHTML = ''
-      + '<div class="modal-box" style="max-width:420px;">'
-      + '<div class="modal-header"><div class="modal-title">🏆 رتبه‌بندی کلن‌ها</div><div class="modal-close" onclick="window.closeModal(\'clanRankingModal\')">✕</div></div>'
-      + '<div class="modal-body" id="clanRankingBody"><div style="text-align:center;padding:20px;color:#aaa;">در حال بارگذاری...</div></div>'
-      + '</div>';
+    modal.innerHTML = '<div class="modal-box" style="max-width:420px;"><div class="modal-header"><div class="modal-title">🏆 رتبه‌بندی کلن‌ها</div><div class="modal-close" onclick="window.closeModal(\'clanRankingModal\')">✕</div></div><div class="modal-body" id="clanRankingBody"><div style="text-align:center;padding:20px;color:#aaa;">در حال بارگذاری...</div></div></div>';
     document.body.appendChild(modal);
   }
   modal.classList.add('active');
-
   var body = document.getElementById('clanRankingBody');
   if (!body) return;
   body.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">در حال بارگذاری...</div>';
-
   var ranking = await getClanRanking();
-  var prizes = await getClanPrizes();
-
+  var cfg = await getTournamentConfig();
   if (!ranking.length) {
     body.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">هیچ کلنی وجود ندارد</div>';
     return;
   }
-
   var html = '';
   for (var i = 0; i < ranking.length; i++) {
     var r = ranking[i];
@@ -726,16 +676,20 @@ async function showClanRankingModal(){
     } else {
       logoHtml = getGroupIcon(r.logo || 'shield');
     }
-    // جایزه مربوط به این رتبه
     var prizeText = '';
-    for (var p = 0; p < prizes.length; p++) {
-      var pr = prizes[p];
-      if (r.rank >= pr.fromRank && r.rank <= pr.toRank) {
-        prizeText = '🎁 ' + (pr.title || 'جایزه') + ' - ' + pr.description;
-        break;
-      }
+    var pc = null;
+    if (r.rank === 1 && cfg.rank1) pc = cfg.rank1;
+    else if (r.rank === 2 && cfg.rank2) pc = cfg.rank2;
+    else if (r.rank === 3 && cfg.rank3) pc = cfg.rank3;
+    else if (r.rank >= 4 && r.rank <= 10 && cfg.rank4_10) pc = cfg.rank4_10;
+    if (pc) {
+      var parts = [];
+      if (pc.gems > 0) parts.push('💎 ' + toPersianNum(pc.gems));
+      if (pc.coins > 0) parts.push('🪙 ' + toPersianNum(pc.coins));
+      if (pc.dollars > 0) parts.push('💵 ' + toPersianNum(pc.dollars));
+      if (pc.note) parts.push(pc.note);
+      if (parts.length) prizeText = '🎁 ' + parts.join(' • ');
     }
-
     html += '<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);padding:10px;border-radius:12px;margin-bottom:8px;border-right:4px solid ' + (r.rank === 1 ? '#ffd700' : r.rank === 2 ? '#c0c0c0' : r.rank === 3 ? '#cd7f32' : '#2a6ac0') + ';">';
     html += '<div style="font-size:22px;font-weight:900;min-width:40px;text-align:center;">' + medal + '</div>';
     html += '<div style="width:48px;height:48px;background:rgba(0,0,0,.3);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px;">' + logoHtml + '</div>';
@@ -743,15 +697,13 @@ async function showClanRankingModal(){
     html += '<div style="color:#fff;font-weight:700;font-size:14px;">' + r.name + '</div>';
     html += '<div style="color:#4fc3f7;font-size:11px;">' + toPersianNum(r.points) + ' امتیاز • ' + toPersianNum(r.memberCount) + ' عضو</div>';
     if (prizeText) html += '<div style="color:#ffb74d;font-size:11px;margin-top:4px;">' + prizeText + '</div>';
-    html += '</div>';
-    html += '</div>';
+    html += '</div></div>';
   }
   body.innerHTML = html;
 }
-window.showClanRankingModal = showClanRankingModal;
 
 /* ============================================================ */
-/*  ⚡ تایمر Away                                              */
+/*  Away Timer                                                 */
 /* ============================================================ */
 function startAwayTimer() {
   if (currentPhone === CREATOR_PHONE) return;
@@ -788,29 +740,74 @@ window.addEventListener('blur', startAwayTimer);
 window.addEventListener('focus', function(){ cancelAwayTimer(); reconnectUser(); });
 
 /* ============================================================ */
-/*  ⚡ Server Lock                                              */
+/*  Server Lock - قفل کامل                                     */
 /* ============================================================ */
 function lockServerForeverInGame() {
   if (gameServerLocked) return;
   gameServerLocked = true;
-  document.addEventListener('click', function(e){ e.preventDefault(); return false; }, true);
-  document.addEventListener('touchstart', function(e){ e.preventDefault(); return false; }, true);
-  var overlay = document.getElementById('serverDownOverlay');
-  if (overlay) {
-    overlay.classList.add('show');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;';
+
+  var blockFn = function(e){
+    if (e && e.target && e.target.closest && e.target.closest('#serverDownOverlay')) return;
+    if (e) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }
+    return false;
+  };
+  document.addEventListener('click', blockFn, true);
+  document.addEventListener('touchstart', blockFn, true);
+  document.addEventListener('touchmove', blockFn, true);
+  document.addEventListener('touchend', blockFn, true);
+  document.addEventListener('touchcancel', blockFn, true);
+  document.addEventListener('mousedown', blockFn, true);
+  document.addEventListener('mouseup', blockFn, true);
+  document.addEventListener('contextmenu', blockFn, true);
+  document.addEventListener('keydown', function(e){
+    var kc = e.keyCode || 0;
+    if (kc === 4 || kc === 27 || kc === 82 || kc === 3 || kc === 187) {
+      e.preventDefault();
+      try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(err) {}
+      try { navigator.app && navigator.app.exitApp && navigator.app.exitApp(); } catch(err) {}
+      return false;
+    }
+  }, true);
+
+  var hideIds = ['profilePage', 'avatarShopPage', 'templateShopPage', 'newsModal', 'adminModal', 'editUserModal', 'settingsModal', 'changePasswordModal', 'competitiveOverlay', 'gameStartedOverlay', 'purchaseModal', 'menuDropdown'];
+  for (var i = 0; i < hideIds.length; i++) {
+    var el = document.getElementById(hideIds[i]);
+    if (el) el.style.display = 'none';
   }
+
+  var overlay = document.getElementById('serverDownOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'serverDownOverlay';
+    overlay.innerHTML = '<div style="font-size:70px;">🔌</div><div style="color:#ff6b6b;font-size:24px;font-weight:900;margin-top:20px;">سرور قطع است</div><div style="color:#ccc;font-size:14px;margin-top:12px;line-height:2;">بازی موقتاً در دسترس نیست<br>لطفاً بعداً مراجعه کنید</div>';
+    document.body.appendChild(overlay);
+  }
+  overlay.classList.add('show');
+  overlay.style.cssText = 'position:fixed !important;inset:0 !important;width:100vw !important;height:100vh !important;z-index:2147483647 !important;background:rgba(0,0,0,0.98) !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;text-align:center !important;padding:30px !important;touch-action:none !important;user-select:none !important;';
+
+  try { history.pushState(null, null, location.href); } catch(e) {}
+  window.addEventListener('popstate', function() {
+    try { history.pushState(null, null, location.href); } catch(e) {}
+    try { if (window.Android && window.Android.exitApp) window.Android.exitApp(); } catch(err) {}
+    try { navigator.app && navigator.app.exitApp && navigator.app.exitApp(); } catch(err) {}
+  });
+  setInterval(function() {
+    try { history.pushState(null, null, location.href); } catch(e) {}
+  }, 500);
+
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
 }
 
 /* ============================================================ */
-/*  ⚡ Admin Panel                                              */
+/*  Admin Panel                                                */
 /* ============================================================ */
 function openAdminPanel() {
   var modal = document.getElementById('adminModal');
   if (!modal) return;
   if (modal.classList.contains('active')) { modal.classList.remove('active'); pauseSync = false; return; }
   pauseSync = true;
-  var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','clanPrizesSection','userLogsSection'];
+  var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','tournamentConfig','userLogsSection'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if (el) el.style.display = 'none';
@@ -827,13 +824,9 @@ function openAdminPanel() {
   }, 100);
   setTimeout(function() { loadUsers(); }, 100);
   if (currentPhone === CREATOR_PHONE) {
-    setTimeout(function() {
-      loadTournamentConfig();
-      renderBlacklist();
-    }, 200);
+    setTimeout(function() { loadTournamentConfig(); renderBlacklist(); }, 200);
   }
 }
-window.openAdminPanel = openAdminPanel;
 
 async function loadUsers() {
   var container = document.getElementById('adminUserListContainer');
@@ -850,7 +843,6 @@ async function loadUsers() {
     if (container) container.innerHTML = '<div style="color:#f44336;padding:20px;text-align:center;">خطا</div>';
   }
 }
-window.loadUsers = loadUsers;
 
 function renderAdminUsers(list) {
   var container = document.getElementById('adminUserListContainer');
@@ -892,7 +884,6 @@ async function openUserHistory(phone) {
     document.getElementById('userHistorySection').style.display = 'block';
     document.getElementById('historyUserName').textContent = user.name || 'کاربر';
     var content = document.getElementById('historyContent');
-
     var html = '<div style="color:#ccc;font-size:12px;background:rgba(255,255,255,.05);padding:12px;border-radius:8px;margin-bottom:8px;line-height:2;">';
     html += '<div><b style="color:#fff;">کد:</b> ' + (toPersianNum(user.userCode) || '----') + '</div>';
     html += '<div><b style="color:#fff;">شماره:</b> ' + phone + '</div>';
@@ -909,7 +900,6 @@ async function openUserHistory(phone) {
     html += '<div><b style="color:#fff;">IP ثبت‌نام:</b> <span style="direction:ltr;display:inline-block;">' + (user.registeredIP || 'نامشخص') + '</span></div>';
     html += '<div><b style="color:#fff;">دستگاه ثبت‌نام:</b> <span style="direction:ltr;word-break:break-all;">' + (user.registeredDevice || 'نامشخص') + '</span></div>';
     html += '</div>';
-
     if (user.deviceInfo) {
       html += '<div style="color:#ccc;font-size:11px;background:rgba(76,175,80,.1);padding:10px;border-radius:8px;margin-bottom:8px;line-height:1.9;border:1px solid #4caf50;">';
       html += '<div style="color:#4caf50;font-weight:700;margin-bottom:6px;">📱 اطلاعات دستگاه:</div>';
@@ -919,7 +909,6 @@ async function openUserHistory(phone) {
       html += '<div><b style="color:#fff;">هسته:</b> ' + (user.deviceInfo.cores || '-') + '</div>';
       html += '</div>';
     }
-
     if (user.loginHistory && user.loginHistory.length) {
       html += '<div style="color:#fff;font-size:13px;margin:8px 0;">📜 تاریخچه ورودها (' + toPersianNum(user.loginHistory.length) + '):</div>';
       var hist = user.loginHistory.slice().reverse().slice(0, 30);
@@ -928,33 +917,27 @@ async function openUserHistory(phone) {
         html += '<div class="admin-session-item" style="flex-direction:column;align-items:flex-start;">';
         html += '<div><b style="color:#4fc3f7;">⏰ ' + formatDate(s.time) + '</b></div>';
         html += '<div style="color:#aaa;direction:ltr;">IP: ' + (s.ip || '-') + '</div>';
-        if (s.device) html += '<div style="color:#888;font-size:10px;direction:ltr;word-break:break-all;">Device: ' + s.device + '</div>';
         html += '</div>';
       }
       html += '<button class="edit-btn danger" onclick="window.clearUserSessions && window.clearUserSessions(\'' + phone + '\')" style="width:100%;margin-top:8px;">پاک کردن تاریخچه ورود</button>';
     }
-
     if (user.banHistory && user.banHistory.length) {
       html += '<div style="color:#fff;font-size:13px;margin:8px 0;">⛔ تاریخچه بن:</div>';
       for (var j = 0; j < user.banHistory.length; j++) {
         var b = user.banHistory[j];
-        html += '<div class="admin-session-item"><span>' + formatDate(b.time) + '</span><span>توسط: ' + (b.by || 'سیستم') + '</span><span>نوع: ' + (b.type || 'اکانت') + '</span></div>';
+        html += '<div class="admin-session-item"><span>' + formatDate(b.time) + '</span><span>توسط: ' + (b.by || 'سیستم') + '</span></div>';
       }
     }
-
     html += '<button class="edit-btn cancel" onclick="window.closeUserHistory && window.closeUserHistory()" style="width:100%;margin-top:8px;">بازگشت</button>';
     html += '<button class="edit-btn info" onclick="window.openEditUser && window.openEditUser(\'' + phone + '\')" style="width:100%;margin-top:8px;">ویرایش کاربر</button>';
     content.innerHTML = html;
   } catch(e) {}
 }
-window.openUserHistory = openUserHistory;
-
 function closeUserHistory() {
   document.getElementById('userHistorySection').style.display = 'none';
   document.getElementById('usersSection').style.display = 'block';
   loadUsers();
 }
-window.closeUserHistory = closeUserHistory;
 
 async function openEditUser(id) {
   var allUsers = await getAllUsers();
@@ -983,7 +966,7 @@ async function openEditUser(id) {
       if (u.exclusiveAvatar.indexOf('.webm') > -1) {
         preview.innerHTML = '<video src="' + u.exclusiveAvatar + '" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
       } else {
-        preview.innerHTML = '<img src="' + u.exclusiveAvatar + '">';
+        preview.innerHTML = '<img src="' + u.exclusiveAvatar + '" style="width:100%;height:100%;object-fit:cover;">';
       }
     } else {
       preview.innerHTML = '<span class="exclusive-avatar-placeholder">👤</span>';
@@ -1006,7 +989,6 @@ async function openEditUser(id) {
   else { if (bb) bb.style.display = 'block'; if (ub) ub.style.display = 'none'; }
   document.getElementById('editUserModal').classList.add('active');
 }
-window.openEditUser = openEditUser;
 
 async function saveUserEdit() {
   if (!editingUserId) return;
@@ -1047,7 +1029,6 @@ async function saveUserEdit() {
   await loadUsers();
   showShopNotification('✅ ذخیره شد');
 }
-window.saveUserEdit = saveUserEdit;
 
 async function banUser(type) {
   type = type || 'account';
@@ -1219,7 +1200,6 @@ async function refreshWhitelistUI() {
   }
   container.innerHTML = html;
 }
-
 async function quickWhitelistUser(ip, deviceId, userName){
   if (!ip && !deviceId) return;
   if (!confirm('افزودن به وایت‌لیست؟ ' + userName)) return;
@@ -1237,125 +1217,7 @@ async function clearUserSessions(phone){
 }
 
 /* ============================================================ */
-/*  ⚡ پنل جوایز کلن‌ها                                          */
-/* ============================================================ */
-async function openClanPrizesPanel(){
-  if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
-  var section = document.getElementById('clanPrizesSection');
-  if (!section) {
-    showShopNotification('بخش جوایز ساخته نشده', 'error');
-    return;
-  }
-  // مخفی بقیه
-  var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','userLogsSection'];
-  for (var i = 0; i < ids.length; i++) {
-    var el = document.getElementById(ids[i]);
-    if (el) el.style.display = 'none';
-  }
-  section.style.display = 'block';
-  await renderClanPrizes();
-}
-window.openClanPrizesPanel = openClanPrizesPanel;
-
-async function renderClanPrizes(){
-  var list = await getClanPrizes();
-  var container = document.getElementById('clanPrizesList');
-  if (!container) return;
-  if (!list || !list.length) {
-    container.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px;font-size:12px;">هیچ جایزه‌ای ثبت نشده</div>';
-    return;
-  }
-  var html = '';
-  for (var i = 0; i < list.length; i++) {
-    var p = list[i];
-    var active = p.active !== false;
-    html += '<div style="background:rgba(255,255,255,.05);padding:12px;border-radius:10px;margin-bottom:8px;border-right:4px solid ' + (active ? '#4caf50' : '#f44336') + ';">';
-    html += '<div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:4px;">🎁 ' + (p.title || 'جایزه') + '</div>';
-    html += '<div style="color:#aaa;font-size:12px;margin-bottom:4px;">رتبه ' + toPersianNum(p.fromRank) + ' تا ' + toPersianNum(p.toRank) + '</div>';
-    html += '<div style="color:#4fc3f7;font-size:12px;margin-bottom:4px;">' + (p.description || '') + '</div>';
-    if (p.expiresAt) html += '<div style="color:#ffb74d;font-size:11px;">انقضا: ' + formatDate(p.expiresAt) + '</div>';
-    html += '<div style="color:' + (active ? '#4caf50' : '#f44336') + ';font-size:11px;margin-top:6px;">وضعیت: ' + (active ? '✅ فعال' : '⛔ غیرفعال') + '</div>';
-    html += '<div style="display:flex;gap:6px;margin-top:8px;">';
-    html += '<button onclick="window.toggleClanPrize(' + i + ')" style="flex:1;padding:6px;background:' + (active ? '#f44336' : '#4caf50') + ';color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;">' + (active ? 'غیرفعال' : 'فعال') + '</button>';
-    html += '<button onclick="window.deleteClanPrize(' + i + ')" style="flex:1;padding:6px;background:#8e0000;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;">حذف</button>';
-    html += '</div>';
-    html += '</div>';
-  }
-  container.innerHTML = html;
-}
-
-async function addClanPrize(){
-  if (currentPhone !== CREATOR_PHONE) return;
-  var titleEl = document.getElementById('clanPrizeTitle');
-  var fromEl = document.getElementById('clanPrizeFrom');
-  var toEl = document.getElementById('clanPrizeTo');
-  var descEl = document.getElementById('clanPrizeDesc');
-  var hoursEl = document.getElementById('clanPrizeHours');
-
-  var title = titleEl ? titleEl.value.trim() : '';
-  var from = parseInt(fromEl ? fromEl.value : 1) || 1;
-  var to = parseInt(toEl ? toEl.value : 3) || 3;
-  var desc = descEl ? descEl.value.trim() : '';
-  var hours = parseInt(hoursEl ? hoursEl.value : 0) || 0;
-
-  if (!title) { showShopNotification('عنوان را وارد کنید', 'error'); return; }
-  if (from < 1 || to < from) { showShopNotification('رتبه‌ها نامعتبر', 'error'); return; }
-
-  var list = await getClanPrizes();
-  if (!list) list = [];
-
-  var prize = {
-    id: Date.now(),
-    title: title,
-    fromRank: from,
-    toRank: to,
-    description: desc,
-    expiresAt: hours > 0 ? Date.now() + (hours * 3600000) : null,
-    active: true,
-    createdBy: currentUserData.name,
-    createdAt: Date.now()
-  };
-
-  list.push(prize);
-  await saveClanPrizes(list);
-  sendLive('global', 'clan_prizes_updated', {});
-  showShopNotification('✅ جایزه اضافه شد');
-
-  if (titleEl) titleEl.value = '';
-  if (descEl) descEl.value = '';
-  if (hoursEl) hoursEl.value = '';
-  if (fromEl) fromEl.value = '1';
-  if (toEl) toEl.value = '3';
-
-  renderClanPrizes();
-}
-window.addClanPrize = addClanPrize;
-
-async function toggleClanPrize(idx){
-  if (currentPhone !== CREATOR_PHONE) return;
-  var list = await getClanPrizes();
-  if (!list || !list[idx]) return;
-  list[idx].active = !list[idx].active;
-  await saveClanPrizes(list);
-  sendLive('global', 'clan_prizes_updated', {});
-  renderClanPrizes();
-}
-window.toggleClanPrize = toggleClanPrize;
-
-async function deleteClanPrize(idx){
-  if (currentPhone !== CREATOR_PHONE) return;
-  if (!confirm('حذف این جایزه؟')) return;
-  var list = await getClanPrizes();
-  if (!list || !list[idx]) return;
-  list.splice(idx, 1);
-  await saveClanPrizes(list);
-  sendLive('global', 'clan_prizes_updated', {});
-  renderClanPrizes();
-}
-window.deleteClanPrize = deleteClanPrize;
-
-/* ============================================================ */
-/*  ⚡ پنل لاگ کاربران (IP و اطلاعات)                            */
+/*  لاگ کاربران                                                */
 /* ============================================================ */
 async function openUserLogsPanel(){
   if (currentPhone !== CREATOR_PHONE && getPerm().panel !== true) {
@@ -1364,8 +1226,7 @@ async function openUserLogsPanel(){
   }
   var section = document.getElementById('userLogsSection');
   if (!section) return;
-
-  var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','clanPrizesSection'];
+  var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','tournamentConfig'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if (el) el.style.display = 'none';
@@ -1373,13 +1234,10 @@ async function openUserLogsPanel(){
   section.style.display = 'block';
   await renderUserLogs();
 }
-window.openUserLogsPanel = openUserLogsPanel;
-
 async function renderUserLogs(){
   var container = document.getElementById('userLogsList');
   if (!container) return;
   container.innerHTML = '<div style="text-align:center;padding:15px;color:#aaa;">در حال بارگذاری...</div>';
-
   try {
     var allUsers = await getAllUsers();
     var arr = Object.entries(allUsers).map(function(e){
@@ -1387,16 +1245,8 @@ async function renderUserLogs(){
       u.phone = e[0];
       return u;
     });
-    // مرتب‌سازی بر اساس آخرین ورود
-    arr.sort(function(a, b){
-      return (b.lastLogin || 0) - (a.lastLogin || 0);
-    });
-
-    if (!arr.length) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">کاربری نیست</div>';
-      return;
-    }
-
+    arr.sort(function(a, b){ return (b.lastLogin || 0) - (a.lastLogin || 0); });
+    if (!arr.length) { container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">کاربری نیست</div>'; return; }
     var html = '';
     for (var i = 0; i < arr.length; i++) {
       var u = arr[i];
@@ -1415,63 +1265,60 @@ async function renderUserLogs(){
     container.innerHTML = '<div style="color:#f44336;text-align:center;padding:20px;">خطا</div>';
   }
 }
-window.renderUserLogs = renderUserLogs;
 
 /* ============================================================ */
-/*  ⚡ اعمال تغییرات برای همه کاربران                            */
-/* ============================================================ */
-async function broadcastAdminChange(type, data){
-  if (currentPhone !== CREATOR_PHONE) return;
-  try {
-    // ذخیره دستور تو Redis
-    var commands = await redisGet('admin_broadcast') || [];
-    commands.push({
-      id: Date.now(),
-      type: type,
-      data: data || {},
-      by: currentUserData.name,
-      at: Date.now()
-    });
-    if (commands.length > 20) commands = commands.slice(-20);
-    await redisSet('admin_broadcast', commands);
-
-    // سیگنال زنده به همه
-    sendLive('global', 'broadcast', { type: type, data: data, at: Date.now() });
-    showShopNotification('📡 به همه اعمال شد');
-  } catch(e) {}
-}
-window.broadcastAdminChange = broadcastAdminChange;
-
-/* ============================================================ */
-/*  ⚡ Tournament Config                                          */
+/*  مسابقات کلن‌ها                                               */
 /* ============================================================ */
 async function loadTournamentConfig(){
   try{
     var cfg=await getTournamentConfig();
     if(!cfg)return;
-    var durEl=document.getElementById('tournamentDuration');
-    if(cfg.duration && durEl) durEl.value=cfg.duration;
-    if(cfg.rank1){
-      var e1=document.getElementById('prize1Type'); if(e1)e1.value=cfg.rank1.type;
-      var e2=document.getElementById('prize1Value'); if(e2)e2.value=cfg.rank1.value||'';
-    }
-    if(cfg.rank2){
-      var e3=document.getElementById('prize2Type'); if(e3)e3.value=cfg.rank2.type;
-      var e4=document.getElementById('prize2Value'); if(e4)e4.value=cfg.rank2.value||'';
-    }
-    if(cfg.rank3){
-      var e5=document.getElementById('prize3Type'); if(e5)e5.value=cfg.rank3.type;
-      var e6=document.getElementById('prize3Value'); if(e6)e6.value=cfg.rank3.value||'';
-    }
-    if(cfg.rank4_10){
-      var e7=document.getElementById('prize4Type'); if(e7)e7.value=cfg.rank4_10.type;
-      var e8=document.getElementById('prize4Value'); if(e8)e8.value=cfg.rank4_10.value||'';
-    }
-    if(cfg.blacklist){
-      window.clanBlacklist=cfg.blacklist;
-      renderBlacklist();
+    function setVal(id, v){ var e=document.getElementById(id); if(e) e.value = (v === undefined || v === null) ? '' : v; }
+    setVal('tournamentDuration', cfg.duration);
+    if(cfg.rank1){ setVal('prize1Gems', cfg.rank1.gems); setVal('prize1Coins', cfg.rank1.coins); setVal('prize1Dollars', cfg.rank1.dollars); setVal('prize1Note', cfg.rank1.note); }
+    if(cfg.rank2){ setVal('prize2Gems', cfg.rank2.gems); setVal('prize2Coins', cfg.rank2.coins); setVal('prize2Dollars', cfg.rank2.dollars); setVal('prize2Note', cfg.rank2.note); }
+    if(cfg.rank3){ setVal('prize3Gems', cfg.rank3.gems); setVal('prize3Coins', cfg.rank3.coins); setVal('prize3Dollars', cfg.rank3.dollars); setVal('prize3Note', cfg.rank3.note); }
+    if(cfg.rank4_10){ setVal('prize4Gems', cfg.rank4_10.gems); setVal('prize4Coins', cfg.rank4_10.coins); setVal('prize4Dollars', cfg.rank4_10.dollars); setVal('prize4Note', cfg.rank4_10.note); }
+    if(cfg.blacklist){ window.clanBlacklist=cfg.blacklist; renderBlacklist(); }
+    var info = document.getElementById('tournamentEndTimeInfo');
+    if (info && cfg.endTime) {
+      var remaining = cfg.endTime - Date.now();
+      if (remaining > 0) {
+        var days = Math.floor(remaining / 86400000);
+        var hours = Math.floor((remaining % 86400000) / 3600000);
+        info.textContent = '⏰ پایان: ' + days + ' روز و ' + hours + ' ساعت مانده';
+      } else {
+        info.textContent = '⏰ زمان مسابقه تمام شده!';
+      }
     }
   }catch(e){}
+}
+async function saveAllTournamentConfig(){
+  if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده','error');return;}
+  var durEl=document.getElementById('tournamentDuration');
+  var duration=durEl?durEl.value:'weekly';
+  var endTime=Date.now();
+  var durationMap = {'weekly':7,'monthly':30,'seasonal':90,'yearly':365};
+  var days = durationMap[duration] || 7;
+  endTime += days * 24 * 60 * 60 * 1000;
+
+  function getVal(id){ var e=document.getElementById(id); return e ? (parseInt(e.value)||0) : 0; }
+  function getStr(id){ var e=document.getElementById(id); return e ? e.value.trim() : ''; }
+
+  var cfg = {
+    duration: duration,
+    endTime: endTime,
+    distributed: false,
+    rank1: { gems: getVal('prize1Gems'), coins: getVal('prize1Coins'), dollars: getVal('prize1Dollars'), note: getStr('prize1Note') },
+    rank2: { gems: getVal('prize2Gems'), coins: getVal('prize2Coins'), dollars: getVal('prize2Dollars'), note: getStr('prize2Note') },
+    rank3: { gems: getVal('prize3Gems'), coins: getVal('prize3Coins'), dollars: getVal('prize3Dollars'), note: getStr('prize3Note') },
+    rank4_10: { gems: getVal('prize4Gems'), coins: getVal('prize4Coins'), dollars: getVal('prize4Dollars'), note: getStr('prize4Note') },
+    blacklist: window.clanBlacklist || []
+  };
+  await saveTournamentConfigData(cfg);
+  if (fbReady && fbDb) { try { fbDb.ref('server_state/tournament_end').set(endTime); } catch(e) {} }
+  sendLive('global', 'tournament_updated', {});
+  showShopNotification('✅ ذخیره شد - پایان: ' + new Date(endTime).toLocaleDateString('fa-IR'));
 }
 function renderBlacklist(){
   var container=document.getElementById('blacklistItems');
@@ -1499,32 +1346,68 @@ function removeClanFromBlacklist(idx){
   window.clanBlacklist.splice(idx,1);
   renderBlacklist();
 }
-function confirmTournamentTime(){}
-function confirmPrize(rank){}
-async function saveAllTournamentConfig(){
-  if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده','error');return;}
-  var durEl=document.getElementById('tournamentDuration');
-  var duration=durEl?durEl.value:'weekly';
-  var endTime=Date.now();
-  if(duration==='weekly')endTime+=7*24*60*60*1000;
-  else if(duration==='monthly')endTime+=30*24*60*60*1000;
-  else if(duration==='seasonal')endTime+=90*24*60*60*1000;
-  var cfg={
-    duration:duration, endTime:endTime, distributed:false,
-    rank1:{type:(document.getElementById('prize1Type')||{}).value||'gem', value:parseInt((document.getElementById('prize1Value')||{}).value)||0},
-    rank2:{type:(document.getElementById('prize2Type')||{}).value||'gem', value:parseInt((document.getElementById('prize2Value')||{}).value)||0},
-    rank3:{type:(document.getElementById('prize3Type')||{}).value||'gem', value:parseInt((document.getElementById('prize3Value')||{}).value)||0},
-    rank4_10:{type:(document.getElementById('prize4Type')||{}).value||'gem', value:parseInt((document.getElementById('prize4Value')||{}).value)||0},
-    blacklist:window.clanBlacklist||[]
-  };
-  await saveTournamentConfigData(cfg);
-  sendLive('global', 'tournament_updated', {});
-  showShopNotification('✅ ذخیره شد');
-}
 window.clanBlacklist = window.clanBlacklist || [];
 
+async function distributeClanPrizesNow(){
+  if(currentPhone!==CREATOR_PHONE){showShopNotification('فقط سازنده','error');return;}
+  if(!confirm('جوایز همین الان توزیع شود؟'))return;
+  await distributeClanPrizes(true);
+  showShopNotification('✅ جوایز توزیع شد');
+}
+async function distributeClanPrizes(force){
+  try {
+    var cfg = await getTournamentConfig();
+    if (!cfg) return;
+    if (cfg.distributed && !force) return;
+    if (!force && Date.now() < cfg.endTime) return;
+    var ranking = await getClanRanking();
+    if (!ranking.length) return;
+    var allUsers = await getAllUsers();
+    var groups = await getGroups();
+    var top = ranking.slice(0, 10);
+    var now = Date.now();
+    var awardedPhones = [];
+    for (var i = 0; i < top.length; i++) {
+      var r = top[i];
+      var prizeCfg = null;
+      if (r.rank === 1) prizeCfg = cfg.rank1;
+      else if (r.rank === 2) prizeCfg = cfg.rank2;
+      else if (r.rank === 3) prizeCfg = cfg.rank3;
+      else if (r.rank >= 4 && r.rank <= 10) prizeCfg = cfg.rank4_10;
+      if (!prizeCfg) continue;
+      var g = null;
+      for (var k = 0; k < groups.length; k++) { if (groups[k].id === r.id) { g = groups[k]; break; } }
+      if (!g || !g.members) continue;
+      var gems = parseInt(prizeCfg.gems) || 0;
+      var coins = parseInt(prizeCfg.coins) || 0;
+      var dollars = parseInt(prizeCfg.dollars) || 0;
+      for (var j = 0; j < g.members.length; j++) {
+        var mPhone = g.members[j];
+        var u = allUsers[mPhone];
+        if (!u) continue;
+        if (gems > 0) u.gems = (u.gems || 0) + gems;
+        if (coins > 0) u.coins = (u.coins || 0) + coins;
+        if (dollars > 0) u.dollars = (u.dollars || 0) + dollars;
+        u.lastUpdatedAt = now;
+        allUsers[mPhone] = u;
+        awardedPhones.push(mPhone);
+      }
+    }
+    await saveAllUsers(allUsers);
+    for (var p = 0; p < awardedPhones.length; p++) {
+      try { await saveUser(awardedPhones[p], allUsers[awardedPhones[p]]); } catch(e) {}
+      sendLive('user_' + awardedPhones[p], 'prize_received', {});
+    }
+    if (!force) {
+      cfg.distributed = true;
+      await saveTournamentConfigData(cfg);
+    }
+    sendLive('global', 'tournament_prizes_distributed', {});
+  } catch(e) {}
+}
+
 /* ============================================================ */
-/*  ⚡ News                                                       */
+/*  اطلاعیه‌ها                                                  */
 /* ============================================================ */
 async function loadNews(){
   var news=await getNews();
@@ -1562,7 +1445,7 @@ async function sendNews(){
 }
 
 /* ============================================================ */
-/*  ⚡ Avatar Shop                                                */
+/*  Avatar Shop                                                */
 /* ============================================================ */
 function initAvatarShop(){
   if(!currentUserData)return;
@@ -1720,7 +1603,7 @@ async function confirmPurchase(){
 }
 
 /* ============================================================ */
-/*  ⚡ Sync + Online                                             */
+/*  Online + Sync                                              */
 /* ============================================================ */
 async function setUserOnlineStatus(online) {
   if (!currentPhone) return;
@@ -1799,6 +1682,8 @@ async function syncWithServerInBackground() {
     currentUserData.lastIP = myIP; currentUserData.lastDevice = currentDeviceId;
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
     updateUIWithData(currentUserData);
+    // چک خودکار جوایز مسابقه
+    try { await distributeClanPrizes(false); } catch(e) {}
   } catch(error) {}
 }
 
@@ -1809,11 +1694,11 @@ function setupLiveSubscriptions() {
   window.FBLive.subscribe('global', async function(sig) {
     if (sig.type === 'news_updated') { await loadNews(); showShopNotification('📢 اطلاعیه جدید'); }
     else if (sig.type === 'server_toggle') { await syncWithServerInBackground(); }
-    else if (sig.type === 'clan_prizes_updated' && currentPhone === CREATOR_PHONE) { renderClanPrizes(); }
     else if (sig.type === 'codes_reset') {
       var fresh = await getUser(currentPhone);
       if (fresh) { currentUserData.userCode = fresh.userCode; updateUIWithData(currentUserData); }
     }
+    else if (sig.type === 'tournament_updated') { loadTournamentConfig(); }
   });
   window.FBLive.subscribe('user_' + currentPhone, async function(sig) {
     if (sig.type === 'banned' && currentPhone !== CREATOR_PHONE) {
@@ -1822,20 +1707,19 @@ function setupLiveSubscriptions() {
     } else if (sig.type === 'force_logout' && currentPhone !== CREATOR_PHONE) {
       localStorage.removeItem('currentLoggedInUser');
       window.location.href = 'index.html';
-    } else if (sig.type === 'force_login') {
-      // ignore
     } else if (sig.type === 'deleted' && currentPhone !== CREATOR_PHONE) {
       localStorage.removeItem('currentLoggedInUser');
       window.location.href = 'index.html';
-    } else if (sig.type === 'admin_edit') {
+    } else if (sig.type === 'admin_edit' || sig.type === 'prize_received') {
       var fresh2 = await getUser(currentPhone);
       if (fresh2) { currentUserData = sanitizeUserData(fresh2, currentPhone); updateUIWithData(currentUserData); }
+      if (sig.type === 'prize_received') showShopNotification('🎁 جایزه دریافت کردید!');
     }
   });
 }
 
 /* ============================================================ */
-/*  ⚡ راه‌اندازی                                                 */
+/*  راه‌اندازی                                                   */
 /* ============================================================ */
 document.addEventListener('DOMContentLoaded', async function() {
   var loggedIn = localStorage.getItem('currentLoggedInUser');
@@ -1847,41 +1731,44 @@ document.addEventListener('DOMContentLoaded', async function() {
   initFB(currentPhone);
   if (window.FBLive && window.FBLive.init) window.FBLive.init(currentPhone);
 
-  await checkWhitelistNow();
-
-  try {
-    var u = await getUser(currentPhone);
-    if (u) {
-      if (!u.userCode || isNaN(parseInt(u.userCode))) u = await assignCodeIfMissing(currentPhone, u);
-      // ذخیره اطلاعات دستگاه
-      if (!u.deviceInfo) u.deviceInfo = getDeviceInfo();
-      currentUserData = u;
-    }
-  } catch(e) {}
+  // ⚡ سریع: از cache لوکال بخون
+  var cacheFirst = localStorage.getItem('user_cache_' + currentPhone);
+  if (cacheFirst) { try { currentUserData = JSON.parse(cacheFirst); } catch(e) {} }
 
   if (!currentUserData) {
-    var cache = localStorage.getItem('user_cache_' + currentPhone);
-    if (cache) { try { currentUserData = JSON.parse(cache); } catch(e) {} }
+    try {
+      var u = await getUser(currentPhone);
+      if (u) {
+        if (!u.userCode || isNaN(parseInt(u.userCode))) u = await assignCodeIfMissing(currentPhone, u);
+        if (!u.deviceInfo) u.deviceInfo = getDeviceInfo();
+        currentUserData = u;
+      }
+    } catch(e) {}
   }
+
   if (!currentUserData) {
     currentUserData = { name: 'کاربر', coins: 0, gems: 0, dollars: 0, avatar: 'Mafia2.png', rank: 'کاربر', level: 1 };
   }
 
+  // ⚡ فوری UI رو نشون بده
   updateUIWithData(currentUserData);
   initAvatarShop();
 
+  // ⚡ چک‌های شبکه‌ای رو پس‌زمینه انجام بده
   setTimeout(function() {
+    checkWhitelistNow().catch(function(){});
     syncWithServerInBackground();
     setUserOnlineStatus(true);
     setupLiveSubscriptions();
     updateGroupDisplay();
     updateClanRank();
-  }, 0);
+  }, 100);
 
-  setInterval(syncWithServerInBackground, 3000);
+  setInterval(syncWithServerInBackground, 5000);
   setInterval(function() { setUserOnlineStatus(!document.hidden); }, 30000);
   setInterval(checkBanPeriodically, 5000);
   setInterval(updateClanRank, 15000);
+  setInterval(updateGroupDisplay, 30000);
 
   var bind = function(id, fn) {
     var el = document.getElementById(id);
@@ -1926,12 +1813,23 @@ document.addEventListener('DOMContentLoaded', async function() {
   bind('btnClearUserData', clearUserData);
   bind('btnClearSessions', clearUserSessionsFromPanel);
   bind('btnSaveUserEdit', saveUserEdit);
+  bind('btnTournamentConfig', function(){
+    document.getElementById('usersSection').style.display = 'none';
+    document.getElementById('userHistorySection').style.display = 'none';
+    document.getElementById('userControlSection').style.display = 'none';
+    document.getElementById('whitelistSection').style.display = 'none';
+    document.getElementById('userLogsSection').style.display = 'none';
+    document.getElementById('tournamentConfig').style.display = 'block';
+    loadTournamentConfig();
+    renderBlacklist();
+  });
+  bind('btnUserLogs', openUserLogsPanel);
   bind('modalCancelBtn', function(){ playClickSound(); document.getElementById('purchaseModal').classList.remove('show'); });
   bind('modalConfirmBtn', confirmPurchase);
   bind('openChangePasswordBtn', function(){ playClickSound(); closeModal('settingsModal'); document.getElementById('cpPhone').value = currentPhone || ''; document.getElementById('changePasswordModal').classList.add('active'); });
-  bind('btnWhitelistIP', function(){ document.getElementById('whitelistSection').style.display='block'; document.getElementById('usersSection').style.display='none'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('userControlSection').style.display='none'; document.getElementById('clanPrizesSection').style.display='none'; document.getElementById('userLogsSection').style.display='none'; refreshWhitelistUI(); });
-  bind('btnShowUsersList', function(){ document.getElementById('usersSection').style.display='block'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('userControlSection').style.display='none'; document.getElementById('whitelistSection').style.display='none'; document.getElementById('clanPrizesSection').style.display='none'; document.getElementById('userLogsSection').style.display='none'; loadUsers(); });
-  bind('btnUserControl', function(){ document.getElementById('userControlSection').style.display='block'; document.getElementById('usersSection').style.display='none'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('whitelistSection').style.display='none'; document.getElementById('clanPrizesSection').style.display='none'; document.getElementById('userLogsSection').style.display='none'; });
+  bind('btnWhitelistIP', function(){ document.getElementById('whitelistSection').style.display='block'; document.getElementById('usersSection').style.display='none'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('userControlSection').style.display='none'; document.getElementById('tournamentConfig').style.display='none'; document.getElementById('userLogsSection').style.display='none'; refreshWhitelistUI(); });
+  bind('btnShowUsersList', function(){ document.getElementById('usersSection').style.display='block'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('userControlSection').style.display='none'; document.getElementById('whitelistSection').style.display='none'; document.getElementById('tournamentConfig').style.display='none'; document.getElementById('userLogsSection').style.display='none'; loadUsers(); });
+  bind('btnUserControl', function(){ document.getElementById('userControlSection').style.display='block'; document.getElementById('usersSection').style.display='none'; document.getElementById('userHistorySection').style.display='none'; document.getElementById('whitelistSection').style.display='none'; document.getElementById('tournamentConfig').style.display='none'; document.getElementById('userLogsSection').style.display='none'; });
 
   var btnAdmin = document.getElementById('btnAdmin');
   if (btnAdmin) {
@@ -1942,11 +1840,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       return false;
     };
   }
-
-  // دکمه‌های پنل جدید (اگه تو HTML هستن)
-  bind('btnClanPrizes', openClanPrizesPanel);
-  bind('btnUserLogs', openUserLogsPanel);
-  bind('btnAddClanPrize', addClanPrize);
 
   bind('submitPasswordChange', async function() {
     playClickSound();
@@ -2061,7 +1954,6 @@ window.openUserHistory = openUserHistory;
 window.openEditUser = openEditUser;
 window.openAdminPanel = openAdminPanel;
 window.loadUsers = loadUsers;
-window.loadAdminUsers = loadUsers;
 window.saveUserEdit = saveUserEdit;
 window.banUser = banUser;
 window.unbanUser = unbanUser;
@@ -2084,18 +1976,13 @@ window.updateGroupDisplay = updateGroupDisplay;
 window.updateClanRank = updateClanRank;
 window.showClanRankingModal = showClanRankingModal;
 window.loadTournamentConfig = loadTournamentConfig;
+window.saveAllTournamentConfig = saveAllTournamentConfig;
 window.renderBlacklist = renderBlacklist;
 window.addClanToBlacklist = addClanToBlacklist;
 window.removeClanFromBlacklist = removeClanFromBlacklist;
-window.confirmTournamentTime = confirmTournamentTime;
-window.confirmPrize = confirmPrize;
-window.saveAllTournamentConfig = saveAllTournamentConfig;
-window.openClanPrizesPanel = openClanPrizesPanel;
-window.addClanPrize = addClanPrize;
-window.toggleClanPrize = toggleClanPrize;
-window.deleteClanPrize = deleteClanPrize;
+window.distributeClanPrizesNow = distributeClanPrizesNow;
+window.distributeClanPrizes = distributeClanPrizes;
 window.openUserLogsPanel = openUserLogsPanel;
 window.renderUserLogs = renderUserLogs;
-window.broadcastAdminChange = broadcastAdminChange;
 window.updateUIWithData = updateUIWithData;
 window.playClickSound = playClickSound;
