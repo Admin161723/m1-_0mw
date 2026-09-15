@@ -370,7 +370,6 @@ function showToast(message, type) {
 }
 
 async function performSecurityChecks(phone) {
-  // ⚡ سازنده معاف
   if (isCreatorPhone(phone)) return { blocked: false };
 
   currentIP = await fetchUserIP();
@@ -438,35 +437,89 @@ function showPage(pageId) {
 }
 
 /* ============================================================ */
-/*  ⚡ redirectToMainPage - سریع بدون انتظار برای Redis          */
+/*  ⚡ redirectToMainPage - 5 روش ریدایرکت                      */
 /* ============================================================ */
+function forceRedirect(targetUrl) {
+  console.log('🎯 Force redirect to:', targetUrl);
+
+  // روش 1
+  try {
+    console.log('➡️ Method 1: location.replace');
+    window.location.replace(targetUrl);
+  } catch(e) { console.log('❌ M1 failed:', e); }
+
+  // روش 2
+  setTimeout(function() {
+    try {
+      console.log('➡️ Method 2: location.href');
+      window.location.href = targetUrl;
+    } catch(e) { console.log('❌ M2 failed:', e); }
+  }, 150);
+
+  // روش 3
+  setTimeout(function() {
+    try {
+      console.log('➡️ Method 3: location.assign');
+      window.location.assign(targetUrl);
+    } catch(e) { console.log('❌ M3 failed:', e); }
+  }, 400);
+
+  // روش 4
+  setTimeout(function() {
+    try {
+      console.log('➡️ Method 4: hidden link click');
+      var a = document.createElement('a');
+      a.href = targetUrl;
+      a.style.display = 'none';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+    } catch(e) { console.log('❌ M4 failed:', e); }
+  }, 700);
+
+  // روش 5
+  setTimeout(function() {
+    try {
+      console.log('➡️ Method 5: window.open');
+      window.open(targetUrl, '_self');
+    } catch(e) { console.log('❌ M5 failed:', e); }
+  }, 1100);
+
+  // روش 6
+  setTimeout(function() {
+    try {
+      console.log('➡️ Method 6: document.location');
+      document.location.href = targetUrl;
+    } catch(e) { console.log('❌ M6 failed:', e); }
+  }, 1500);
+}
+
 async function redirectToMainPage(userPhone) {
+  console.log('🚀 redirectToMainPage:', userPhone);
   if (!appVerified) { killApp(); return; }
-  if (isRedirecting) return;
   isRedirecting = true;
 
-  // ⚡ 1. سریع لاگین رو ثبت کن (بدون انتظار برای Redis - از cache یا مستقیم)
+  // ذخیره سریع لاگین
   try {
-    var user = await getUser(userPhone);
+    var user = null;
+    try { user = await getUser(userPhone); } catch(e) {}
     if (user) {
       try {
         sessionStorage.setItem('currentUserPhone', userPhone);
         sessionStorage.setItem('currentUserRank', user.rank || 'کاربر');
         sessionStorage.setItem('currentUserName', user.name);
         sessionStorage.setItem('currentUserAvatar', user.avatar);
-      } catch(e) {}
-      try {
         localStorage.setItem('user_cache_' + userPhone, JSON.stringify(user));
       } catch(e) {}
     }
-    try {
-      localStorage.setItem('currentLoggedInUser', JSON.stringify({
-        phone: userPhone,
-        timestamp: Date.now(),
-        name: (user && user.name) || 'کاربر'
-      }));
-    } catch(e) {}
+    localStorage.setItem('currentLoggedInUser', JSON.stringify({
+      phone: userPhone,
+      timestamp: Date.now(),
+      name: (user && user.name) || 'کاربر'
+    }));
+    console.log('✅ Login cached');
   } catch(e) {
+    console.log('❌ Cache error:', e);
     try {
       localStorage.setItem('currentLoggedInUser', JSON.stringify({
         phone: userPhone,
@@ -476,20 +529,11 @@ async function redirectToMainPage(userPhone) {
     } catch(e2) {}
   }
 
-  // ⚡ 2. لاگ سشن رو پس‌زمینه بفرست
+  // پس‌زمینه لاگ سشن
   try { logLoginSession(userPhone, currentIP, currentDeviceId); } catch(e) {}
 
-  // ⚡ 3. فوراً برو بازی
-  try {
-    window.location.replace(PAGES.game);
-  } catch(e) {
-    try { window.location.href = PAGES.game; } catch(e2) {}
-  }
-
-  // ⚡ 4. Fallback: اگه 800ms بعد هنوز اینجایی، دوباره تلاش کن
-  setTimeout(function() {
-    try { window.location.replace(PAGES.game); } catch(e) {}
-  }, 800);
+  // ریدایرکت
+  forceRedirect(PAGES.game);
 }
 
 function unlockAudio() {
@@ -529,7 +573,6 @@ function bindEvents() {
 
     var isCrt = isCreatorPhone(phone);
 
-    // ⚡ سازنده معاف
     if (!isCrt) {
       var checks = await performSecurityChecks(phone);
       if (checks.blocked) {
@@ -537,7 +580,6 @@ function bindEvents() {
         checkPhoneBtn.innerText = 'ادامه';
         return;
       }
-
       try {
         var m = await getMaintenance();
         if (m && m.on) {
@@ -771,36 +813,32 @@ function bindEvents() {
 }
 
 /* ============================================================ */
-/*  ⚡ startBoot - سریع و بدون انتظار برای Redis                 */
+/*  startBoot                                                   */
 /* ============================================================ */
 async function startBoot() {
   if (window.__BOOT_OK__) return;
   window.__BOOT_OK__ = true;
+  console.log('🎬 startBoot');
 
-  // ⚡ 1. اگه از قبل لاگین هست، فوراً برو بازی (بدون هیچ چکی)
+  // ⚡ اگه از قبل لاگین هست، سریع برو
   var hasLogin = false;
-  var loggedPhone = null;
   try {
     var li = localStorage.getItem('currentLoggedInUser');
     if (li) {
       var liObj = JSON.parse(li);
-      if (liObj && liObj.phone) {
-        hasLogin = true;
-        loggedPhone = liObj.phone;
-      }
+      if (liObj && liObj.phone) hasLogin = true;
     }
   } catch(e) {}
 
   if (hasLogin) {
-    // ⚡ سریع برو بازی
+    console.log('✅ User already logged in, redirecting...');
     setTimeout(function() {
-      try { window.location.replace(PAGES.game); }
-      catch(e) { window.location.href = PAGES.game; }
+      forceRedirect(PAGES.game);
     }, 200);
     return;
   }
 
-  // ⚡ 2. کاربر جدید - چک اپ
+  // چک اپ
   var appCheckAttempts = 0;
   var appConfirmed = false;
   while (appCheckAttempts < 5) {
@@ -811,11 +849,11 @@ async function startBoot() {
   if (!appConfirmed) { killApp(); return; }
   startAppCheckLoop();
 
-  // ⚡ 3. چک برنامه مخرب
+  // چک برنامه مخرب
   var mal = detectMaliciousApps();
   if (mal.detected) { showMaliciousAlert(mal.name); return; }
 
-  // ⚡ 4. چک IP و Device
+  // چک IP و Device
   try {
     currentIP = await fetchUserIP();
     currentDeviceId = getDeviceId();
@@ -828,7 +866,7 @@ async function startBoot() {
     if (deviceBan) { showIPBanOverlay(deviceBan); return; }
   } catch(e) {}
 
-  // ⚡ 5. چک سرور
+  // چک سرور
   try {
     var m = await getMaintenance();
     if (m && m.on) { showServerDownOverlay(); return; }
@@ -844,8 +882,9 @@ async function startBoot() {
     imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
   }
 
-  // ⚡ 6. بعد از 1 ثانیه، فرم لاگین
+  // نمایش فرم لاگین
   setTimeout(function() {
+    console.log('📝 Showing auth page');
     var lp = document.getElementById('loadingPage');
     if (lp) lp.classList.add('hidden');
     var ap = document.getElementById('authPage');
