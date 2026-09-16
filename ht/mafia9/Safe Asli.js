@@ -1,10 +1,10 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل نهایی                        */
-/*  ✅ آواتار اختصاصی ادمین در "آواتارهای من" فعال میشه            */
-/*  ✅ بن فوری - بلافاصله Ban.html حتی وسط بازی                    */
-/*  ✅ merge دو دیتابیس - بدون نوسان کاربران                      */
-/*  ✅ ثبت کامل تاریخ ورود با IP و زمان دقیق                      */
-/*  ✅ ریکاوری خودکار بعد از قطع سرور                            */
+/*  Safe Asli.js - نسخه نهایی کامل با رفع خروج از حساب             */
+/*  ✅ کاربر بیدلیل پرت نمی‌شه - فقط سیگنال تازه + تایید Redis      */
+/*  ✅ Session با چند لایه backup                                  */
+/*  ✅ حذف کامل آواتار اختصاصی از پنل                               */
+/*  ✅ آواتار ویدیو (webm/mp4/dataURL) اعمال می‌شه                 */
+/*  ✅ بن فوری - بلافاصله Ban.html                                  */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -14,6 +14,9 @@ var UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmR
 var CREATOR_PHONE = '09904844031';
 
 var AWAY_TIMEOUT_MS = 10000;
+var SIGNAL_FRESH_MS = 15000; // ⚠️ فقط سیگنال‌های ۱۵ ثانیه اخیر معتبرن
+var SESSION_KEEP_ALIVE_MS = 30000;
+
 var currentUserData = null;
 var currentPhone = null;
 var editingUserId = null;
@@ -40,8 +43,8 @@ var fbServerListener = null;
 var __serverRecoveryInterval = null;
 var __lastLoginLogged = 0;
 var banDetected = false;
-var banData = null;
 var banCheckInFlight = false;
+var logoutInProgress = false;
 
 var FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -54,6 +57,117 @@ var FB_CFG = {
 };
 var fbDb = null, fbReady = false, fbPhone = 'unknown';
 
+/* ============================================================ */
+/*  🔐 Session Persistence چند لایه                                */
+/* ============================================================ */
+function saveSession(phone, name) {
+  try {
+    var data = { phone: phone, timestamp: Date.now(), name: name || '' };
+    var json = JSON.stringify(data);
+    localStorage.setItem('currentLoggedInUser', json);
+    localStorage.setItem('__session_backup__', json);
+    localStorage.setItem('__session_backup2__', json);
+    sessionStorage.setItem('currentLoggedInUser', json);
+    localStorage.setItem('__session_valid_until__', String(Date.now() + 180 * 24 * 60 * 60 * 1000));
+  } catch(e) {}
+}
+
+function getSession() {
+  var candidates = [
+    'currentLoggedInUser',
+    '__session_backup__',
+    '__session_backup2__'
+  ];
+
+  for (var i = 0; i < candidates.length; i++) {
+    try {
+      var raw = localStorage.getItem(candidates[i]);
+      if (raw) {
+        var parsed = null;
+        try { parsed = JSON.parse(raw); } catch(e) {}
+        if (parsed && parsed.phone) {
+          // اطمینان از اینکه primary درست ذخیره شده
+          if (i !== 0) {
+            try { localStorage.setItem('currentLoggedInUser', raw); } catch(e) {}
+          }
+          // refresh backups
+          try {
+            localStorage.setItem('__session_backup__', raw);
+            localStorage.setItem('__session_backup2__', raw);
+          } catch(e) {}
+          return parsed;
+        }
+      }
+    } catch(e) {}
+  }
+
+  // آخرین تلاش: sessionStorage
+  try {
+    var sRaw = sessionStorage.getItem('currentLoggedInUser');
+    if (sRaw) {
+      var sP = JSON.parse(sRaw);
+      if (sP && sP.phone) {
+        try { localStorage.setItem('currentLoggedInUser', sRaw); } catch(e) {}
+        return sP;
+      }
+    }
+  } catch(e) {}
+
+  return null;
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem('currentLoggedInUser');
+    localStorage.removeItem('__session_backup__');
+    localStorage.removeItem('__session_backup2__');
+    localStorage.removeItem('__banned__');
+    localStorage.removeItem('__ban_data__');
+    localStorage.removeItem('__session_valid_until__');
+    sessionStorage.removeItem('currentLoggedInUser');
+  } catch(e) {}
+}
+
+function refreshSession() {
+  try {
+    var s = getSession();
+    if (s && s.phone) {
+      saveSession(s.phone, s.name);
+    }
+  } catch(e) {}
+}
+
+/* ⚠️ تابع امن logout - فقط با تایید از Redis و Fresh Signal */
+async function safeLogout(reason, force) {
+  // ⚠️ سازنده هیچ‌وقت logout نمیشه
+  if (currentPhone === CREATOR_PHONE) return false;
+
+  // ⚠️ جلوگیری از logout تکراری
+  if (logoutInProgress) return false;
+
+  // ⚠️ اگر force نیست، اول چک کن که واقعاً باید logout بشه
+  if (!force) {
+    try {
+      var user = await getUser(currentPhone);
+      if (user) {
+        // کاربر هنوز در Redis هست → logout نکن
+        return false;
+      }
+    } catch(e) {
+      // اگر Redis در دسترس نیست، logout نکن
+      return false;
+    }
+  }
+
+  logoutInProgress = true;
+  clearSession();
+  window.location.replace('index.html');
+  return true;
+}
+
+/* ============================================================ */
+/*  Firebase Init                                                 */
+/* ============================================================ */
 function initFB(phone) {
   fbPhone = phone || 'unknown';
   try {
@@ -98,13 +212,13 @@ function notifyUserUpdate(phone, type) {
   } catch(e) {}
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Redis - با Merge بین دو دیتابیس                              */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Redis                                                          */
+/* ============================================================ */
 async function upstashGet(url, token, k) {
   try {
     var c = new AbortController();
-    var t = setTimeout(function(){ c.abort(); }, 5000);
+    var t = setTimeout(function(){ c.abort(); }, 8000);
     var r = await fetch(url + '/get/' + encodeURIComponent(k), {
       headers: { 'Authorization': 'Bearer ' + token },
       signal: c.signal, cache: 'no-store'
@@ -122,7 +236,7 @@ async function upstashSet(url, token, k, v) {
   try {
     var jsonValue = JSON.stringify(v);
     var c = new AbortController();
-    var t = setTimeout(function(){ c.abort(); }, 10000);
+    var t = setTimeout(function(){ c.abort(); }, 15000);
     var r = await fetch(url + '/set/' + encodeURIComponent(k) + '/' + encodeURIComponent(jsonValue), {
       headers: { 'Authorization': 'Bearer ' + token },
       signal: c.signal
@@ -163,9 +277,9 @@ async function redisDel(key) {
   return true;
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  getUser - merge دو دیتابیس                                    */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  getUser / getAllUsers                                         */
+/* ============================================================ */
 async function getUser(p) {
   var u1 = null, u2 = null;
   try { u1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'user:' + p); } catch(e) {}
@@ -176,14 +290,10 @@ async function getUser(p) {
   var t1 = u1.lastUpdatedAt || 0;
   var t2 = u2.lastUpdatedAt || 0;
   if (t2 > t1) return u2;
-  if (!u1.fullProfile && u2.fullProfile) return u2;
   return u1;
 }
 async function saveUser(p, u) { return await redisSet('user:' + p, u); }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  getAllUsers - merge دو دیتابیس                                */
-/* ═══════════════════════════════════════════════════════════ */
 async function getAllUsers() {
   var merged = {};
   try {
@@ -200,7 +310,6 @@ async function getAllUsers() {
         var t1 = merged[k2].lastUpdatedAt || 0;
         var t2 = v2[k2].lastUpdatedAt || 0;
         if (t2 > t1) merged[k2] = v2[k2];
-        if (!merged[k2].fullProfile && v2[k2].fullProfile) merged[k2] = v2[k2];
       }
     }
   } catch(e) {}
@@ -228,14 +337,7 @@ async function getBanStatus(p) {
 async function getDeviceBan(id) { return await redisGet('device_ban:' + id); }
 async function setDeviceBan(id, data) { return await redisSet('device_ban:' + id, data); }
 async function setIPBan(ip, data) { return await redisSet('ip_ban:' + ip, data); }
-async function addBanLog(phone, banData) {
-  var user = await getUser(phone);
-  if (!user) return;
-  if (!user.banHistory) user.banHistory = [];
-  user.banHistory.push(banData);
-  if (user.banHistory.length > 50) user.banHistory.shift();
-  await saveUser(phone, user);
-}
+
 async function getUniqueUserCode() {
   try {
     var allUsers = await getAllUsers();
@@ -249,33 +351,6 @@ async function getUniqueUserCode() {
     while (usedCodes[code]) code++;
     return code;
   } catch(e) { return Date.now(); }
-}
-async function resetAllUserCodes() {
-  if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
-  if (!confirm('همه کدها بازنشانی شود؟')) return;
-  showShopNotification('در حال بازنشانی...');
-  try {
-    var allUsers = await getAllUsers();
-    var entries = Object.entries(allUsers);
-    entries.sort(function(a, b) {
-      var tA = a[1].createdAt || a[1].registeredAt || 0;
-      var tB = b[1].createdAt || b[1].registeredAt || 0;
-      return tA - tB;
-    });
-    var counter = 1;
-    var now = Date.now();
-    for (var i = 0; i < entries.length; i++) {
-      entries[i][1].userCode = counter;
-      entries[i][1].lastUpdatedAt = now;
-      allUsers[entries[i][0]] = entries[i][1];
-      await saveUser(entries[i][0], entries[i][1]);
-      counter++;
-    }
-    await saveAllUsers(allUsers);
-    showShopNotification('✅ ' + (counter - 1) + ' کاربر بازنشانی شد');
-    await loadUsers();
-    sendLive('global', 'codes_reset', {});
-  } catch(e) { showShopNotification('خطا', 'error'); }
 }
 async function assignCodeIfMissing(phone, user) {
   if (!user) return user;
@@ -314,9 +389,9 @@ async function removeFromWhitelist(ip) {
   return await redisSet('whitelist_ips', list);
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  IP + Device                                                */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  IP + Device                                                 */
+/* ============================================================ */
 async function fetchUserIP() {
   var sources = [
     'https://api.ipify.org?format=json',
@@ -386,13 +461,12 @@ async function logLoginSession(phone, ip, deviceId) {
     var last = user.loginHistory[user.loginHistory.length - 1];
     if (last && (now - (last.timestamp || last.time || 0)) < 5000) return;
     var realIP = ip || 'نامشخص';
-    var nowDate = new Date(now);
-    var faDate = nowDate.toLocaleString('fa-IR', {
+    var faDate = new Date(now).toLocaleString('fa-IR', {
       year: 'numeric', month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit', second: '2-digit',
       hour12: false
     });
-    var entry = {
+    user.loginHistory.push({
       time: now, timestamp: now, date: faDate,
       ip: realIP,
       device: deviceId || currentDeviceId || 'نامشخص',
@@ -401,11 +475,10 @@ async function logLoginSession(phone, ip, deviceId) {
       screen: devInfo.screen || 'unknown',
       language: devInfo.language || 'unknown',
       action: 'ورود به بازی'
-    };
-    user.loginHistory.push(entry);
+    });
     if (user.loginHistory.length > 100) user.loginHistory = user.loginHistory.slice(-100);
     user.lastIP = realIP;
-    user.lastDevice = entry.device;
+    user.lastDevice = deviceId || currentDeviceId || 'نامشخص';
     user.lastLogin = now;
     user.lastLoginDate = faDate;
     user.lastUpdatedAt = now;
@@ -417,9 +490,9 @@ async function logLoginSession(phone, ip, deviceId) {
   } catch(e) {}
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Helpers                                                    */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Helpers                                                     */
+/* ============================================================ */
 function redirectToBan(b, p) {
   if (isRedirecting) return;
   isRedirecting = true;
@@ -468,10 +541,6 @@ function applyTick(img, cands) {
   })();
 }
 
-var RANK_LEVEL = {
-  'کاربر':0, 'ناظر':1, 'ناظر ارشد':2, 'ادمین':3, 'ادمین ارشد':4,
-  'گرداننده':5, 'پشتیبانی':6, 'سازنده':7
-};
 var RANK_PERM = {
   'سازنده': { panel:true, coins:true, gems:true, dollars:true, rank:true, exclusive:true,
     del:true, server:true, wipe:true, banMax:'permanent', stats:true,
@@ -561,16 +630,6 @@ var templates = [
   {id:'t3', src:'Ga3.webp', price:1000, name:'قالب نقره‌ای'}
 ];
 
-window.avatarLoadError = function(img, src) {
-  img.style.display = 'none';
-  var box = img.parentElement;
-  if (box && !box.querySelector('.avatar-missing')) {
-    var d = document.createElement('div');
-    d.className = 'avatar-missing';
-    d.innerHTML = '❌';
-    box.appendChild(d);
-  }
-};
 function setupVideoObserver() {
   if (videoObserver) return;
   videoObserver = new IntersectionObserver(function(entries) {
@@ -588,8 +647,65 @@ function observeVideos(container) {
   if (!container) return;
   setupVideoObserver();
   var vs = container.querySelectorAll('video');
-  for (var i = 0; i < vs.length; i++) videoObserver.observe(vs[i]);
+  for (var i = 0; i < vs.length; i++) {
+    try { videoObserver.observe(vs[i]); } catch(e) {}
+  }
 }
+
+function isVideoSrc(src) {
+  if (!src) return false;
+  if (typeof src !== 'string') return false;
+  if (src.indexOf('data:video') === 0) return true;
+  if (src.indexOf('blob:') === 0) return true;
+  var lower = src.toLowerCase();
+  if (lower.indexOf('.webm') > -1) return true;
+  if (lower.indexOf('.mp4') > -1) return true;
+  if (lower.indexOf('.mov') > -1) return true;
+  if (lower.indexOf('.ogg') > -1) return true;
+  if (lower.indexOf('.m4v') > -1) return true;
+  return false;
+}
+
+function createMediaElement(src) {
+  if (!src) src = 'Mafia2.png';
+  var isVideo = isVideoSrc(src);
+
+  if (isVideo) {
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'width:100%;height:100%;position:relative;';
+    var v = document.createElement('video');
+    v.src = src;
+    v.autoplay = true;
+    v.loop = true;
+    v.muted = true;
+    v.playsInline = true;
+    v.setAttribute('muted', 'muted');
+    v.setAttribute('playsinline', 'playsinline');
+    v.setAttribute('webkit-playsinline', 'webkit-playsinline');
+    v.setAttribute('preload', 'auto');
+    v.style.cssText = 'width:100%;height:100%;object-fit:cover;pointer-events:none;';
+    v.onerror = function() {
+      try {
+        wrapper.innerHTML = '';
+        var fallbackImg = document.createElement('img');
+        fallbackImg.src = 'Mafia2.png';
+        fallbackImg.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        wrapper.appendChild(fallbackImg);
+      } catch(e) {}
+    };
+    wrapper.appendChild(v);
+    return wrapper;
+  }
+
+  var i = document.createElement('img');
+  i.src = src;
+  i.style.width = '100%';
+  i.style.height = '100%';
+  i.style.objectFit = 'cover';
+  i.onerror = function() { this.style.display = 'none'; };
+  return i;
+}
+
 function sanitizeUserData(user, phone) {
   if (!user) return user;
   var isCreator = (phone === CREATOR_PHONE);
@@ -599,6 +715,10 @@ function sanitizeUserData(user, phone) {
   if (user.useExclusive === undefined) user.useExclusive = false;
   if (!user.exclusiveAvatar && user.useExclusive === true) {
     user.useExclusive = false;
+  }
+  if (user.avatar && typeof user.avatar === 'string' && user.avatar.indexOf('data:') === 0 &&
+      user.exclusiveAvatar && user.avatar === user.exclusiveAvatar && !user.useExclusive) {
+    user.avatar = user.previousAvatar || 'Mafia2.png';
   }
   if (user.coins < 0) user.coins = 0;
   if (user.gems < 0) user.gems = 0;
@@ -622,63 +742,23 @@ function getValidAvatar(src, phone) {
   if (src === '655.webm' && phone !== CREATOR_PHONE) return 'Mafia2.png';
   return src;
 }
-function isVideoSrc(src) {
-  if (!src) return false;
-  if (src.indexOf('data:video') === 0) return true;
-  var lower = src.toLowerCase();
-  return lower.indexOf('.webm') > -1 || lower.indexOf('.mp4') > -1 ||
-         lower.indexOf('.mov') > -1 || lower.indexOf('.ogg') > -1 ||
-         lower.indexOf('.m4v') > -1;
-}
-function createMediaElement(src) {
-  if (!src) src = 'Mafia2.png';
-  var isVideo = isVideoSrc(src);
-  if (isVideo) {
-    var v = document.createElement('video');
-    v.src = src;
-    v.autoplay = true;
-    v.loop = true;
-    v.muted = true;
-    v.playsInline = true;
-    v.setAttribute('muted', 'muted');
-    v.setAttribute('playsinline', 'playsinline');
-    v.setAttribute('webkit-playsinline', 'webkit-playsinline');
-    v.style.objectFit = 'cover';
-    v.style.width = '100%';
-    v.style.height = '100%';
-    v.style.pointerEvents = 'none';
-    return v;
-  }
-  var i = document.createElement('img');
-  i.src = src;
-  i.style.width = '100%';
-  i.style.height = '100%';
-  i.style.objectFit = 'cover';
-  i.onerror = function() { this.style.display = 'none'; };
-  return i;
-}
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  updateGlobalAvatar - با پشتیبانی کامل dataURL                */
-/* ═══════════════════════════════════════════════════════════ */
 function updateGlobalAvatar(src) {
   if (!currentUserData) return;
   var validSrc = src || 'Mafia2.png';
-
   if (currentUserData.exclusiveAvatar && currentUserData.useExclusive === true) {
     validSrc = currentUserData.exclusiveAvatar;
+  } else {
+    validSrc = src || 'Mafia2.png';
   }
-
   validSrc = getValidAvatar(validSrc, currentPhone);
   var templateSrc = currentUserData.currentTemplate || null;
-
   var containers = [
     document.getElementById('mainAvatarContainer'),
     document.getElementById('openAvatarShop'),
     document.getElementById('showcaseAvatarContainer'),
     document.getElementById('templateShowcaseContainer')
   ];
-
   function buildContent() {
     var frag = document.createDocumentFragment();
     if (templateSrc) {
@@ -698,7 +778,6 @@ function updateGlobalAvatar(src) {
     }
     return frag;
   }
-
   for (var i = 0; i < containers.length; i++) {
     var c = containers[i];
     if (!c) continue;
@@ -706,7 +785,6 @@ function updateGlobalAvatar(src) {
     c.appendChild(buildContent());
     observeVideos(c);
   }
-
   var shopPage = document.getElementById('avatarShopPage');
   if (shopPage && shopPage.classList.contains('active')) {
     try { renderAvatars(); } catch(e) {}
@@ -764,9 +842,9 @@ function updateUIWithData(user) {
   var d2 = document.getElementById('shopDollarAmount2'); if (d2) d2.textContent = toPersianNum(shopDollars);
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  isServerLocked                                                */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Server Lock                                                 */
+/* ============================================================ */
 async function isServerLocked() {
   if (fbReady && fbDb) {
     try {
@@ -814,7 +892,7 @@ async function saveUserData() {
       var fresh = await getUser(currentPhone);
       if (fresh) {
         currentUserData = sanitizeUserData(fresh, currentPhone);
-        localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+        try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
         updateUIWithData(currentUserData);
       }
     } catch(e) {}
@@ -825,7 +903,6 @@ async function saveUserData() {
   try {
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
   } catch(e) {
-    // اگر حجم بالاست، فقط فیلدهای ضروری رو ذخیره کن
     try {
       var light = Object.assign({}, currentUserData);
       delete light.exclusiveAvatar;
@@ -905,9 +982,9 @@ function playClickSound() {
   } catch (e) {}
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Group + Rank                                               */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Group + Clan                                                */
+/* ============================================================ */
 async function findUserGroup(phone) {
   try {
     var groups = await getGroups();
@@ -1046,9 +1123,9 @@ async function showClanRankingModal() {
   body.innerHTML = html;
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Away Timer                                                 */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Away Timer                                                  */
+/* ============================================================ */
 function startAwayTimer() {
   if (currentPhone === CREATOR_PHONE) return;
   clearTimeout(awayTimer);
@@ -1056,15 +1133,15 @@ function startAwayTimer() {
     isUserAway = true;
     if (window.ogShowAway) { try { window.ogShowAway(); } catch(e) {} }
     try {
-      var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
-      if (!loggedIn || !loggedIn.phone) return;
-      var user = await getUser(loggedIn.phone);
+      var session = getSession();
+      if (!session || !session.phone) return;
+      var user = await getUser(session.phone);
       if (user) {
         user.online = false;
         user.lastSeen = Date.now();
-        await saveUser(loggedIn.phone, user);
+        await saveUser(session.phone, user);
       }
-      setFBOnline(loggedIn.phone, false, {});
+      setFBOnline(session.phone, false, {});
     } catch(e) {}
   }, AWAY_TIMEOUT_MS);
 }
@@ -1076,15 +1153,15 @@ async function reconnectUser() {
   if (!isUserAway) return;
   isUserAway = false;
   try {
-    var loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null');
-    if (!loggedIn || !loggedIn.phone) return;
-    var user = await getUser(loggedIn.phone);
+    var session = getSession();
+    if (!session || !session.phone) return;
+    var user = await getUser(session.phone);
     if (user) {
       user.online = true;
       user.lastSeen = Date.now();
-      await saveUser(loggedIn.phone, user);
+      await saveUser(session.phone, user);
     }
-    setFBOnline(loggedIn.phone, true, {});
+    setFBOnline(session.phone, true, {});
   } catch(e) {}
 }
 document.addEventListener('visibilitychange', function() {
@@ -1097,13 +1174,12 @@ window.addEventListener('focus', function() {
   reconnectUser();
 });
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Server Lock                                                */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Server Lock                                                 */
+/* ============================================================ */
 function lockServerForeverInGame() {
   if (gameServerLocked) return;
   gameServerLocked = true;
-
   var hideIds = [
     'profilePage', 'avatarShopPage', 'templateShopPage', 'newsModal',
     'adminModal', 'editUserModal', 'settingsModal', 'changePasswordModal',
@@ -1113,20 +1189,17 @@ function lockServerForeverInGame() {
     var el = document.getElementById(hideIds[i]);
     if (el) el.style.display = 'none';
   }
-
   var overlay = document.getElementById('serverDownOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'serverDownOverlay';
     document.body.appendChild(overlay);
   }
-
   overlay.innerHTML =
     '<div style="font-size:80px;">🔌</div>' +
-    '<div style="color:#ff6b6b;font-size:26px;font-weight:900;margin-top:24px;text-shadow:0 3px 8px rgba(0,0,0,.5);">سرور قطع است</div>' +
+    '<div style="color:#ff6b6b;font-size:26px;font-weight:900;margin-top:24px;">سرور قطع است</div>' +
     '<div style="color:rgba(255,255,255,0.9);font-size:15px;margin-top:16px;line-height:2.2;">بازی موقتاً در دسترس نیست<br>در حال تلاش برای اتصال مجدد...</div>' +
     '<div id="serverRetryInfo" style="color:#4fc3f7;font-size:12px;margin-top:20px;">⏳ بررسی خودکار هر ۳ ثانیه</div>';
-
   overlay.style.cssText =
     'position:fixed !important;inset:0 !important;width:100vw !important;height:100vh !important;' +
     'z-index:2147483647 !important;' +
@@ -1134,10 +1207,8 @@ function lockServerForeverInGame() {
     'display:flex !important;align-items:center !important;justify-content:center !important;' +
     'flex-direction:column !important;text-align:center !important;padding:30px !important;' +
     'font-family:Tahoma,Vazirmatn,sans-serif !important;';
-
   document.body.style.overflow = 'hidden';
   document.documentElement.style.overflow = 'hidden';
-
   if (__serverRecoveryInterval) clearInterval(__serverRecoveryInterval);
   __serverRecoveryInterval = setInterval(async function() {
     try {
@@ -1154,24 +1225,22 @@ function lockServerForeverInGame() {
           var fresh = await getUser(currentPhone);
           if (fresh) {
             currentUserData = sanitizeUserData(fresh, currentPhone);
-            localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+            try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
             updateUIWithData(currentUserData);
           }
         } catch(e) {}
         showShopNotification('✅ اتصال برقرار شد');
       } else {
         var info = document.getElementById('serverRetryInfo');
-        if (info) {
-          info.textContent = '⏳ در حال تلاش... (' + new Date().toLocaleTimeString('fa-IR') + ')';
-        }
+        if (info) info.textContent = '⏳ در حال تلاش... (' + new Date().toLocaleTimeString('fa-IR') + ')';
       }
     } catch(e) {}
   }, 3000);
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Admin Panel                                                */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Admin Panel                                                 */
+/* ============================================================ */
 function openAdminPanel() {
   var modal = document.getElementById('adminModal');
   if (!modal) return;
@@ -1215,18 +1284,14 @@ async function loadUsers() {
   if (container) container.innerHTML = '<div style="color:#aaa;padding:20px;text-align:center;">در حال بارگذاری...</div>';
   try {
     var promise = getAllUsers();
-    var timeout = new Promise(function(resolve) {
-      setTimeout(function() { resolve(null); }, 8000);
-    });
+    var timeout = new Promise(function(resolve) { setTimeout(function() { resolve(null); }, 8000); });
     var allUsers = await Promise.race([promise, timeout]);
     if (!allUsers) {
       if (container) container.innerHTML = '<div style="color:#f44336;padding:20px;text-align:center;">خطای شبکه - دوباره تلاش کنید</div>';
       return;
     }
     currentUserList = Object.entries(allUsers).map(function(e) {
-      var u = e[1];
-      u.phone = e[0];
-      return u;
+      var u = e[1]; u.phone = e[0]; return u;
     });
     renderAdminUsers(currentUserList);
   } catch(e) {
@@ -1248,9 +1313,7 @@ function renderAdminUsers(list) {
   if (currentAdminTab === 'online') filtered = filtered.filter(function(u) { return u.online === true; });
   else if (currentAdminTab === 'offline') filtered = filtered.filter(function(u) { return u.online === false || u.online === undefined; });
   else if (currentAdminTab === 'banned') filtered = filtered.filter(function(u) { return u.banned === true; });
-
   filtered.sort(function(a, b) { return (b.lastUpdatedAt || 0) - (a.lastUpdatedAt || 0); });
-
   if (!filtered.length) {
     container.innerHTML = '<div style="color:#aaa;padding:20px;text-align:center;">کاربری یافت نشد</div>';
     return;
@@ -1287,72 +1350,33 @@ async function openUserHistory(phone) {
     document.getElementById('historyUserName').textContent = user.name || 'کاربر';
     var content = document.getElementById('historyContent');
     var html = '';
-
     html += '<div style="color:#ccc;font-size:12px;background:rgba(255,255,255,.05);padding:12px;border-radius:8px;margin-bottom:8px;line-height:2;">';
     html += '<div><b style="color:#fff;">کد:</b> ' + (toPersianNum(user.userCode) || '----') + '</div>';
     html += '<div><b style="color:#fff;">شماره:</b> <span style="direction:ltr;display:inline-block;">' + phone + '</span></div>';
     html += '<div><b style="color:#fff;">مقام:</b> ' + (user.rank || 'کاربر') + '</div>';
-    html += '<div><b style="color:#fff;">سکه:</b> ' + toPersianNum(user.coins || 0) + ' | <b style="color:#fff;">الماس:</b> ' + toPersianNum(user.gems || 0) + ' | <b style="color:#fff;">دولار:</b> ' + toPersianNum(user.dollars || 0) + '</div>';
-    html += '<div><b style="color:#fff;">ساعت:</b> ' + toPersianNum(user.hours || 0) + ' | <b style="color:#fff;">کاپ:</b> ' + toPersianNum(user.cups || 0) + '</div>';
     html += '<div><b style="color:#fff;">وضعیت:</b> ' + (user.banned ? '⛔ بن شده' : (user.online ? '🟢 آنلاین' : '⚫ آفلاین')) + '</div>';
     html += '</div>';
-
     html += '<div style="color:#ccc;font-size:12px;background:rgba(76,175,80,.15);padding:12px;border-radius:8px;margin-bottom:8px;line-height:2;border:1px solid #4caf50;">';
     html += '<div style="color:#4caf50;font-weight:900;font-size:13px;margin-bottom:6px;">📍 آخرین ورود</div>';
     html += '<div><b style="color:#fff;">🕐 زمان:</b> ' + formatDate(user.lastLogin) + '</div>';
     html += '<div><b style="color:#fff;">🌐 IP:</b> <span style="direction:ltr;display:inline-block;color:#4fc3f7;">' + (user.lastIP || 'نامشخص') + '</span></div>';
     html += '<div><b style="color:#fff;">📱 دستگاه:</b> <span style="direction:ltr;display:inline-block;font-size:10px;word-break:break-all;">' + (user.lastDevice || 'نامشخص') + '</span></div>';
     html += '</div>';
-
-    html += '<div style="color:#ccc;font-size:12px;background:rgba(33,150,243,.15);padding:12px;border-radius:8px;margin-bottom:8px;line-height:2;border:1px solid #2196f3;">';
-    html += '<div style="color:#2196f3;font-weight:900;font-size:13px;margin-bottom:6px;">📝 ثبت‌نام</div>';
-    html += '<div><b style="color:#fff;">🕐 زمان:</b> ' + formatDate(user.registeredAt || user.createdAt) + '</div>';
-    html += '<div><b style="color:#fff;">🌐 IP:</b> <span style="direction:ltr;display:inline-block;color:#4fc3f7;">' + (user.registeredIP || 'نامشخص') + '</span></div>';
-    html += '<div><b style="color:#fff;">📱 دستگاه:</b> <span style="direction:ltr;display:inline-block;font-size:10px;word-break:break-all;">' + (user.registeredDevice || 'نامشخص') + '</span></div>';
-    html += '</div>';
-
-    if (user.deviceInfo) {
-      html += '<div style="color:#ccc;font-size:11px;background:rgba(156,39,176,.15);padding:10px;border-radius:8px;margin-bottom:8px;line-height:1.9;border:1px solid #9c27b0;">';
-      html += '<div style="color:#ce93d8;font-weight:700;margin-bottom:6px;">📱 اطلاعات دستگاه</div>';
-      html += '<div><b style="color:#fff;">صفحه:</b> ' + (user.deviceInfo.screen || '-') + '</div>';
-      html += '<div><b style="color:#fff;">پلتفرم:</b> <span style="direction:ltr;">' + (user.deviceInfo.platform || '-') + '</span></div>';
-      html += '<div><b style="color:#fff;">زبان:</b> ' + (user.deviceInfo.language || '-') + '</div>';
-      html += '<div><b style="color:#fff;">هسته:</b> ' + (user.deviceInfo.cores || '-') + '</div>';
-      html += '</div>';
-    }
-
     if (user.loginHistory && user.loginHistory.length) {
       html += '<div style="color:#fff;font-size:13px;font-weight:900;margin:12px 0 8px;">📜 تاریخچه کامل ورودها (' + toPersianNum(user.loginHistory.length) + ')</div>';
       var hist = user.loginHistory.slice().reverse();
-      for (var i = 0; i < hist.length; i++) {
+      for (var i = 0; i < hist.length && i < 30; i++) {
         var s = hist[i];
         var t = s.time ? new Date(s.time).toLocaleString('fa-IR') : (s.date || '----');
         html += '<div style="background:rgba(0,0,0,.3);padding:8px 10px;border-radius:8px;margin-bottom:5px;font-size:11px;line-height:1.9;border-right:3px solid ' + (i === 0 ? '#4caf50' : '#555') + ';">';
         html += '<div><b style="color:#4fc3f7;">🕐 ' + t + '</b>' + (i === 0 ? ' <span style="color:#4caf50;font-size:10px;">(آخرین)</span>' : '') + '</div>';
         html += '<div><b style="color:#fff;">🌐 IP:</b> <span style="direction:ltr;display:inline-block;">' + (s.ip || 'نامشخص') + '</span></div>';
-        html += '<div style="color:#888;font-size:10px;direction:ltr;word-break:break-all;"><b style="color:#aaa;">📱</b> ' + (s.device || 'نامشخص') + '</div>';
         html += '</div>';
       }
       html += '<button class="edit-btn danger" onclick="window.clearUserSessions && window.clearUserSessions(\'' + phone + '\')" style="width:100%;margin-top:8px;">🗑 پاک کردن تاریخچه ورود</button>';
-    } else {
-      html += '<div style="color:#888;text-align:center;padding:15px;font-size:12px;">هیچ تاریخچه‌ای ثبت نشده</div>';
     }
-
-    if (user.banHistory && user.banHistory.length) {
-      html += '<div style="color:#fff;font-size:13px;font-weight:900;margin:12px 0 8px;">⛔ تاریخچه بن</div>';
-      for (var j = 0; j < user.banHistory.length; j++) {
-        var b = user.banHistory[j];
-        html += '<div style="background:rgba(244,67,54,.1);padding:8px 10px;border-radius:8px;margin-bottom:5px;font-size:11px;line-height:1.9;border-right:3px solid #f44336;">';
-        html += '<div><b style="color:#ff6b6b;">🕐 ' + formatDate(b.time) + '</b></div>';
-        html += '<div><b style="color:#fff;">توسط:</b> ' + (b.by || 'سیستم') + '</div>';
-        html += '<div><b style="color:#fff;">مدت:</b> ' + (b.duration || '----') + '</div>';
-        html += '</div>';
-      }
-    }
-
     html += '<button class="edit-btn cancel" onclick="window.closeUserHistory && window.closeUserHistory()" style="width:100%;margin-top:10px;">بازگشت</button>';
     html += '<button class="edit-btn info" onclick="window.openEditUser && window.openEditUser(\'' + phone + '\')" style="width:100%;margin-top:8px;">✏️ ویرایش کاربر</button>';
-
     content.innerHTML = html;
   } catch(e) {}
 }
@@ -1369,7 +1393,6 @@ async function openEditUser(id) {
   editingUserId = id;
   pauseSync = true;
   editingUserExclusiveAvatar = u.exclusiveAvatar || null;
-
   var setVal = function(eid, val) {
     var e = document.getElementById(eid);
     if (e) e.value = val;
@@ -1389,12 +1412,11 @@ async function openEditUser(id) {
   setVal('editUserMafiaWins', u.mafiaWins || 0);
   setVal('editUserCitizenWins', u.citizenWins || 0);
   setVal('editUserBestScore', u.bestScore || 0);
-
   var preview = document.getElementById('exclusiveAvatarPreview');
   if (preview) {
     if (u.exclusiveAvatar) {
       if (isVideoSrc(u.exclusiveAvatar)) {
-        preview.innerHTML = '<video src="' + u.exclusiveAvatar + '" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+        preview.innerHTML = '<video src="' + u.exclusiveAvatar + '" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
       } else {
         preview.innerHTML = '<img src="' + u.exclusiveAvatar + '" style="width:100%;height:100%;object-fit:cover;">';
       }
@@ -1402,7 +1424,6 @@ async function openEditUser(id) {
       preview.innerHTML = '<span class="exclusive-avatar-placeholder">👤</span>';
     }
   }
-
   var perm = getPerm();
   var setDisp = function(eid, show) {
     var e = document.getElementById(eid);
@@ -1417,7 +1438,6 @@ async function openEditUser(id) {
   var rd = document.getElementById('rowDelete');
   if (rd) rd.style.display = perm.del ? 'flex' : 'none';
   fillBanOptions(perm.banMax || '1d');
-
   var bb = document.getElementById('btnBanUser');
   var ub = document.getElementById('btnUnbanUser');
   var bs = await getBanStatus(id);
@@ -1431,16 +1451,12 @@ async function openEditUser(id) {
   document.getElementById('editUserModal').classList.add('active');
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  saveUserEdit - آواتار اختصاصی با dataURL                      */
-/* ═══════════════════════════════════════════════════════════ */
 async function saveUserEdit() {
   if (!editingUserId) return;
   var perm = getPerm();
   var allUsers = await getAllUsers();
   var u = allUsers[editingUserId];
   if (!u) { pauseSync = false; return; }
-
   var getVal = function(eid) {
     var e = document.getElementById(eid);
     return e ? e.value : '';
@@ -1463,15 +1479,14 @@ async function saveUserEdit() {
     u.citizenWins = parseInt(getVal('editUserCitizenWins')) || 0;
     u.bestScore = parseInt(getVal('editUserBestScore')) || 0;
   }
-
   if (perm.exclusive) {
     if (editingUserExclusiveAvatar && editingUserExclusiveAvatar !== 'removed') {
-      if (!u.previousAvatar || u.previousAvatar === u.exclusiveAvatar) {
+      var oldExclusive = u.exclusiveAvatar || null;
+      if (!u.previousAvatar || u.previousAvatar === oldExclusive) {
         u.previousAvatar = u.avatar || 'Mafia2.png';
       }
       u.exclusiveAvatar = editingUserExclusiveAvatar;
       u.useExclusive = true;
-      // اطمینان از اینکه توی ownedAvatars هم هست
       if (!u.ownedAvatars) u.ownedAvatars = [];
       var exKey = 'admin_exclusive_' + editingUserId;
       if (u.ownedAvatars.indexOf(exKey) === -1) u.ownedAvatars.push(exKey);
@@ -1490,29 +1505,38 @@ async function saveUserEdit() {
         } else if (!u.avatar || u.avatar === oldExcl) {
           u.avatar = 'Mafia2.png';
         }
+        ['avatar', 'previousAvatar', 'currentAvatar'].forEach(function(field) {
+          if (u[field] === oldExcl) u[field] = 'Mafia2.png';
+        });
       }
     }
   }
-
   u.lastUpdatedAt = Date.now();
   allUsers[editingUserId] = u;
-  await saveUser(editingUserId, u);
+  var saved = false;
+  for (var attempt = 0; attempt < 3; attempt++) {
+    saved = await saveUser(editingUserId, u);
+    if (saved) break;
+    await new Promise(function(r) { setTimeout(r, 500); });
+  }
   await saveAllUsers(allUsers);
-
   notifyUserUpdate(editingUserId, 'admin_edit');
   sendLive('user_' + editingUserId, 'admin_edit', {
     phone: editingUserId,
     force: true,
     resetAvatar: true,
     exclusive: u.exclusiveAvatar || null,
-    useExclusive: u.useExclusive
+    hasExclusive: !!u.exclusiveAvatar,
+    useExclusive: u.useExclusive === true,
+    avatar: u.avatar || 'Mafia2.png'
   });
-
+  sendLive('user_' + editingUserId, 'force_refresh', { phone: editingUserId, reason: 'admin_edit' });
   if (editingUserId === currentPhone) {
     setAdminLock();
     currentUserData = u;
-    localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+    try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
     updateUIWithData(currentUserData);
+    updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
   }
   closeEditUser();
   await loadUsers();
@@ -1559,10 +1583,8 @@ async function banUser(type) {
     await saveUser(editingUserId, u);
     showShopNotification('اکانت بن شد');
   }
-  // ⚠️ سیگنال فوری - کاربر بلافاصله Ban.html میره
   notifyUserUpdate(editingUserId, 'banned');
   sendLive('user_' + editingUserId, 'banned_immediate', { phone: editingUserId, force: true });
-  sendLive('global', 'user_banned', { phone: editingUserId });
   closeEditUser();
   await loadUsers();
 }
@@ -1726,14 +1748,6 @@ async function refreshWhitelistUI() {
   container.innerHTML = html;
 }
 
-async function quickWhitelistUser(ip, deviceId, userName) {
-  if (!ip && !deviceId) return;
-  if (!confirm('افزودن به وایت‌لیست؟ ' + userName)) return;
-  if (ip && ip !== 'نامشخص' && ip !== '-') await addToWhitelist(ip, 'auto: ' + userName, currentPhone);
-  if (deviceId && deviceId !== 'نامشخص' && deviceId !== '-') await addToWhitelist(deviceId, 'auto-dev: ' + userName, currentPhone);
-  showShopNotification('اضافه شد');
-}
-
 async function clearUserSessions(phone) {
   if (!confirm('پاک کردن تاریخچه ورود؟')) return;
   var user = await getUser(phone);
@@ -1784,7 +1798,6 @@ async function renderUserLogs() {
       html += '<div style="color:#aaa;direction:ltr;">📱 ' + u.phone + '</div>';
       html += '<div style="color:#4fc3f7;direction:ltr;word-break:break-all;">🌐 IP: ' + (u.lastIP || 'نامشخص') + '</div>';
       html += '<div style="color:#ffb74d;">⏰ آخرین ورود: ' + lastLoginStr + '</div>';
-      html += '<div style="color:#888;font-size:10px;">📅 ثبت‌نام: ' + formatDate(u.registeredAt || u.createdAt) + '</div>';
       html += '</div>';
     }
     container.innerHTML = html;
@@ -1793,9 +1806,9 @@ async function renderUserLogs() {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  مسابقات                                                    */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Tournaments                                                 */
+/* ============================================================ */
 async function loadTournamentConfig() {
   try {
     var cfg = await getTournamentConfig();
@@ -1810,15 +1823,6 @@ async function loadTournamentConfig() {
     if (cfg.rank3) { setVal('prize3Gems', cfg.rank3.gems); setVal('prize3Coins', cfg.rank3.coins); setVal('prize3Dollars', cfg.rank3.dollars); setVal('prize3Note', cfg.rank3.note); }
     if (cfg.rank4_10) { setVal('prize4Gems', cfg.rank4_10.gems); setVal('prize4Coins', cfg.rank4_10.coins); setVal('prize4Dollars', cfg.rank4_10.dollars); setVal('prize4Note', cfg.rank4_10.note); }
     if (cfg.blacklist) { window.clanBlacklist = cfg.blacklist; renderBlacklist(); }
-    var info = document.getElementById('tournamentEndTimeInfo');
-    if (info && cfg.endTime) {
-      var remaining = cfg.endTime - Date.now();
-      if (remaining > 0) {
-        var days = Math.floor(remaining / 86400000);
-        var hours = Math.floor((remaining % 86400000) / 3600000);
-        info.textContent = '⏰ پایان: ' + days + ' روز و ' + hours + ' ساعت مانده';
-      } else info.textContent = '⏰ زمان مسابقه تمام شده!';
-    }
   } catch(e) {}
 }
 
@@ -1845,9 +1849,8 @@ async function saveAllTournamentConfig() {
     try { fbDb.ref('server_state/tournament_end').set(endTime); } catch(e) {}
   }
   sendLive('global', 'tournament_updated', {});
-  showShopNotification('✅ ذخیره شد - پایان: ' + new Date(endTime).toLocaleDateString('fa-IR'));
+  showShopNotification('✅ ذخیره شد');
 }
-
 function renderBlacklist() {
   var container = document.getElementById('blacklistItems');
   if (!container) return;
@@ -1876,71 +1879,9 @@ function removeClanFromBlacklist(idx) {
 }
 window.clanBlacklist = window.clanBlacklist || [];
 
-async function distributeClanPrizesNow() {
-  if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
-  if (!confirm('جوایز همین الان توزیع شود؟')) return;
-  await distributeClanPrizes(true);
-  showShopNotification('✅ جوایز توزیع شد');
-}
-
-async function distributeClanPrizes(force) {
-  try {
-    var cfg = await getTournamentConfig();
-    if (!cfg) return;
-    if (cfg.distributed && !force) return;
-    if (!force && Date.now() < cfg.endTime) return;
-    var ranking = await getClanRanking();
-    if (!ranking.length) return;
-    var allUsers = await getAllUsers();
-    var groups = await getGroups();
-    var top = ranking.slice(0, 10);
-    var now = Date.now();
-    var awarded = [];
-    for (var i = 0; i < top.length; i++) {
-      var r = top[i];
-      var pc = null;
-      if (r.rank === 1) pc = cfg.rank1;
-      else if (r.rank === 2) pc = cfg.rank2;
-      else if (r.rank === 3) pc = cfg.rank3;
-      else if (r.rank >= 4 && r.rank <= 10) pc = cfg.rank4_10;
-      if (!pc) continue;
-      var g = null;
-      for (var k = 0; k < groups.length; k++) {
-        if (groups[k].id === r.id) { g = groups[k]; break; }
-      }
-      if (!g || !g.members) continue;
-      var gems = parseInt(pc.gems) || 0;
-      var coins = parseInt(pc.coins) || 0;
-      var dollars = parseInt(pc.dollars) || 0;
-      for (var j = 0; j < g.members.length; j++) {
-        var mPhone = g.members[j];
-        var u = allUsers[mPhone];
-        if (!u) continue;
-        if (gems > 0) u.gems = (u.gems || 0) + gems;
-        if (coins > 0) u.coins = (u.coins || 0) + coins;
-        if (dollars > 0) u.dollars = (u.dollars || 0) + dollars;
-        u.lastUpdatedAt = now;
-        allUsers[mPhone] = u;
-        awarded.push(mPhone);
-      }
-    }
-    await saveAllUsers(allUsers);
-    for (var p = 0; p < awarded.length; p++) {
-      try { await saveUser(awarded[p], allUsers[awarded[p]]); } catch(e) {}
-      notifyUserUpdate(awarded[p], 'prize_received');
-      sendLive('user_' + awarded[p], 'prize_received', {});
-    }
-    if (!force) {
-      cfg.distributed = true;
-      await saveTournamentConfigData(cfg);
-    }
-    sendLive('global', 'tournament_prizes_distributed', {});
-  } catch(e) {}
-}
-
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
 /*  News                                                        */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
 async function loadNews() {
   var news = await getNews();
   var list = document.getElementById('newsList');
@@ -1994,16 +1935,15 @@ async function sendNews() {
   showShopNotification('ارسال شد');
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Avatar Shop                                                */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Avatar Shop                                                 */
+/* ============================================================ */
 function initAvatarShop() {
   if (!currentUserData) return;
   shopGold = currentUserData.coins || 0;
   shopGems = currentUserData.gems || 0;
   if (!currentUserData.ownedAvatars) currentUserData.ownedAvatars = [];
   if (!currentUserData.ownedTemplates) currentUserData.ownedTemplates = [];
-
   var rank = currentUserData.rank || 'کاربر';
   var exclusiveList = [
     { src: '655.webm', allowedRanks: ['سازنده'] },
@@ -2024,7 +1964,6 @@ function initAvatarShop() {
       if (avObj) avObj.owned = false;
     }
   });
-
   var owned = currentUserData.ownedAvatars || [];
   avatars.forEach(function(a) {
     if (a.free) a.owned = true;
@@ -2036,21 +1975,15 @@ function initAvatarShop() {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  renderAvatars - با آواتار اختصاصی ادمین                       */
-/* ═══════════════════════════════════════════════════════════ */
 function renderAvatars() {
   var grid = document.getElementById('avatarGrid');
   if (!grid) return;
   var disp;
-
   if (currentAvatarSection === 'my') {
     disp = avatars.filter(function(a) { return a.owned; });
     if (currentPhone !== CREATOR_PHONE) {
       disp = disp.filter(function(a) { return a.src !== '655.webm'; });
     }
-
-    // ⚠️ اضافه کردن آواتار اختصاصی ادمین (dataURL) به لیست
     if (currentUserData && currentUserData.exclusiveAvatar) {
       var hasExcl = disp.some(function(a) { return a.src === currentUserData.exclusiveAvatar; });
       if (!hasExcl) {
@@ -2067,15 +2000,12 @@ function renderAvatars() {
   } else {
     disp = avatars.filter(function(a) { return !a.owned && !a.exclusive; });
   }
-
   if (!disp.length) {
     grid.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">آواتاری نیست</div>';
     return;
   }
-
   var currentAvatarSrc = currentUserData ? currentUserData.avatar : '';
   var isExclusiveActive = !!(currentUserData && currentUserData.useExclusive === true && currentUserData.exclusiveAvatar);
-
   grid.innerHTML = disp.map(function(a) {
     var isVid = isVideoSrc(a.src);
     var isCurrent;
@@ -2084,12 +2014,13 @@ function renderAvatars() {
     } else {
       isCurrent = (currentAvatarSrc === a.src) && !isExclusiveActive;
     }
-
     var cardClass = 'avatar-card ' + (a.owned ? 'owned ' : '') + (isCurrent ? 'is-selected' : '');
-    var mediaHtml = isVid ?
-      '<video src="' + a.src + '" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>' :
-      '<img src="' + a.src + '" style="width:100%;height:100%;object-fit:cover;">';
-
+    var mediaHtml;
+    if (isVid) {
+      mediaHtml = '<video src="' + a.src + '" autoplay loop muted playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>';
+    } else {
+      mediaHtml = '<img src="' + a.src + '" style="width:100%;height:100%;object-fit:cover;">';
+    }
     var confirmBtn = '';
     if (currentAvatarSection === 'my' && a.owned && !isCurrent) {
       if (a.isAdminExclusive) {
@@ -2100,7 +2031,6 @@ function renderAvatars() {
     } else if (a.isAdminExclusive && isCurrent) {
       confirmBtn = '<div style="color:#ffd700;font-size:11px;font-weight:700;">✔ فعال</div>';
     }
-
     var priceHtml;
     if (a.isAdminExclusive) {
       priceHtml = '<div style="color:#ffd700;font-size:11px;font-weight:700;">👑 اختصاصی</div>';
@@ -2109,26 +2039,19 @@ function renderAvatars() {
     } else {
       priceHtml = '<div style="color:#4CAF50;font-size:11px;">دارید</div>';
     }
-
     return '<div class="' + cardClass + '" data-id="' + a.id + '"><div class="avatar-image">' + mediaHtml + '</div>' + priceHtml + confirmBtn + '</div>';
   }).join('');
-
   observeVideos(grid);
-
   grid.querySelectorAll('.avatar-card').forEach(function(c) {
     c.addEventListener('click', function(e) {
       if (e.target.closest('.avatar-confirm-btn')) return;
       var id = c.dataset.id;
-      if (id === 'admin_exclusive') {
-        activateAdminExclusive();
-        return;
-      }
+      if (id === 'admin_exclusive') { activateAdminExclusive(); return; }
       var idNum = parseInt(id);
       var av = avatars.find(function(x) { return x.id === idNum; });
       if (av && currentAvatarSection === 'buy' && !av.owned) {
         handleAvatarClick(idNum);
       } else if (av && currentAvatarSection === 'my' && av.owned) {
-        // لمس کارت = فعال/غیرفعال کردن
         currentUserData.avatar = av.src;
         currentUserData.useExclusive = false;
         updateGlobalAvatar(av.src);
@@ -2137,14 +2060,12 @@ function renderAvatars() {
       }
     });
   });
-
   grid.querySelectorAll('.avatar-confirm-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       playClickSound();
       var src = btn.dataset.src;
       if (!src) return;
-
       if (btn.dataset.excl === '1') {
         activateAdminExclusive();
       } else {
@@ -2191,7 +2112,6 @@ function renderTemplates() {
       '<div style="color:#4CAF50;font-size:11px;">دارید</div>';
     return '<div class="template-card' + (isCurrent ? ' is-selected' : '') + '" data-src="' + t.src + '"><div class="template-preview-box"><img src="' + t.src + '" style="width:100%;height:100%;object-fit:contain;"></div><div class="template-name">' + t.name + '</div>' + priceHtml + confirmBtn + '</div>';
   }).join('');
-
   grid.querySelectorAll('.template-confirm-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -2204,15 +2124,6 @@ function renderTemplates() {
       saveTemplateToStorage(src);
     });
   });
-}
-
-function handleTemplateClick(t) {
-  selectedTemplate = t;
-  templatePurchasePrice = t.price;
-  purchaseMode = 'template';
-  document.getElementById('modalTitle').textContent = 'خرید قالب';
-  document.getElementById('modalText').textContent = 'خرید ' + t.name + ' به قیمت ' + toPersianNum(t.price) + ' الماس؟';
-  document.getElementById('purchaseModal').classList.add('show');
 }
 
 function handleAvatarClick(id) {
@@ -2272,9 +2183,9 @@ async function confirmPurchase() {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  Online + Sync                                              */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
+/*  Online + Ban Check                                          */
+/* ============================================================ */
 async function setUserOnlineStatus(online) {
   if (!currentPhone) return;
   try {
@@ -2299,86 +2210,56 @@ async function checkWhitelistNow() {
   } catch(e) { return false; }
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  بن فوری - بلافاصله Ban.html                                   */
-/* ═══════════════════════════════════════════════════════════ */
 async function immediateBanCheck() {
-  if (banDetected || isRedirecting) return;
-  if (!currentPhone || currentPhone === CREATOR_PHONE) return;
-  if (banCheckInFlight) return;
+  if (banDetected || isRedirecting) return true;
+  if (!currentPhone || currentPhone === CREATOR_PHONE) return false;
+  if (banCheckInFlight) return false;
   banCheckInFlight = true;
   try {
     var b = await getBanStatus(currentPhone);
-    if (b) {
-      banDetected = true;
-      redirectToBan(b, currentPhone);
-      return;
-    }
-    // چک بن دستگاه و IP
+    if (b) { banDetected = true; redirectToBan(b, currentPhone); banCheckInFlight = false; return true; }
     var devId = currentDeviceId || getDeviceId();
     var devBan = await getDeviceBan(devId);
-    if (devBan && devBan.isBanned) {
-      banDetected = true;
-      redirectToBan(devBan, currentPhone);
-      return;
-    }
+    if (devBan && devBan.isBanned) { banDetected = true; redirectToBan(devBan, currentPhone); banCheckInFlight = false; return true; }
     if (myIP) {
-      var ipBan = await redisGet('ip_ban:' + myIP);
-      if (ipBan && ipBan.isBanned) {
-        banDetected = true;
-        redirectToBan(ipBan, currentPhone);
-        return;
+      var isWhite = await isIPWhitelisted(myIP, devId);
+      if (!isWhite) {
+        var ipBan = await redisGet('ip_ban:' + myIP);
+        if (ipBan && ipBan.isBanned) { banDetected = true; redirectToBan(ipBan, currentPhone); banCheckInFlight = false; return true; }
       }
     }
   } catch(e) {}
   banCheckInFlight = false;
+  return false;
 }
 
 async function checkBanPeriodically() {
   if (banDetected || isRedirecting) return;
   if (!currentPhone || currentPhone === CREATOR_PHONE) return;
-
   try {
-    // ⚠️ چک بن حتی در مودال‌ها (بن فوری)
     var b = await getBanStatus(currentPhone);
-    if (b) {
-      banDetected = true;
-      redirectToBan(b, currentPhone);
-      return;
-    }
-
-    // چک بن دستگاه
+    if (b) { banDetected = true; redirectToBan(b, currentPhone); return; }
     var devId = currentDeviceId || getDeviceId();
     var devBan = await getDeviceBan(devId);
-    if (devBan && devBan.isBanned) {
-      banDetected = true;
-      redirectToBan(devBan, currentPhone);
-      return;
-    }
-
-    // چک بن IP (اگر وایت‌لیست نباشه)
+    if (devBan && devBan.isBanned) { banDetected = true; redirectToBan(devBan, currentPhone); return; }
     var isWhite = myIP ? await isIPWhitelisted(myIP, devId) : false;
     if (!isWhite && myIP) {
       var ipBan = await redisGet('ip_ban:' + myIP);
-      if (ipBan && ipBan.isBanned) {
-        banDetected = true;
-        redirectToBan(ipBan, currentPhone);
-        return;
-      }
+      if (ipBan && ipBan.isBanned) { banDetected = true; redirectToBan(ipBan, currentPhone); return; }
     }
   } catch(e) {}
-
-  // چک قفل سرور
   if (pauseSync) return;
   var am = document.getElementById('adminModal');
   if (am && am.classList.contains('active')) return;
   var eu = document.getElementById('editUserModal');
   if (eu && eu.classList.contains('active')) return;
-
   var locked = await isServerLocked();
   if (locked && !getPerm().panel) { lockServerForeverInGame(); }
 }
 
+/* ============================================================ */
+/*  ⚡ Sync با محافظت از Session                                  */
+/* ============================================================ */
 async function syncWithServerInBackground() {
   try {
     if (banDetected) return;
@@ -2387,6 +2268,15 @@ async function syncWithServerInBackground() {
     if (am && am.classList.contains('active')) return;
     var eu = document.getElementById('editUserModal');
     if (eu && eu.classList.contains('active')) return;
+
+    // ⚠️ اگر Session نبود، sync رو متوقف کن (نه logout)
+    var session = getSession();
+    if (!session || !session.phone) return;
+
+    // ⚠️ اطمینان از هماهنگی currentPhone با session
+    if (session.phone !== currentPhone) {
+      currentPhone = session.phone;
+    }
 
     myIP = await fetchUserIP();
     currentDeviceId = getDeviceId();
@@ -2407,20 +2297,13 @@ async function syncWithServerInBackground() {
       currentUserData = sanitizeUserData(Object.assign({}, currentUserData, serverUser), currentPhone);
       currentUserData.lastIP = myIP;
       currentUserData.lastDevice = currentDeviceId;
-      try {
-        localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
-      } catch(e) {}
+      try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
       updateUIWithData(currentUserData);
       return;
     }
 
-    // ⚠️ چک بن فوری
     var ban = await getBanStatus(currentPhone);
-    if (ban) {
-      banDetected = true;
-      redirectToBan(ban, currentPhone);
-      return;
-    }
+    if (ban) { banDetected = true; redirectToBan(ban, currentPhone); return; }
 
     var isWhitelisted = await isIPWhitelisted(myIP, currentDeviceId);
     var hasPanelAccess = getPerm().panel;
@@ -2441,16 +2324,18 @@ async function syncWithServerInBackground() {
       var sUser = await getUser(currentPhone);
       if (sUser) {
         currentUserData = sanitizeUserData(sUser, currentPhone);
-        try {
-          localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
-        } catch(e) {}
+        try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
         updateUIWithData(currentUserData);
       }
       return;
     }
 
     var sUser2 = await getUser(currentPhone);
-    if (!sUser2) return;
+    if (!sUser2) {
+      // ⚠️ اگر کاربر در Redis نبود، **logout نکن**، فقط صبر کن
+      // ممکنه موقتاً شبکه مشکل داشته باشه
+      return;
+    }
     if (!sUser2.userCode || isNaN(parseInt(sUser2.userCode))) {
       sUser2 = await assignCodeIfMissing(currentPhone, sUser2);
     }
@@ -2460,17 +2345,27 @@ async function syncWithServerInBackground() {
 
     if (st > lt) {
       currentUserData = sanitizeUserData(sUser2, currentPhone);
-      try {
-        localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
-      } catch(e) {}
+      try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
       updateUIWithData(currentUserData);
     }
 
     currentUserData.lastIP = myIP;
     currentUserData.lastDevice = currentDeviceId;
 
-    try { await distributeClanPrizes(false); } catch(e) {}
+    // ⚠️ Session Keep-Alive
+    refreshSession();
   } catch(error) {}
+}
+
+/* ============================================================ */
+/*  ⚡ Live Subscriptions با محافظت از logout ناخواسته             */
+/* ============================================================ */
+function isSignalFresh(sig) {
+  if (!sig || !sig.time) return false;
+  var age = Date.now() - sig.time;
+  if (age < 0) return false; // زمان آینده = غیرمعتبر
+  if (age > SIGNAL_FRESH_MS) return false; // قدیمی‌تر از ۱۵ ثانیه
+  return true;
 }
 
 function setupLiveSubscriptions() {
@@ -2501,18 +2396,12 @@ function setupLiveSubscriptions() {
           }
         }
       });
-
-      // ⚠️ لیستن به بن فوری از Firebase
-      fbDb.ref('banned_users/' + currentPhone).on('value', function(snap) {
-        if (snap.val() && snap.val().isBanned && currentPhone !== CREATOR_PHONE) {
-          banDetected = true;
-          redirectToBan(snap.val(), currentPhone);
-        }
-      });
     } catch(e) {}
   }
 
   window.FBLive.subscribe('global', async function(sig) {
+    if (!isSignalFresh(sig)) return;
+
     if (sig.type === 'news_updated') {
       await loadNews();
       showShopNotification('📢 اطلاعیه جدید');
@@ -2540,46 +2429,66 @@ function setupLiveSubscriptions() {
       }
     } else if (sig.type === 'tournament_updated') {
       loadTournamentConfig();
-    } else if (sig.type === 'user_banned') {
-      // ⚠️ چک فوری بن
-      immediateBanCheck();
     }
   });
 
   window.FBLive.subscribe('user_' + currentPhone, async function(sig) {
-    // ⚠️ بن فوری - بلافاصله چک و ریدایرکت
+    // ⚠️ فقط سیگنال تازه پردازش بشه
+    if (!isSignalFresh(sig)) return;
+
+    // ⚠️ بن فوری
     if (sig.type === 'banned' || sig.type === 'banned_immediate') {
       if (currentPhone === CREATOR_PHONE) return;
       banDetected = true;
       var ban = await getBanStatus(currentPhone);
       if (ban) redirectToBan(ban, currentPhone);
-      else {
-        // اگر Ban از Redis نیومد، مستقیم ریدایرکت کن
-        redirectToBan({ bannedBy: 'مدیریت', reason: 'تخلف', duration: 'permanent' }, currentPhone);
-      }
+      else redirectToBan({ bannedBy: 'مدیریت', reason: 'تخلف', duration: 'permanent' }, currentPhone);
       return;
     }
+
+    // ⚠️ force_logout: فقط با تایید از Redis
     if (sig.type === 'force_logout' && currentPhone !== CREATOR_PHONE) {
-      localStorage.removeItem('currentLoggedInUser');
-      window.location.replace('index.html');
+      // چک کن که واقعاً بن شده یا حسابش حذف شده
+      var checkUser = await getUser(currentPhone);
+      var checkBan = await getBanStatus(currentPhone);
+      if (checkBan) {
+        redirectToBan(checkBan, currentPhone);
+        return;
+      }
+      if (!checkUser) {
+        // کاربر واقعاً پاک شده
+        await safeLogout('force_logout', true);
+        return;
+      }
+      // ⚠️ در غیر این صورت، logout نکن!
       return;
     }
+
+    // ⚠️ deleted: فقط با تایید از Redis
     if (sig.type === 'deleted' && currentPhone !== CREATOR_PHONE) {
-      localStorage.removeItem('currentLoggedInUser');
-      window.location.replace('index.html');
+      var checkUser2 = await getUser(currentPhone);
+      if (!checkUser2) {
+        // واقعاً حذف شده
+        await safeLogout('deleted', true);
+        return;
+      }
+      // ⚠️ شاید فقط موقتیه - logout نکن
       return;
     }
+
+    // ⚠️ admin_edit و prize_received: فقط refresh کن
     if (sig.type === 'admin_edit' || sig.type === 'prize_received' || sig.type === 'force_refresh') {
       setAdminLock();
-      var fresh2 = await getUser(currentPhone);
-      if (fresh2) {
-        currentUserData = sanitizeUserData(fresh2, currentPhone);
-        try {
-          localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
-        } catch(e) {}
-        updateUIWithData(currentUserData);
-        updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
-      }
+      try {
+        var fresh2 = await getUser(currentPhone);
+        if (fresh2) {
+          currentUserData = sanitizeUserData(fresh2, currentPhone);
+          try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
+          updateUIWithData(currentUserData);
+          updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
+          refreshSession();
+        }
+      } catch(e) {}
       if (sig.type === 'prize_received') showShopNotification('🎁 جایزه دریافت کردید!');
       else showShopNotification('🔄 اطلاعات شما به‌روزرسانی شد');
     }
@@ -2588,69 +2497,84 @@ function setupLiveSubscriptions() {
   if (window.FBLive.subscribeValue) {
     window.FBLive.subscribeValue('user_updates/' + currentPhone, async function(val) {
       if (!val || !val.at) return;
-      if (val.type === 'banned' && currentPhone !== CREATOR_PHONE) {
+
+      // ⚠️ فقط سیگنال تازه
+      var age = Date.now() - val.at;
+      if (age > SIGNAL_FRESH_MS || age < 0) return;
+
+      // ⚠️ بن فوری
+      if (val.type === 'banned') {
+        if (currentPhone === CREATOR_PHONE) return;
         banDetected = true;
-        var ban2 = await getBanStatus(currentPhone);
-        if (ban2) redirectToBan(ban2, currentPhone);
+        var b = await getBanStatus(currentPhone);
+        if (b) redirectToBan(b, currentPhone);
         else redirectToBan({ bannedBy: 'مدیریت', reason: 'تخلف', duration: 'permanent' }, currentPhone);
         return;
       }
+
+      // ⚠️ force_logout و deleted: فقط با تایید
+      if (val.type === 'force_logout' || val.type === 'deleted') {
+        var cu = await getUser(currentPhone);
+        var cb = await getBanStatus(currentPhone);
+        if (cb) { redirectToBan(cb, currentPhone); return; }
+        if (!cu) {
+          await safeLogout(val.type, true);
+          return;
+        }
+        return;
+      }
+
       setAdminLock();
-      var fresh = await getUser(currentPhone);
-      if (!fresh) return;
-      currentUserData = sanitizeUserData(fresh, currentPhone);
       try {
-        localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
+        var fresh = await getUser(currentPhone);
+        if (!fresh) return;
+        currentUserData = sanitizeUserData(fresh, currentPhone);
+        try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
+        updateUIWithData(currentUserData);
+        updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
+        refreshSession();
       } catch(e) {}
-      updateUIWithData(currentUserData);
-      updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
 
       if (val.type === 'unbanned') showShopNotification('✅ رفع بن شد');
-      else if (val.type === 'deleted') {
-        localStorage.removeItem('currentLoggedInUser');
-        window.location.replace('index.html');
-      } else if (val.type === 'force_logout') {
-        localStorage.removeItem('currentLoggedInUser');
-        window.location.replace('index.html');
-      } else if (val.type === 'prize_received') {
-        showShopNotification('🎁 جایزه دریافت کردید!');
-      } else if (val.type === 'admin_edit') {
-        showShopNotification('🔄 اطلاعات شما به‌روزرسانی شد');
-      }
+      else if (val.type === 'prize_received') showShopNotification('🎁 جایزه دریافت کردید!');
+      else if (val.type === 'admin_edit') showShopNotification('🔄 اطلاعات شما به‌روزرسانی شد');
     });
   }
 }
 
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
 /*  Boot                                                       */
-/* ═══════════════════════════════════════════════════════════ */
+/* ============================================================ */
 document.addEventListener('DOMContentLoaded', async function() {
-  var loggedIn = localStorage.getItem('currentLoggedInUser');
-  if (!loggedIn) { window.location.href = 'index.html'; return; }
-  var phone = null;
-  try { phone = JSON.parse(loggedIn).phone; } catch(e) {
-    window.location.href = 'index.html';
+  // ⚠️ استفاده از getSession به جای localStorage مستقیم
+  var session = getSession();
+  if (!session || !session.phone) {
+    window.location.replace('index.html');
     return;
   }
-  currentPhone = phone;
+  currentPhone = session.phone;
+
+  // ⚠️ چک فوری بن در همان ابتدا
+  var earlyBan = await getBanStatus(currentPhone);
+  if (earlyBan && currentPhone !== CREATOR_PHONE) {
+    banDetected = true;
+    redirectToBan(earlyBan, currentPhone);
+    return;
+  }
 
   initFB(currentPhone);
   if (window.FBLive && window.FBLive.init) window.FBLive.init(currentPhone);
 
-  // ⚠️ چک بن فوری در اولین فرصت
+  // ⚠️ ثبت ورود (فقط یکبار در ۵ دقیقه)
   setTimeout(async function() {
     try {
       myIP = await fetchUserIP();
       currentDeviceId = getDeviceId();
-      var b = await getBanStatus(currentPhone);
-      if (b && currentPhone !== CREATOR_PHONE) {
-        banDetected = true;
-        redirectToBan(b, currentPhone);
-        return;
+      if (myIP && (Date.now() - __lastLoginLogged > 300000)) {
+        await logLoginSession(currentPhone, myIP, currentDeviceId);
       }
-      if (myIP) await logLoginSession(currentPhone, myIP, currentDeviceId);
     } catch(e) {}
-  }, 200);
+  }, 500);
 
   var cacheFirst = localStorage.getItem('user_cache_' + currentPhone);
   if (cacheFirst) {
@@ -2667,9 +2591,27 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     } catch(e) {}
   }
+
+  // ⚠️ اگر کاربر در Redis نبود، به index.html برگرد
   if (!currentUserData) {
-    currentUserData = { name: 'کاربر', coins: 0, gems: 0, dollars: 0, avatar: 'Mafia2.png', rank: 'کاربر', level: 1 };
+    // یک بار دیگه تلاش کن
+    try {
+      await new Promise(function(r) { setTimeout(r, 1000); });
+      var u2 = await getUser(currentPhone);
+      if (u2) {
+        currentUserData = u2;
+      }
+    } catch(e) {}
   }
+
+  if (!currentUserData) {
+    // کاربر واقعاً وجود نداره
+    await safeLogout('user_not_found', true);
+    return;
+  }
+
+  // ⚠️ Session Keep-Alive - refresh هر ۳۰ ثانیه
+  setInterval(refreshSession, SESSION_KEEP_ALIVE_MS);
 
   updateUIWithData(currentUserData);
   initAvatarShop();
@@ -2683,8 +2625,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateClanRank();
   }, 100);
 
-  // ⚠️ چک بن هر ۱ ثانیه (فوری)
-  setInterval(checkBanPeriodically, 1000);
+  setInterval(checkBanPeriodically, 2000);
   setInterval(syncWithServerInBackground, 5000);
   setInterval(function() { setUserOnlineStatus(!document.hidden); }, 30000);
   setInterval(updateClanRank, 15000);
@@ -2722,8 +2663,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (confirm('خروج؟')) {
       setUserOnlineStatus(false);
       try { setFBOnline(currentPhone, false, {}); } catch(e) {}
-      localStorage.removeItem('currentLoggedInUser');
-      window.location.href = 'index.html';
+      clearSession();
+      window.location.replace('index.html');
     }
   });
   bind('openProfile', function() {
@@ -2884,9 +2825,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       playClickSound();
       var tab = this.dataset.shoptab;
       document.querySelectorAll('.shop-tab').forEach(function(x) { x.classList.remove('active'); });
-      document.querySelectorAll('.shop-tab[data-shoptab="' + tab + '"]').forEach(function(x) {
-        x.classList.add('active');
-      });
+      document.querySelectorAll('.shop-tab[data-shoptab="' + tab + '"]').forEach(function(x) { x.classList.add('active'); });
       if (tab === 'templates') {
         document.getElementById('avatarShopPage').classList.remove('active');
         document.getElementById('templateShopPage').classList.add('active');
@@ -2925,12 +2864,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (bg) bg.volume = this.value / 100;
   });
 
-  // ⚠️ آپلود آواتار با DataURL (پشتیبانی از webm, mp4, mov, عکس)
   var exclFile = document.getElementById('exclusiveAvatarFile');
   if (exclFile) exclFile.addEventListener('change', function(e) {
     var file = e.target.files[0];
     if (!file) return;
-
     var isVideo = file.type.indexOf('video/') === 0;
     var maxSize = isVideo ? 3 * 1024 * 1024 : 1.5 * 1024 * 1024;
     if (file.size > maxSize) {
@@ -2938,7 +2875,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       this.value = '';
       return;
     }
-
     var reader = new FileReader();
     reader.onload = function(evt) {
       var dataUrl = evt.target.result;
@@ -2965,23 +2901,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (exclFile) exclFile.value = '';
   });
 
-  // ⚠️ چک بن فوری روی هر کلیک و لمس
+  // ⚠️ چک بن فوری روی هر کلیک/لمس/کلید
   document.addEventListener('click', function() { immediateBanCheck(); }, true);
   document.addEventListener('touchstart', function() { immediateBanCheck(); }, true);
   document.addEventListener('keydown', function() { immediateBanCheck(); }, true);
 
-  console.log('✅ Safe Asli.js loaded - ban immediate + exclusive avatar in my shop');
+  console.log('✅ Safe Asli.js loaded - session protected + ban immediate');
 });
 
 document.addEventListener('visibilitychange', async function() {
   if (document.hidden) {
     setUserOnlineStatus(false);
   } else {
-    // ⚠️ اول چک بن
     await immediateBanCheck();
     if (banDetected) return;
     setUserOnlineStatus(true);
     await checkWhitelistNow();
+    refreshSession();
     try {
       if (myIP && (Date.now() - __lastLoginLogged > 300000)) {
         await logLoginSession(currentPhone, myIP, currentDeviceId);
@@ -2994,10 +2930,27 @@ window.addEventListener('focus', function() {
   immediateBanCheck();
 });
 
-// ⚠️ قبل از بستن صفحه فقط FBOnline آنلاین نگه دار
+// ⚠️ قبل از بستن: فقط FBOnline آنلاین نگه دار، session پاک نکن
 window.addEventListener('beforeunload', function() {
   if (currentPhone) {
     try { setFBOnline(currentPhone, true, {}); } catch(e) {}
+    refreshSession();
+  }
+});
+
+// ⚠️ اگر از bfcache برگشت
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    refreshSession();
+    immediateBanCheck();
+  }
+});
+
+// ⚠️ جلوگیری از برگشت ناخواسته
+window.addEventListener('popstate', function() {
+  var s = getSession();
+  if (!s && !banDetected) {
+    window.location.replace('index.html');
   }
 });
 
@@ -3021,7 +2974,6 @@ window.clearUserData = clearUserData;
 window.clearUserSessionsFromPanel = clearUserSessionsFromPanel;
 window.addWhitelistIP = addWhitelistIP;
 window.removeWhitelistIP = removeWhitelistIP;
-window.quickWhitelistUser = quickWhitelistUser;
 window.clearUserSessions = clearUserSessions;
 window.resetAllUserCodes = resetAllUserCodes;
 window.markNewsAsRead = markNewsAsRead;
@@ -3035,8 +2987,6 @@ window.saveAllTournamentConfig = saveAllTournamentConfig;
 window.renderBlacklist = renderBlacklist;
 window.addClanToBlacklist = addClanToBlacklist;
 window.removeClanFromBlacklist = removeClanFromBlacklist;
-window.distributeClanPrizesNow = distributeClanPrizesNow;
-window.distributeClanPrizes = distributeClanPrizes;
 window.openUserLogsPanel = openUserLogsPanel;
 window.renderUserLogs = renderUserLogs;
 window.updateUIWithData = updateUIWithData;
@@ -3047,3 +2997,7 @@ window.logLoginSession = logLoginSession;
 window.immediateBanCheck = immediateBanCheck;
 window.activateAdminExclusive = activateAdminExclusive;
 window.renderAvatars = renderAvatars;
+window.safeLogout = safeLogout;
+window.getSession = getSession;
+window.refreshSession = refreshSession;
+window.clearSession = clearSession;
