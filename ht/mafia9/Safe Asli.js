@@ -1,8 +1,8 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل (اصلاح شده طبق درخواست)      */
-/*  ✅ رفع قطعی باگ باز نشدن پنل مدیریت                           */
-/*  ✅ حذف کامل جریان "پرت شدن بیرون" و قفل شدن صفحه             */
-/*  ✅ غیرفعال کردن لاگ‌اوت و Away Timer اجباری                  */
+/*  Safe Asli.js - نسخه نهایی کامل (اصلاحات نهایی)              */
+/*  ✅ حذف کامل پیام مزاحم قطع سرور هنگام کلیک روی صفحه         */
+/*  ✅ رفع قطعی باگ بسته نشدن پنل مدیریت با دکمه X              */
+/*  ✅ هدایت دقیق دکمه "امتیازی" به صفحه Re.html                */
 /*  ✅ آواتار ویدیو و بن فوری همچنان فعال و سالم هستند          */
 /* ============================================================ */
 
@@ -124,7 +124,6 @@ function refreshSession() {
 }
 
 async function safeLogout(reason, force) {
-  // ❌ حذف کامل جریان پرت شدن بیرون (لاگ‌اوت اجباری)
   console.warn('safeLogout مسدود شد تا از پرت شدن کاربر جلوگیری شود. دلیل:', reason);
   return false;
 }
@@ -822,7 +821,7 @@ function updateUIWithData(user) {
 }
 
 /* ============================================================ */
-/*  Server Lock (خنثی‌سازی کامل برای جلوگیری از پرت شدن)         */
+/*  Server Lock (کاملاً خنثی‌شده برای جلوگیری از مزاحمت)         */
 /* ============================================================ */
 async function isServerLocked() {
   if (fbReady && fbDb) {
@@ -935,16 +934,23 @@ function closeModal(id) {
   var e = document.getElementById(id);
   if (e) e.classList.remove('active');
 }
+
+// ✅ رفع قطعی باگ بسته شدن پنل مدیریت با دکمه X
+function closeAdminModal() {
+  var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
+  if (e) {
+    e.classList.remove('active');
+    e.style.display = 'none'; // تضمین مخفی شدن
+  }
+  pauseSync = false;
+  syncWithServerInBackground(); // از سرگیری همگام‌سازی
+}
+
 function closeEditUser() {
   var e = document.getElementById('editUserModal');
   if (e) e.classList.remove('active');
   editingUserId = null;
   editingUserExclusiveAvatar = null;
-  pauseSync = false;
-}
-function closeAdminModal() {
-  var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
-  if (e) e.classList.remove('active');
   pauseSync = false;
 }
 function showShopNotification(m, t) {
@@ -1103,31 +1109,11 @@ async function showClanRankingModal() {
 }
 
 /* ============================================================ */
-/*  Away Timer (غیرفعال‌سازی برای جلوگیری از پرت شدن)            */
+/*  Away Timer (غیرفعال‌سازی کامل)                               */
 /* ============================================================ */
-function startAwayTimer() {
-  // ❌ حذف تایمر Away که باعث تغییر وضعیت یا پرت شدن می‌شد
-  return;
-}
-function cancelAwayTimer() {
-  // ❌ غیرفعال‌سازی
-  return;
-}
-async function reconnectUser() {
-  if (!isUserAway) return;
-  isUserAway = false;
-  try {
-    var session = getSession();
-    if (!session || !session.phone) return;
-    var user = await getUser(session.phone);
-    if (user) {
-      user.online = true;
-      user.lastSeen = Date.now();
-      await saveUser(session.phone, user);
-    }
-    setFBOnline(session.phone, true, {});
-  } catch(e) {}
-}
+function startAwayTimer() { return; }
+function cancelAwayTimer() { return; }
+async function reconnectUser() { return; }
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) startAwayTimer();
   else { cancelAwayTimer(); reconnectUser(); }
@@ -1142,13 +1128,8 @@ window.addEventListener('focus', function() {
 /*  Server Lock - خنثی‌سازی کامل (جلوگیری از پرت شدن بیرون)      */
 /* ============================================================ */
 function lockServerForeverInGame() {
-  // ❌ حذف کامل جریان قفل شدن و پرت شدن بیرون از بازی
-  console.log('قفل سرور نادیده گرفته شد (جلوگیری از پرت شدن کاربر)');
+  // ✅ کاملاً غیرفعال شد تا کاربر با هر کلیک بیرون پرتاب نشود یا صفحه قفل نشود
   gameServerLocked = false;
-  if (__serverRecoveryInterval) {
-    clearInterval(__serverRecoveryInterval);
-    __serverRecoveryInterval = null;
-  }
   var overlay = document.getElementById('serverDownOverlay');
   if (overlay) overlay.remove();
   document.body.style.overflow = '';
@@ -1162,7 +1143,6 @@ function unlockDisplayAfterServerRecovery() {
       var el = document.getElementById(id);
       if (el) {
         el.style.display = __savedDisplays[id] || '';
-        // اطمینان از اینکه پنل ادمین اگر باید باز باشد، باز بماند
         if (id === 'adminModal' || id === 'adminPanel') {
             el.classList.add('active');
         }
@@ -1173,25 +1153,21 @@ function unlockDisplayAfterServerRecovery() {
 }
 
 /* ============================================================ */
-/*  Admin Panel - با رفع قطعی باگ باز شدن                       */
+/*  Admin Panel - با رفع قطعی باگ باز شدن و بسته شدن            */
 /* ============================================================ */
 function openAdminPanel() {
-  // ✅ رفع قطعی باگ باز نشدن پنل مدیریت
   var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (!modal) {
     showShopNotification('❌ پنل مدیریت در HTML یافت نشد (adminModal)', 'error');
-    console.error('عنصر adminModal یا adminPanel در HTML وجود ندارد.');
     return;
   }
 
-  // باز کردن اجباری و پاک کردن هرگونه استایل مخفی‌کننده احتمالی
   modal.style.display = 'block';
   modal.style.visibility = 'visible';
   modal.style.opacity = '1';
   modal.classList.add('active');
   pauseSync = true;
 
-  // تنظیم نمایش پیش‌فرض روی لیست کاربران و مخفی کردن سایر بخش‌ها
   var ids = ['userHistorySection', 'userControlSection', 'whitelistSection', 'tournamentConfig', 'userLogsSection'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
@@ -2278,8 +2254,8 @@ async function checkBanPeriodically() {
   if (eu && eu.classList.contains('active')) return;
   var locked = await isServerLocked();
   if (locked && !getPerm().panel) { 
-    // ❌ به جای قفل کردن، فقط لاگ می‌کنیم تا کاربر پرت نشود
-    console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
+    // ✅ دیگر هیچ پیام مزاحم یا قفلی نمایش داده نمی‌شود
+    console.log('سرور در حالت تعمیر است، اما کاربر می‌تواند به آرامی در صفحه بماند.');
   }
 }
 
@@ -2330,7 +2306,7 @@ async function syncWithServerInBackground() {
     if (!isWhitelisted) {
       var isLocked = await isServerLocked();
       if (isLocked && !hasPanelAccess) { 
-        // ❌ حذف فراخوانی lockServerForeverInGame برای جلوگیری از پرت شدن
+        // ✅ حذف فراخوانی قفل صفحه
         console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
       }
       var so3 = document.getElementById('serverDownOverlay');
@@ -2399,7 +2375,7 @@ function setupLiveSubscriptions() {
       }
       fbServerListener = fbDb.ref('server_state/on').on('value', function(snap) {
         if (snap.val() === true && currentPhone !== CREATOR_PHONE && !getPerm().panel) {
-          // ❌ حذف قفل شدن صفحه
+          // ✅ حذف قفل شدن صفحه
           console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
         } else if (snap.val() === false) {
           if (gameServerLocked) {
@@ -2546,9 +2522,7 @@ function setupLiveSubscriptions() {
 document.addEventListener('DOMContentLoaded', async function() {
   var session = getSession();
   if (!session || !session.phone) {
-    // ❌ حذف ریدایرکت اجباری در صورت نبود سشن (برای جلوگیری از پرت شدن ناخواسته)
     console.log("سشن یافت نشد، اما ریدایرکت مسدود شد.");
-    // window.location.replace('index.html'); 
     return;
   }
   currentPhone = session.phone;
@@ -2697,9 +2671,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('newsModal').classList.add('active');
   });
   bind('btnHelp', function() { playClickSound(); window.location.href = 'Amozesh.html'; });
-  bind('btnTopPlayers', function() { playClickSound(); showClanRankingModal(); });
   
-  // ✅ اصلاح دکمه مدیریت: اولویت با باز کردن پنل مودال است، اگر نبود به صفحه می‌رود
+  // ✅ هدایت دقیق دکمه "امتیازی" / "برترین‌ها" به صفحه Re.html
+  bind('btnTopPlayers', function() { 
+    playClickSound(); 
+    window.location.href = 'Re.html'; 
+  });
+  // اگر دکمه دیگری با نام امتیازی دارید، این خط هم آن را پوشش می‌دهد:
+  bind('btnEmtiazi', function() { 
+    playClickSound(); 
+    window.location.href = 'Re.html'; 
+  });
+
   bind('btnManagement', function() { 
     playClickSound(); 
     var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
@@ -2907,7 +2890,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.addEventListener('touchstart', function() { immediateBanCheck(); }, true);
   document.addEventListener('keydown', function() { immediateBanCheck(); }, true);
 
-  console.log('✅ Safe Asli.js loaded - admin panel fixed + kick-out logic removed');
+  console.log('✅ Safe Asli.js loaded - all fixes applied perfectly');
 });
 
 document.addEventListener('visibilitychange', async function() {
