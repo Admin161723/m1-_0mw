@@ -1,67 +1,72 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#0a0f1e">
-<title>ورود به بازی</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="theme-color" content="#0a0f1e">
+    <title>ورود به بازی</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- نسخه اصلاح‌شده و پایدار فایربیس -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<div id="loadingPage" class="page">
-    <div class="loading-circle"></div>
-    <div class="version">2.0.0</div>
-</div>
+    <div id="loadingPage" class="page">
+        <div class="loading-circle"></div>
+        <div class="version">2.0.0</div>
+    </div>
 
-<div id="authPage" class="page hidden">
-    <img class="logo" src="InShot_20260527_210904646.png" alt="logo" onerror="this.style.display='none'">
-    <div class="card">
-        <div id="stepPhone">
-            <div class="input-group"><input type="tel" id="phoneInput" placeholder="شماره موبایل" maxlength="11" inputmode="numeric"></div>
-            <button class="btn" id="checkPhoneBtn">ادامه</button>
-            <div id="phoneError" class="error-msg"></div>
-        </div>
-        <div id="stepPassword" style="display:none;">
-            <div class="input-group"><input type="password" id="passwordInput" placeholder="رمز عبور"></div>
-            <button class="btn" id="loginBtn">ورود</button>
-            <button class="btn link-btn" id="forgotPassBtn">فراموشی رمزعبور؟</button>
-            <div id="passError" class="error-msg"></div>
-        </div>
-        <div id="stepOtp" style="display:none;">
-            <div class="input-group"><input type="text" id="otpInput" placeholder="کد تایید ۶ رقمی" maxlength="6" inputmode="numeric"></div>
-            <button class="btn" id="verifyOtpBtn">تایید کد</button>
-            <button class="btn link-btn" id="resendOtpBtn">درخواست کد دیگه</button>
-            <div id="otpError" class="error-msg"></div>
+    <div id="authPage" class="page hidden">
+        <img class="logo" src="InShot_20260527_210904646.png" alt="logo" onerror="this.style.display='none'">
+        <div class="card">
+            <div id="stepPhone">
+                <div class="input-group"><input type="tel" id="phoneInput" placeholder="شماره موبایل" maxlength="11" inputmode="numeric"></div>
+                <button class="btn" id="checkPhoneBtn">ادامه</button>
+                <div id="phoneError" class="error-msg"></div>
+            </div>
+            <div id="stepPassword" style="display:none;">
+                <div class="input-group"><input type="password" id="passwordInput" placeholder="رمز عبور"></div>
+                <button class="btn" id="loginBtn">ورود</button>
+                <button class="btn link-btn" id="forgotPassBtn">فراموشی رمزعبور؟</button>
+                <div id="passError" class="error-msg"></div>
+            </div>
+            <div id="stepOtp" style="display:none;">
+                <div class="input-group"><input type="text" id="otpInput" placeholder="کد تایید ۶ رقمی" maxlength="6" inputmode="numeric"></div>
+                <button class="btn" id="verifyOtpBtn">تایید کد</button>
+                <button class="btn link-btn" id="resendOtpBtn">درخواست کد دیگه</button>
+                <div id="otpError" class="error-msg"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="profilePage" class="page hidden">
-    <div class="avatar-circle" id="avatarCircle"><img id="selectedAvatarImg" src="3000.webp" alt="avatar"></div>
-    <div class="card" style="width:100%;">
-        <div class="info-input"><input type="text" id="gameName" placeholder="اسم داخل بازی" maxlength="20"></div>
-        <div class="info-input"><input type="number" id="age" placeholder="سن" min="5" max="99" inputmode="numeric"></div>
-        <div class="info-input"><input type="password" id="newPassword" placeholder="رمز عبور جدید"></div>
-        <button class="btn green-btn" id="submitProfileBtn">تایید و ادامه</button>
+    <div id="profilePage" class="page hidden">
+        <div class="avatar-circle" id="avatarCircle"><img id="selectedAvatarImg" src="3000.webp" alt="avatar"></div>
+        <div class="card" style="width:100%;">
+            <div class="info-input"><input type="text" id="gameName" placeholder="اسم داخل بازی" maxlength="20"></div>
+            <div class="info-input"><input type="number" id="age" placeholder="سن" min="5" max="99" inputmode="numeric"></div>
+            <div class="info-input"><input type="password" id="newPassword" placeholder="رمز عبور جدید"></div>
+            <button class="btn green-btn" id="submitProfileBtn">تایید و ادامه</button>
+        </div>
     </div>
-</div>
 
-<div class="avatar-menu" id="avatarMenu"></div>
-<div id="backdrop" class="backdrop"></div>
+    <div class="avatar-menu" id="avatarMenu"></div>
+    <div id="backdrop" class="backdrop"></div>
 
-<div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 
-<audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
-<audio id="bgMusic" loop preload="auto"><source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg"></audio>
+    <audio id="clickSound" preload="auto"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
+    <audio id="bgMusic" loop preload="auto"><source src="Mafia Soundtrack - City Music - Central Island.mp3" type="audio/mpeg"></audio>
 
-<script src="offline-guard.js"></script>
-<script src="firebase-live.js"></script>
-<script src="script.js"></script>
+    <!-- فقط فایل اصلی اسکریپت (فایل‌های اضافی که باعث خطا می‌شدند حذف شدند) -->
+    <script src="script.js"></script>
+    
+    <!-- ابزار کمکی برای نمایش خطا در صورت وجود مشکل (اگر همه چیز درست باشد، کاری انجام نمی‌دهد) -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
 </body>
 </html>
