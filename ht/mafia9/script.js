@@ -20,7 +20,7 @@ var creatorPhoneCache = null;
 var appCheckTimer = null;
 var isUserAway = false;
 var serverLocked = false;
-var serverCheckInterval = null;
+var serverCheckInterval = null; 
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 var UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
