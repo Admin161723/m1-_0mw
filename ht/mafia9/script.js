@@ -1,5 +1,6 @@
 /* ============================================================ */
 /*  script.js - با چک دوگانه سرور (Firebase + Redis)             */
+/*  ✅ رفع کامل باگ پریدن به صفحه لاگین با وجود حساب کاربری      */
 /* ============================================================ */
 
 var PAGES = { game: 'Safe Asli Bazi.html', ban: 'Ban.html' };
@@ -45,6 +46,41 @@ function initFB() {
     fbReady = true;
     return true;
   } catch(e) { return false; }
+}
+
+/* ---------- Session Management (چند لایه برای جلوگیری از باگ) ---------- */
+function getSession() {
+  var candidates = ['currentLoggedInUser', '__session_backup__', '__session_backup2__'];
+  for (var i = 0; i < candidates.length; i++) {
+    try {
+      var raw = localStorage.getItem(candidates[i]);
+      if (raw) {
+        var parsed = null;
+        try { parsed = JSON.parse(raw); } catch(e) {}
+        if (parsed && parsed.phone) {
+          if (i !== 0) {
+            try { localStorage.setItem('currentLoggedInUser', raw); } catch(e) {}
+          }
+          try {
+            localStorage.setItem('__session_backup__', raw);
+            localStorage.setItem('__session_backup2__', raw);
+          } catch(e) {}
+          return parsed;
+        }
+      }
+    } catch(e) {}
+  }
+  try {
+    var sRaw = sessionStorage.getItem('currentLoggedInUser');
+    if (sRaw) {
+      var sP = JSON.parse(sRaw);
+      if (sP && sP.phone) {
+        try { localStorage.setItem('currentLoggedInUser', sRaw); } catch(e) {}
+        return sP;
+      }
+    }
+  } catch(e) {}
+  return null;
 }
 
 /* ---------- Redis ---------- */
@@ -97,7 +133,6 @@ function isCreatorPhone(phone) { return String(phone || '') === CREATOR_PHONE; }
 /*  ⚡ چک دوگانه سرور - خیلی مهم                                  */
 /* ═══════════════════════════════════════════════════════════ */
 async function isServerLocked() {
-  // ⚡ 1. Firebase
   if (fbReady && fbDb) {
     try {
       var result = await new Promise(function(resolve) {
@@ -112,7 +147,6 @@ async function isServerLocked() {
       if (result === true) return true;
     } catch(e) {}
   }
-  // ⚡ 2. Redis
   try {
     var m = await getMaintenance();
     if (m && m.on === true) return true;
@@ -172,7 +206,9 @@ function lockServerForever() {
 
   document.body.style.overflow = 'hidden';
   document.documentElement.style.overflow = 'hidden';
-  try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
+  
+  // ✅ حذف دستور مخرب پاک کردن سشن (کاربر نباید به خاطر قطع سرور از حساب خارج شود)
+  // try { localStorage.removeItem('currentLoggedInUser'); } catch(e) {}
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -181,12 +217,9 @@ function lockServerForever() {
 function startServerCheckLoop() {
   if (serverCheckInterval) clearInterval(serverCheckInterval);
   serverCheckInterval = setInterval(async function() {
-    // اگه کاربر لاگین کرد، این loop لازم نیست (چون تو صفحه بازی چک میشه)
-    var loggedIn = null;
-    try { loggedIn = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
-    if (loggedIn && loggedIn.phone) {
-      // اگه سازنده نیست، چک کن
-      if (!isCreatorPhone(loggedIn.phone)) {
+    var session = getSession();
+    if (session && session.phone) {
+      if (!isCreatorPhone(session.phone)) {
         var down = await isServerLocked();
         if (down) {
           clearInterval(serverCheckInterval);
@@ -195,7 +228,6 @@ function startServerCheckLoop() {
       }
       return;
     }
-    // کاربر بدون لاگین
     var down2 = await isServerLocked();
     if (down2) {
       clearInterval(serverCheckInterval);
@@ -640,10 +672,8 @@ async function startBoot() {
 
   initFB();
 
-  // ⚡ اول از همه: چک سرور
   var serverDown = await isServerLocked();
 
-  // ⚡ چک اپ
   var appCheckAttempts = 0;
   var appConfirmed = false;
   while (appCheckAttempts < 3) {
@@ -654,13 +684,10 @@ async function startBoot() {
   if (!appConfirmed) { killApp(); return; }
   startAppCheckLoop();
 
-  // ⚡ اگه کاربر لاگین هست
-  var hasLogin = false;
-  var loggedPhone = null;
-  try {
-    var li = localStorage.getItem('currentLoggedInUser');
-    if (li) { var lio = JSON.parse(li); if (lio && lio.phone) { hasLogin = true; loggedPhone = lio.phone; } }
-  } catch(e) {}
+  // ✅ استفاده از سیستم چک سشن چندلایه برای جلوگیری از باگ پریدن به لاگین
+  var session = getSession();
+  var hasLogin = session && session.phone;
+  var loggedPhone = hasLogin ? session.phone : null;
 
   if (hasLogin) {
     if (!isCreatorPhone(loggedPhone)) {
@@ -673,7 +700,6 @@ async function startBoot() {
     return;
   }
 
-  // ⚡ کاربر جدید - اگه سرور بست، قفل کن
   if (serverDown) { lockServerForever(); return; }
 
   try {
@@ -697,7 +723,6 @@ async function startBoot() {
   var imgs = document.querySelectorAll('img');
   for (var i = 0; i < imgs.length; i++) imgs[i].addEventListener('error', function(){ this.style.display = 'none'; });
 
-  // ⚡ شروع حلقه چک مداوم سرور
   startServerCheckLoop();
 
   setTimeout(function() {
@@ -711,15 +736,13 @@ async function startBoot() {
     } catch(e) {}
   }, 800);
 
-  // ⚡ Firebase real-time listener
   if (fbReady && fbDb) {
     try {
       fbDb.ref('server_state/on').on('value', function(snap) {
         var v = snap.val();
         if (v === true) {
-          var lp2 = null;
-          try { lp2 = JSON.parse(localStorage.getItem('currentLoggedInUser') || 'null'); } catch(e) {}
-          var p2 = lp2 ? lp2.phone : null;
+          var sess = getSession();
+          var p2 = sess ? sess.phone : null;
           if (!isCreatorPhone(p2)) lockServerForever();
         }
       });
