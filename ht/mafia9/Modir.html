@@ -11,29 +11,29 @@
   body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228;width:100%;min-height:100vh;overflow-x:hidden;}
 
   .bg-image{position:fixed;inset:0;background-image:url('53.jpg');background-size:cover;background-position:center;z-index:-1;}
-  .bg-image::after{content:'';position:absolute;inset:0;background:rgba(4,18,40,0.7);}
+  .bg-image::after{content:'';position:absolute;inset:0;background:rgba(4,18,40,0.75);}
 
-  .header{background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));padding:15px;text-align:center;border-bottom:2px solid #2a5a9a;backdrop-filter:blur(10px);}
-  .header h1{color:#fff;font-size:24px;font-weight:900;margin-bottom:5px;}
-  .header p{color:rgba(255,255,255,.8);font-size:14px;}
+  .header{background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));padding:20px 15px;text-align:center;border-bottom:2px solid #2a5a9a;backdrop-filter:blur(10px);}
+  .header h1{color:#fff;font-size:22px;font-weight:900;margin-bottom:5px;letter-spacing:-0.5px;}
+  .header p{color:rgba(255,255,255,.7);font-size:13px;}
 
-  .back-btn{position:fixed;top:15px;left:15px;width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;cursor:pointer;z-index:100;border:none;transition:all 0.2s;}
-  .back-btn:active{background:rgba(255,255,255,.4);transform:scale(0.92);}
+  .back-btn{position:fixed;top:15px;left:15px;width:40px;height:40px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:100;transition:all 0.2s;}
+  .back-btn:active{background:rgba(255,255,255,.3);transform:scale(0.92);}
 
-  .management-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
+  .management-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
 
-  .member-card{position:relative;transition:transform .3s;}
-  .member-card:hover{transform:translateY(-5px);}
+  .member-card{position:relative;transition:transform .3s, box-shadow .3s; border-radius: 12px; overflow: hidden;}
+  .member-card:hover{transform:translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.5);}
 
-  .card-template{width:100%;position:relative;}
-  .card-template img{width:100%;height:auto;display:block;}
+  .card-template{width:100%;position:relative; aspect-ratio: 3/4;}
+  .card-template img{width:100%;height:100%;object-fit:cover;display:block;}
 
-  .avatar-circle{position:absolute;top:15%;left:50%;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.4);z-index:10;}
-  .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
+  .avatar-circle{position:absolute;top:12%;left:50%;transform:translateX(-50%);width:65px;height:65px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.5);z-index:10;}
+  .avatar-circle img, .avatar-circle video{width:100%;height:100%;object-fit:cover;}
 
-  .member-info{position:absolute;bottom:0;left:0;right:0;padding:15px 10px 10px;text-align:center;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.8));z-index:5;}
-  .member-name{color:#fff;font-size:14px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:5px;text-shadow:0 2px 4px rgba(0,0,0,0.8);}
-  .member-role{display:inline-block;padding:3px 12px;border-radius:15px;font-size:10px;font-weight:700;margin-bottom:8px;}
+  .member-info{position:absolute;bottom:0;left:0;right:0;padding:40px 8px 12px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.85) 40%,rgba(0,0,0,0.95) 100%);z-index:5;}
+  .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);}
+  .member-role{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing: 0.5px;}
 
   .role-creator{background:linear-gradient(180deg,#ffd700,#ff8c00);color:#000;}
   .role-support{background:linear-gradient(180deg,#4a9eff,#2a7acc);color:#fff;}
@@ -43,54 +43,66 @@
   .role-observer-senior{background:linear-gradient(180deg,#00bcd4,#0097a7);color:#fff;}
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
 
-  .role-tick{width:20px;height:20px;object-fit:contain;}
+  .role-tick{width:18px;height:18px;object-fit:contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
 
-  .loading{text-align:center;padding:40px;color:rgba(255,255,255,.6);font-size:16px;grid-column:1/-1;}
-  .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);grid-column:1/-1;}
-  .empty-state-icon{font-size:60px;margin-bottom:15px;}
+  .loading, .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);font-size:14px;grid-column:1/-1; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+  .empty-icon { width: 60px; height: 60px; fill: rgba(255,255,255,0.3); }
 
   @media (max-width:768px){
-    .management-grid{grid-template-columns:repeat(3,1fr);gap:10px;padding:15px;}
-    .avatar-circle{width:60px;height:60px;}
-    .member-info{padding:12px 8px 8px;}
-    .member-name{font-size:12px;}
-    .member-role{font-size:9px;padding:2px 10px;}
-    .header h1{font-size:20px;}
+    .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
+    .avatar-circle{width:55px;height:55px; top: 10%;}
+    .member-info{padding:35px 6px 10px;}
+    .member-name{font-size:11px;}
+    .member-role{font-size:9px;padding:2px 8px;}
+    .header h1{font-size:18px;}
   }
 </style>
 </head>
 <body>
 <div class="bg-image"></div>
-<button class="back-btn" id="backBtn">‹</button>
+<button class="back-btn" id="backBtn">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+</button>
 
 <div class="header">
   <h1>تیم مدیریت</h1>
-  <p>اعضای تیم مدیریت و پشتیبانی بازی</p>
+  <p>اعضای رسمی تیم مدیریت و پشتیبانی بازی</p>
 </div>
 
 <div class="management-grid" id="managementGrid">
-  <div class="loading">در حال بارگذاری اطلاعات...</div>
+  <div class="loading">
+    <svg class="empty-icon" viewBox="0 0 24 24" style="animation: spin 2s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
+    <div>در حال بارگذاری اطلاعات...</div>
+  </div>
 </div>
 
-<!-- فایل صدای کلیک دکمه‌ها -->
+<style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+
 <audio id="clickSound" preload="auto">
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
+
+<!-- اسکریپت فایربیس لایو (همان نسخه اولی که فرستادید و در Safe Asli.js استفاده می‌شود) -->
+<script>
+// اینجا فرض بر این است که window.FBLive از قبل در صفحه اصلی یا یک فایل جداگانه لود شده است.
+// اگر این صفحه مستقل است، کد firebase-live.js را اینجا هم قرار دهید.
+</script>
 
 <script>
   const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
   const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
   const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
   const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
-  const JSONBIN_KEY = "$2a$10$G8pgSWnFz4w/.voj3lfBPuJL7luRXAXiR/fIufC3YIB4.qRkZSjSS";
-  const JSONBIN_ID1 = "6a310a04da38895dfec86661";
-  const JSONBIN_ID2 = "6a53f4c8f5f4af5e298541fe";
+  
+  const CREATOR_PHONE = '09904844031';
+  const CREATOR_AVATAR = '655.webm';
+  const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 
   async function upstashGet(url, token, k) {
     try {
       const c = new AbortController();
-      const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch(url + '/get/' + encodeURIComponent(k), { headers: { 'Authorization': 'Bearer ' + token }, signal: c.signal });
+      const t = setTimeout(() => c.abort(), 6000);
+      const r = await fetch(url + '/get/' + encodeURIComponent(k), { headers: { 'Authorization': 'Bearer ' + token }, signal: c.signal, cache: 'no-store' });
       clearTimeout(t);
       if (!r.ok) return null;
       const d = await r.json();
@@ -99,34 +111,12 @@
     } catch (e) { return null; }
   }
 
-  async function jsonbinRead(binId) {
-    try {
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), 5000);
-      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers: { 'X-Master-Key': JSONBIN_KEY }, signal: c.signal });
-      clearTimeout(t);
-      if (!r.ok) return null;
-      const d = await r.json();
-      return d.record || {};
-    } catch (e) { return null; }
+  async function getAllUsers(){ 
+    let v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users');
+    if (v1 && typeof v1 === 'object') return v1;
+    let v2 = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users');
+    return v2 || {}; 
   }
-
-  async function redisGet(key) {
-    let v = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key);
-    if (v !== null) return v;
-    v = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key);
-    if (v !== null) return v;
-    const b1 = await jsonbinRead(JSONBIN_ID1);
-    if (b1 && b1[key] !== undefined) return b1[key];
-    const b2 = await jsonbinRead(JSONBIN_ID2);
-    if (b2 && b2[key] !== undefined) return b2[key];
-    return null;
-  }
-
-  async function getAllUsers(){ return await redisGet('all_users') || {}; }
-
-  const CREATOR_PHONE = '09904844031';
-  const CREATOR_AVATAR = '655.webm';
 
   function toPersianNum(n){
     const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
@@ -158,8 +148,8 @@
 
   function getTemplate(role){
     const r = role ? role.trim() : '';
-    if(['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp';
-    return '51.webp';
+    if(['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp'; // قالب مخصوص مدیریت ارشد
+    return '51.webp'; // قالب مدیریت عادی
   }
 
   function applyTick(img, cands){
@@ -191,191 +181,144 @@
     try{
       const allUsers = await getAllUsers();
       const users = Object.entries(allUsers);
-
-      const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-      const managementUsers = users.filter(([p,u]) => u && u.rank && managementRoles.includes(u.rank.trim()));
+      const managementUsers = users.filter(([p,u]) => u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim()));
 
       if(managementUsers.length === 0){
-        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
+        grid.innerHTML = `
+          <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <div>هنوز عضوی در تیم مدیریت وجود ندارد</div>
+          </div>`;
         return;
       }
 
-      grid.innerHTML = '';
+      // به‌روزرسانی هوشمند: فقط کارت‌های جدید را اضافه و کارت‌های حذف‌شده را پاک می‌کنیم
+      // تا انیمیشن و تجربه کاربری خراب نشود.
+      const currentPhonesInGrid = Array.from(document.querySelectorAll('.member-card')).map(c => c.dataset.phone);
+      const newPhones = managementUsers.map(([p]) => p);
 
-      for(const [phone, user] of managementUsers){
-        const card = document.createElement('div');
-        card.className = 'member-card';
-        card.dataset.phone = phone;
-
-        let avatarSrc = user.avatar || 'Mafia2.png';
-        if(phone === CREATOR_PHONE){
-          avatarSrc = CREATOR_AVATAR;
+      // حذف کارت‌هایی که دیگر مدیریت نیستند
+      currentPhonesInGrid.forEach(phone => {
+        if (!newPhones.includes(phone)) {
+          const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
+          if (card) card.remove();
         }
+      });
 
-        const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
-        const avatarHtml = isVideo ? `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>` : `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
-
-        const tick = getRoleTick(user.rank);
-        const tickHtml = tick ? '<img class="role-tick" src="" data-ticks="' + tick.join(',') + '">' : '';
-
-        card.innerHTML = `
-          <div class="card-template">
-            <img src="${getTemplate(user.rank)}" alt="template">
-          </div>
-          <div class="avatar-circle">${avatarHtml}</div>
-          <div class="member-info">
-            <div class="member-name">
-              ${user.name || 'کاربر'}
-              ${tickHtml}
-            </div>
-            <div class="member-role ${getRoleClass(user.rank)}">${user.rank || 'کاربر'}</div>
-          </div>
-        `;
-
-        grid.appendChild(card);
-
-        if(tick){
-          const tickImg = card.querySelector('.role-tick');
-          if(tickImg){
-            const ticks = tickImg.dataset.ticks.split(',');
-            applyTick(tickImg, ticks);
-          }
+      // اضافه یا به‌روزرسانی کارت‌ها
+      for(const [phone, user] of managementUsers){
+        const existingCard = document.querySelector(`.member-card[data-phone="${phone}"]`);
+        if (existingCard) {
+          updateMemberCard(existingCard, user);
+        } else {
+          createMemberCard(grid, phone, user);
         }
       }
 
-    }catch(error){
+    } catch(error){
       console.error('Error loading management team:', error);
-      grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div>خطا در بارگذاری اطلاعات</div></div>';
+      grid.innerHTML = `
+        <div class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          <div>خطا در بارگذاری اطلاعات. لطفاً صفحه را رفرش کنید.</div>
+        </div>`;
     }
   }
 
-  async function updateMemberCard(phone, userData){
-    const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
-    if(!card) return;
+  function createMemberCard(grid, phone, user) {
+    const card = document.createElement('div');
+    card.className = 'member-card';
+    card.dataset.phone = phone;
+    grid.appendChild(card);
+    updateMemberCard(card, user);
+  }
 
+  function updateMemberCard(card, userData){
+    const phone = card.dataset.phone;
     let avatarSrc = userData.avatar || 'Mafia2.png';
-    if(phone === CREATOR_PHONE){
-      avatarSrc = CREATOR_AVATAR;
-    }
+    if(phone === CREATOR_PHONE) avatarSrc = CREATOR_AVATAR;
 
-    const avatarCircle = card.querySelector('.avatar-circle');
     const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
     
-    // به‌روزرسانی هدفمند بدون بازسازی کامل کارت برای جلوگیری از پرش
+    // به‌روزرسانی قالب
+    const templateImg = card.querySelector('.card-template img') || document.createElement('img');
+    if (!card.querySelector('.card-template img')) {
+        templateImg.className = '';
+        card.insertBefore(templateImg, card.firstChild);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'card-template';
+        wrapper.appendChild(templateImg);
+        card.insertBefore(wrapper, card.firstChild);
+    }
+    card.querySelector('.card-template img').src = getTemplate(userData.rank);
+
+    // به‌روزرسانی آواتار
+    let avatarCircle = card.querySelector('.avatar-circle');
+    if (!avatarCircle) {
+        avatarCircle = document.createElement('div');
+        avatarCircle.className = 'avatar-circle';
+        card.appendChild(avatarCircle);
+    }
+
     if (isVideo) {
-      if (avatarCircle.querySelector('img')) {
+      if (!avatarCircle.querySelector('video') || avatarCircle.querySelector('video').src !== avatarSrc) {
         avatarCircle.innerHTML = `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`;
-      } else {
-        const video = avatarCircle.querySelector('video');
-        if (video && video.src !== avatarSrc) {
-          video.src = avatarSrc;
-        }
       }
     } else {
-      if (avatarCircle.querySelector('video')) {
+      if (!avatarCircle.querySelector('img') || avatarCircle.querySelector('img').src !== avatarSrc) {
         avatarCircle.innerHTML = `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
-      } else {
-        const img = avatarCircle.querySelector('img');
-        if (img && img.src !== avatarSrc) {
-          img.src = avatarSrc;
-        }
       }
     }
 
-    const nameEl = card.querySelector('.member-name');
+    // به‌روزرسانی نام و تیک
+    let infoDiv = card.querySelector('.member-info');
+    if (!infoDiv) {
+        infoDiv = document.createElement('div');
+        infoDiv.className = 'member-info';
+        card.appendChild(infoDiv);
+    }
+
     const tick = getRoleTick(userData.rank);
-    const tickHtml = tick ? '<img class="role-tick" src="" data-ticks="' + tick.join(',') + '">' : '';
-    nameEl.innerHTML = `${userData.name || 'کاربر'} ${tickHtml}`;
+    const tickHtml = tick ? `<img class="role-tick" src="" data-ticks="${tick.join(',')}">` : '';
+    
+    infoDiv.innerHTML = `
+      <div class="member-name">${userData.name || 'کاربر'} ${tickHtml}</div>
+      <div class="member-role ${getRoleClass(userData.rank)}">${userData.rank || 'کاربر'}</div>
+    `;
 
     if(tick){
-      const tickImg = card.querySelector('.role-tick');
-      if(tickImg){
-        const ticks = tickImg.dataset.ticks.split(',');
-        applyTick(tickImg, ticks);
-      }
-    }
-
-    const roleEl = card.querySelector('.member-role');
-    roleEl.textContent = userData.rank || 'کاربر';
-    roleEl.className = `member-role ${getRoleClass(userData.rank)}`;
-
-    const templateImg = card.querySelector('.card-template img');
-    if(templateImg){
-      templateImg.src = getTemplate(userData.rank);
+      const tickImg = infoDiv.querySelector('.role-tick');
+      if(tickImg) applyTick(tickImg, tick);
     }
   }
 
-  function addNewMember(phone, userData){
-    const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-    if(!userData.rank || !managementRoles.includes(userData.rank.trim())) return;
+  function monitorChanges(){
+    // 1. گوش دادن به سیگنال‌های زنده فایربیس (برای آپدیت آنی وقتی ادمین چیزی را تغییر می‌دهد)
+    if (window.FBLive && window.FBLive.subscribe) {
+      window.FBLive.subscribe('global', function(sig) {
+        if (['admin_edit', 'user_updated', 'banned', 'unbanned', 'codes_reset'].includes(sig.type)) {
+          loadManagementTeam();
+        }
+      });
+    }
 
-    const existingCard = document.querySelector(`.member-card[data-phone="${phone}"]`);
-    if(existingCard) return;
-
-    loadManagementTeam();
-  }
-
-  async function monitorChanges(){
-    let lastUsers = await getAllUsers();
-    const managementRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-
-    // ✅ به‌روزرسانی فوری هنگام بازگشت به تب (مثلاً بعد از ویرایش پروفایل)
-    document.addEventListener('visibilitychange', async () => {
+    // 2. به‌روزرسانی هنگام بازگشت به تب (مثلاً بعد از ویرایش در تب دیگر)
+    document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        lastUsers = await getAllUsers();
         loadManagementTeam();
       }
     });
 
-    setInterval(async ()=>{
-      try{
-        const currentUsers = await getAllUsers();
-        let hasChanges = false;
-
-        for(const [phone, user] of Object.entries(currentUsers)){
-          if(!user) continue;
-          const isManagement = user.rank && managementRoles.includes(user.rank.trim());
-          const oldUser = lastUsers[phone];
-
-          if(oldUser){
-            if(oldUser.avatar !== user.avatar || oldUser.name !== user.name || oldUser.rank !== user.rank){
-              hasChanges = true;
-              if(isManagement){
-                await updateMemberCard(phone, user);
-              } else {
-                const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
-                if(card) card.remove();
-              }
-            }
-          } else {
-            if(isManagement){
-              hasChanges = true;
-              addNewMember(phone, user);
-            }
-          }
-        }
-
-        for(const phone of Object.keys(lastUsers)){
-          if(!currentUsers[phone]){
-            hasChanges = true;
-            const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
-            if(card) card.remove();
-          }
-        }
-
-        if(hasChanges){
-          lastUsers = currentUsers;
-        }
-      }catch(e){
-        console.error('Monitor error:', e);
-      }
-    }, 3000);
+    // 3. پولینگ پشتیبان (هر ۵ ثانیه) برای اطمینان ۱۰۰٪ از همگام‌سازی
+    setInterval(() => {
+      loadManagementTeam();
+    }, 5000);
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('backBtn').addEventListener('click', function() {
       playClickSound();
-      window.location.href = 'Safe Asli Bazi.html';
+      window.location.href = 'Safe Asli Bazi.html'; // یا صفحه اصلی مورد نظر شما
     });
 
     loadManagementTeam();
