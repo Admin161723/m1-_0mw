@@ -1,10 +1,10 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل با رفع خروج از حساب             */
-/*  ✅ کاربر بیدلیل پرت نمی‌شه - فقط سیگنال تازه + تایید Redis      */
-/*  ✅ Session با چند لایه backup                                  */
+/*  Safe Asli.js - نسخه نهایی کامل                                */
+/*  ✅ رفع باگ باز نشدن پنل مدیریت                                 */
+/*  ✅ کاربر بیدلیل پرت نمی‌شه (Session چند لایه + signal fresh)   */
 /*  ✅ حذف کامل آواتار اختصاصی از پنل                               */
-/*  ✅ آواتار ویدیو (webm/mp4/dataURL) اعمال می‌شه                 */
-/*  ✅ بن فوری - بلافاصله Ban.html                                  */
+/*  ✅ آواتار ویدیو (webm/mp4/dataURL) کار می‌کنه                  */
+/*  ✅ بن فوری                                                     */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -14,7 +14,7 @@ var UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmR
 var CREATOR_PHONE = '09904844031';
 
 var AWAY_TIMEOUT_MS = 10000;
-var SIGNAL_FRESH_MS = 15000; // ⚠️ فقط سیگنال‌های ۱۵ ثانیه اخیر معتبرن
+var SIGNAL_FRESH_MS = 15000;
 var SESSION_KEEP_ALIVE_MS = 30000;
 
 var currentUserData = null;
@@ -45,6 +45,7 @@ var __lastLoginLogged = 0;
 var banDetected = false;
 var banCheckInFlight = false;
 var logoutInProgress = false;
+var __savedDisplays = {};
 
 var FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -58,7 +59,7 @@ var FB_CFG = {
 var fbDb = null, fbReady = false, fbPhone = 'unknown';
 
 /* ============================================================ */
-/*  🔐 Session Persistence چند لایه                                */
+/*  Session Persistence (چند لایه)                                */
 /* ============================================================ */
 function saveSession(phone, name) {
   try {
@@ -67,18 +68,12 @@ function saveSession(phone, name) {
     localStorage.setItem('currentLoggedInUser', json);
     localStorage.setItem('__session_backup__', json);
     localStorage.setItem('__session_backup2__', json);
-    sessionStorage.setItem('currentLoggedInUser', json);
-    localStorage.setItem('__session_valid_until__', String(Date.now() + 180 * 24 * 60 * 60 * 1000));
+    try { sessionStorage.setItem('currentLoggedInUser', json); } catch(e) {}
   } catch(e) {}
 }
 
 function getSession() {
-  var candidates = [
-    'currentLoggedInUser',
-    '__session_backup__',
-    '__session_backup2__'
-  ];
-
+  var candidates = ['currentLoggedInUser', '__session_backup__', '__session_backup2__'];
   for (var i = 0; i < candidates.length; i++) {
     try {
       var raw = localStorage.getItem(candidates[i]);
@@ -86,11 +81,9 @@ function getSession() {
         var parsed = null;
         try { parsed = JSON.parse(raw); } catch(e) {}
         if (parsed && parsed.phone) {
-          // اطمینان از اینکه primary درست ذخیره شده
           if (i !== 0) {
             try { localStorage.setItem('currentLoggedInUser', raw); } catch(e) {}
           }
-          // refresh backups
           try {
             localStorage.setItem('__session_backup__', raw);
             localStorage.setItem('__session_backup2__', raw);
@@ -100,8 +93,6 @@ function getSession() {
       }
     } catch(e) {}
   }
-
-  // آخرین تلاش: sessionStorage
   try {
     var sRaw = sessionStorage.getItem('currentLoggedInUser');
     if (sRaw) {
@@ -112,7 +103,6 @@ function getSession() {
       }
     }
   } catch(e) {}
-
   return null;
 }
 
@@ -123,7 +113,6 @@ function clearSession() {
     localStorage.removeItem('__session_backup2__');
     localStorage.removeItem('__banned__');
     localStorage.removeItem('__ban_data__');
-    localStorage.removeItem('__session_valid_until__');
     sessionStorage.removeItem('currentLoggedInUser');
   } catch(e) {}
 }
@@ -131,34 +120,19 @@ function clearSession() {
 function refreshSession() {
   try {
     var s = getSession();
-    if (s && s.phone) {
-      saveSession(s.phone, s.name);
-    }
+    if (s && s.phone) saveSession(s.phone, s.name);
   } catch(e) {}
 }
 
-/* ⚠️ تابع امن logout - فقط با تایید از Redis و Fresh Signal */
 async function safeLogout(reason, force) {
-  // ⚠️ سازنده هیچ‌وقت logout نمیشه
   if (currentPhone === CREATOR_PHONE) return false;
-
-  // ⚠️ جلوگیری از logout تکراری
   if (logoutInProgress) return false;
-
-  // ⚠️ اگر force نیست، اول چک کن که واقعاً باید logout بشه
   if (!force) {
     try {
       var user = await getUser(currentPhone);
-      if (user) {
-        // کاربر هنوز در Redis هست → logout نکن
-        return false;
-      }
-    } catch(e) {
-      // اگر Redis در دسترس نیست، logout نکن
-      return false;
-    }
+      if (user) return false;
+    } catch(e) { return false; }
   }
-
   logoutInProgress = true;
   clearSession();
   window.location.replace('index.html');
@@ -351,6 +325,33 @@ async function getUniqueUserCode() {
     while (usedCodes[code]) code++;
     return code;
   } catch(e) { return Date.now(); }
+}
+async function resetAllUserCodes() {
+  if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
+  if (!confirm('همه کدها بازنشانی شود؟')) return;
+  showShopNotification('در حال بازنشانی...');
+  try {
+    var allUsers = await getAllUsers();
+    var entries = Object.entries(allUsers);
+    entries.sort(function(a, b) {
+      var tA = a[1].createdAt || a[1].registeredAt || 0;
+      var tB = b[1].createdAt || b[1].registeredAt || 0;
+      return tA - tB;
+    });
+    var counter = 1;
+    var now = Date.now();
+    for (var i = 0; i < entries.length; i++) {
+      entries[i][1].userCode = counter;
+      entries[i][1].lastUpdatedAt = now;
+      allUsers[entries[i][0]] = entries[i][1];
+      await saveUser(entries[i][0], entries[i][1]);
+      counter++;
+    }
+    await saveAllUsers(allUsers);
+    showShopNotification('✅ ' + (counter - 1) + ' کاربر بازنشانی شد');
+    await loadUsers();
+    sendLive('global', 'codes_reset', {});
+  } catch(e) { showShopNotification('خطا', 'error'); }
 }
 async function assignCodeIfMissing(phone, user) {
   if (!user) return user;
@@ -653,8 +654,7 @@ function observeVideos(container) {
 }
 
 function isVideoSrc(src) {
-  if (!src) return false;
-  if (typeof src !== 'string') return false;
+  if (!src || typeof src !== 'string') return false;
   if (src.indexOf('data:video') === 0) return true;
   if (src.indexOf('blob:') === 0) return true;
   var lower = src.toLowerCase();
@@ -669,16 +669,12 @@ function isVideoSrc(src) {
 function createMediaElement(src) {
   if (!src) src = 'Mafia2.png';
   var isVideo = isVideoSrc(src);
-
   if (isVideo) {
     var wrapper = document.createElement('div');
     wrapper.style.cssText = 'width:100%;height:100%;position:relative;';
     var v = document.createElement('video');
     v.src = src;
-    v.autoplay = true;
-    v.loop = true;
-    v.muted = true;
-    v.playsInline = true;
+    v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
     v.setAttribute('muted', 'muted');
     v.setAttribute('playsinline', 'playsinline');
     v.setAttribute('webkit-playsinline', 'webkit-playsinline');
@@ -696,7 +692,6 @@ function createMediaElement(src) {
     wrapper.appendChild(v);
     return wrapper;
   }
-
   var i = document.createElement('img');
   i.src = src;
   i.style.width = '100%';
@@ -713,9 +708,7 @@ function sanitizeUserData(user, phone) {
     user.avatar = user.previousAvatar || 'Mafia2.png';
   }
   if (user.useExclusive === undefined) user.useExclusive = false;
-  if (!user.exclusiveAvatar && user.useExclusive === true) {
-    user.useExclusive = false;
-  }
+  if (!user.exclusiveAvatar && user.useExclusive === true) user.useExclusive = false;
   if (user.avatar && typeof user.avatar === 'string' && user.avatar.indexOf('data:') === 0 &&
       user.exclusiveAvatar && user.avatar === user.exclusiveAvatar && !user.useExclusive) {
     user.avatar = user.previousAvatar || 'Mafia2.png';
@@ -812,15 +805,12 @@ function updateUIWithData(user) {
   setText('statBestScore', toPersianNum(user.bestScore || 0));
   setText('statMafiaWins', toPersianNum(user.mafiaWins || 0));
   setText('statCitizenWins', toPersianNum(user.citizenWins || 0));
-
   updateGlobalAvatar(user.avatar || 'Mafia2.png');
-
   var tk = getRoleTick(user.rank);
   if (tk) {
     applyTick(document.getElementById('mainUserTick'), tk);
     applyTick(document.getElementById('profileUserTick'), tk);
   }
-
   var perm = getPerm();
   var btnAdmin = document.getElementById('btnAdmin');
   if (btnAdmin) btnAdmin.style.display = perm.panel ? 'flex' : 'none';
@@ -830,7 +820,6 @@ function updateUIWithData(user) {
   if (btnUC) btnUC.style.display = perm.userControl ? 'block' : 'none';
   var btnWL = document.getElementById('btnWhitelistIP');
   if (btnWL) btnWL.style.display = perm.whitelist ? 'block' : 'none';
-
   shopGold = user.coins || 0;
   shopGems = user.gems || 0;
   shopDollars = user.dollars || 0;
@@ -1175,20 +1164,28 @@ window.addEventListener('focus', function() {
 });
 
 /* ============================================================ */
-/*  Server Lock                                                 */
+/*  Server Lock - با ذخیره و بازگردانی display                     */
 /* ============================================================ */
 function lockServerForeverInGame() {
   if (gameServerLocked) return;
   gameServerLocked = true;
+
   var hideIds = [
     'profilePage', 'avatarShopPage', 'templateShopPage', 'newsModal',
     'adminModal', 'editUserModal', 'settingsModal', 'changePasswordModal',
     'competitiveOverlay', 'gameStartedOverlay', 'purchaseModal', 'menuDropdown'
   ];
+
+  // ⚠️ ذخیره وضعیت اصلی display قبل از مخفی کردن
+  __savedDisplays = {};
   for (var i = 0; i < hideIds.length; i++) {
     var el = document.getElementById(hideIds[i]);
-    if (el) el.style.display = 'none';
+    if (el) {
+      __savedDisplays[hideIds[i]] = el.style.display || '';
+      el.style.display = 'none';
+    }
   }
+
   var overlay = document.getElementById('serverDownOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -1200,6 +1197,7 @@ function lockServerForeverInGame() {
     '<div style="color:#ff6b6b;font-size:26px;font-weight:900;margin-top:24px;">سرور قطع است</div>' +
     '<div style="color:rgba(255,255,255,0.9);font-size:15px;margin-top:16px;line-height:2.2;">بازی موقتاً در دسترس نیست<br>در حال تلاش برای اتصال مجدد...</div>' +
     '<div id="serverRetryInfo" style="color:#4fc3f7;font-size:12px;margin-top:20px;">⏳ بررسی خودکار هر ۳ ثانیه</div>';
+
   overlay.style.cssText =
     'position:fixed !important;inset:0 !important;width:100vw !important;height:100vh !important;' +
     'z-index:2147483647 !important;' +
@@ -1207,8 +1205,10 @@ function lockServerForeverInGame() {
     'display:flex !important;align-items:center !important;justify-content:center !important;' +
     'flex-direction:column !important;text-align:center !important;padding:30px !important;' +
     'font-family:Tahoma,Vazirmatn,sans-serif !important;';
+
   document.body.style.overflow = 'hidden';
   document.documentElement.style.overflow = 'hidden';
+
   if (__serverRecoveryInterval) clearInterval(__serverRecoveryInterval);
   __serverRecoveryInterval = setInterval(async function() {
     try {
@@ -1217,10 +1217,15 @@ function lockServerForeverInGame() {
         clearInterval(__serverRecoveryInterval);
         __serverRecoveryInterval = null;
         gameServerLocked = false;
+
+        // ⚠️ بازگردانی وضعیت display اصلی
+        unlockDisplayAfterServerRecovery();
+
         var ov = document.getElementById('serverDownOverlay');
         if (ov) ov.remove();
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
+
         try {
           var fresh = await getUser(currentPhone);
           if (fresh) {
@@ -1238,24 +1243,52 @@ function lockServerForeverInGame() {
   }, 3000);
 }
 
+/* ⚠️ تابع کمکی برای بازگردانی display */
+function unlockDisplayAfterServerRecovery() {
+  if (__savedDisplays && Object.keys(__savedDisplays).length) {
+    for (var id in __savedDisplays) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = __savedDisplays[id] || '';
+    }
+    __savedDisplays = {};
+  }
+}
+
 /* ============================================================ */
-/*  Admin Panel                                                 */
+/*  Admin Panel - با fix باز شدن                                   */
 /* ============================================================ */
 function openAdminPanel() {
   var modal = document.getElementById('adminModal');
-  if (!modal) return;
+  if (!modal) {
+    showShopNotification('❌ پنل ادمین پیدا نشد', 'error');
+    return;
+  }
+
+  // ⚠️ حیاتی: پاک کردن inline display که ممکنه lockServerForeverInGame ست کرده باشه
+  modal.style.display = '';
+  modal.style.visibility = '';
+  modal.style.opacity = '';
+
+  // اگر پنل باز بود → ببند
   if (modal.classList.contains('active')) {
     modal.classList.remove('active');
+    modal.style.display = '';
     pauseSync = false;
     return;
   }
-  pauseSync = true;
+
+  // بستن بخش‌های داخلی
   var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','tournamentConfig','userLogsSection'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if (el) el.style.display = 'none';
   }
+
+  // ⚠️ اطمینان دوباره از پاک شدن inline display
+  modal.style.display = '';
   modal.classList.add('active');
+  pauseSync = true;
+
   setTimeout(function() {
     getMaintenance().then(function(m) {
       var btn = document.getElementById('btnServerToggle');
@@ -1270,7 +1303,9 @@ function openAdminPanel() {
       }
     }).catch(function() {});
   }, 100);
+
   setTimeout(function() { loadUsers(); }, 100);
+
   if (currentPhone === CREATOR_PHONE) {
     setTimeout(function() {
       loadTournamentConfig();
@@ -1748,6 +1783,14 @@ async function refreshWhitelistUI() {
   container.innerHTML = html;
 }
 
+async function quickWhitelistUser(ip, deviceId, userName) {
+  if (!ip && !deviceId) return;
+  if (!confirm('افزودن به وایت‌لیست؟ ' + userName)) return;
+  if (ip && ip !== 'نامشخص' && ip !== '-') await addToWhitelist(ip, 'auto: ' + userName, currentPhone);
+  if (deviceId && deviceId !== 'نامشخص' && deviceId !== '-') await addToWhitelist(deviceId, 'auto-dev: ' + userName, currentPhone);
+  showShopNotification('اضافه شد');
+}
+
 async function clearUserSessions(phone) {
   if (!confirm('پاک کردن تاریخچه ورود؟')) return;
   var user = await getUser(phone);
@@ -1823,6 +1866,15 @@ async function loadTournamentConfig() {
     if (cfg.rank3) { setVal('prize3Gems', cfg.rank3.gems); setVal('prize3Coins', cfg.rank3.coins); setVal('prize3Dollars', cfg.rank3.dollars); setVal('prize3Note', cfg.rank3.note); }
     if (cfg.rank4_10) { setVal('prize4Gems', cfg.rank4_10.gems); setVal('prize4Coins', cfg.rank4_10.coins); setVal('prize4Dollars', cfg.rank4_10.dollars); setVal('prize4Note', cfg.rank4_10.note); }
     if (cfg.blacklist) { window.clanBlacklist = cfg.blacklist; renderBlacklist(); }
+    var info = document.getElementById('tournamentEndTimeInfo');
+    if (info && cfg.endTime) {
+      var remaining = cfg.endTime - Date.now();
+      if (remaining > 0) {
+        var days = Math.floor(remaining / 86400000);
+        var hours = Math.floor((remaining % 86400000) / 3600000);
+        info.textContent = '⏰ پایان: ' + days + ' روز و ' + hours + ' ساعت مانده';
+      } else info.textContent = '⏰ زمان مسابقه تمام شده!';
+    }
   } catch(e) {}
 }
 
@@ -1878,6 +1930,67 @@ function removeClanFromBlacklist(idx) {
   renderBlacklist();
 }
 window.clanBlacklist = window.clanBlacklist || [];
+
+async function distributeClanPrizesNow() {
+  if (currentPhone !== CREATOR_PHONE) { showShopNotification('فقط سازنده', 'error'); return; }
+  if (!confirm('جوایز همین الان توزیع شود؟')) return;
+  await distributeClanPrizes(true);
+  showShopNotification('✅ جوایز توزیع شد');
+}
+async function distributeClanPrizes(force) {
+  try {
+    var cfg = await getTournamentConfig();
+    if (!cfg) return;
+    if (cfg.distributed && !force) return;
+    if (!force && Date.now() < cfg.endTime) return;
+    var ranking = await getClanRanking();
+    if (!ranking.length) return;
+    var allUsers = await getAllUsers();
+    var groups = await getGroups();
+    var top = ranking.slice(0, 10);
+    var now = Date.now();
+    var awarded = [];
+    for (var i = 0; i < top.length; i++) {
+      var r = top[i];
+      var pc = null;
+      if (r.rank === 1) pc = cfg.rank1;
+      else if (r.rank === 2) pc = cfg.rank2;
+      else if (r.rank === 3) pc = cfg.rank3;
+      else if (r.rank >= 4 && r.rank <= 10) pc = cfg.rank4_10;
+      if (!pc) continue;
+      var g = null;
+      for (var k = 0; k < groups.length; k++) {
+        if (groups[k].id === r.id) { g = groups[k]; break; }
+      }
+      if (!g || !g.members) continue;
+      var gems = parseInt(pc.gems) || 0;
+      var coins = parseInt(pc.coins) || 0;
+      var dollars = parseInt(pc.dollars) || 0;
+      for (var j = 0; j < g.members.length; j++) {
+        var mPhone = g.members[j];
+        var u = allUsers[mPhone];
+        if (!u) continue;
+        if (gems > 0) u.gems = (u.gems || 0) + gems;
+        if (coins > 0) u.coins = (u.coins || 0) + coins;
+        if (dollars > 0) u.dollars = (u.dollars || 0) + dollars;
+        u.lastUpdatedAt = now;
+        allUsers[mPhone] = u;
+        awarded.push(mPhone);
+      }
+    }
+    await saveAllUsers(allUsers);
+    for (var p = 0; p < awarded.length; p++) {
+      try { await saveUser(awarded[p], allUsers[awarded[p]]); } catch(e) {}
+      notifyUserUpdate(awarded[p], 'prize_received');
+      sendLive('user_' + awarded[p], 'prize_received', {});
+    }
+    if (!force) {
+      cfg.distributed = true;
+      await saveTournamentConfigData(cfg);
+    }
+    sendLive('global', 'tournament_prizes_distributed', {});
+  } catch(e) {}
+}
 
 /* ============================================================ */
 /*  News                                                        */
@@ -2257,9 +2370,6 @@ async function checkBanPeriodically() {
   if (locked && !getPerm().panel) { lockServerForeverInGame(); }
 }
 
-/* ============================================================ */
-/*  ⚡ Sync با محافظت از Session                                  */
-/* ============================================================ */
 async function syncWithServerInBackground() {
   try {
     if (banDetected) return;
@@ -2269,14 +2379,9 @@ async function syncWithServerInBackground() {
     var eu = document.getElementById('editUserModal');
     if (eu && eu.classList.contains('active')) return;
 
-    // ⚠️ اگر Session نبود، sync رو متوقف کن (نه logout)
     var session = getSession();
     if (!session || !session.phone) return;
-
-    // ⚠️ اطمینان از هماهنگی currentPhone با session
-    if (session.phone !== currentPhone) {
-      currentPhone = session.phone;
-    }
+    if (session.phone !== currentPhone) currentPhone = session.phone;
 
     myIP = await fetchUserIP();
     currentDeviceId = getDeviceId();
@@ -2289,6 +2394,7 @@ async function syncWithServerInBackground() {
         clearInterval(__serverRecoveryInterval);
         __serverRecoveryInterval = null;
       }
+      unlockDisplayAfterServerRecovery();
       var serverUser = await getUser(currentPhone);
       if (!serverUser) return;
       if (!serverUser.userCode || isNaN(parseInt(serverUser.userCode))) {
@@ -2318,6 +2424,7 @@ async function syncWithServerInBackground() {
         clearInterval(__serverRecoveryInterval);
         __serverRecoveryInterval = null;
       }
+      unlockDisplayAfterServerRecovery();
     }
 
     if (isAdminLocked()) {
@@ -2331,11 +2438,7 @@ async function syncWithServerInBackground() {
     }
 
     var sUser2 = await getUser(currentPhone);
-    if (!sUser2) {
-      // ⚠️ اگر کاربر در Redis نبود، **logout نکن**، فقط صبر کن
-      // ممکنه موقتاً شبکه مشکل داشته باشه
-      return;
-    }
+    if (!sUser2) return;
     if (!sUser2.userCode || isNaN(parseInt(sUser2.userCode))) {
       sUser2 = await assignCodeIfMissing(currentPhone, sUser2);
     }
@@ -2352,19 +2455,19 @@ async function syncWithServerInBackground() {
     currentUserData.lastIP = myIP;
     currentUserData.lastDevice = currentDeviceId;
 
-    // ⚠️ Session Keep-Alive
     refreshSession();
+    try { await distributeClanPrizes(false); } catch(e) {}
   } catch(error) {}
 }
 
 /* ============================================================ */
-/*  ⚡ Live Subscriptions با محافظت از logout ناخواسته             */
+/*  Live Subscriptions - با محافظت از logout ناخواسته              */
 /* ============================================================ */
 function isSignalFresh(sig) {
   if (!sig || !sig.time) return false;
   var age = Date.now() - sig.time;
-  if (age < 0) return false; // زمان آینده = غیرمعتبر
-  if (age > SIGNAL_FRESH_MS) return false; // قدیمی‌تر از ۱۵ ثانیه
+  if (age < 0) return false;
+  if (age > SIGNAL_FRESH_MS) return false;
   return true;
 }
 
@@ -2392,6 +2495,7 @@ function setupLiveSubscriptions() {
               clearInterval(__serverRecoveryInterval);
               __serverRecoveryInterval = null;
             }
+            unlockDisplayAfterServerRecovery();
             syncWithServerInBackground();
           }
         }
@@ -2401,7 +2505,6 @@ function setupLiveSubscriptions() {
 
   window.FBLive.subscribe('global', async function(sig) {
     if (!isSignalFresh(sig)) return;
-
     if (sig.type === 'news_updated') {
       await loadNews();
       showShopNotification('📢 اطلاعیه جدید');
@@ -2418,6 +2521,7 @@ function setupLiveSubscriptions() {
           clearInterval(__serverRecoveryInterval);
           __serverRecoveryInterval = null;
         }
+        unlockDisplayAfterServerRecovery();
         showShopNotification('✅ سرور وصل شد');
       }
       await syncWithServerInBackground();
@@ -2433,10 +2537,8 @@ function setupLiveSubscriptions() {
   });
 
   window.FBLive.subscribe('user_' + currentPhone, async function(sig) {
-    // ⚠️ فقط سیگنال تازه پردازش بشه
     if (!isSignalFresh(sig)) return;
 
-    // ⚠️ بن فوری
     if (sig.type === 'banned' || sig.type === 'banned_immediate') {
       if (currentPhone === CREATOR_PHONE) return;
       banDetected = true;
@@ -2446,37 +2548,20 @@ function setupLiveSubscriptions() {
       return;
     }
 
-    // ⚠️ force_logout: فقط با تایید از Redis
     if (sig.type === 'force_logout' && currentPhone !== CREATOR_PHONE) {
-      // چک کن که واقعاً بن شده یا حسابش حذف شده
       var checkUser = await getUser(currentPhone);
       var checkBan = await getBanStatus(currentPhone);
-      if (checkBan) {
-        redirectToBan(checkBan, currentPhone);
-        return;
-      }
-      if (!checkUser) {
-        // کاربر واقعاً پاک شده
-        await safeLogout('force_logout', true);
-        return;
-      }
-      // ⚠️ در غیر این صورت، logout نکن!
+      if (checkBan) { redirectToBan(checkBan, currentPhone); return; }
+      if (!checkUser) { await safeLogout('force_logout', true); return; }
       return;
     }
 
-    // ⚠️ deleted: فقط با تایید از Redis
     if (sig.type === 'deleted' && currentPhone !== CREATOR_PHONE) {
       var checkUser2 = await getUser(currentPhone);
-      if (!checkUser2) {
-        // واقعاً حذف شده
-        await safeLogout('deleted', true);
-        return;
-      }
-      // ⚠️ شاید فقط موقتیه - logout نکن
+      if (!checkUser2) { await safeLogout('deleted', true); return; }
       return;
     }
 
-    // ⚠️ admin_edit و prize_received: فقط refresh کن
     if (sig.type === 'admin_edit' || sig.type === 'prize_received' || sig.type === 'force_refresh') {
       setAdminLock();
       try {
@@ -2497,12 +2582,9 @@ function setupLiveSubscriptions() {
   if (window.FBLive.subscribeValue) {
     window.FBLive.subscribeValue('user_updates/' + currentPhone, async function(val) {
       if (!val || !val.at) return;
-
-      // ⚠️ فقط سیگنال تازه
       var age = Date.now() - val.at;
       if (age > SIGNAL_FRESH_MS || age < 0) return;
 
-      // ⚠️ بن فوری
       if (val.type === 'banned') {
         if (currentPhone === CREATOR_PHONE) return;
         banDetected = true;
@@ -2512,15 +2594,11 @@ function setupLiveSubscriptions() {
         return;
       }
 
-      // ⚠️ force_logout و deleted: فقط با تایید
       if (val.type === 'force_logout' || val.type === 'deleted') {
         var cu = await getUser(currentPhone);
         var cb = await getBanStatus(currentPhone);
         if (cb) { redirectToBan(cb, currentPhone); return; }
-        if (!cu) {
-          await safeLogout(val.type, true);
-          return;
-        }
+        if (!cu) { await safeLogout(val.type, true); return; }
         return;
       }
 
@@ -2546,7 +2624,6 @@ function setupLiveSubscriptions() {
 /*  Boot                                                       */
 /* ============================================================ */
 document.addEventListener('DOMContentLoaded', async function() {
-  // ⚠️ استفاده از getSession به جای localStorage مستقیم
   var session = getSession();
   if (!session || !session.phone) {
     window.location.replace('index.html');
@@ -2554,7 +2631,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   currentPhone = session.phone;
 
-  // ⚠️ چک فوری بن در همان ابتدا
   var earlyBan = await getBanStatus(currentPhone);
   if (earlyBan && currentPhone !== CREATOR_PHONE) {
     banDetected = true;
@@ -2565,7 +2641,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   initFB(currentPhone);
   if (window.FBLive && window.FBLive.init) window.FBLive.init(currentPhone);
 
-  // ⚠️ ثبت ورود (فقط یکبار در ۵ دقیقه)
   setTimeout(async function() {
     try {
       myIP = await fetchUserIP();
@@ -2592,25 +2667,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch(e) {}
   }
 
-  // ⚠️ اگر کاربر در Redis نبود، به index.html برگرد
   if (!currentUserData) {
-    // یک بار دیگه تلاش کن
     try {
       await new Promise(function(r) { setTimeout(r, 1000); });
       var u2 = await getUser(currentPhone);
-      if (u2) {
-        currentUserData = u2;
-      }
+      if (u2) currentUserData = u2;
     } catch(e) {}
   }
 
   if (!currentUserData) {
-    // کاربر واقعاً وجود نداره
     await safeLogout('user_not_found', true);
     return;
   }
 
-  // ⚠️ Session Keep-Alive - refresh هر ۳۰ ثانیه
   setInterval(refreshSession, SESSION_KEEP_ALIVE_MS);
 
   updateUIWithData(currentUserData);
@@ -2901,12 +2970,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (exclFile) exclFile.value = '';
   });
 
-  // ⚠️ چک بن فوری روی هر کلیک/لمس/کلید
   document.addEventListener('click', function() { immediateBanCheck(); }, true);
   document.addEventListener('touchstart', function() { immediateBanCheck(); }, true);
   document.addEventListener('keydown', function() { immediateBanCheck(); }, true);
 
-  console.log('✅ Safe Asli.js loaded - session protected + ban immediate');
+  console.log('✅ Safe Asli.js loaded - admin panel fixed + session protected');
 });
 
 document.addEventListener('visibilitychange', async function() {
@@ -2930,7 +2998,6 @@ window.addEventListener('focus', function() {
   immediateBanCheck();
 });
 
-// ⚠️ قبل از بستن: فقط FBOnline آنلاین نگه دار، session پاک نکن
 window.addEventListener('beforeunload', function() {
   if (currentPhone) {
     try { setFBOnline(currentPhone, true, {}); } catch(e) {}
@@ -2938,7 +3005,6 @@ window.addEventListener('beforeunload', function() {
   }
 });
 
-// ⚠️ اگر از bfcache برگشت
 window.addEventListener('pageshow', function(event) {
   if (event.persisted) {
     refreshSession();
@@ -2946,7 +3012,6 @@ window.addEventListener('pageshow', function(event) {
   }
 });
 
-// ⚠️ جلوگیری از برگشت ناخواسته
 window.addEventListener('popstate', function() {
   var s = getSession();
   if (!s && !banDetected) {
@@ -2974,6 +3039,7 @@ window.clearUserData = clearUserData;
 window.clearUserSessionsFromPanel = clearUserSessionsFromPanel;
 window.addWhitelistIP = addWhitelistIP;
 window.removeWhitelistIP = removeWhitelistIP;
+window.quickWhitelistUser = quickWhitelistUser;
 window.clearUserSessions = clearUserSessions;
 window.resetAllUserCodes = resetAllUserCodes;
 window.markNewsAsRead = markNewsAsRead;
@@ -2987,6 +3053,8 @@ window.saveAllTournamentConfig = saveAllTournamentConfig;
 window.renderBlacklist = renderBlacklist;
 window.addClanToBlacklist = addClanToBlacklist;
 window.removeClanFromBlacklist = removeClanFromBlacklist;
+window.distributeClanPrizesNow = distributeClanPrizesNow;
+window.distributeClanPrizes = distributeClanPrizes;
 window.openUserLogsPanel = openUserLogsPanel;
 window.renderUserLogs = renderUserLogs;
 window.updateUIWithData = updateUIWithData;
