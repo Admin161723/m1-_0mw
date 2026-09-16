@@ -1,8 +1,8 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل (اصلاحات نهایی)              */
-/*  ✅ حذف کامل پیام مزاحم قطع سرور هنگام کلیک روی صفحه         */
-/*  ✅ رفع قطعی باگ بسته نشدن پنل مدیریت با دکمه X              */
-/*  ✅ هدایت دقیق دکمه "امتیازی" به صفحه Re.html                */
+/*  Safe Asli.js - نسخه نهایی کامل (اصلاحات درخواستی جدید)      */
+/*  ✅ هدایت دقیق دکمه‌ها (تیم مدیریت، برترین‌ها، مدیریت)        */
+/*  ✅ رفع کامل و قطعی باگ بازگشت آواتار به حالت قبلی           */
+/*  ✅ عملکرد بی‌نقص دکمه‌های پنل مدیریت                         */
 /*  ✅ آواتار ویدیو و بن فوری همچنان فعال و سالم هستند          */
 /* ============================================================ */
 
@@ -690,18 +690,19 @@ function createMediaElement(src) {
   return i;
 }
 
+// ✅ رفع کامل باگ بازگشت آواتار: حذف منطق معیوب previousAvatar
 function sanitizeUserData(user, phone) {
   if (!user) return user;
   var isCreator = (phone === CREATOR_PHONE);
+  
+  // فقط محدودیت آواتار اختصاصی سازنده
   if (user.avatar === '655.webm' && !isCreator) {
-    user.avatar = user.previousAvatar || 'Mafia2.png';
+    user.avatar = 'Mafia2.png';
   }
+  
   if (user.useExclusive === undefined) user.useExclusive = false;
   if (!user.exclusiveAvatar && user.useExclusive === true) user.useExclusive = false;
-  if (user.avatar && typeof user.avatar === 'string' && user.avatar.indexOf('data:') === 0 &&
-      user.exclusiveAvatar && user.avatar === user.exclusiveAvatar && !user.useExclusive) {
-    user.avatar = user.previousAvatar || 'Mafia2.png';
-  }
+  
   if (user.coins < 0) user.coins = 0;
   if (user.gems < 0) user.gems = 0;
   if (user.dollars < 0) user.dollars = 0;
@@ -709,6 +710,7 @@ function sanitizeUserData(user, phone) {
   if (user.hours === undefined) user.hours = 0;
   if (!user.ownedTemplates) user.ownedTemplates = [];
   if (!user.ownedAvatars) user.ownedAvatars = [];
+  
   var xp = Math.floor((user.cups / 10) * 20 + (user.hours || 0) * 100);
   user.xp = xp;
   var level = 1;
@@ -720,6 +722,7 @@ function sanitizeUserData(user, phone) {
   user.level = level;
   return user;
 }
+
 function getValidAvatar(src, phone) {
   if (src === '655.webm' && phone !== CREATOR_PHONE) return 'Mafia2.png';
   return src;
@@ -731,7 +734,7 @@ function updateGlobalAvatar(src) {
   if (currentUserData.exclusiveAvatar && currentUserData.useExclusive === true) {
     validSrc = currentUserData.exclusiveAvatar;
   } else {
-    validSrc = src || 'Mafia2.png';
+    validSrc = src || currentUserData.avatar || 'Mafia2.png';
   }
   validSrc = getValidAvatar(validSrc, currentPhone);
   var templateSrc = currentUserData.currentTemplate || null;
@@ -893,23 +896,25 @@ async function saveUserData() {
   await saveAllUsers(allUsers);
   sendLive('user_' + currentPhone, 'updated', { phone: currentPhone });
 }
+
+// ✅ رفع باگ آواتار: ذخیره مستقیم بدون دستکاری previousAvatar
 async function saveAvatarToStorage(src) {
   if (!currentUserData || !currentPhone) return;
   if (src === '655.webm' && currentPhone !== CREATOR_PHONE) return;
   if (isAdminLocked()) return;
-  if (currentUserData.avatar && currentUserData.avatar !== src) {
-    currentUserData.previousAvatar = currentUserData.avatar;
-  }
+  
   currentUserData.avatar = src;
   currentUserData.useExclusive = false;
   await saveUserData();
 }
+
 async function saveTemplateToStorage(src) {
   if (!currentUserData || !currentPhone) return;
   if (isAdminLocked()) return;
   currentUserData.currentTemplate = src;
   await saveUserData();
 }
+
 async function changeUsername() {
   var nn = prompt("نام جدید (حداکثر ۲۰ کاراکتر):");
   if (nn && nn.trim() !== "") {
@@ -935,15 +940,15 @@ function closeModal(id) {
   if (e) e.classList.remove('active');
 }
 
-// ✅ رفع قطعی باگ بسته شدن پنل مدیریت با دکمه X
+// ✅ رفع قطعی باگ بسته نشدن پنل مدیریت با دکمه X
 function closeAdminModal() {
   var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (e) {
     e.classList.remove('active');
-    e.style.display = 'none'; // تضمین مخفی شدن
+    e.style.display = 'none';
   }
   pauseSync = false;
-  syncWithServerInBackground(); // از سرگیری همگام‌سازی
+  syncWithServerInBackground();
 }
 
 function closeEditUser() {
@@ -1128,7 +1133,6 @@ window.addEventListener('focus', function() {
 /*  Server Lock - خنثی‌سازی کامل (جلوگیری از پرت شدن بیرون)      */
 /* ============================================================ */
 function lockServerForeverInGame() {
-  // ✅ کاملاً غیرفعال شد تا کاربر با هر کلیک بیرون پرتاب نشود یا صفحه قفل نشود
   gameServerLocked = false;
   var overlay = document.getElementById('serverDownOverlay');
   if (overlay) overlay.remove();
@@ -1158,7 +1162,7 @@ function unlockDisplayAfterServerRecovery() {
 function openAdminPanel() {
   var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (!modal) {
-    showShopNotification('❌ پنل مدیریت در HTML یافت نشد (adminModal)', 'error');
+    showShopNotification('❌ پنل مدیریت در HTML یافت نشد', 'error');
     return;
   }
 
@@ -1400,6 +1404,8 @@ async function saveUserEdit() {
     u.citizenWins = parseInt(getVal('editUserCitizenWins')) || 0;
     u.bestScore = parseInt(getVal('editUserBestScore')) || 0;
   }
+  
+  // ✅ اصلاح منطق exclusive برای جلوگیری از باگ آواتار
   if (perm.exclusive) {
     if (editingUserExclusiveAvatar && editingUserExclusiveAvatar !== 'removed') {
       var oldExclusive = u.exclusiveAvatar || null;
@@ -1421,17 +1427,15 @@ async function saveUserEdit() {
             return a.indexOf('admin_exclusive_') !== 0 && a !== oldExcl;
           });
         }
-        if (u.previousAvatar && u.previousAvatar !== oldExcl) {
-          u.avatar = u.previousAvatar;
-        } else if (!u.avatar || u.avatar === oldExcl) {
-          u.avatar = 'Mafia2.png';
+        // فقط اگر آواتار فعلی همان آواتار اختصاصی حذف شده باشد، آن را تغییر می‌دهیم
+        if (u.avatar === oldExcl) {
+          u.avatar = (u.previousAvatar && u.previousAvatar !== oldExcl) ? u.previousAvatar : 'Mafia2.png';
         }
-        ['avatar', 'previousAvatar', 'currentAvatar'].forEach(function(field) {
-          if (u[field] === oldExcl) u[field] = 'Mafia2.png';
-        });
+        delete u.previousAvatar; // حذف previousAvatar برای جلوگیری از تداخل در آینده
       }
     }
   }
+  
   u.lastUpdatedAt = Date.now();
   allUsers[editingUserId] = u;
   var saved = false;
@@ -2254,7 +2258,6 @@ async function checkBanPeriodically() {
   if (eu && eu.classList.contains('active')) return;
   var locked = await isServerLocked();
   if (locked && !getPerm().panel) { 
-    // ✅ دیگر هیچ پیام مزاحم یا قفلی نمایش داده نمی‌شود
     console.log('سرور در حالت تعمیر است، اما کاربر می‌تواند به آرامی در صفحه بماند.');
   }
 }
@@ -2306,7 +2309,6 @@ async function syncWithServerInBackground() {
     if (!isWhitelisted) {
       var isLocked = await isServerLocked();
       if (isLocked && !hasPanelAccess) { 
-        // ✅ حذف فراخوانی قفل صفحه
         console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
       }
       var so3 = document.getElementById('serverDownOverlay');
@@ -2375,7 +2377,6 @@ function setupLiveSubscriptions() {
       }
       fbServerListener = fbDb.ref('server_state/on').on('value', function(snap) {
         if (snap.val() === true && currentPhone !== CREATOR_PHONE && !getPerm().panel) {
-          // ✅ حذف قفل شدن صفحه
           console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
         } else if (snap.val() === false) {
           if (gameServerLocked) {
@@ -2671,28 +2672,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('newsModal').classList.add('active');
   });
   bind('btnHelp', function() { playClickSound(); window.location.href = 'Amozesh.html'; });
+
+  // ✅ هدایت دقیق دکمه‌ها طبق درخواست جدید
+  bind('btnTeamManagement', function() { playClickSound(); window.location.href = 'Modir.html'; });
+  bind('teamManagementBtn', function() { playClickSound(); window.location.href = 'Modir.html'; });
   
-  // ✅ هدایت دقیق دکمه "امتیازی" / "برترین‌ها" به صفحه Re.html
-  bind('btnTopPlayers', function() { 
-    playClickSound(); 
-    window.location.href = 'Re.html'; 
-  });
-  // اگر دکمه دیگری با نام امتیازی دارید، این خط هم آن را پوشش می‌دهد:
-  bind('btnEmtiazi', function() { 
-    playClickSound(); 
-    window.location.href = 'Re.html'; 
-  });
+  bind('btnTopPlayers', function() { playClickSound(); window.location.href = 'Bandi.html'; });
+  bind('btnEmtiazi', function() { playClickSound(); window.location.href = 'Bandi.html'; });
 
   bind('btnManagement', function() { 
     playClickSound(); 
-    var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
-    if (modal) {
-      openAdminPanel();
-    } else {
-      window.location.href = 'Modir.html'; 
-    }
+    openAdminPanel();
   });
-  
+
   bind('btnLive', function() { playClickSound(); showShopNotification('به زودی'); });
   bind('btnFriendly', function() { playClickSound(); window.location.href = 'TalarDs.html'; });
   bind('btnCompetitive', function() {
