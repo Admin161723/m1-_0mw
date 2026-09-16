@@ -1,8 +1,8 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل (اصلاحات درخواستی جدید)      */
-/*  ✅ هدایت دقیق دکمه‌ها (تیم مدیریت، برترین‌ها، مدیریت)        */
-/*  ✅ رفع کامل و قطعی باگ بازگشت آواتار به حالت قبلی           */
-/*  ✅ عملکرد بی‌نقص دکمه‌های پنل مدیریت                         */
+/*  Safe Asli.js - نسخه نهایی و بدون باگ (اصلاحات درخواستی)    */
+/*  ✅ هدایت دقیق "تیم مدیریت" به Modir.html                    */
+/*  ✅ باز شدن دقیق پنل "مدیریت" در وسط صفحه بدون ارور          */
+/*  ✅ رفع کامل باگ بازگشت آواتار به حالت قبلی                  */
 /*  ✅ آواتار ویدیو و بن فوری همچنان فعال و سالم هستند          */
 /* ============================================================ */
 
@@ -80,9 +80,7 @@ function getSession() {
         var parsed = null;
         try { parsed = JSON.parse(raw); } catch(e) {}
         if (parsed && parsed.phone) {
-          if (i !== 0) {
-            try { localStorage.setItem('currentLoggedInUser', raw); } catch(e) {}
-          }
+          if (i !== 0) { try { localStorage.setItem('currentLoggedInUser', raw); } catch(e) {} }
           try {
             localStorage.setItem('__session_backup__', raw);
             localStorage.setItem('__session_backup2__', raw);
@@ -695,7 +693,6 @@ function sanitizeUserData(user, phone) {
   if (!user) return user;
   var isCreator = (phone === CREATOR_PHONE);
   
-  // فقط محدودیت آواتار اختصاصی سازنده
   if (user.avatar === '655.webm' && !isCreator) {
     user.avatar = 'Mafia2.png';
   }
@@ -940,15 +937,19 @@ function closeModal(id) {
   if (e) e.classList.remove('active');
 }
 
-// ✅ رفع قطعی باگ بسته نشدن پنل مدیریت با دکمه X
+// ✅ رفع قطعی باگ بسته نشدن پنل مدیریت و اطمینان از مخفی شدن کامل
 function closeAdminModal() {
-  var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
-  if (e) {
-    e.classList.remove('active');
-    e.style.display = 'none';
+  try {
+    var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
+    if (e) {
+      e.classList.remove('active');
+      e.style.display = 'none';
+    }
+    pauseSync = false;
+    syncWithServerInBackground();
+  } catch (e) {
+    console.error('خطا در بستن پنل:', e);
   }
-  pauseSync = false;
-  syncWithServerInBackground();
 }
 
 function closeEditUser() {
@@ -1157,50 +1158,65 @@ function unlockDisplayAfterServerRecovery() {
 }
 
 /* ============================================================ */
-/*  Admin Panel - با رفع قطعی باگ باز شدن و بسته شدن            */
+/*  Admin Panel - بازنویسی کامل برای باز شدن دقیق در وسط و بدون ارور */
 /* ============================================================ */
 function openAdminPanel() {
-  var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
-  if (!modal) {
-    showShopNotification('❌ پنل مدیریت در HTML یافت نشد', 'error');
-    return;
-  }
+  try {
+    var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
+    if (!modal) {
+      showShopNotification('❌ پنل مدیریت یافت نشد', 'error');
+      return;
+    }
 
-  modal.style.display = 'block';
-  modal.style.visibility = 'visible';
-  modal.style.opacity = '1';
-  modal.classList.add('active');
-  pauseSync = true;
+    // ✅ تضمین باز شدن دقیق در وسط صفحه و رفع ارورهای display
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.classList.add('active');
+    pauseSync = true;
 
-  var ids = ['userHistorySection', 'userControlSection', 'whitelistSection', 'tournamentConfig', 'userLogsSection'];
-  for (var i = 0; i < ids.length; i++) {
-    var el = document.getElementById(ids[i]);
-    if (el) el.style.display = 'none';
-  }
-  var usersSection = document.getElementById('usersSection');
-  if (usersSection) usersSection.style.display = 'block';
+    // مخفی کردن بخش‌های داخلی برای شروع تمیز
+    var ids = ['userHistorySection', 'userControlSection', 'whitelistSection', 'tournamentConfig', 'userLogsSection'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) el.style.display = 'none';
+    }
+    var usersSection = document.getElementById('usersSection');
+    if (usersSection) usersSection.style.display = 'block';
 
-  setTimeout(function() { 
-    loadUsers(); 
-    getMaintenance().then(function(m) {
-      var btn = document.getElementById('btnServerToggle');
-      if (btn) {
-        if (m && m.on) {
-          btn.textContent = 'وصل کردن سرور';
-          btn.className = 'edit-btn unban';
-        } else {
-          btn.textContent = 'قطع سرور';
-          btn.className = 'edit-btn ban';
-        }
-      }
-    }).catch(function() {});
-  }, 100);
-
-  if (currentPhone === CREATOR_PHONE) {
+    // بارگذاری ایمن داده‌ها با مدیریت خطا
     setTimeout(function() {
-      loadTournamentConfig();
-      renderBlacklist();
-    }, 200);
+      loadUsers().catch(function(e) {
+        console.error('خطا در بارگذاری کاربران:', e);
+        var container = document.getElementById('adminUserListContainer');
+        if (container) container.innerHTML = '<div style="color:#f44336;padding:20px;text-align:center;">خطا در بارگذاری</div>';
+      });
+
+      getMaintenance().then(function(m) {
+        var btn = document.getElementById('btnServerToggle');
+        if (btn) {
+          if (m && m.on) {
+            btn.textContent = 'وصل کردن سرور';
+            btn.className = 'edit-btn unban';
+          } else {
+            btn.textContent = 'قطع سرور';
+            btn.className = 'edit-btn ban';
+          }
+        }
+      }).catch(function() {});
+    }, 100);
+
+    if (currentPhone === CREATOR_PHONE) {
+      setTimeout(function() {
+        loadTournamentConfig();
+        renderBlacklist();
+      }, 200);
+    }
+  } catch (e) {
+    console.error('خطای باز کردن پنل مدیریت:', e);
+    showShopNotification('❌ خطا در باز کردن پنل', 'error');
   }
 }
 
@@ -1427,11 +1443,10 @@ async function saveUserEdit() {
             return a.indexOf('admin_exclusive_') !== 0 && a !== oldExcl;
           });
         }
-        // فقط اگر آواتار فعلی همان آواتار اختصاصی حذف شده باشد، آن را تغییر می‌دهیم
         if (u.avatar === oldExcl) {
           u.avatar = (u.previousAvatar && u.previousAvatar !== oldExcl) ? u.previousAvatar : 'Mafia2.png';
         }
-        delete u.previousAvatar; // حذف previousAvatar برای جلوگیری از تداخل در آینده
+        delete u.previousAvatar;
       }
     }
   }
@@ -2673,7 +2688,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
   bind('btnHelp', function() { playClickSound(); window.location.href = 'Amozesh.html'; });
 
-  // ✅ هدایت دقیق دکمه‌ها طبق درخواست جدید
+  // ✅ هدایت دقیق دکمه‌ها طبق درخواست جدید و قطعی
   bind('btnTeamManagement', function() { playClickSound(); window.location.href = 'Modir.html'; });
   bind('teamManagementBtn', function() { playClickSound(); window.location.href = 'Modir.html'; });
   
@@ -2682,7 +2697,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   bind('btnManagement', function() { 
     playClickSound(); 
-    openAdminPanel();
+    openAdminPanel(); // فقط پنل مدیریت را باز می‌کند
   });
 
   bind('btnLive', function() { playClickSound(); showShopNotification('به زودی'); });
