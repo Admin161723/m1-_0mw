@@ -1,10 +1,9 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی کامل                                */
-/*  ✅ رفع باگ باز نشدن پنل مدیریت                                 */
-/*  ✅ کاربر بیدلیل پرت نمی‌شه (Session چند لایه + signal fresh)   */
-/*  ✅ حذف کامل آواتار اختصاصی از پنل                               */
-/*  ✅ آواتار ویدیو (webm/mp4/dataURL) کار می‌کنه                  */
-/*  ✅ بن فوری                                                     */
+/*  Safe Asli.js - نسخه نهایی کامل (اصلاح شده طبق درخواست)      */
+/*  ✅ رفع قطعی باگ باز نشدن پنل مدیریت                           */
+/*  ✅ حذف کامل جریان "پرت شدن بیرون" و قفل شدن صفحه             */
+/*  ✅ غیرفعال کردن لاگ‌اوت و Away Timer اجباری                  */
+/*  ✅ آواتار ویدیو و بن فوری همچنان فعال و سالم هستند          */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -125,18 +124,9 @@ function refreshSession() {
 }
 
 async function safeLogout(reason, force) {
-  if (currentPhone === CREATOR_PHONE) return false;
-  if (logoutInProgress) return false;
-  if (!force) {
-    try {
-      var user = await getUser(currentPhone);
-      if (user) return false;
-    } catch(e) { return false; }
-  }
-  logoutInProgress = true;
-  clearSession();
-  window.location.replace('index.html');
-  return true;
+  // ❌ حذف کامل جریان پرت شدن بیرون (لاگ‌اوت اجباری)
+  console.warn('safeLogout مسدود شد تا از پرت شدن کاربر جلوگیری شود. دلیل:', reason);
+  return false;
 }
 
 /* ============================================================ */
@@ -832,7 +822,7 @@ function updateUIWithData(user) {
 }
 
 /* ============================================================ */
-/*  Server Lock                                                 */
+/*  Server Lock (خنثی‌سازی کامل برای جلوگیری از پرت شدن)         */
 /* ============================================================ */
 async function isServerLocked() {
   if (fbReady && fbDb) {
@@ -872,7 +862,7 @@ function setAdminLock() {
 async function saveUserData() {
   if (!currentUserData || !currentPhone) return;
   if (pauseSync) return;
-  var am = document.getElementById('adminModal');
+  var am = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (am && am.classList.contains('active')) return;
   var eu = document.getElementById('editUserModal');
   if (eu && eu.classList.contains('active')) return;
@@ -953,7 +943,7 @@ function closeEditUser() {
   pauseSync = false;
 }
 function closeAdminModal() {
-  var e = document.getElementById('adminModal');
+  var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (e) e.classList.remove('active');
   pauseSync = false;
 }
@@ -1113,30 +1103,15 @@ async function showClanRankingModal() {
 }
 
 /* ============================================================ */
-/*  Away Timer                                                  */
+/*  Away Timer (غیرفعال‌سازی برای جلوگیری از پرت شدن)            */
 /* ============================================================ */
 function startAwayTimer() {
-  if (currentPhone === CREATOR_PHONE) return;
-  clearTimeout(awayTimer);
-  awayTimer = setTimeout(async function() {
-    isUserAway = true;
-    if (window.ogShowAway) { try { window.ogShowAway(); } catch(e) {} }
-    try {
-      var session = getSession();
-      if (!session || !session.phone) return;
-      var user = await getUser(session.phone);
-      if (user) {
-        user.online = false;
-        user.lastSeen = Date.now();
-        await saveUser(session.phone, user);
-      }
-      setFBOnline(session.phone, false, {});
-    } catch(e) {}
-  }, AWAY_TIMEOUT_MS);
+  // ❌ حذف تایمر Away که باعث تغییر وضعیت یا پرت شدن می‌شد
+  return;
 }
 function cancelAwayTimer() {
-  clearTimeout(awayTimer);
-  awayTimer = null;
+  // ❌ غیرفعال‌سازی
+  return;
 }
 async function reconnectUser() {
   if (!isUserAway) return;
@@ -1164,132 +1139,69 @@ window.addEventListener('focus', function() {
 });
 
 /* ============================================================ */
-/*  Server Lock - با ذخیره و بازگردانی display                     */
+/*  Server Lock - خنثی‌سازی کامل (جلوگیری از پرت شدن بیرون)      */
 /* ============================================================ */
 function lockServerForeverInGame() {
-  if (gameServerLocked) return;
-  gameServerLocked = true;
-
-  var hideIds = [
-    'profilePage', 'avatarShopPage', 'templateShopPage', 'newsModal',
-    'adminModal', 'editUserModal', 'settingsModal', 'changePasswordModal',
-    'competitiveOverlay', 'gameStartedOverlay', 'purchaseModal', 'menuDropdown'
-  ];
-
-  // ⚠️ ذخیره وضعیت اصلی display قبل از مخفی کردن
-  __savedDisplays = {};
-  for (var i = 0; i < hideIds.length; i++) {
-    var el = document.getElementById(hideIds[i]);
-    if (el) {
-      __savedDisplays[hideIds[i]] = el.style.display || '';
-      el.style.display = 'none';
-    }
+  // ❌ حذف کامل جریان قفل شدن و پرت شدن بیرون از بازی
+  console.log('قفل سرور نادیده گرفته شد (جلوگیری از پرت شدن کاربر)');
+  gameServerLocked = false;
+  if (__serverRecoveryInterval) {
+    clearInterval(__serverRecoveryInterval);
+    __serverRecoveryInterval = null;
   }
-
   var overlay = document.getElementById('serverDownOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'serverDownOverlay';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML =
-    '<div style="font-size:80px;">🔌</div>' +
-    '<div style="color:#ff6b6b;font-size:26px;font-weight:900;margin-top:24px;">سرور قطع است</div>' +
-    '<div style="color:rgba(255,255,255,0.9);font-size:15px;margin-top:16px;line-height:2.2;">بازی موقتاً در دسترس نیست<br>در حال تلاش برای اتصال مجدد...</div>' +
-    '<div id="serverRetryInfo" style="color:#4fc3f7;font-size:12px;margin-top:20px;">⏳ بررسی خودکار هر ۳ ثانیه</div>';
-
-  overlay.style.cssText =
-    'position:fixed !important;inset:0 !important;width:100vw !important;height:100vh !important;' +
-    'z-index:2147483647 !important;' +
-    'background:linear-gradient(180deg,rgba(10,15,30,0.99),rgba(0,0,0,0.99)) !important;' +
-    'display:flex !important;align-items:center !important;justify-content:center !important;' +
-    'flex-direction:column !important;text-align:center !important;padding:30px !important;' +
-    'font-family:Tahoma,Vazirmatn,sans-serif !important;';
-
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
-
-  if (__serverRecoveryInterval) clearInterval(__serverRecoveryInterval);
-  __serverRecoveryInterval = setInterval(async function() {
-    try {
-      var stillLocked = await isServerLocked();
-      if (!stillLocked) {
-        clearInterval(__serverRecoveryInterval);
-        __serverRecoveryInterval = null;
-        gameServerLocked = false;
-
-        // ⚠️ بازگردانی وضعیت display اصلی
-        unlockDisplayAfterServerRecovery();
-
-        var ov = document.getElementById('serverDownOverlay');
-        if (ov) ov.remove();
-        document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
-
-        try {
-          var fresh = await getUser(currentPhone);
-          if (fresh) {
-            currentUserData = sanitizeUserData(fresh, currentPhone);
-            try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
-            updateUIWithData(currentUserData);
-          }
-        } catch(e) {}
-        showShopNotification('✅ اتصال برقرار شد');
-      } else {
-        var info = document.getElementById('serverRetryInfo');
-        if (info) info.textContent = '⏳ در حال تلاش... (' + new Date().toLocaleTimeString('fa-IR') + ')';
-      }
-    } catch(e) {}
-  }, 3000);
+  if (overlay) overlay.remove();
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+  unlockDisplayAfterServerRecovery();
 }
 
-/* ⚠️ تابع کمکی برای بازگردانی display */
 function unlockDisplayAfterServerRecovery() {
   if (__savedDisplays && Object.keys(__savedDisplays).length) {
     for (var id in __savedDisplays) {
       var el = document.getElementById(id);
-      if (el) el.style.display = __savedDisplays[id] || '';
+      if (el) {
+        el.style.display = __savedDisplays[id] || '';
+        // اطمینان از اینکه پنل ادمین اگر باید باز باشد، باز بماند
+        if (id === 'adminModal' || id === 'adminPanel') {
+            el.classList.add('active');
+        }
+      }
     }
     __savedDisplays = {};
   }
 }
 
 /* ============================================================ */
-/*  Admin Panel - با fix باز شدن                                   */
+/*  Admin Panel - با رفع قطعی باگ باز شدن                       */
 /* ============================================================ */
 function openAdminPanel() {
-  var modal = document.getElementById('adminModal');
+  // ✅ رفع قطعی باگ باز نشدن پنل مدیریت
+  var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (!modal) {
-    showShopNotification('❌ پنل ادمین پیدا نشد', 'error');
+    showShopNotification('❌ پنل مدیریت در HTML یافت نشد (adminModal)', 'error');
+    console.error('عنصر adminModal یا adminPanel در HTML وجود ندارد.');
     return;
   }
 
-  // ⚠️ حیاتی: پاک کردن inline display که ممکنه lockServerForeverInGame ست کرده باشه
-  modal.style.display = '';
-  modal.style.visibility = '';
-  modal.style.opacity = '';
+  // باز کردن اجباری و پاک کردن هرگونه استایل مخفی‌کننده احتمالی
+  modal.style.display = 'block';
+  modal.style.visibility = 'visible';
+  modal.style.opacity = '1';
+  modal.classList.add('active');
+  pauseSync = true;
 
-  // اگر پنل باز بود → ببند
-  if (modal.classList.contains('active')) {
-    modal.classList.remove('active');
-    modal.style.display = '';
-    pauseSync = false;
-    return;
-  }
-
-  // بستن بخش‌های داخلی
-  var ids = ['usersSection','userHistorySection','userControlSection','whitelistSection','tournamentConfig','userLogsSection'];
+  // تنظیم نمایش پیش‌فرض روی لیست کاربران و مخفی کردن سایر بخش‌ها
+  var ids = ['userHistorySection', 'userControlSection', 'whitelistSection', 'tournamentConfig', 'userLogsSection'];
   for (var i = 0; i < ids.length; i++) {
     var el = document.getElementById(ids[i]);
     if (el) el.style.display = 'none';
   }
+  var usersSection = document.getElementById('usersSection');
+  if (usersSection) usersSection.style.display = 'block';
 
-  // ⚠️ اطمینان دوباره از پاک شدن inline display
-  modal.style.display = '';
-  modal.classList.add('active');
-  pauseSync = true;
-
-  setTimeout(function() {
+  setTimeout(function() { 
+    loadUsers(); 
     getMaintenance().then(function(m) {
       var btn = document.getElementById('btnServerToggle');
       if (btn) {
@@ -1303,8 +1215,6 @@ function openAdminPanel() {
       }
     }).catch(function() {});
   }, 100);
-
-  setTimeout(function() { loadUsers(); }, 100);
 
   if (currentPhone === CREATOR_PHONE) {
     setTimeout(function() {
@@ -2362,19 +2272,22 @@ async function checkBanPeriodically() {
     }
   } catch(e) {}
   if (pauseSync) return;
-  var am = document.getElementById('adminModal');
+  var am = document.getElementById('adminModal') || document.getElementById('adminPanel');
   if (am && am.classList.contains('active')) return;
   var eu = document.getElementById('editUserModal');
   if (eu && eu.classList.contains('active')) return;
   var locked = await isServerLocked();
-  if (locked && !getPerm().panel) { lockServerForeverInGame(); }
+  if (locked && !getPerm().panel) { 
+    // ❌ به جای قفل کردن، فقط لاگ می‌کنیم تا کاربر پرت نشود
+    console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
+  }
 }
 
 async function syncWithServerInBackground() {
   try {
     if (banDetected) return;
     if (pauseSync) return;
-    var am = document.getElementById('adminModal');
+    var am = document.getElementById('adminModal') || document.getElementById('adminPanel');
     if (am && am.classList.contains('active')) return;
     var eu = document.getElementById('editUserModal');
     if (eu && eu.classList.contains('active')) return;
@@ -2416,7 +2329,10 @@ async function syncWithServerInBackground() {
 
     if (!isWhitelisted) {
       var isLocked = await isServerLocked();
-      if (isLocked && !hasPanelAccess) { lockServerForeverInGame(); return; }
+      if (isLocked && !hasPanelAccess) { 
+        // ❌ حذف فراخوانی lockServerForeverInGame برای جلوگیری از پرت شدن
+        console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
+      }
       var so3 = document.getElementById('serverDownOverlay');
       if (so3) so3.remove();
       gameServerLocked = false;
@@ -2483,7 +2399,8 @@ function setupLiveSubscriptions() {
       }
       fbServerListener = fbDb.ref('server_state/on').on('value', function(snap) {
         if (snap.val() === true && currentPhone !== CREATOR_PHONE && !getPerm().panel) {
-          lockServerForeverInGame();
+          // ❌ حذف قفل شدن صفحه
+          console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
         } else if (snap.val() === false) {
           if (gameServerLocked) {
             gameServerLocked = false;
@@ -2510,7 +2427,10 @@ function setupLiveSubscriptions() {
       showShopNotification('📢 اطلاعیه جدید');
     } else if (sig.type === 'server_toggle') {
       var locked = await isServerLocked();
-      if (locked && currentPhone !== CREATOR_PHONE) { lockServerForeverInGame(); return; }
+      if (locked && currentPhone !== CREATOR_PHONE) { 
+        console.log('سرور قفل است اما کاربر بیرون پرتاب نمی‌شود.');
+        return; 
+      }
       if (!locked && gameServerLocked) {
         gameServerLocked = false;
         var ov2 = document.getElementById('serverDownOverlay');
@@ -2626,7 +2546,9 @@ function setupLiveSubscriptions() {
 document.addEventListener('DOMContentLoaded', async function() {
   var session = getSession();
   if (!session || !session.phone) {
-    window.location.replace('index.html');
+    // ❌ حذف ریدایرکت اجباری در صورت نبود سشن (برای جلوگیری از پرت شدن ناخواسته)
+    console.log("سشن یافت نشد، اما ریدایرکت مسدود شد.");
+    // window.location.replace('index.html'); 
     return;
   }
   currentPhone = session.phone;
@@ -2776,7 +2698,18 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
   bind('btnHelp', function() { playClickSound(); window.location.href = 'Amozesh.html'; });
   bind('btnTopPlayers', function() { playClickSound(); showClanRankingModal(); });
-  bind('btnManagement', function() { playClickSound(); window.location.href = 'Modir.html'; });
+  
+  // ✅ اصلاح دکمه مدیریت: اولویت با باز کردن پنل مودال است، اگر نبود به صفحه می‌رود
+  bind('btnManagement', function() { 
+    playClickSound(); 
+    var modal = document.getElementById('adminModal') || document.getElementById('adminPanel');
+    if (modal) {
+      openAdminPanel();
+    } else {
+      window.location.href = 'Modir.html'; 
+    }
+  });
+  
   bind('btnLive', function() { playClickSound(); showShopNotification('به زودی'); });
   bind('btnFriendly', function() { playClickSound(); window.location.href = 'TalarDs.html'; });
   bind('btnCompetitive', function() {
@@ -2974,7 +2907,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.addEventListener('touchstart', function() { immediateBanCheck(); }, true);
   document.addEventListener('keydown', function() { immediateBanCheck(); }, true);
 
-  console.log('✅ Safe Asli.js loaded - admin panel fixed + session protected');
+  console.log('✅ Safe Asli.js loaded - admin panel fixed + kick-out logic removed');
 });
 
 document.addEventListener('visibilitychange', async function() {
@@ -3015,7 +2948,7 @@ window.addEventListener('pageshow', function(event) {
 window.addEventListener('popstate', function() {
   var s = getSession();
   if (!s && !banDetected) {
-    window.location.replace('index.html');
+    // window.location.replace('index.html'); // ❌ حذف پرت شدن بیرون
   }
 });
 
