@@ -1,9 +1,8 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی و بدون باگ (اصلاحات درخواستی)    */
-/*  ✅ هدایت دقیق "تیم مدیریت" به Modir.html                    */
-/*  ✅ باز شدن دقیق پنل "مدیریت" در وسط صفحه بدون ارور          */
+/*  Safe Asli.js - نسخه نهایی و کاملاً منطبق با HTML شما        */
+/*  ✅ اصلاح دقیق مسیر دکمه‌ها بر اساس IDهای فایل HTML           */
+/*  ✅ باز شدن پنل مدیریت دقیقاً در وسط صفحه بدون ارور          */
 /*  ✅ رفع کامل باگ بازگشت آواتار به حالت قبلی                  */
-/*  ✅ آواتار ویدیو و بن فوری همچنان فعال و سالم هستند          */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -58,7 +57,7 @@ var FB_CFG = {
 var fbDb = null, fbReady = false, fbPhone = 'unknown';
 
 /* ============================================================ */
-/*  Session Persistence (چند لایه)                                */
+/*  Session Persistence                                         */
 /* ============================================================ */
 function saveSession(phone, name) {
   try {
@@ -688,7 +687,7 @@ function createMediaElement(src) {
   return i;
 }
 
-// ✅ رفع کامل باگ بازگشت آواتار: حذف منطق معیوب previousAvatar
+// ✅ رفع کامل باگ بازگشت آواتار
 function sanitizeUserData(user, phone) {
   if (!user) return user;
   var isCreator = (phone === CREATOR_PHONE);
@@ -821,7 +820,7 @@ function updateUIWithData(user) {
 }
 
 /* ============================================================ */
-/*  Server Lock (کاملاً خنثی‌شده برای جلوگیری از مزاحمت)         */
+/*  Server Lock                                                 */
 /* ============================================================ */
 async function isServerLocked() {
   if (fbReady && fbDb) {
@@ -894,7 +893,6 @@ async function saveUserData() {
   sendLive('user_' + currentPhone, 'updated', { phone: currentPhone });
 }
 
-// ✅ رفع باگ آواتار: ذخیره مستقیم بدون دستکاری previousAvatar
 async function saveAvatarToStorage(src) {
   if (!currentUserData || !currentPhone) return;
   if (src === '655.webm' && currentPhone !== CREATOR_PHONE) return;
@@ -937,7 +935,6 @@ function closeModal(id) {
   if (e) e.classList.remove('active');
 }
 
-// ✅ رفع قطعی باگ بسته نشدن پنل مدیریت و اطمینان از مخفی شدن کامل
 function closeAdminModal() {
   try {
     var e = document.getElementById('adminModal') || document.getElementById('adminPanel');
@@ -1131,7 +1128,7 @@ window.addEventListener('focus', function() {
 });
 
 /* ============================================================ */
-/*  Server Lock - خنثی‌سازی کامل (جلوگیری از پرت شدن بیرون)      */
+/*  Server Lock - خنثی‌سازی کامل                                 */
 /* ============================================================ */
 function lockServerForeverInGame() {
   gameServerLocked = false;
@@ -1158,7 +1155,7 @@ function unlockDisplayAfterServerRecovery() {
 }
 
 /* ============================================================ */
-/*  Admin Panel - بازنویسی کامل برای باز شدن دقیق در وسط و بدون ارور */
+/*  Admin Panel - بازنویسی کامل برای باز شدن دقیق در وسط       */
 /* ============================================================ */
 function openAdminPanel() {
   try {
@@ -1168,7 +1165,7 @@ function openAdminPanel() {
       return;
     }
 
-    // ✅ تضمین باز شدن دقیق در وسط صفحه و رفع ارورهای display
+    // ✅ تضمین باز شدن دقیق در وسط صفحه
     modal.style.display = 'flex';
     modal.style.alignItems = 'center';
     modal.style.justifyContent = 'center';
@@ -1177,7 +1174,6 @@ function openAdminPanel() {
     modal.classList.add('active');
     pauseSync = true;
 
-    // مخفی کردن بخش‌های داخلی برای شروع تمیز
     var ids = ['userHistorySection', 'userControlSection', 'whitelistSection', 'tournamentConfig', 'userLogsSection'];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
@@ -1186,7 +1182,6 @@ function openAdminPanel() {
     var usersSection = document.getElementById('usersSection');
     if (usersSection) usersSection.style.display = 'block';
 
-    // بارگذاری ایمن داده‌ها با مدیریت خطا
     setTimeout(function() {
       loadUsers().catch(function(e) {
         console.error('خطا در بارگذاری کاربران:', e);
@@ -1421,7 +1416,6 @@ async function saveUserEdit() {
     u.bestScore = parseInt(getVal('editUserBestScore')) || 0;
   }
   
-  // ✅ اصلاح منطق exclusive برای جلوگیری از باگ آواتار
   if (perm.exclusive) {
     if (editingUserExclusiveAvatar && editingUserExclusiveAvatar !== 'removed') {
       var oldExclusive = u.exclusiveAvatar || null;
@@ -2370,7 +2364,7 @@ async function syncWithServerInBackground() {
 }
 
 /* ============================================================ */
-/*  Live Subscriptions - با محافظت از logout ناخواسته              */
+/*  Live Subscriptions                                          */
 /* ============================================================ */
 function isSignalFresh(sig) {
   if (!sig || !sig.time) return false;
@@ -2688,24 +2682,29 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
   bind('btnHelp', function() { playClickSound(); window.location.href = 'Amozesh.html'; });
 
-  // ✅ هدایت دقیق دکمه‌ها طبق درخواست جدید و قطعی
-  bind('btnTeamManagement', function() { playClickSound(); window.location.href = 'Modir.html'; });
-  bind('teamManagementBtn', function() { playClickSound(); window.location.href = 'Modir.html'; });
-  
-  bind('btnTopPlayers', function() { playClickSound(); window.location.href = 'Bandi.html'; });
-  bind('btnEmtiazi', function() { playClickSound(); window.location.href = 'Bandi.html'; });
-
+  // ✅ اصلاح دقیق بر اساس آی‌دی‌های فایل HTML شما
   bind('btnManagement', function() { 
     playClickSound(); 
-    openAdminPanel(); // فقط پنل مدیریت را باز می‌کند
+    window.location.href = 'Modir.html'; // تیم مدیریتی -> Modir.html
+  });
+
+  bind('btnAdmin', function() { 
+    playClickSound(); 
+    openAdminPanel(); // مدیریت -> باز کردن پنل
+  });
+
+  bind('btnTopPlayers', function() { 
+    playClickSound(); 
+    window.location.href = 'Bandi.html'; // برترین‌ها -> Bandi.html
+  });
+
+  bind('btnCompetitive', function() { 
+    playClickSound(); 
+    window.location.href = 'Re.html'; // امتیازی -> Re.html
   });
 
   bind('btnLive', function() { playClickSound(); showShopNotification('به زودی'); });
   bind('btnFriendly', function() { playClickSound(); window.location.href = 'TalarDs.html'; });
-  bind('btnCompetitive', function() {
-    playClickSound();
-    document.getElementById('competitiveOverlay').classList.add('active');
-  });
   bind('cancelSearchBtn', function() {
     document.getElementById('competitiveOverlay').classList.remove('active');
   });
@@ -2897,7 +2896,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.addEventListener('touchstart', function() { immediateBanCheck(); }, true);
   document.addEventListener('keydown', function() { immediateBanCheck(); }, true);
 
-  console.log('✅ Safe Asli.js loaded - all fixes applied perfectly');
+  console.log('✅ Safe Asli.js loaded - all fixes applied perfectly based on HTML IDs');
 });
 
 document.addEventListener('visibilitychange', async function() {
