@@ -25,11 +25,50 @@
   .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;}
   .member-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.5);}
 
+  /* ═══ قالب کارت (پس‌زمینه) ═══ */
   .card-template{width:100%;position:relative;aspect-ratio:3/4;background:#1a3a6a;}
   .card-template img{width:100%;height:100%;object-fit:cover;display:block;}
 
-  .avatar-circle{position:absolute;top:12%;left:50%;transform:translateX(-50%);width:65px;height:65px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.5);z-index:10;}
+  /* ═══ کانتینر آواتار (شامل دایره + قالب آواتار) ═══ */
+  .avatar-container{
+    position:absolute;
+    top:8%;
+    left:50%;
+    transform:translateX(-50%);
+    width:88px;
+    height:88px;
+    z-index:10;
+    pointer-events:none;
+  }
+
+  .avatar-circle{
+    position:absolute;
+    top:11px;
+    left:50%;
+    transform:translateX(-50%);
+    width:66px;
+    height:66px;
+    border-radius:50%;
+    border:3px solid rgba(255,255,255,0.9);
+    overflow:hidden;
+    background:#1a3a6a;
+    box-shadow:0 4px 15px rgba(0,0,0,.5);
+    z-index:1;
+  }
   .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
+
+  /* ═══ قالب آواتار (روی دایره) ═══ */
+  .avatar-frame{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    pointer-events:none;
+    z-index:5;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  }
 
   .member-info{position:absolute;bottom:0;left:0;right:0;padding:40px 8px 12px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.85) 40%,rgba(0,0,0,0.95) 100%);z-index:5;}
   .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);flex-wrap:wrap;}
@@ -50,7 +89,8 @@
 
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
-    .avatar-circle{width:55px;height:55px;top:10%;}
+    .avatar-container{width:74px;height:74px;top:6%;}
+    .avatar-circle{width:54px;height:54px;top:10px;border-width:2.5px;}
     .member-info{padding:35px 6px 10px;}
     .member-name{font-size:11px;}
     .member-role{font-size:9px;padding:2px 8px;}
@@ -88,22 +128,14 @@ const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjM
 const CREATOR_PHONE = '09904844031';
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 
-/* ============================================================ */
-/*  نگاشت قالب بر اساس مقام (قالب‌های ثابت)                       */
-/* ============================================================ */
-const ROLE_TEMPLATE_MAP = {
-  'سازنده': '50.webp',
-  'پشتیبانی': '50.webp',
-  'گرداننده': '50.webp',
-  'ادمین ارشد': '51.webp',
-  'ادمین': '51.webp',
-  'ناظر ارشد': '51.webp',
-  'ناظر': '51.webp'
-};
+/* ═══ قالب کارت (پس‌زمینه) بر اساس مقام ═══ */
+function getCardTemplate(role) {
+  const r = (role || '').trim();
+  if (['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp'; // مدیریت ارشد
+  return '51.webp'; // مدیریت عادی
+}
 
-/* ============================================================ */
-/*  نگاشت تیک بر اساس مقام                                       */
-/* ============================================================ */
+/* ═══ تیک بر اساس مقام ═══ */
 const ROLE_TICK_MAP = {
   'سازنده': ['Tik1.png'],
   'پشتیبانی': ['Tik1.png'],
@@ -138,9 +170,7 @@ async function upstashGet(url, token, k) {
     clearTimeout(t);
     if (!r.ok) return null;
     const d = await r.json();
-    if (d && d.result) {
-      try { return JSON.parse(d.result); } catch (e) { return d.result; }
-    }
+    if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
     return null;
   } catch (e) { return null; }
 }
@@ -150,7 +180,6 @@ async function getAllUsers() {
   try { v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'); } catch(e) {}
   try { v2 = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users'); } catch(e) {}
 
-  // merge
   const merged = {};
   if (v1 && typeof v1 === 'object') for (const k in v1) if (v1[k]) merged[k] = v1[k];
   if (v2 && typeof v2 === 'object') {
@@ -167,11 +196,6 @@ async function getAllUsers() {
 /* ============================================================ */
 /*  Helpers                                                       */
 /* ============================================================ */
-function toPersianNum(n) {
-  const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-  return String(n).replace(/[0-9]/g, w => p[+w]);
-}
-
 function isVideoSrc(src) {
   if (!src || typeof src !== 'string') return false;
   if (src.indexOf('data:video') === 0) return true;
@@ -182,34 +206,18 @@ function isVideoSrc(src) {
          lower.indexOf('.m4v') > -1;
 }
 
-/* ============================================================ */
-/*  ⚡ انتخاب آواتار دقیق (اولویت با exclusiveAvatar فعال)         */
-/* ============================================================ */
+/* ═══ آواتار دقیق ═══ */
 function getDisplayAvatar(phone, userData) {
-  // 1) اگر آواتار اختصاصی فعال داره → همون
-  if (userData.exclusiveAvatar && userData.useExclusive === true) {
-    return userData.exclusiveAvatar;
-  }
-  // 2) وگرنه آواتار عادی
+  if (userData.exclusiveAvatar && userData.useExclusive === true) return userData.exclusiveAvatar;
   if (userData.avatar) return userData.avatar;
-  // 3) پیش‌فرض
   return 'Mafia2.png';
 }
 
-/* ============================================================ */
-/*  ⚡ انتخاب قالب دقیق (اولویت با currentTemplate)                */
-/* ============================================================ */
-function getDisplayTemplate(userData) {
-  // 1) اگر currentTemplate تنظیم شده → همون
-  if (userData.currentTemplate) return userData.currentTemplate;
-  // 2) وگرنه قالب پیش‌فرض بر اساس مقام
-  const role = (userData.rank || '').trim();
-  return ROLE_TEMPLATE_MAP[role] || '51.webp';
+/* ═══ قالب آواتار (دور آواتار) ═══ */
+function getAvatarFrame(userData) {
+  return userData.currentTemplate || null;
 }
 
-/* ============================================================ */
-/*  رندر تیک‌ها                                                    */
-/* ============================================================ */
 function applyTick(img, cands) {
   if (!img || !cands || !cands.length) return;
   let i = 0;
@@ -223,9 +231,6 @@ function applyTick(img, cands) {
   })();
 }
 
-/* ============================================================ */
-/*  Media Element (پشتیبانی از ویدیو و عکس و dataURL)              */
-/* ============================================================ */
 function createAvatarElement(src) {
   if (!src) src = 'Mafia2.png';
   if (isVideoSrc(src)) {
@@ -248,43 +253,55 @@ function createAvatarElement(src) {
 }
 
 /* ============================================================ */
-/*  ساخت / به‌روزرسانی کارت                                        */
+/*  ساخت کارت کامل (قالب کارت + آواتار + قالب آواتار)              */
 /* ============================================================ */
 function buildMemberCard(phone, userData) {
   const card = document.createElement('div');
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  // ===== قالب پشت کارت =====
-  const templateWrap = document.createElement('div');
-  templateWrap.className = 'card-template';
-  const templateImg = document.createElement('img');
-  templateImg.src = getDisplayTemplate(userData);
-  templateImg.onerror = function() {
-    // اگر قالب لود نشد، یه رنگ پیش‌فرض بذار
+  // ═══ قالب کارت (پس‌زمینه) ═══
+  const cardTemplateWrap = document.createElement('div');
+  cardTemplateWrap.className = 'card-template';
+  const cardTemplateImg = document.createElement('img');
+  cardTemplateImg.src = getCardTemplate(userData.rank);
+  cardTemplateImg.onerror = function() {
     this.style.background = 'linear-gradient(180deg,#1e4a8a,#12356a)';
-    this.style.display = 'block';
   };
-  templateWrap.appendChild(templateImg);
-  card.appendChild(templateWrap);
+  cardTemplateWrap.appendChild(cardTemplateImg);
+  card.appendChild(cardTemplateWrap);
 
-  // ===== دایره آواتار =====
+  // ═══ کانتینر آواتار (دایره + قالب دور آواتار) ═══
+  const avatarContainer = document.createElement('div');
+  avatarContainer.className = 'avatar-container';
+
+  // دایره آواتار
   const avatarCircle = document.createElement('div');
   avatarCircle.className = 'avatar-circle';
-  const avatarSrc = getDisplayAvatar(phone, userData);
-  avatarCircle.appendChild(createAvatarElement(avatarSrc));
-  card.appendChild(avatarCircle);
+  avatarCircle.appendChild(createAvatarElement(getDisplayAvatar(phone, userData)));
+  avatarContainer.appendChild(avatarCircle);
 
-  // ===== اطلاعات (نام + تیک + مقام) =====
+  // قالب دور آواتار
+  const frameSrc = getAvatarFrame(userData);
+  if (frameSrc) {
+    const frameImg = document.createElement('img');
+    frameImg.className = 'avatar-frame';
+    frameImg.src = frameSrc;
+    frameImg.alt = '';
+    frameImg.onerror = function() { this.style.display = 'none'; };
+    avatarContainer.appendChild(frameImg);
+  }
+
+  card.appendChild(avatarContainer);
+
+  // ═══ اطلاعات (نام + تیک + مقام) ═══
   const infoDiv = document.createElement('div');
   infoDiv.className = 'member-info';
 
   const nameDiv = document.createElement('div');
   nameDiv.className = 'member-name';
-  const nameText = document.createTextNode(userData.name || 'کاربر');
-  nameDiv.appendChild(nameText);
+  nameDiv.appendChild(document.createTextNode(userData.name || 'کاربر'));
 
-  // تیک
   const roleKey = (userData.rank || '').trim();
   const tickCandidates = ROLE_TICK_MAP[roleKey];
   if (tickCandidates && tickCandidates.length) {
@@ -295,7 +312,6 @@ function buildMemberCard(phone, userData) {
     nameDiv.appendChild(tickImg);
     applyTick(tickImg, tickCandidates);
   }
-
   infoDiv.appendChild(nameDiv);
 
   const roleDiv = document.createElement('div');
@@ -308,38 +324,61 @@ function buildMemberCard(phone, userData) {
   return card;
 }
 
+/* ============================================================ */
+/*  به‌روزرسانی درجا (بدون flicker)                                */
+/* ============================================================ */
 function updateCardInPlace(card, userData) {
   const phone = card.dataset.phone;
 
-  // قالب
-  const templateImg = card.querySelector('.card-template img');
-  const newTemplate = getDisplayTemplate(userData);
-  if (templateImg && templateImg.src !== newTemplate) {
-    templateImg.src = newTemplate;
+  // ═══ قالب کارت ═══
+  const cardTemplateImg = card.querySelector('.card-template img');
+  const newCardTpl = getCardTemplate(userData.rank);
+  if (cardTemplateImg && cardTemplateImg.getAttribute('src') !== newCardTpl) {
+    cardTemplateImg.src = newCardTpl;
   }
 
-  // آواتار
+  // ═══ آواتار ═══
   const avatarCircle = card.querySelector('.avatar-circle');
   const newAvatarSrc = getDisplayAvatar(phone, userData);
   if (avatarCircle) {
-    const currentElement = avatarCircle.firstElementChild;
-    const currentSrc = currentElement ? currentElement.getAttribute('src') : null;
+    const currentEl = avatarCircle.firstElementChild;
+    const currentSrc = currentEl ? currentEl.getAttribute('src') : null;
     const newIsVideo = isVideoSrc(newAvatarSrc);
-    const currentIsVideo = currentElement && currentElement.tagName === 'VIDEO';
-
+    const currentIsVideo = currentEl && currentEl.tagName === 'VIDEO';
     if (currentSrc !== newAvatarSrc || newIsVideo !== currentIsVideo) {
       avatarCircle.innerHTML = '';
       avatarCircle.appendChild(createAvatarElement(newAvatarSrc));
     }
   }
 
-  // نام + تیک
+  // ═══ قالب دور آواتار ═══
+  const avatarContainer = card.querySelector('.avatar-container');
+  if (avatarContainer) {
+    let frameImg = avatarContainer.querySelector('.avatar-frame');
+    const newFrame = getAvatarFrame(userData);
+    if (newFrame) {
+      if (!frameImg) {
+        frameImg = document.createElement('img');
+        frameImg.className = 'avatar-frame';
+        frameImg.alt = '';
+        frameImg.onerror = function() { this.style.display = 'none'; };
+        avatarContainer.appendChild(frameImg);
+      }
+      if (frameImg.getAttribute('src') !== newFrame) {
+        frameImg.style.display = '';
+        frameImg.src = newFrame;
+      }
+    } else {
+      if (frameImg) frameImg.remove();
+    }
+  }
+
+  // ═══ نام + تیک ═══
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const roleKey = (userData.rank || '').trim();
     nameDiv.innerHTML = '';
     nameDiv.appendChild(document.createTextNode(userData.name || 'کاربر'));
-
     const tickCandidates = ROLE_TICK_MAP[roleKey];
     if (tickCandidates && tickCandidates.length) {
       const tickImg = document.createElement('img');
@@ -351,7 +390,7 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // مقام
+  // ═══ مقام ═══
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (userData.rank || '').trim();
@@ -361,9 +400,9 @@ function updateCardInPlace(card, userData) {
 }
 
 /* ============================================================ */
-/*  ⚡ بارگذاری تیم مدیریت - بدون لودینگ، سریع و مستقیم            */
+/*  بارگذاری تیم - بدون لودینگ، سریع                              */
 /* ============================================================ */
-let __lastRenderedPhones = '';
+let __lastRenderedKey = '';
 
 async function loadManagementTeam() {
   const grid = document.getElementById('managementGrid');
@@ -373,12 +412,10 @@ async function loadManagementTeam() {
     const allUsers = await getAllUsers();
     const users = Object.entries(allUsers);
 
-    // فیلتر تیم مدیریت
     const managementUsers = users.filter(([p, u]) =>
       u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
     );
 
-    // مرتب‌سازی بر اساس مقام (سازنده اول)
     const roleOrder = { 'سازنده':0, 'پشتیبانی':1, 'گرداننده':2, 'ادمین ارشد':3, 'ادمین':4, 'ناظر ارشد':5, 'ناظر':6 };
     managementUsers.sort((a, b) => {
       const rA = roleOrder[(a[1].rank || '').trim()] ?? 99;
@@ -386,39 +423,32 @@ async function loadManagementTeam() {
       return rA - rB;
     });
 
-    // اگر خالی بود
     if (managementUsers.length === 0) {
-      const emptyKey = '__empty__';
-      if (__lastRenderedPhones !== emptyKey) {
+      if (__lastRenderedKey !== '__empty__') {
         grid.innerHTML = `
           <div class="empty-state">
             <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             <div>هنوز عضوی در تیم مدیریت وجود ندارد</div>
           </div>`;
-        __lastRenderedPhones = emptyKey;
+        __lastRenderedKey = '__empty__';
       }
       return;
     }
 
-    // ساخت کلید برای تشخیص تغییرات
-    const phonesKey = managementUsers.map(([p, u]) =>
-      p + ':' + (u.rank || '') + ':' + (u.avatar || '') + ':' + (u.exclusiveAvatar || '') +
-      ':' + (u.useExclusive ? '1' : '0') + ':' + (u.currentTemplate || '')
-    ).join('|');
+    // کلید تغییرات (شامل currentTemplate برای قالب آواتار)
+    const key = managementUsers.map(([p, u]) =>
+      p + '|' + (u.rank || '') + '|' + (u.name || '') + '|' +
+      (u.avatar || '') + '|' + (u.exclusiveAvatar || '') + '|' +
+      (u.useExclusive ? '1' : '0') + '|' + (u.currentTemplate || '')
+    ).join('||');
 
-    // اگر تغییری نکرده، کاری نکن
-    if (phonesKey === __lastRenderedPhones) return;
-    __lastRenderedPhones = phonesKey;
+    if (key === __lastRenderedKey) return;
+    __lastRenderedKey = key;
 
-    // پیدا کردن کارت‌های موجود
     const existingCards = {};
-    grid.querySelectorAll('.member-card').forEach(c => {
-      existingCards[c.dataset.phone] = c;
-    });
-
+    grid.querySelectorAll('.member-card').forEach(c => { existingCards[c.dataset.phone] = c; });
     const newPhones = managementUsers.map(([p]) => p);
 
-    // حذف کارت‌های قدیمی
     Object.keys(existingCards).forEach(phone => {
       if (!newPhones.includes(phone)) {
         existingCards[phone].remove();
@@ -426,27 +456,21 @@ async function loadManagementTeam() {
       }
     });
 
-    // اضافه کردن کارت‌های جدید یا به‌روزرسانی
     let lastCard = null;
     managementUsers.forEach(([phone, user]) => {
       if (existingCards[phone]) {
-        // به‌روزرسانی
         updateCardInPlace(existingCards[phone], user);
-        if (existingCards[phone].previousSibling !== lastCard && existingCards[phone] !== lastCard) {
-          // حفظ ترتیب
-          if (lastCard) {
-            if (lastCard.nextSibling !== existingCards[phone]) {
-              grid.insertBefore(existingCards[phone], lastCard.nextSibling);
-            }
-          } else {
-            if (grid.firstChild !== existingCards[phone]) {
-              grid.insertBefore(existingCards[phone], grid.firstChild);
-            }
+        if (lastCard) {
+          if (lastCard.nextSibling !== existingCards[phone]) {
+            grid.insertBefore(existingCards[phone], lastCard.nextSibling);
+          }
+        } else {
+          if (grid.firstChild !== existingCards[phone]) {
+            grid.insertBefore(existingCards[phone], grid.firstChild);
           }
         }
         lastCard = existingCards[phone];
       } else {
-        // ساخت جدید
         const newCard = buildMemberCard(phone, user);
         if (lastCard) {
           grid.insertBefore(newCard, lastCard.nextSibling);
@@ -457,12 +481,12 @@ async function loadManagementTeam() {
       }
     });
   } catch (error) {
-    console.error('Error loading management team:', error);
+    console.error('Error:', error);
     if (!grid.querySelector('.member-card')) {
       grid.innerHTML = `
         <div class="empty-state">
           <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-          <div>خطا در بارگذاری اطلاعات. لطفاً صفحه را رفرش کنید.</div>
+          <div>خطا در بارگذاری اطلاعات</div>
         </div>`;
     }
   }
@@ -472,45 +496,33 @@ async function loadManagementTeam() {
 /*  مانیتور تغییرات                                                */
 /* ============================================================ */
 function monitorChanges() {
-  // Firebase live signals
   if (window.FBLive && window.FBLive.subscribe) {
     try {
       window.FBLive.subscribe('global', function(sig) {
         if (!sig) return;
-        const types = ['admin_edit', 'user_updated', 'banned', 'unbanned', 'codes_reset', 'force_refresh', 'user_banned'];
+        const types = ['admin_edit','user_updated','banned','unbanned','codes_reset','force_refresh','user_banned'];
         if (types.includes(sig.type)) {
-          __lastRenderedPhones = ''; // force refresh
+          __lastRenderedKey = '';
           loadManagementTeam();
         }
       });
     } catch(e) {}
   }
 
-  // بازگشت به تب
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      __lastRenderedPhones = '';
+      __lastRenderedKey = '';
       loadManagementTeam();
     }
   });
 
-  // Polling پشتیبان (هر ۳ ثانیه)
-  setInterval(() => {
-    loadManagementTeam();
-  }, 3000);
+  setInterval(() => { loadManagementTeam(); }, 3000);
 }
 
-/* ============================================================ */
-/*  Play Click Sound                                              */
-/* ============================================================ */
 function playClickSound() {
   try {
     const s = document.getElementById('clickSound');
-    if (s) {
-      s.currentTime = 0;
-      s.volume = 0.3;
-      s.play().catch(() => {});
-    }
+    if (s) { s.currentTime = 0; s.volume = 0.3; s.play().catch(() => {}); }
   } catch(e) {}
 }
 
@@ -530,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ⚡ بارگذاری فوری - بدون لودینگ!
   loadManagementTeam();
   monitorChanges();
 });
