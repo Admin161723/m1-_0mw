@@ -39,45 +39,45 @@
       <div class="input-wrapper" id="field1"><div class="input-teal"></div><div class="input-white"><input type="tel" id="phoneInput" placeholder="شماره تماس" maxlength="11"></div></div>
       <div class="input-wrapper" id="field2"><div class="input-teal"></div><div class="input-white"><input type="password" id="passInput" placeholder="رمز عبور"></div></div>
       <div class="buttons-row">
-        <button class="btn btn-green" data-action="login">ورود</button>
-        <button class="btn btn-blue" data-action="go-register">ساخت اکانت جدید</button>
+        <button class="btn btn-green" onclick="login()">ورود</button>
+        <button class="btn btn-blue" onclick="showPage('page-register')">ساخت اکانت جدید</button>
       </div>
-      <button class="btn-yellow" data-action="go-forgot">فراموشی رمز عبور</button>
+      <button class="btn-yellow" onclick="showPage('page-forgot-step1')">فراموشی رمز عبور</button>
     </div>
 
     <div class="page" id="page-register">
-      <button class="back-btn" data-action="back-login">→</button>
+      <button class="back-btn" onclick="showPage('page-login')">→</button>
       <div class="title">ساخت اکانت جدید</div>
       <div class="input-wrapper" id="reg-name"><div class="input-teal"></div><div class="input-white"><input type="text" id="nameInput" placeholder="نام" maxlength="20"></div></div>
       <div class="input-wrapper" id="reg-phone"><div class="input-teal"></div><div class="input-white"><input type="tel" id="regPhoneInput" placeholder="شماره تماس" maxlength="11"></div></div>
       <div class="input-wrapper" id="reg-pass"><div class="input-teal"></div><div class="input-white"><input type="password" id="regPassInput" placeholder="رمز عبور جدید"></div></div>
       <div class="input-wrapper" id="reg-pass2"><div class="input-teal"></div><div class="input-white"><input type="password" id="regPass2Input" placeholder="تکرار رمز عبور جدید"></div></div>
-      <button class="btn-confirm" data-action="register">تایید</button>
+      <button class="btn-confirm" onclick="confirmRegister()">تایید</button>
     </div>
 
     <div class="page" id="page-forgot-step1">
-      <button class="back-btn" data-action="back-login">→</button>
+      <button class="back-btn" onclick="showPage('page-login')">→</button>
       <div class="title">شماره خود را وارد کنید</div>
       <div class="input-wrapper" id="forgot-phone"><div class="input-teal"></div><div class="input-white"><input type="tel" id="forgotPhoneInput" placeholder="وارد کردن شماره" maxlength="11"></div></div>
-      <button class="btn-confirm" data-action="send-sms">تایید</button>
+      <button class="btn-confirm" onclick="sendSMSCode()">تایید</button>
     </div>
 
     <div class="page" id="page-forgot-step2">
-      <button class="back-btn" data-action="back-forgot1">→</button>
+      <button class="back-btn" onclick="showPage('page-forgot-step1')">→</button>
       <div class="title">کد تایید را وارد کنید</div>
       <div class="code-display" id="codeDisplay"><div class="code" id="generatedCode">----</div></div>
       <div class="timer-text" id="timerText">کد تا 10 ثانیه دیگر مخفی می‌شود</div>
       <div class="input-wrapper" id="forgot-code"><div class="input-teal"></div><div class="input-white"><input type="tel" id="codeInput" placeholder="کد 4 رقمی" maxlength="4"></div></div>
-      <button class="resend-btn" id="resendBtn" data-action="resend">ارسال مجدد کد</button>
-      <button class="btn-confirm" data-action="verify-code">تایید</button>
+      <button class="resend-btn" id="resendBtn" onclick="resendCode()">ارسال مجدد کد</button>
+      <button class="btn-confirm" onclick="verifyCode()">تایید</button>
     </div>
 
     <div class="page" id="page-forgot-step3">
-      <button class="back-btn" data-action="back-forgot2">→</button>
+      <button class="back-btn" onclick="showPage('page-forgot-step2')">→</button>
       <div class="title">رمز عبور جدید</div>
       <div class="input-wrapper" id="new-pass"><div class="input-teal"></div><div class="input-white"><input type="password" id="newPassInput" placeholder="انتخاب رمز عبور جدید"></div></div>
       <div class="input-wrapper" id="new-pass2"><div class="input-teal"></div><div class="input-white"><input type="password" id="newPass2Input" placeholder="تکرار رمز عبور جدید"></div></div>
-      <button class="btn-confirm" data-action="new-pass">تایید</button>
+      <button class="btn-confirm" onclick="confirmNewPassword()">تایید</button>
     </div>
 
   </div>
