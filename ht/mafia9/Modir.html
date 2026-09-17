@@ -22,18 +22,18 @@
 
   .management-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
 
-  .member-card{position:relative;transition:transform .3s, box-shadow .3s; border-radius: 12px; overflow: hidden;}
-  .member-card:hover{transform:translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.5);}
+  .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;}
+  .member-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.5);}
 
-  .card-template{width:100%;position:relative; aspect-ratio: 3/4;}
+  .card-template{width:100%;position:relative;aspect-ratio:3/4;background:#1a3a6a;}
   .card-template img{width:100%;height:100%;object-fit:cover;display:block;}
 
   .avatar-circle{position:absolute;top:12%;left:50%;transform:translateX(-50%);width:65px;height:65px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.5);z-index:10;}
-  .avatar-circle img, .avatar-circle video{width:100%;height:100%;object-fit:cover;}
+  .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
 
   .member-info{position:absolute;bottom:0;left:0;right:0;padding:40px 8px 12px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.85) 40%,rgba(0,0,0,0.95) 100%);z-index:5;}
-  .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);}
-  .member-role{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing: 0.5px;}
+  .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);flex-wrap:wrap;}
+  .member-role{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:0.5px;}
 
   .role-creator{background:linear-gradient(180deg,#ffd700,#ff8c00);color:#000;}
   .role-support{background:linear-gradient(180deg,#4a9eff,#2a7acc);color:#fff;}
@@ -43,18 +43,19 @@
   .role-observer-senior{background:linear-gradient(180deg,#00bcd4,#0097a7);color:#fff;}
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
 
-  .role-tick{width:18px;height:18px;object-fit:contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
+  .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
 
-  .loading, .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);font-size:14px;grid-column:1/-1; display: flex; flex-direction: column; align-items: center; gap: 15px;}
-  .empty-icon { width: 60px; height: 60px; fill: rgba(255,255,255,0.3); }
+  .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);font-size:14px;grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:15px;}
+  .empty-icon{width:60px;height:60px;fill:rgba(255,255,255,0.3);}
 
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
-    .avatar-circle{width:55px;height:55px; top: 10%;}
+    .avatar-circle{width:55px;height:55px;top:10%;}
     .member-info{padding:35px 6px 10px;}
     .member-name{font-size:11px;}
     .member-role{font-size:9px;padding:2px 8px;}
     .header h1{font-size:18px;}
+    .role-tick{width:14px;height:14px;}
   }
 </style>
 </head>
@@ -69,154 +70,395 @@
   <p>اعضای رسمی تیم مدیریت و پشتیبانی بازی</p>
 </div>
 
-<div class="management-grid" id="managementGrid">
-  <div class="loading">
-    <svg class="empty-icon" viewBox="0 0 24 24" style="animation: spin 2s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
-    <div>در حال بارگذاری اطلاعات...</div>
-  </div>
-</div>
-
-<style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+<div class="management-grid" id="managementGrid"></div>
 
 <audio id="clickSound" preload="auto">
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
-<!-- اسکریپت فایربیس لایو (همان نسخه اولی که فرستادید و در Safe Asli.js استفاده می‌شود) -->
 <script>
-// اینجا فرض بر این است که window.FBLive از قبل در صفحه اصلی یا یک فایل جداگانه لود شده است.
-// اگر این صفحه مستقل است، کد firebase-live.js را اینجا هم قرار دهید.
-</script>
+/* ============================================================ */
+/*  تنظیمات                                                       */
+/* ============================================================ */
+const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
+const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
+const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
+const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
-<script>
-  const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
-  const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
-  const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
-  const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
-  
-  const CREATOR_PHONE = '09904844031';
-  const CREATOR_AVATAR = '655.webm';
-  const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+const CREATOR_PHONE = '09904844031';
+const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 
-  async function upstashGet(url, token, k) {
-    try {
-      const c = new AbortController();
-      const t = setTimeout(() => c.abort(), 6000);
-      const r = await fetch(url + '/get/' + encodeURIComponent(k), { headers: { 'Authorization': 'Bearer ' + token }, signal: c.signal, cache: 'no-store' });
-      clearTimeout(t);
-      if (!r.ok) return null;
-      const d = await r.json();
-      if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
-      return null;
-    } catch (e) { return null; }
-  }
+/* ============================================================ */
+/*  نگاشت قالب بر اساس مقام (قالب‌های ثابت)                       */
+/* ============================================================ */
+const ROLE_TEMPLATE_MAP = {
+  'سازنده': '50.webp',
+  'پشتیبانی': '50.webp',
+  'گرداننده': '50.webp',
+  'ادمین ارشد': '51.webp',
+  'ادمین': '51.webp',
+  'ناظر ارشد': '51.webp',
+  'ناظر': '51.webp'
+};
 
-  async function getAllUsers(){ 
-    let v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users');
-    if (v1 && typeof v1 === 'object') return v1;
-    let v2 = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users');
-    return v2 || {}; 
-  }
+/* ============================================================ */
+/*  نگاشت تیک بر اساس مقام                                       */
+/* ============================================================ */
+const ROLE_TICK_MAP = {
+  'سازنده': ['Tik1.png'],
+  'پشتیبانی': ['Tik1.png'],
+  'ادمین ارشد': ['Tik1000.png'],
+  'ادمین': ['Tik2.png'],
+  'گرداننده': ['Tik3.png'],
+  'ناظر ارشد': ['TIK4.png', 'Tik4.png'],
+  'ناظر': ['TIK4.png', 'Tik4.png']
+};
 
-  function toPersianNum(n){
-    const p=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    return String(n).replace(/[0-9]/g,w=>p[+w]);
-  }
+const ROLE_CLASS_MAP = {
+  'سازنده': 'role-creator',
+  'پشتیبانی': 'role-support',
+  'گرداننده': 'role-supervisor',
+  'ادمین ارشد': 'role-admin-senior',
+  'ادمین': 'role-admin',
+  'ناظر ارشد': 'role-observer-senior',
+  'ناظر': 'role-observer'
+};
 
-  function getRoleTick(role){
-    if(!role) return null;
-    const r = role.trim();
-    if(r==='سازنده' || r==='پشتیبانی') return ['Tik1.png'];
-    if(r==='ادمین ارشد') return ['Tik1000.png'];
-    if(r==='ادمین') return ['Tik2.png'];
-    if(r==='گرداننده') return ['Tik3.png'];
-    if(r==='ناظر' || r==='ناظر ارشد') return ['TIK4.png','Tik4.png'];
+/* ============================================================ */
+/*  Redis                                                         */
+/* ============================================================ */
+async function upstashGet(url, token, k) {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 6000);
+    const r = await fetch(url + '/get/' + encodeURIComponent(k), {
+      headers: { 'Authorization': 'Bearer ' + token },
+      signal: c.signal, cache: 'no-store'
+    });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const d = await r.json();
+    if (d && d.result) {
+      try { return JSON.parse(d.result); } catch (e) { return d.result; }
+    }
     return null;
+  } catch (e) { return null; }
+}
+
+async function getAllUsers() {
+  let v1 = null, v2 = null;
+  try { v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'); } catch(e) {}
+  try { v2 = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users'); } catch(e) {}
+
+  // merge
+  const merged = {};
+  if (v1 && typeof v1 === 'object') for (const k in v1) if (v1[k]) merged[k] = v1[k];
+  if (v2 && typeof v2 === 'object') {
+    for (const k in v2) {
+      if (!merged[k]) { merged[k] = v2[k]; continue; }
+      const t1 = merged[k].lastUpdatedAt || 0;
+      const t2 = v2[k].lastUpdatedAt || 0;
+      if (t2 > t1) merged[k] = v2[k];
+    }
+  }
+  return merged;
+}
+
+/* ============================================================ */
+/*  Helpers                                                       */
+/* ============================================================ */
+function toPersianNum(n) {
+  const p = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  return String(n).replace(/[0-9]/g, w => p[+w]);
+}
+
+function isVideoSrc(src) {
+  if (!src || typeof src !== 'string') return false;
+  if (src.indexOf('data:video') === 0) return true;
+  if (src.indexOf('blob:') === 0) return true;
+  const lower = src.toLowerCase();
+  return lower.indexOf('.webm') > -1 || lower.indexOf('.mp4') > -1 ||
+         lower.indexOf('.mov') > -1 || lower.indexOf('.ogg') > -1 ||
+         lower.indexOf('.m4v') > -1;
+}
+
+/* ============================================================ */
+/*  ⚡ انتخاب آواتار دقیق (اولویت با exclusiveAvatar فعال)         */
+/* ============================================================ */
+function getDisplayAvatar(phone, userData) {
+  // 1) اگر آواتار اختصاصی فعال داره → همون
+  if (userData.exclusiveAvatar && userData.useExclusive === true) {
+    return userData.exclusiveAvatar;
+  }
+  // 2) وگرنه آواتار عادی
+  if (userData.avatar) return userData.avatar;
+  // 3) پیش‌فرض
+  return 'Mafia2.png';
+}
+
+/* ============================================================ */
+/*  ⚡ انتخاب قالب دقیق (اولویت با currentTemplate)                */
+/* ============================================================ */
+function getDisplayTemplate(userData) {
+  // 1) اگر currentTemplate تنظیم شده → همون
+  if (userData.currentTemplate) return userData.currentTemplate;
+  // 2) وگرنه قالب پیش‌فرض بر اساس مقام
+  const role = (userData.rank || '').trim();
+  return ROLE_TEMPLATE_MAP[role] || '51.webp';
+}
+
+/* ============================================================ */
+/*  رندر تیک‌ها                                                    */
+/* ============================================================ */
+function applyTick(img, cands) {
+  if (!img || !cands || !cands.length) return;
+  let i = 0;
+  (function nx() {
+    if (i >= cands.length) { img.style.display = 'none'; return; }
+    const s = cands[i++];
+    const t = new Image();
+    t.onload = function() { img.src = s; img.style.display = 'inline-block'; };
+    t.onerror = nx;
+    t.src = s;
+  })();
+}
+
+/* ============================================================ */
+/*  Media Element (پشتیبانی از ویدیو و عکس و dataURL)              */
+/* ============================================================ */
+function createAvatarElement(src) {
+  if (!src) src = 'Mafia2.png';
+  if (isVideoSrc(src)) {
+    const v = document.createElement('video');
+    v.src = src;
+    v.autoplay = true;
+    v.loop = true;
+    v.muted = true;
+    v.playsInline = true;
+    v.setAttribute('muted', 'muted');
+    v.setAttribute('playsinline', 'playsinline');
+    v.setAttribute('webkit-playsinline', 'webkit-playsinline');
+    v.setAttribute('preload', 'auto');
+    return v;
+  }
+  const img = document.createElement('img');
+  img.src = src;
+  img.onerror = function() { this.style.display = 'none'; };
+  return img;
+}
+
+/* ============================================================ */
+/*  ساخت / به‌روزرسانی کارت                                        */
+/* ============================================================ */
+function buildMemberCard(phone, userData) {
+  const card = document.createElement('div');
+  card.className = 'member-card';
+  card.dataset.phone = phone;
+
+  // ===== قالب پشت کارت =====
+  const templateWrap = document.createElement('div');
+  templateWrap.className = 'card-template';
+  const templateImg = document.createElement('img');
+  templateImg.src = getDisplayTemplate(userData);
+  templateImg.onerror = function() {
+    // اگر قالب لود نشد، یه رنگ پیش‌فرض بذار
+    this.style.background = 'linear-gradient(180deg,#1e4a8a,#12356a)';
+    this.style.display = 'block';
+  };
+  templateWrap.appendChild(templateImg);
+  card.appendChild(templateWrap);
+
+  // ===== دایره آواتار =====
+  const avatarCircle = document.createElement('div');
+  avatarCircle.className = 'avatar-circle';
+  const avatarSrc = getDisplayAvatar(phone, userData);
+  avatarCircle.appendChild(createAvatarElement(avatarSrc));
+  card.appendChild(avatarCircle);
+
+  // ===== اطلاعات (نام + تیک + مقام) =====
+  const infoDiv = document.createElement('div');
+  infoDiv.className = 'member-info';
+
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'member-name';
+  const nameText = document.createTextNode(userData.name || 'کاربر');
+  nameDiv.appendChild(nameText);
+
+  // تیک
+  const roleKey = (userData.rank || '').trim();
+  const tickCandidates = ROLE_TICK_MAP[roleKey];
+  if (tickCandidates && tickCandidates.length) {
+    const tickImg = document.createElement('img');
+    tickImg.className = 'role-tick';
+    tickImg.alt = '';
+    tickImg.src = '';
+    nameDiv.appendChild(tickImg);
+    applyTick(tickImg, tickCandidates);
   }
 
-  function getRoleClass(role){
-    const r = role ? role.trim() : '';
-    if(r==='سازنده') return 'role-creator';
-    if(r==='پشتیبانی') return 'role-support';
-    if(r==='گرداننده') return 'role-supervisor';
-    if(r==='ادمین ارشد') return 'role-admin-senior';
-    if(r==='ادمین') return 'role-admin';
-    if(r==='ناظر ارشد') return 'role-observer-senior';
-    if(r==='ناظر') return 'role-observer';
-    return 'role-observer';
+  infoDiv.appendChild(nameDiv);
+
+  const roleDiv = document.createElement('div');
+  roleDiv.className = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
+  roleDiv.textContent = userData.rank || 'کاربر';
+  infoDiv.appendChild(roleDiv);
+
+  card.appendChild(infoDiv);
+
+  return card;
+}
+
+function updateCardInPlace(card, userData) {
+  const phone = card.dataset.phone;
+
+  // قالب
+  const templateImg = card.querySelector('.card-template img');
+  const newTemplate = getDisplayTemplate(userData);
+  if (templateImg && templateImg.src !== newTemplate) {
+    templateImg.src = newTemplate;
   }
 
-  function getTemplate(role){
-    const r = role ? role.trim() : '';
-    if(['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp'; // قالب مخصوص مدیریت ارشد
-    return '51.webp'; // قالب مدیریت عادی
+  // آواتار
+  const avatarCircle = card.querySelector('.avatar-circle');
+  const newAvatarSrc = getDisplayAvatar(phone, userData);
+  if (avatarCircle) {
+    const currentElement = avatarCircle.firstElementChild;
+    const currentSrc = currentElement ? currentElement.getAttribute('src') : null;
+    const newIsVideo = isVideoSrc(newAvatarSrc);
+    const currentIsVideo = currentElement && currentElement.tagName === 'VIDEO';
+
+    if (currentSrc !== newAvatarSrc || newIsVideo !== currentIsVideo) {
+      avatarCircle.innerHTML = '';
+      avatarCircle.appendChild(createAvatarElement(newAvatarSrc));
+    }
   }
 
-  function applyTick(img, cands){
-    if(!img || !cands || !cands.length) return;
-    let i = 0;
-    (function nx(){
-      if(i >= cands.length){ img.style.display = 'none'; return; }
-      const s = cands[i++];
-      const t = new Image();
-      t.onload = function(){ img.src = s; img.style.display = 'inline-block'; };
-      t.onerror = nx;
-      t.src = s;
-    })();
+  // نام + تیک
+  const nameDiv = card.querySelector('.member-name');
+  if (nameDiv) {
+    const roleKey = (userData.rank || '').trim();
+    nameDiv.innerHTML = '';
+    nameDiv.appendChild(document.createTextNode(userData.name || 'کاربر'));
+
+    const tickCandidates = ROLE_TICK_MAP[roleKey];
+    if (tickCandidates && tickCandidates.length) {
+      const tickImg = document.createElement('img');
+      tickImg.className = 'role-tick';
+      tickImg.alt = '';
+      tickImg.src = '';
+      nameDiv.appendChild(tickImg);
+      applyTick(tickImg, tickCandidates);
+    }
   }
 
-  function playClickSound() {
-    try {
-      const clickSound = document.getElementById('clickSound');
-      if (clickSound) {
-        clickSound.currentTime = 0;
-        clickSound.volume = 0.3;
-        clickSound.play().catch(() => {});
-      }
-    } catch (e) {}
+  // مقام
+  const roleDiv = card.querySelector('.member-role');
+  if (roleDiv) {
+    const roleKey = (userData.rank || '').trim();
+    roleDiv.className = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
+    roleDiv.textContent = userData.rank || 'کاربر';
   }
+}
 
-  async function loadManagementTeam(){
-    const grid = document.getElementById('managementGrid');
-    try{
-      const allUsers = await getAllUsers();
-      const users = Object.entries(allUsers);
-      const managementUsers = users.filter(([p,u]) => u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim()));
+/* ============================================================ */
+/*  ⚡ بارگذاری تیم مدیریت - بدون لودینگ، سریع و مستقیم            */
+/* ============================================================ */
+let __lastRenderedPhones = '';
 
-      if(managementUsers.length === 0){
+async function loadManagementTeam() {
+  const grid = document.getElementById('managementGrid');
+  if (!grid) return;
+
+  try {
+    const allUsers = await getAllUsers();
+    const users = Object.entries(allUsers);
+
+    // فیلتر تیم مدیریت
+    const managementUsers = users.filter(([p, u]) =>
+      u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
+    );
+
+    // مرتب‌سازی بر اساس مقام (سازنده اول)
+    const roleOrder = { 'سازنده':0, 'پشتیبانی':1, 'گرداننده':2, 'ادمین ارشد':3, 'ادمین':4, 'ناظر ارشد':5, 'ناظر':6 };
+    managementUsers.sort((a, b) => {
+      const rA = roleOrder[(a[1].rank || '').trim()] ?? 99;
+      const rB = roleOrder[(b[1].rank || '').trim()] ?? 99;
+      return rA - rB;
+    });
+
+    // اگر خالی بود
+    if (managementUsers.length === 0) {
+      const emptyKey = '__empty__';
+      if (__lastRenderedPhones !== emptyKey) {
         grid.innerHTML = `
           <div class="empty-state">
             <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             <div>هنوز عضوی در تیم مدیریت وجود ندارد</div>
           </div>`;
-        return;
+        __lastRenderedPhones = emptyKey;
       }
+      return;
+    }
 
-      // به‌روزرسانی هوشمند: فقط کارت‌های جدید را اضافه و کارت‌های حذف‌شده را پاک می‌کنیم
-      // تا انیمیشن و تجربه کاربری خراب نشود.
-      const currentPhonesInGrid = Array.from(document.querySelectorAll('.member-card')).map(c => c.dataset.phone);
-      const newPhones = managementUsers.map(([p]) => p);
+    // ساخت کلید برای تشخیص تغییرات
+    const phonesKey = managementUsers.map(([p, u]) =>
+      p + ':' + (u.rank || '') + ':' + (u.avatar || '') + ':' + (u.exclusiveAvatar || '') +
+      ':' + (u.useExclusive ? '1' : '0') + ':' + (u.currentTemplate || '')
+    ).join('|');
 
-      // حذف کارت‌هایی که دیگر مدیریت نیستند
-      currentPhonesInGrid.forEach(phone => {
-        if (!newPhones.includes(phone)) {
-          const card = document.querySelector(`.member-card[data-phone="${phone}"]`);
-          if (card) card.remove();
+    // اگر تغییری نکرده، کاری نکن
+    if (phonesKey === __lastRenderedPhones) return;
+    __lastRenderedPhones = phonesKey;
+
+    // پیدا کردن کارت‌های موجود
+    const existingCards = {};
+    grid.querySelectorAll('.member-card').forEach(c => {
+      existingCards[c.dataset.phone] = c;
+    });
+
+    const newPhones = managementUsers.map(([p]) => p);
+
+    // حذف کارت‌های قدیمی
+    Object.keys(existingCards).forEach(phone => {
+      if (!newPhones.includes(phone)) {
+        existingCards[phone].remove();
+        delete existingCards[phone];
+      }
+    });
+
+    // اضافه کردن کارت‌های جدید یا به‌روزرسانی
+    let lastCard = null;
+    managementUsers.forEach(([phone, user]) => {
+      if (existingCards[phone]) {
+        // به‌روزرسانی
+        updateCardInPlace(existingCards[phone], user);
+        if (existingCards[phone].previousSibling !== lastCard && existingCards[phone] !== lastCard) {
+          // حفظ ترتیب
+          if (lastCard) {
+            if (lastCard.nextSibling !== existingCards[phone]) {
+              grid.insertBefore(existingCards[phone], lastCard.nextSibling);
+            }
+          } else {
+            if (grid.firstChild !== existingCards[phone]) {
+              grid.insertBefore(existingCards[phone], grid.firstChild);
+            }
+          }
         }
-      });
-
-      // اضافه یا به‌روزرسانی کارت‌ها
-      for(const [phone, user] of managementUsers){
-        const existingCard = document.querySelector(`.member-card[data-phone="${phone}"]`);
-        if (existingCard) {
-          updateMemberCard(existingCard, user);
+        lastCard = existingCards[phone];
+      } else {
+        // ساخت جدید
+        const newCard = buildMemberCard(phone, user);
+        if (lastCard) {
+          grid.insertBefore(newCard, lastCard.nextSibling);
         } else {
-          createMemberCard(grid, phone, user);
+          grid.insertBefore(newCard, grid.firstChild);
         }
+        lastCard = newCard;
       }
-
-    } catch(error){
-      console.error('Error loading management team:', error);
+    });
+  } catch (error) {
+    console.error('Error loading management team:', error);
+    if (!grid.querySelector('.member-card')) {
       grid.innerHTML = `
         <div class="empty-state">
           <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
@@ -224,106 +466,74 @@
         </div>`;
     }
   }
+}
 
-  function createMemberCard(grid, phone, user) {
-    const card = document.createElement('div');
-    card.className = 'member-card';
-    card.dataset.phone = phone;
-    grid.appendChild(card);
-    updateMemberCard(card, user);
-  }
-
-  function updateMemberCard(card, userData){
-    const phone = card.dataset.phone;
-    let avatarSrc = userData.avatar || 'Mafia2.png';
-    if(phone === CREATOR_PHONE) avatarSrc = CREATOR_AVATAR;
-
-    const isVideo = avatarSrc.endsWith('.webm') || avatarSrc.endsWith('.mp4') || avatarSrc.endsWith('.mov');
-    
-    // به‌روزرسانی قالب
-    const templateImg = card.querySelector('.card-template img') || document.createElement('img');
-    if (!card.querySelector('.card-template img')) {
-        templateImg.className = '';
-        card.insertBefore(templateImg, card.firstChild);
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card-template';
-        wrapper.appendChild(templateImg);
-        card.insertBefore(wrapper, card.firstChild);
-    }
-    card.querySelector('.card-template img').src = getTemplate(userData.rank);
-
-    // به‌روزرسانی آواتار
-    let avatarCircle = card.querySelector('.avatar-circle');
-    if (!avatarCircle) {
-        avatarCircle = document.createElement('div');
-        avatarCircle.className = 'avatar-circle';
-        card.appendChild(avatarCircle);
-    }
-
-    if (isVideo) {
-      if (!avatarCircle.querySelector('video') || avatarCircle.querySelector('video').src !== avatarSrc) {
-        avatarCircle.innerHTML = `<video src="${avatarSrc}" autoplay loop muted playsinline webkit-playsinline></video>`;
-      }
-    } else {
-      if (!avatarCircle.querySelector('img') || avatarCircle.querySelector('img').src !== avatarSrc) {
-        avatarCircle.innerHTML = `<img src="${avatarSrc}" onerror="this.style.display='none';">`;
-      }
-    }
-
-    // به‌روزرسانی نام و تیک
-    let infoDiv = card.querySelector('.member-info');
-    if (!infoDiv) {
-        infoDiv = document.createElement('div');
-        infoDiv.className = 'member-info';
-        card.appendChild(infoDiv);
-    }
-
-    const tick = getRoleTick(userData.rank);
-    const tickHtml = tick ? `<img class="role-tick" src="" data-ticks="${tick.join(',')}">` : '';
-    
-    infoDiv.innerHTML = `
-      <div class="member-name">${userData.name || 'کاربر'} ${tickHtml}</div>
-      <div class="member-role ${getRoleClass(userData.rank)}">${userData.rank || 'کاربر'}</div>
-    `;
-
-    if(tick){
-      const tickImg = infoDiv.querySelector('.role-tick');
-      if(tickImg) applyTick(tickImg, tick);
-    }
-  }
-
-  function monitorChanges(){
-    // 1. گوش دادن به سیگنال‌های زنده فایربیس (برای آپدیت آنی وقتی ادمین چیزی را تغییر می‌دهد)
-    if (window.FBLive && window.FBLive.subscribe) {
+/* ============================================================ */
+/*  مانیتور تغییرات                                                */
+/* ============================================================ */
+function monitorChanges() {
+  // Firebase live signals
+  if (window.FBLive && window.FBLive.subscribe) {
+    try {
       window.FBLive.subscribe('global', function(sig) {
-        if (['admin_edit', 'user_updated', 'banned', 'unbanned', 'codes_reset'].includes(sig.type)) {
+        if (!sig) return;
+        const types = ['admin_edit', 'user_updated', 'banned', 'unbanned', 'codes_reset', 'force_refresh', 'user_banned'];
+        if (types.includes(sig.type)) {
+          __lastRenderedPhones = ''; // force refresh
           loadManagementTeam();
         }
       });
-    }
-
-    // 2. به‌روزرسانی هنگام بازگشت به تب (مثلاً بعد از ویرایش در تب دیگر)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        loadManagementTeam();
-      }
-    });
-
-    // 3. پولینگ پشتیبان (هر ۵ ثانیه) برای اطمینان ۱۰۰٪ از همگام‌سازی
-    setInterval(() => {
-      loadManagementTeam();
-    }, 5000);
+    } catch(e) {}
   }
 
-  document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById('backBtn').addEventListener('click', function() {
-      playClickSound();
-      window.location.href = 'Safe Asli Bazi.html'; // یا صفحه اصلی مورد نظر شما
-    });
-
-    loadManagementTeam();
-    monitorChanges();
+  // بازگشت به تب
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      __lastRenderedPhones = '';
+      loadManagementTeam();
+    }
   });
+
+  // Polling پشتیبان (هر ۳ ثانیه)
+  setInterval(() => {
+    loadManagementTeam();
+  }, 3000);
+}
+
+/* ============================================================ */
+/*  Play Click Sound                                              */
+/* ============================================================ */
+function playClickSound() {
+  try {
+    const s = document.getElementById('clickSound');
+    if (s) {
+      s.currentTime = 0;
+      s.volume = 0.3;
+      s.play().catch(() => {});
+    }
+  } catch(e) {}
+}
+
+/* ============================================================ */
+/*  Boot                                                          */
+/* ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', function() {
+      playClickSound();
+      if (document.referrer && document.referrer.indexOf('Safe') > -1) {
+        window.history.back();
+      } else {
+        window.location.href = 'Safe Asli Bazi.html';
+      }
+    });
+  }
+
+  // ⚡ بارگذاری فوری - بدون لودینگ!
+  loadManagementTeam();
+  monitorChanges();
+});
 </script>
 </body>
 </html>
