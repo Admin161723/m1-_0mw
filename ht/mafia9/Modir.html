@@ -25,31 +25,47 @@
   .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;}
   .member-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.5);}
 
-  /* ═══ قالب کارت - فقط تصویر، بدون پس‌زمینه ═══ */
-  .card-template{
-    width:100%;
-    position:relative;
-    aspect-ratio:3/4;
-    overflow:hidden;
-    /* بدون هیچ background */
+  /* ═══ قالب کارت - فقط تصویر ═══ */
+  .card-template{width:100%;position:relative;aspect-ratio:3/4;overflow:hidden;}
+  .card-template img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+
+  /* ═══ کانتینر آواتار بزرگتر - قالب دیده بشه ═══ */
+  .avatar-container{
+    position:absolute;
+    top:6%;
+    left:50%;
+    transform:translateX(-50%);
+    width:100px;
+    height:100px;
+    z-index:10;
+    pointer-events:none;
   }
-  .card-template img{
+  .avatar-circle{
+    position:absolute;
+    top:16px;
+    left:50%;
+    transform:translateX(-50%);
+    width:68px;
+    height:68px;
+    border-radius:50%;
+    border:3px solid rgba(255,255,255,0.9);
+    overflow:hidden;
+    background:#1a3a6a;
+    box-shadow:0 4px 15px rgba(0,0,0,.5);
+    z-index:1;
+  }
+  .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;display:block;}
+  .avatar-frame{
     position:absolute;
     top:0;
     left:0;
     width:100%;
     height:100%;
-    object-fit:cover;
-    display:block;
+    object-fit:contain;
     pointer-events:none;
-    border:0;
+    z-index:5;
+    filter:drop-shadow(0 2px 8px rgba(0,0,0,0.7));
   }
-
-  /* ═══ کانتینر آواتار + قالب دور آواتار ═══ */
-  .avatar-container{position:absolute;top:8%;left:50%;transform:translateX(-50%);width:88px;height:88px;z-index:10;pointer-events:none;}
-  .avatar-circle{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:66px;height:66px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.5);z-index:1;}
-  .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
-  .avatar-frame{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:5;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));}
 
   .member-info{position:absolute;bottom:0;left:0;right:0;padding:40px 8px 12px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.85) 40%,rgba(0,0,0,0.95) 100%);z-index:5;}
   .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);flex-wrap:wrap;}
@@ -70,8 +86,8 @@
 
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
-    .avatar-container{width:74px;height:74px;top:6%;}
-    .avatar-circle{width:54px;height:54px;top:10px;border-width:2.5px;}
+    .avatar-container{width:82px;height:82px;top:5%;}
+    .avatar-circle{width:56px;height:56px;top:13px;border-width:2.5px;}
     .member-info{padding:35px 6px 10px;}
     .member-name{font-size:11px;}
     .member-role{font-size:9px;padding:2px 8px;}
@@ -97,7 +113,6 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -112,6 +127,8 @@ const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjM
 
 const CREATOR_PHONE = '09904844031';
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+const CACHE_KEY = '__management_team_cache_v2__';
+const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // ۲۴ ساعت
 
 const FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -153,22 +170,99 @@ function getCardTemplate(role) {
 }
 
 /* ============================================================ */
+/*  localStorage Cache - برای لود آنی                              */
+/* ============================================================ */
+function saveCache(users) {
+  try {
+    const trimmed = {};
+    // فقط فیلدهای ضروری رو کش کن (نه کل user object که ممکنه سنگین باشه)
+    for (const phone in users) {
+      const u = users[phone];
+      if (!u) continue;
+      // فقط کاربران تیم مدیریت رو کش کن
+      if (!u.rank || !MANAGEMENT_ROLES.includes(u.rank.trim())) continue;
+      trimmed[phone] = {
+        name: u.name || '',
+        rank: u.rank || '',
+        avatar: u.avatar || '',
+        exclusiveAvatar: u.exclusiveAvatar || '',
+        useExclusive: u.useExclusive === true,
+        currentTemplate: u.currentTemplate || '',
+        lastUpdatedAt: u.lastUpdatedAt || 0
+      };
+    }
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      users: trimmed,
+      savedAt: Date.now()
+    }));
+  } catch(e) {
+    // احتمالاً حجم زیاد - فقط تیم مدیریت رو نگه‌دار و قبلی رو پاک کن
+    try { localStorage.removeItem(CACHE_KEY); } catch(e2) {}
+  }
+}
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.users) return null;
+    if (parsed.savedAt && (Date.now() - parsed.savedAt) > CACHE_MAX_AGE) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return parsed.users;
+  } catch(e) { return null; }
+}
+
+/* ============================================================ */
+/*  ⚡ Hash برای مقایسه سریع dataURL                              */
+/* ============================================================ */
+function srcHash(s) {
+  if (!s) return '0_0';
+  if (typeof s !== 'string') return '0_0';
+  const len = s.length;
+  // برای رشته‌های کوتاه (فایل‌های معمولی) کل رشته رو hash کن
+  if (len < 500) {
+    let h = 0;
+    for (let i = 0; i < len; i++) {
+      h = ((h << 5) - h) + s.charCodeAt(i);
+      h = h & h;
+    }
+    return h + '_' + len;
+  }
+  // برای dataURL بزرگ، از اول + آخر + طول استفاده کن
+  let h = 0;
+  // اول ۳۰۰ کاراکتر
+  for (let i = 0; i < 300; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h = h & h;
+  }
+  // آخر ۳۰۰ کاراکتر
+  for (let i = Math.max(0, len - 300); i < len; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h = h & h;
+  }
+  return h + '_' + len;
+}
+
+/* ============================================================ */
 /*  Firebase Live                                                 */
 /* ============================================================ */
 let fbDb = null;
 let fbReady = false;
-let __fbUpdateHandler = null;
 
 function initFirebase() {
   try {
     if (typeof firebase === 'undefined') {
-      console.warn('⚠️ Firebase SDK لود نشد - polling فعال می‌شه');
+      console.warn('⚠️ Firebase SDK لود نشد');
       return false;
     }
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
     fbDb = firebase.database();
     fbReady = true;
     setupRealtimeListeners();
+    console.log('✅ Firebase ready');
     return true;
   } catch(e) {
     console.error('Firebase init error:', e);
@@ -179,52 +273,41 @@ function initFirebase() {
 function setupRealtimeListeners() {
   if (!fbReady || !fbDb) return;
 
-  // ═══ 1) user_updates - هر بار ادمین کاربری رو تغییر بده ═══
+  // user_updates - هر بار ادمین کاربری رو ویرایش کنه
   try {
     var userUpdatesRef = fbDb.ref('user_updates');
     var handler = function(snap) {
       var val = snap.val();
       if (!val || !val.at) return;
-      var age = Date.now() - val.at;
-      if (age > 120000) return; // قدیمی‌تر از ۲ دقیقه رد کن
+      if (Date.now() - val.at > 120000) return;
       forceReload();
     };
     userUpdatesRef.on('child_added', handler);
     userUpdatesRef.on('child_changed', handler);
-    console.log('✅ user_updates listener فعال');
-  } catch(e) { console.warn('user_updates listener error:', e); }
+    console.log('✅ user_updates listener');
+  } catch(e) { console.warn('user_updates error:', e); }
 
-  // ═══ 2) signals - به همه یوزرها گوش بده ═══
+  // signals - همه یوزرها
   try {
-    var signalsRef = fbDb.ref('signals');
-    signalsRef.on('child_added', function(userSnap) {
-      // userSnap.key = "user_PHONE" یا "global"
-      // به child_added هر یوزر گوش بده
-      userSnap.ref.limitToLast(1).on('child_added', function(sigSnap) {
+    fbDb.ref('signals').on('child_added', function(userSnap) {
+      userSnap.ref.limitToLast(2).on('child_added', function(sigSnap) {
         var sig = sigSnap.val();
         if (!sig) return;
-        var age = Date.now() - (sig.time || 0);
-        if (age > 120000) return;
-        var types = ['admin_edit','user_updated','banned','unbanned','codes_reset','force_refresh','user_banned','updated','prize_received','deleted','force_login','force_logout'];
-        if (types.indexOf(sig.type) > -1) {
-          forceReload();
-        }
+        if (Date.now() - (sig.time || 0) > 120000) return;
+        var types = ['admin_edit','user_updated','banned','unbanned','codes_reset',
+                     'force_refresh','user_banned','updated','prize_received',
+                     'deleted','force_login','force_logout'];
+        if (types.indexOf(sig.type) > -1) forceReload();
       });
     });
-    console.log('✅ signals listener فعال');
-  } catch(e) { console.warn('signals listener error:', e); }
-
-  // ═══ 3) online - تغییر وضعیت آنلاین ═══
-  try {
-    fbDb.ref('online').on('child_changed', function() {
-      // فقط key عوض شد - نیازی به رفرش نیست چون online تو key ما نیست
-    });
-  } catch(e) {}
+    console.log('✅ signals listener');
+  } catch(e) { console.warn('signals error:', e); }
 }
 
 function forceReload() {
   __lastRenderedKey = '';
-  loadManagementTeam();
+  // fetch fresh و render
+  fetchAndRender();
 }
 
 /* ============================================================ */
@@ -310,25 +393,51 @@ function applyTick(img, cands) {
   })();
 }
 
+/* ═══ ساخت المان ویدیو با force reload ═══ */
 function createAvatarElement(src) {
   if (!src) src = 'Mafia2.png';
   if (isVideoSrc(src)) {
     const v = document.createElement('video');
-    v.src = src;
-    v.autoplay = true;
-    v.loop = true;
     v.muted = true;
     v.playsInline = true;
+    v.autoplay = true;
+    v.loop = true;
     v.setAttribute('muted', 'muted');
     v.setAttribute('playsinline', 'playsinline');
     v.setAttribute('webkit-playsinline', 'webkit-playsinline');
+    v.setAttribute('autoplay', '');
+    v.setAttribute('loop', '');
     v.setAttribute('preload', 'auto');
+    // ⚠️ مهم: ست کردن src بعد از همه attribute ها
+    v.src = src;
+    // force load
+    try { v.load(); } catch(e) {}
+    // تلاش برای play
+    try {
+      const p = v.play();
+      if (p && p.catch) p.catch(function(){});
+    } catch(e) {}
     return v;
   }
   const img = document.createElement('img');
   img.src = src;
   img.onerror = function() { this.style.display = 'none'; };
   return img;
+}
+
+/* ═══ پاکسازی کامل المان قدیمی (مهم برای ویدیو) ═══ */
+function destroyAvatarElement(el) {
+  if (!el) return;
+  try {
+    if (el.tagName === 'VIDEO') {
+      el.pause();
+      el.removeAttribute('src');
+      try { el.load(); } catch(e) {}
+    }
+  } catch(e) {}
+  try {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  } catch(e) {}
 }
 
 /* ============================================================ */
@@ -339,7 +448,7 @@ function buildMemberCard(phone, userData) {
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  // قالب کارت (فقط عکس، بدون پس‌زمینه)
+  // قالب کارت
   const cardTplWrap = document.createElement('div');
   cardTplWrap.className = 'card-template';
   const cardTplImg = document.createElement('img');
@@ -354,7 +463,9 @@ function buildMemberCard(phone, userData) {
 
   const avatarCircle = document.createElement('div');
   avatarCircle.className = 'avatar-circle';
-  avatarCircle.appendChild(createAvatarElement(getDisplayAvatar(phone, userData)));
+  const avatarSrc = getDisplayAvatar(phone, userData);
+  avatarCircle.dataset.avatarHash = srcHash(avatarSrc);
+  avatarCircle.appendChild(createAvatarElement(avatarSrc));
   avatarContainer.appendChild(avatarCircle);
 
   const frameSrc = getAvatarFrame(userData);
@@ -398,7 +509,7 @@ function buildMemberCard(phone, userData) {
 }
 
 /* ============================================================ */
-/*  به‌روزرسانی درجا - با force reload آواتار                     */
+/*  ⚡ به‌روزرسانی درجا با hash-based comparison                  */
 /* ============================================================ */
 function updateCardInPlace(card, userData) {
   const phone = card.dataset.phone;
@@ -414,23 +525,22 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // ═══ آواتار - همیشه force rebuild برای اطمینان ═══
+  // ═══ آواتار با hash comparison ═══
   const avatarCircle = card.querySelector('.avatar-circle');
   const newAvatarSrc = getDisplayAvatar(phone, userData);
+  const newHash = srcHash(newAvatarSrc);
   if (avatarCircle) {
-    const currentEl = avatarCircle.firstElementChild;
-    const currentSrc = currentEl ? (currentEl.getAttribute('src') || '') : '';
-    const newIsVideo = isVideoSrc(newAvatarSrc);
-    const currentIsVideo = currentEl && currentEl.tagName === 'VIDEO';
-
-    // همیشه چک کن - اگر تغییر داشت یا نوع تغییر کرد
-    const srcChanged = currentSrc !== newAvatarSrc;
-    const typeChanged = newIsVideo !== currentIsVideo;
-
-    if (srcChanged || typeChanged || !currentEl) {
-      // پاک کردن کامل
-      while (avatarCircle.firstChild) avatarCircle.removeChild(avatarCircle.firstChild);
-      // ساخت مجدد
+    const currentHash = avatarCircle.dataset.avatarHash || '0_0';
+    if (currentHash !== newHash) {
+      // ⚠️ پاکسازی کامل المان قدیمی (مخصوصاً ویدیو)
+      const oldEl = avatarCircle.firstElementChild;
+      destroyAvatarElement(oldEl);
+      // حالا innerHTML رو خالی کن
+      while (avatarCircle.firstChild) {
+        try { avatarCircle.removeChild(avatarCircle.firstChild); } catch(e) { break; }
+      }
+      // المان جدید بساز
+      avatarCircle.dataset.avatarHash = newHash;
       avatarCircle.appendChild(createAvatarElement(newAvatarSrc));
     }
   }
@@ -491,41 +601,14 @@ function updateCardInPlace(card, userData) {
 }
 
 /* ============================================================ */
-/*  بارگذاری تیم - با محافظت از داده                                  */
+/*  رندر تیم (بدون fetch - فقط داده می‌گیره و نشون می‌ده)            */
 /* ============================================================ */
 let __lastRenderedKey = '';
-let __hasSuccessfullyLoaded = false;
-let __lastGoodUsers = null;
-let __consecutiveFails = 0;
 
-async function loadManagementTeam() {
+function renderTeam(users) {
   const grid = document.getElementById('managementGrid');
   if (!grid) return;
-
-  let users = null;
-  try {
-    users = await getAllUsers();
-  } catch(e) {
-    users = null;
-  }
-
-  // اگر fetch شکست خورد
-  if (!users || typeof users !== 'object') {
-    __consecutiveFails++;
-    if (__hasSuccessfullyLoaded && __lastGoodUsers) {
-      users = __lastGoodUsers;
-    } else {
-      if (__consecutiveFails < 3) return;
-      if (!grid.querySelector('.member-card') && !grid.querySelector('.empty-state')) {
-        grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد. لطفاً صفحه را رفرش کنید</div></div>`;
-      }
-      return;
-    }
-  } else {
-    __consecutiveFails = 0;
-    __hasSuccessfullyLoaded = true;
-    __lastGoodUsers = users;
-  }
+  if (!users || typeof users !== 'object') return;
 
   const entries = Object.entries(users);
   const managementUsers = entries.filter(([p, u]) =>
@@ -538,13 +621,9 @@ async function loadManagementTeam() {
     return rA - rB;
   });
 
-  // ═══ حالت خالی ═══
+  // حالت خالی
   if (managementUsers.length === 0) {
-    if (grid.querySelector('.member-card')) {
-      // قبلاً کارت داشتیم، دست نزن
-      return;
-    }
-    // فقط اگر واقعاً دیتا خالی بود
+    if (grid.querySelector('.member-card')) return;
     if (__lastRenderedKey !== '__empty__') {
       grid.innerHTML = `
         <div class="empty-state">
@@ -558,15 +637,14 @@ async function loadManagementTeam() {
 
   // کلید تغییرات
   const key = managementUsers.map(([p, u]) =>
-    p + '@' + (u.lastUpdatedAt || 0) + '@' + (u.rank || '') + '@' + (u.name || '') + '@' +
-    (u.avatar || '') + '@' + (u.exclusiveAvatar || '') + '@' +
+    p + '@' + (u.rank || '') + '@' + (u.name || '') + '@' +
+    srcHash(u.avatar || '') + '@' + srcHash(u.exclusiveAvatar || '') + '@' +
     (u.useExclusive ? '1' : '0') + '@' + (u.currentTemplate || '')
   ).join('||');
 
   if (key === __lastRenderedKey) return;
   __lastRenderedKey = key;
 
-  // پاک کردن پیام خالی
   const emptyEl = grid.querySelector('.empty-state');
   if (emptyEl) emptyEl.remove();
 
@@ -574,15 +652,16 @@ async function loadManagementTeam() {
   grid.querySelectorAll('.member-card').forEach(c => { existingCards[c.dataset.phone] = c; });
   const newPhones = managementUsers.map(([p]) => p);
 
-  // حذف کارت‌های اضافی
   Object.keys(existingCards).forEach(phone => {
     if (!newPhones.includes(phone)) {
+      // پاکسازی ویدیو قبل از حذف کارت
+      const circle = existingCards[phone].querySelector('.avatar-circle');
+      if (circle) destroyAvatarElement(circle.firstElementChild);
       existingCards[phone].remove();
       delete existingCards[phone];
     }
   });
 
-  // اضافه/به‌روزرسانی با حفظ ترتیب
   let lastCard = null;
   managementUsers.forEach(([phone, user]) => {
     let card = existingCards[phone];
@@ -591,29 +670,66 @@ async function loadManagementTeam() {
     } else {
       card = buildMemberCard(phone, user);
     }
-
     if (lastCard) {
-      if (lastCard.nextSibling !== card) {
-        grid.insertBefore(card, lastCard.nextSibling);
-      }
+      if (lastCard.nextSibling !== card) grid.insertBefore(card, lastCard.nextSibling);
     } else {
-      if (grid.firstChild !== card) {
-        grid.insertBefore(card, grid.firstChild);
-      }
+      if (grid.firstChild !== card) grid.insertBefore(card, grid.firstChild);
     }
     lastCard = card;
   });
 }
 
 /* ============================================================ */
-/*  Polling پشتیبان (فقط اگر Firebase کار نکرد)                    */
+/*  ⚡ fetch fresh + رندر + ذخیره در کش                            */
 /* ============================================================ */
-function startPolling() {
-  setInterval(() => {
-    if (!fbReady) {
-      loadManagementTeam();
+async function fetchAndRender() {
+  let users = null;
+  try {
+    users = await getAllUsers();
+  } catch(e) { users = null; }
+
+  if (users && typeof users === 'object' && Object.keys(users).length > 0) {
+    renderTeam(users);
+    saveCache(users);
+  } else {
+    // fetch fail - اگه قبلاً کش داشتیم، دست نزن
+    if (!__hasRendered) {
+      // هیچی نیست - پیام خطا
+      const grid = document.getElementById('managementGrid');
+      if (grid && !grid.querySelector('.member-card')) {
+        grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد. لطفاً صفحه را رفرش کنید</div></div>`;
+      }
     }
-  }, 2000);
+  }
+}
+
+let __hasRendered = false;
+const _origRenderTeam = renderTeam;
+renderTeam = function(users) {
+  __hasRendered = true;
+  return _origRenderTeam(users);
+};
+
+/* ============================================================ */
+/*  ⚡ Boot - لود آنی از کش + fetch در پس‌زمینه                    */
+/* ============================================================ */
+async function boot() {
+  // ═══ 1) اول کش رو نشون بده - آنی ═══
+  const cached = loadCache();
+  if (cached && Object.keys(cached).length > 0) {
+    renderTeam(cached);
+  }
+
+  // ═══ 2) Firebase init ═══
+  initFirebase();
+
+  // ═══ 3) fetch fresh از Redis (در پس‌زمینه) ═══
+  await fetchAndRender();
+
+  // ═══ 4) polling پشتیبان (اگه Firebase لود نشد) ═══
+  if (!fbReady) {
+    setInterval(fetchAndRender, 2000);
+  }
 }
 
 /* ============================================================ */
@@ -642,19 +758,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ⚡ بارگذاری فوری
-  loadManagementTeam();
+  // ⚡ شروع آنی
+  boot();
 
-  // ⚡ Firebase
-  initFirebase();
-
-  // ⚡ polling پشتیبان
-  startPolling();
-
-  // ⚡ برگشت به تب
+  // ⚡ برگشت به تب → fetch fresh
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      forceReload();
+      fetchAndRender();
     }
   });
 
@@ -666,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-window.addEventListener('focus', () => forceReload());
+window.addEventListener('focus', () => fetchAndRender());
 </script>
 </body>
 </html>
