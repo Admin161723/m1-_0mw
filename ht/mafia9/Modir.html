@@ -22,26 +22,27 @@
 
   .management-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
 
-  .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;background:#1a3a6a;}
+  .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;}
   .member-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.5);}
 
-  /* ═══ قالب کارت - بزرگتر و کامل پرکننده ═══ */
+  /* ═══ قالب کارت - فقط تصویر، بدون پس‌زمینه ═══ */
   .card-template{
     width:100%;
     position:relative;
     aspect-ratio:3/4;
     overflow:hidden;
-    background:linear-gradient(180deg,#1e4a8a,#12356a);
+    /* بدون هیچ background */
   }
   .card-template img{
     position:absolute;
-    top:-4%;
-    left:-4%;
-    width:108%;
-    height:108%;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     object-fit:cover;
     display:block;
     pointer-events:none;
+    border:0;
   }
 
   /* ═══ کانتینر آواتار + قالب دور آواتار ═══ */
@@ -96,7 +97,7 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
-<!-- ═══ Firebase SDK ═══ -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -144,7 +145,7 @@ const ROLE_CLASS_MAP = {
 
 const ROLE_ORDER = { 'سازنده':0, 'پشتیبانی':1, 'گرداننده':2, 'ادمین ارشد':3, 'ادمین':4, 'ناظر ارشد':5, 'ناظر':6 };
 
-/* ═══ قالب کارت (پس‌زمینه) ═══ */
+/* ═══ قالب کارت ═══ */
 function getCardTemplate(role) {
   const r = (role || '').trim();
   if (['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp';
@@ -152,15 +153,16 @@ function getCardTemplate(role) {
 }
 
 /* ============================================================ */
-/*  Firebase - اتصال زنده                                         */
+/*  Firebase Live                                                 */
 /* ============================================================ */
 let fbDb = null;
 let fbReady = false;
+let __fbUpdateHandler = null;
 
 function initFirebase() {
   try {
     if (typeof firebase === 'undefined') {
-      console.warn('Firebase SDK not loaded');
+      console.warn('⚠️ Firebase SDK لود نشد - polling فعال می‌شه');
       return false;
     }
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
@@ -177,37 +179,47 @@ function initFirebase() {
 function setupRealtimeListeners() {
   if (!fbReady || !fbDb) return;
 
-  // ═══ 1) گوش دادن به user_updates (هر تغییر کاربر) ═══
+  // ═══ 1) user_updates - هر بار ادمین کاربری رو تغییر بده ═══
   try {
-    fbDb.ref('user_updates').on('value', function(snap) {
-      // debounce برای جلوگیری از چند بار رفرش
-      if (window.__updateDebounce) clearTimeout(window.__updateDebounce);
-      window.__updateDebounce = setTimeout(() => {
-        forceReload();
-      }, 150);
-    });
+    var userUpdatesRef = fbDb.ref('user_updates');
+    var handler = function(snap) {
+      var val = snap.val();
+      if (!val || !val.at) return;
+      var age = Date.now() - val.at;
+      if (age > 120000) return; // قدیمی‌تر از ۲ دقیقه رد کن
+      forceReload();
+    };
+    userUpdatesRef.on('child_added', handler);
+    userUpdatesRef.on('child_changed', handler);
+    console.log('✅ user_updates listener فعال');
   } catch(e) { console.warn('user_updates listener error:', e); }
 
-  // ═══ 2) گوش دادن به signals/global ═══
+  // ═══ 2) signals - به همه یوزرها گوش بده ═══
   try {
-    fbDb.ref('signals/global').limitToLast(3).on('child_added', function(snap) {
-      const sig = snap.val();
-      if (!sig) return;
-      const age = Date.now() - (sig.time || 0);
-      if (age > 60000) return; // قدیمی‌تر از ۱ دقیقه رد کن
-      const types = ['admin_edit','user_updated','banned','unbanned','codes_reset','force_refresh','user_banned'];
-      if (types.includes(sig.type)) {
-        forceReload();
-      }
+    var signalsRef = fbDb.ref('signals');
+    signalsRef.on('child_added', function(userSnap) {
+      // userSnap.key = "user_PHONE" یا "global"
+      // به child_added هر یوزر گوش بده
+      userSnap.ref.limitToLast(1).on('child_added', function(sigSnap) {
+        var sig = sigSnap.val();
+        if (!sig) return;
+        var age = Date.now() - (sig.time || 0);
+        if (age > 120000) return;
+        var types = ['admin_edit','user_updated','banned','unbanned','codes_reset','force_refresh','user_banned','updated','prize_received','deleted','force_login','force_logout'];
+        if (types.indexOf(sig.type) > -1) {
+          forceReload();
+        }
+      });
     });
+    console.log('✅ signals listener فعال');
   } catch(e) { console.warn('signals listener error:', e); }
 
-  // ═══ 3) گوش دادن به signals/user_* (برای همه مقام‌دارها) ═══
-  // از اونجایی که همه کاربران رو نمی‌شناسیم، به کل نود signals گوش می‌دیم
-  // ولی این می‌تونه سنگین باشه. پس فقط به user_updates اتکا می‌کنیم.
-  // (بالاتر پوشش داده شد)
-
-  console.log('✅ Firebase realtime listeners active');
+  // ═══ 3) online - تغییر وضعیت آنلاین ═══
+  try {
+    fbDb.ref('online').on('child_changed', function() {
+      // فقط key عوض شد - نیازی به رفرش نیست چون online تو key ما نیست
+    });
+  } catch(e) {}
 }
 
 function forceReload() {
@@ -229,9 +241,7 @@ async function upstashGet(url, token, k) {
     clearTimeout(t);
     if (!r.ok) return null;
     const d = await r.json();
-    if (d && d.result) {
-      try { return JSON.parse(d.result); } catch (e) { return d.result; }
-    }
+    if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
     return null;
   } catch (e) { return null; }
 }
@@ -253,18 +263,13 @@ async function getAllUsers() {
   }
   if (v2 && typeof v2 === 'object') {
     for (const k in v2) {
-      if (!merged[k]) {
-        merged[k] = v2[k];
-        hasAnyData = true;
-        continue;
-      }
+      if (!merged[k]) { merged[k] = v2[k]; hasAnyData = true; continue; }
       const t1 = merged[k].lastUpdatedAt || 0;
       const t2 = v2[k].lastUpdatedAt || 0;
       if (t2 > t1) merged[k] = v2[k];
     }
   }
 
-  // اگر هیچ دیتایی نیومد، null برگردون (نه آبجکت خالی)
   if (!hasAnyData && !v1 && !v2) return null;
   return merged;
 }
@@ -280,20 +285,6 @@ function isVideoSrc(src) {
   return lower.indexOf('.webm') > -1 || lower.indexOf('.mp4') > -1 ||
          lower.indexOf('.mov') > -1 || lower.indexOf('.ogg') > -1 ||
          lower.indexOf('.m4v') > -1;
-}
-
-function normalizeUrl(url) {
-  if (!url) return '';
-  if (typeof url !== 'string') return '';
-  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
-  try {
-    const u = new URL(url, location.href);
-    return u.pathname + u.search;
-  } catch(e) { return url; }
-}
-
-function sameSrc(a, b) {
-  return normalizeUrl(a) === normalizeUrl(b);
 }
 
 function getDisplayAvatar(phone, userData) {
@@ -348,7 +339,7 @@ function buildMemberCard(phone, userData) {
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  // قالب کارت
+  // قالب کارت (فقط عکس، بدون پس‌زمینه)
   const cardTplWrap = document.createElement('div');
   cardTplWrap.className = 'card-template';
   const cardTplImg = document.createElement('img');
@@ -407,35 +398,44 @@ function buildMemberCard(phone, userData) {
 }
 
 /* ============================================================ */
-/*  به‌روزرسانی درجا                                               */
+/*  به‌روزرسانی درجا - با force reload آواتار                     */
 /* ============================================================ */
 function updateCardInPlace(card, userData) {
   const phone = card.dataset.phone;
 
-  // قالب کارت
+  // ═══ قالب کارت ═══
   const cardTplImg = card.querySelector('.card-template img');
   const newCardTpl = getCardTemplate(userData.rank);
-  if (cardTplImg && !sameSrc(cardTplImg.getAttribute('src'), newCardTpl)) {
-    cardTplImg.src = newCardTpl;
+  if (cardTplImg) {
+    const currentSrc = cardTplImg.getAttribute('src') || '';
+    if (!currentSrc.endsWith(newCardTpl)) {
+      cardTplImg.src = newCardTpl;
+      cardTplImg.style.display = '';
+    }
   }
 
-  // آواتار
+  // ═══ آواتار - همیشه force rebuild برای اطمینان ═══
   const avatarCircle = card.querySelector('.avatar-circle');
   const newAvatarSrc = getDisplayAvatar(phone, userData);
   if (avatarCircle) {
     const currentEl = avatarCircle.firstElementChild;
-    const currentSrc = currentEl ? currentEl.getAttribute('src') : null;
+    const currentSrc = currentEl ? (currentEl.getAttribute('src') || '') : '';
     const newIsVideo = isVideoSrc(newAvatarSrc);
     const currentIsVideo = currentEl && currentEl.tagName === 'VIDEO';
 
-    if (!sameSrc(currentSrc, newAvatarSrc) || newIsVideo !== currentIsVideo) {
-      // پاک کردن و ساخت جدید
+    // همیشه چک کن - اگر تغییر داشت یا نوع تغییر کرد
+    const srcChanged = currentSrc !== newAvatarSrc;
+    const typeChanged = newIsVideo !== currentIsVideo;
+
+    if (srcChanged || typeChanged || !currentEl) {
+      // پاک کردن کامل
       while (avatarCircle.firstChild) avatarCircle.removeChild(avatarCircle.firstChild);
+      // ساخت مجدد
       avatarCircle.appendChild(createAvatarElement(newAvatarSrc));
     }
   }
 
-  // قالب دور آواتار
+  // ═══ قالب دور آواتار ═══
   const avatarContainer = card.querySelector('.avatar-container');
   if (avatarContainer) {
     let frameImg = avatarContainer.querySelector('.avatar-frame');
@@ -448,7 +448,8 @@ function updateCardInPlace(card, userData) {
         frameImg.onerror = function() { this.style.display = 'none'; };
         avatarContainer.appendChild(frameImg);
       }
-      if (!sameSrc(frameImg.getAttribute('src'), newFrame)) {
+      const currentFrameSrc = frameImg.getAttribute('src') || '';
+      if (currentFrameSrc !== newFrame) {
         frameImg.style.display = '';
         frameImg.src = newFrame;
       }
@@ -457,13 +458,12 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // نام + تیک
+  // ═══ نام + تیک ═══
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const roleKey = (userData.rank || '').trim();
     const currentName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
     const newName = userData.name || 'کاربر';
-    // فقط اگر تغییر کرده، دوباره بساز
     if (currentName !== newName) {
       while (nameDiv.firstChild) nameDiv.removeChild(nameDiv.firstChild);
       nameDiv.appendChild(document.createTextNode(newName));
@@ -479,7 +479,7 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // مقام
+  // ═══ مقام ═══
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (userData.rank || '').trim();
@@ -512,20 +512,16 @@ async function loadManagementTeam() {
   // اگر fetch شکست خورد
   if (!users || typeof users !== 'object') {
     __consecutiveFails++;
-    // اگر قبلاً داده داشتیم، دست نزن
     if (__hasSuccessfullyLoaded && __lastGoodUsers) {
       users = __lastGoodUsers;
     } else {
-      // اولین بار و شکست - صبر کن و دوباره تلاش کن
       if (__consecutiveFails < 3) return;
-      // بعد از ۳ بار شکست و بدون داده قبلی، پیام خطا نشون بده
       if (!grid.querySelector('.member-card') && !grid.querySelector('.empty-state')) {
         grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد. لطفاً صفحه را رفرش کنید</div></div>`;
       }
       return;
     }
   } else {
-    // fetch موفق
     __consecutiveFails = 0;
     __hasSuccessfullyLoaded = true;
     __lastGoodUsers = users;
@@ -536,20 +532,19 @@ async function loadManagementTeam() {
     u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
   );
 
-  // مرتب‌سازی
   managementUsers.sort((a, b) => {
     const rA = ROLE_ORDER[(a[1].rank || '').trim()] ?? 99;
     const rB = ROLE_ORDER[(b[1].rank || '').trim()] ?? 99;
     return rA - rB;
   });
 
-  // ═══ حالت خالی: فقط اگر fetch موفق بود و واقعاً هیچ کاربری نبود ═══
+  // ═══ حالت خالی ═══
   if (managementUsers.length === 0) {
-    // اگر قبلاً کارت داشتیم، نگه‌دار و به‌روز نکن
     if (grid.querySelector('.member-card')) {
+      // قبلاً کارت داشتیم، دست نزن
       return;
     }
-    // اگر هنوز هیچی نداریم و fetch موفق بوده، پیام خالی نشون بده
+    // فقط اگر واقعاً دیتا خالی بود
     if (__lastRenderedKey !== '__empty__') {
       grid.innerHTML = `
         <div class="empty-state">
@@ -563,15 +558,15 @@ async function loadManagementTeam() {
 
   // کلید تغییرات
   const key = managementUsers.map(([p, u]) =>
-    p + '|' + (u.rank || '') + '|' + (u.name || '') + '|' +
-    (u.avatar || '') + '|' + (u.exclusiveAvatar || '') + '|' +
-    (u.useExclusive ? '1' : '0') + '|' + (u.currentTemplate || '')
+    p + '@' + (u.lastUpdatedAt || 0) + '@' + (u.rank || '') + '@' + (u.name || '') + '@' +
+    (u.avatar || '') + '@' + (u.exclusiveAvatar || '') + '@' +
+    (u.useExclusive ? '1' : '0') + '@' + (u.currentTemplate || '')
   ).join('||');
 
   if (key === __lastRenderedKey) return;
   __lastRenderedKey = key;
 
-  // پاک کردن پیام خالی اگه هست
+  // پاک کردن پیام خالی
   const emptyEl = grid.querySelector('.empty-state');
   if (emptyEl) emptyEl.remove();
 
@@ -597,7 +592,6 @@ async function loadManagementTeam() {
       card = buildMemberCard(phone, user);
     }
 
-    // ترتیب درست
     if (lastCard) {
       if (lastCard.nextSibling !== card) {
         grid.insertBefore(card, lastCard.nextSibling);
@@ -612,15 +606,14 @@ async function loadManagementTeam() {
 }
 
 /* ============================================================ */
-/*  Polling پشتیبان (اگر Firebase کار نکرد)                        */
+/*  Polling پشتیبان (فقط اگر Firebase کار نکرد)                    */
 /* ============================================================ */
 function startPolling() {
-  // هر ۴ ثانیه یه بار (کمتر از قبل - چون Firebase زنده هست)
   setInterval(() => {
     if (!fbReady) {
       loadManagementTeam();
     }
-  }, 4000);
+  }, 2000);
 }
 
 /* ============================================================ */
@@ -649,23 +642,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ⚡ بارگذاری فوری اولیه
+  // ⚡ بارگذاری فوری
   loadManagementTeam();
 
-  // ⚡ فعال‌سازی Firebase
+  // ⚡ Firebase
   initFirebase();
 
   // ⚡ polling پشتیبان
   startPolling();
 
-  // ⚡ وقتی کاربر به تب برگشت
+  // ⚡ برگشت به تب
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       forceReload();
     }
   });
 
-  // ⚡ اگر Firebase SDK با تأخیر لود شد
+  // ⚡ اگر SDK دیر لود شد
   window.addEventListener('load', () => {
     setTimeout(() => {
       if (!fbReady) initFirebase();
