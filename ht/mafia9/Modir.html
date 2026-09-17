@@ -22,53 +22,33 @@
 
   .management-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
 
-  .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;}
+  .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;background:#1a3a6a;}
   .member-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.5);}
 
-  /* ═══ قالب کارت (پس‌زمینه) ═══ */
-  .card-template{width:100%;position:relative;aspect-ratio:3/4;background:#1a3a6a;}
-  .card-template img{width:100%;height:100%;object-fit:cover;display:block;}
-
-  /* ═══ کانتینر آواتار (شامل دایره + قالب آواتار) ═══ */
-  .avatar-container{
-    position:absolute;
-    top:8%;
-    left:50%;
-    transform:translateX(-50%);
-    width:88px;
-    height:88px;
-    z-index:10;
-    pointer-events:none;
-  }
-
-  .avatar-circle{
-    position:absolute;
-    top:11px;
-    left:50%;
-    transform:translateX(-50%);
-    width:66px;
-    height:66px;
-    border-radius:50%;
-    border:3px solid rgba(255,255,255,0.9);
-    overflow:hidden;
-    background:#1a3a6a;
-    box-shadow:0 4px 15px rgba(0,0,0,.5);
-    z-index:1;
-  }
-  .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
-
-  /* ═══ قالب آواتار (روی دایره) ═══ */
-  .avatar-frame{
-    position:absolute;
-    top:0;
-    left:0;
+  /* ═══ قالب کارت - بزرگتر و کامل پرکننده ═══ */
+  .card-template{
     width:100%;
-    height:100%;
-    object-fit:contain;
-    pointer-events:none;
-    z-index:5;
-    filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+    position:relative;
+    aspect-ratio:3/4;
+    overflow:hidden;
+    background:linear-gradient(180deg,#1e4a8a,#12356a);
   }
+  .card-template img{
+    position:absolute;
+    top:-4%;
+    left:-4%;
+    width:108%;
+    height:108%;
+    object-fit:cover;
+    display:block;
+    pointer-events:none;
+  }
+
+  /* ═══ کانتینر آواتار + قالب دور آواتار ═══ */
+  .avatar-container{position:absolute;top:8%;left:50%;transform:translateX(-50%);width:88px;height:88px;z-index:10;pointer-events:none;}
+  .avatar-circle{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:66px;height:66px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.5);z-index:1;}
+  .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;}
+  .avatar-frame{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:5;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));}
 
   .member-info{position:absolute;bottom:0;left:0;right:0;padding:40px 8px 12px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.85) 40%,rgba(0,0,0,0.95) 100%);z-index:5;}
   .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);flex-wrap:wrap;}
@@ -116,6 +96,10 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
+<!-- ═══ Firebase SDK ═══ -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
 /* ============================================================ */
 /*  تنظیمات                                                       */
@@ -128,14 +112,16 @@ const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjM
 const CREATOR_PHONE = '09904844031';
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 
-/* ═══ قالب کارت (پس‌زمینه) بر اساس مقام ═══ */
-function getCardTemplate(role) {
-  const r = (role || '').trim();
-  if (['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp'; // مدیریت ارشد
-  return '51.webp'; // مدیریت عادی
-}
+const FB_CFG = {
+  apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
+  authDomain: "mafiasu-681c7.firebaseapp.com",
+  databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
+  projectId: "mafiasu-681c7",
+  storageBucket: "mafiasu-681c7.firebasestorage.app",
+  messagingSenderId: "180192927804",
+  appId: "1:180192927804:web:e0c501a0d20af3b6892339"
+};
 
-/* ═══ تیک بر اساس مقام ═══ */
 const ROLE_TICK_MAP = {
   'سازنده': ['Tik1.png'],
   'پشتیبانی': ['Tik1.png'],
@@ -156,6 +142,79 @@ const ROLE_CLASS_MAP = {
   'ناظر': 'role-observer'
 };
 
+const ROLE_ORDER = { 'سازنده':0, 'پشتیبانی':1, 'گرداننده':2, 'ادمین ارشد':3, 'ادمین':4, 'ناظر ارشد':5, 'ناظر':6 };
+
+/* ═══ قالب کارت (پس‌زمینه) ═══ */
+function getCardTemplate(role) {
+  const r = (role || '').trim();
+  if (['سازنده','پشتیبانی','گرداننده'].includes(r)) return '50.webp';
+  return '51.webp';
+}
+
+/* ============================================================ */
+/*  Firebase - اتصال زنده                                         */
+/* ============================================================ */
+let fbDb = null;
+let fbReady = false;
+
+function initFirebase() {
+  try {
+    if (typeof firebase === 'undefined') {
+      console.warn('Firebase SDK not loaded');
+      return false;
+    }
+    if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
+    fbDb = firebase.database();
+    fbReady = true;
+    setupRealtimeListeners();
+    return true;
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    return false;
+  }
+}
+
+function setupRealtimeListeners() {
+  if (!fbReady || !fbDb) return;
+
+  // ═══ 1) گوش دادن به user_updates (هر تغییر کاربر) ═══
+  try {
+    fbDb.ref('user_updates').on('value', function(snap) {
+      // debounce برای جلوگیری از چند بار رفرش
+      if (window.__updateDebounce) clearTimeout(window.__updateDebounce);
+      window.__updateDebounce = setTimeout(() => {
+        forceReload();
+      }, 150);
+    });
+  } catch(e) { console.warn('user_updates listener error:', e); }
+
+  // ═══ 2) گوش دادن به signals/global ═══
+  try {
+    fbDb.ref('signals/global').limitToLast(3).on('child_added', function(snap) {
+      const sig = snap.val();
+      if (!sig) return;
+      const age = Date.now() - (sig.time || 0);
+      if (age > 60000) return; // قدیمی‌تر از ۱ دقیقه رد کن
+      const types = ['admin_edit','user_updated','banned','unbanned','codes_reset','force_refresh','user_banned'];
+      if (types.includes(sig.type)) {
+        forceReload();
+      }
+    });
+  } catch(e) { console.warn('signals listener error:', e); }
+
+  // ═══ 3) گوش دادن به signals/user_* (برای همه مقام‌دارها) ═══
+  // از اونجایی که همه کاربران رو نمی‌شناسیم، به کل نود signals گوش می‌دیم
+  // ولی این می‌تونه سنگین باشه. پس فقط به user_updates اتکا می‌کنیم.
+  // (بالاتر پوشش داده شد)
+
+  console.log('✅ Firebase realtime listeners active');
+}
+
+function forceReload() {
+  __lastRenderedKey = '';
+  loadManagementTeam();
+}
+
 /* ============================================================ */
 /*  Redis                                                         */
 /* ============================================================ */
@@ -170,26 +229,43 @@ async function upstashGet(url, token, k) {
     clearTimeout(t);
     if (!r.ok) return null;
     const d = await r.json();
-    if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
+    if (d && d.result) {
+      try { return JSON.parse(d.result); } catch (e) { return d.result; }
+    }
     return null;
   } catch (e) { return null; }
 }
 
 async function getAllUsers() {
-  let v1 = null, v2 = null;
-  try { v1 = await upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'); } catch(e) {}
-  try { v2 = await upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users'); } catch(e) {}
+  const results = await Promise.allSettled([
+    upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'),
+    upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users')
+  ]);
+
+  const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
+  const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
 
   const merged = {};
-  if (v1 && typeof v1 === 'object') for (const k in v1) if (v1[k]) merged[k] = v1[k];
+  let hasAnyData = false;
+
+  if (v1 && typeof v1 === 'object') {
+    for (const k in v1) if (v1[k]) { merged[k] = v1[k]; hasAnyData = true; }
+  }
   if (v2 && typeof v2 === 'object') {
     for (const k in v2) {
-      if (!merged[k]) { merged[k] = v2[k]; continue; }
+      if (!merged[k]) {
+        merged[k] = v2[k];
+        hasAnyData = true;
+        continue;
+      }
       const t1 = merged[k].lastUpdatedAt || 0;
       const t2 = v2[k].lastUpdatedAt || 0;
       if (t2 > t1) merged[k] = v2[k];
     }
   }
+
+  // اگر هیچ دیتایی نیومد، null برگردون (نه آبجکت خالی)
+  if (!hasAnyData && !v1 && !v2) return null;
   return merged;
 }
 
@@ -206,14 +282,26 @@ function isVideoSrc(src) {
          lower.indexOf('.m4v') > -1;
 }
 
-/* ═══ آواتار دقیق ═══ */
+function normalizeUrl(url) {
+  if (!url) return '';
+  if (typeof url !== 'string') return '';
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+  try {
+    const u = new URL(url, location.href);
+    return u.pathname + u.search;
+  } catch(e) { return url; }
+}
+
+function sameSrc(a, b) {
+  return normalizeUrl(a) === normalizeUrl(b);
+}
+
 function getDisplayAvatar(phone, userData) {
   if (userData.exclusiveAvatar && userData.useExclusive === true) return userData.exclusiveAvatar;
   if (userData.avatar) return userData.avatar;
   return 'Mafia2.png';
 }
 
-/* ═══ قالب آواتار (دور آواتار) ═══ */
 function getAvatarFrame(userData) {
   return userData.currentTemplate || null;
 }
@@ -253,35 +341,31 @@ function createAvatarElement(src) {
 }
 
 /* ============================================================ */
-/*  ساخت کارت کامل (قالب کارت + آواتار + قالب آواتار)              */
+/*  ساخت کارت                                                     */
 /* ============================================================ */
 function buildMemberCard(phone, userData) {
   const card = document.createElement('div');
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  // ═══ قالب کارت (پس‌زمینه) ═══
-  const cardTemplateWrap = document.createElement('div');
-  cardTemplateWrap.className = 'card-template';
-  const cardTemplateImg = document.createElement('img');
-  cardTemplateImg.src = getCardTemplate(userData.rank);
-  cardTemplateImg.onerror = function() {
-    this.style.background = 'linear-gradient(180deg,#1e4a8a,#12356a)';
-  };
-  cardTemplateWrap.appendChild(cardTemplateImg);
-  card.appendChild(cardTemplateWrap);
+  // قالب کارت
+  const cardTplWrap = document.createElement('div');
+  cardTplWrap.className = 'card-template';
+  const cardTplImg = document.createElement('img');
+  cardTplImg.src = getCardTemplate(userData.rank);
+  cardTplImg.onerror = function() { this.style.display = 'none'; };
+  cardTplWrap.appendChild(cardTplImg);
+  card.appendChild(cardTplWrap);
 
-  // ═══ کانتینر آواتار (دایره + قالب دور آواتار) ═══
+  // کانتینر آواتار
   const avatarContainer = document.createElement('div');
   avatarContainer.className = 'avatar-container';
 
-  // دایره آواتار
   const avatarCircle = document.createElement('div');
   avatarCircle.className = 'avatar-circle';
   avatarCircle.appendChild(createAvatarElement(getDisplayAvatar(phone, userData)));
   avatarContainer.appendChild(avatarCircle);
 
-  // قالب دور آواتار
   const frameSrc = getAvatarFrame(userData);
   if (frameSrc) {
     const frameImg = document.createElement('img');
@@ -291,10 +375,9 @@ function buildMemberCard(phone, userData) {
     frameImg.onerror = function() { this.style.display = 'none'; };
     avatarContainer.appendChild(frameImg);
   }
-
   card.appendChild(avatarContainer);
 
-  // ═══ اطلاعات (نام + تیک + مقام) ═══
+  // اطلاعات
   const infoDiv = document.createElement('div');
   infoDiv.className = 'member-info';
 
@@ -320,24 +403,23 @@ function buildMemberCard(phone, userData) {
   infoDiv.appendChild(roleDiv);
 
   card.appendChild(infoDiv);
-
   return card;
 }
 
 /* ============================================================ */
-/*  به‌روزرسانی درجا (بدون flicker)                                */
+/*  به‌روزرسانی درجا                                               */
 /* ============================================================ */
 function updateCardInPlace(card, userData) {
   const phone = card.dataset.phone;
 
-  // ═══ قالب کارت ═══
-  const cardTemplateImg = card.querySelector('.card-template img');
+  // قالب کارت
+  const cardTplImg = card.querySelector('.card-template img');
   const newCardTpl = getCardTemplate(userData.rank);
-  if (cardTemplateImg && cardTemplateImg.getAttribute('src') !== newCardTpl) {
-    cardTemplateImg.src = newCardTpl;
+  if (cardTplImg && !sameSrc(cardTplImg.getAttribute('src'), newCardTpl)) {
+    cardTplImg.src = newCardTpl;
   }
 
-  // ═══ آواتار ═══
+  // آواتار
   const avatarCircle = card.querySelector('.avatar-circle');
   const newAvatarSrc = getDisplayAvatar(phone, userData);
   if (avatarCircle) {
@@ -345,13 +427,15 @@ function updateCardInPlace(card, userData) {
     const currentSrc = currentEl ? currentEl.getAttribute('src') : null;
     const newIsVideo = isVideoSrc(newAvatarSrc);
     const currentIsVideo = currentEl && currentEl.tagName === 'VIDEO';
-    if (currentSrc !== newAvatarSrc || newIsVideo !== currentIsVideo) {
-      avatarCircle.innerHTML = '';
+
+    if (!sameSrc(currentSrc, newAvatarSrc) || newIsVideo !== currentIsVideo) {
+      // پاک کردن و ساخت جدید
+      while (avatarCircle.firstChild) avatarCircle.removeChild(avatarCircle.firstChild);
       avatarCircle.appendChild(createAvatarElement(newAvatarSrc));
     }
   }
 
-  // ═══ قالب دور آواتار ═══
+  // قالب دور آواتار
   const avatarContainer = card.querySelector('.avatar-container');
   if (avatarContainer) {
     let frameImg = avatarContainer.querySelector('.avatar-frame');
@@ -364,7 +448,7 @@ function updateCardInPlace(card, userData) {
         frameImg.onerror = function() { this.style.display = 'none'; };
         avatarContainer.appendChild(frameImg);
       }
-      if (frameImg.getAttribute('src') !== newFrame) {
+      if (!sameSrc(frameImg.getAttribute('src'), newFrame)) {
         frameImg.style.display = '';
         frameImg.src = newFrame;
       }
@@ -373,152 +457,175 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // ═══ نام + تیک ═══
+  // نام + تیک
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const roleKey = (userData.rank || '').trim();
-    nameDiv.innerHTML = '';
-    nameDiv.appendChild(document.createTextNode(userData.name || 'کاربر'));
-    const tickCandidates = ROLE_TICK_MAP[roleKey];
-    if (tickCandidates && tickCandidates.length) {
-      const tickImg = document.createElement('img');
-      tickImg.className = 'role-tick';
-      tickImg.alt = '';
-      tickImg.src = '';
-      nameDiv.appendChild(tickImg);
-      applyTick(tickImg, tickCandidates);
+    const currentName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
+    const newName = userData.name || 'کاربر';
+    // فقط اگر تغییر کرده، دوباره بساز
+    if (currentName !== newName) {
+      while (nameDiv.firstChild) nameDiv.removeChild(nameDiv.firstChild);
+      nameDiv.appendChild(document.createTextNode(newName));
+      const tickCandidates = ROLE_TICK_MAP[roleKey];
+      if (tickCandidates && tickCandidates.length) {
+        const tickImg = document.createElement('img');
+        tickImg.className = 'role-tick';
+        tickImg.alt = '';
+        tickImg.src = '';
+        nameDiv.appendChild(tickImg);
+        applyTick(tickImg, tickCandidates);
+      }
     }
   }
 
-  // ═══ مقام ═══
+  // مقام
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (userData.rank || '').trim();
-    roleDiv.className = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
-    roleDiv.textContent = userData.rank || 'کاربر';
+    const newRoleText = userData.rank || 'کاربر';
+    const newRoleClass = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
+    if (roleDiv.textContent !== newRoleText) roleDiv.textContent = newRoleText;
+    if (roleDiv.className !== newRoleClass) roleDiv.className = newRoleClass;
   }
 }
 
 /* ============================================================ */
-/*  بارگذاری تیم - بدون لودینگ، سریع                              */
+/*  بارگذاری تیم - با محافظت از داده                                  */
 /* ============================================================ */
 let __lastRenderedKey = '';
+let __hasSuccessfullyLoaded = false;
+let __lastGoodUsers = null;
+let __consecutiveFails = 0;
 
 async function loadManagementTeam() {
   const grid = document.getElementById('managementGrid');
   if (!grid) return;
 
+  let users = null;
   try {
-    const allUsers = await getAllUsers();
-    const users = Object.entries(allUsers);
+    users = await getAllUsers();
+  } catch(e) {
+    users = null;
+  }
 
-    const managementUsers = users.filter(([p, u]) =>
-      u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
-    );
-
-    const roleOrder = { 'سازنده':0, 'پشتیبانی':1, 'گرداننده':2, 'ادمین ارشد':3, 'ادمین':4, 'ناظر ارشد':5, 'ناظر':6 };
-    managementUsers.sort((a, b) => {
-      const rA = roleOrder[(a[1].rank || '').trim()] ?? 99;
-      const rB = roleOrder[(b[1].rank || '').trim()] ?? 99;
-      return rA - rB;
-    });
-
-    if (managementUsers.length === 0) {
-      if (__lastRenderedKey !== '__empty__') {
-        grid.innerHTML = `
-          <div class="empty-state">
-            <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            <div>هنوز عضوی در تیم مدیریت وجود ندارد</div>
-          </div>`;
-        __lastRenderedKey = '__empty__';
+  // اگر fetch شکست خورد
+  if (!users || typeof users !== 'object') {
+    __consecutiveFails++;
+    // اگر قبلاً داده داشتیم، دست نزن
+    if (__hasSuccessfullyLoaded && __lastGoodUsers) {
+      users = __lastGoodUsers;
+    } else {
+      // اولین بار و شکست - صبر کن و دوباره تلاش کن
+      if (__consecutiveFails < 3) return;
+      // بعد از ۳ بار شکست و بدون داده قبلی، پیام خطا نشون بده
+      if (!grid.querySelector('.member-card') && !grid.querySelector('.empty-state')) {
+        grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد. لطفاً صفحه را رفرش کنید</div></div>`;
       }
       return;
     }
+  } else {
+    // fetch موفق
+    __consecutiveFails = 0;
+    __hasSuccessfullyLoaded = true;
+    __lastGoodUsers = users;
+  }
 
-    // کلید تغییرات (شامل currentTemplate برای قالب آواتار)
-    const key = managementUsers.map(([p, u]) =>
-      p + '|' + (u.rank || '') + '|' + (u.name || '') + '|' +
-      (u.avatar || '') + '|' + (u.exclusiveAvatar || '') + '|' +
-      (u.useExclusive ? '1' : '0') + '|' + (u.currentTemplate || '')
-    ).join('||');
+  const entries = Object.entries(users);
+  const managementUsers = entries.filter(([p, u]) =>
+    u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
+  );
 
-    if (key === __lastRenderedKey) return;
-    __lastRenderedKey = key;
+  // مرتب‌سازی
+  managementUsers.sort((a, b) => {
+    const rA = ROLE_ORDER[(a[1].rank || '').trim()] ?? 99;
+    const rB = ROLE_ORDER[(b[1].rank || '').trim()] ?? 99;
+    return rA - rB;
+  });
 
-    const existingCards = {};
-    grid.querySelectorAll('.member-card').forEach(c => { existingCards[c.dataset.phone] = c; });
-    const newPhones = managementUsers.map(([p]) => p);
-
-    Object.keys(existingCards).forEach(phone => {
-      if (!newPhones.includes(phone)) {
-        existingCards[phone].remove();
-        delete existingCards[phone];
-      }
-    });
-
-    let lastCard = null;
-    managementUsers.forEach(([phone, user]) => {
-      if (existingCards[phone]) {
-        updateCardInPlace(existingCards[phone], user);
-        if (lastCard) {
-          if (lastCard.nextSibling !== existingCards[phone]) {
-            grid.insertBefore(existingCards[phone], lastCard.nextSibling);
-          }
-        } else {
-          if (grid.firstChild !== existingCards[phone]) {
-            grid.insertBefore(existingCards[phone], grid.firstChild);
-          }
-        }
-        lastCard = existingCards[phone];
-      } else {
-        const newCard = buildMemberCard(phone, user);
-        if (lastCard) {
-          grid.insertBefore(newCard, lastCard.nextSibling);
-        } else {
-          grid.insertBefore(newCard, grid.firstChild);
-        }
-        lastCard = newCard;
-      }
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    if (!grid.querySelector('.member-card')) {
+  // ═══ حالت خالی: فقط اگر fetch موفق بود و واقعاً هیچ کاربری نبود ═══
+  if (managementUsers.length === 0) {
+    // اگر قبلاً کارت داشتیم، نگه‌دار و به‌روز نکن
+    if (grid.querySelector('.member-card')) {
+      return;
+    }
+    // اگر هنوز هیچی نداریم و fetch موفق بوده، پیام خالی نشون بده
+    if (__lastRenderedKey !== '__empty__') {
       grid.innerHTML = `
         <div class="empty-state">
-          <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-          <div>خطا در بارگذاری اطلاعات</div>
+          <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <div>هنوز عضوی در تیم مدیریت وجود ندارد</div>
         </div>`;
+      __lastRenderedKey = '__empty__';
     }
-  }
-}
-
-/* ============================================================ */
-/*  مانیتور تغییرات                                                */
-/* ============================================================ */
-function monitorChanges() {
-  if (window.FBLive && window.FBLive.subscribe) {
-    try {
-      window.FBLive.subscribe('global', function(sig) {
-        if (!sig) return;
-        const types = ['admin_edit','user_updated','banned','unbanned','codes_reset','force_refresh','user_banned'];
-        if (types.includes(sig.type)) {
-          __lastRenderedKey = '';
-          loadManagementTeam();
-        }
-      });
-    } catch(e) {}
+    return;
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      __lastRenderedKey = '';
-      loadManagementTeam();
+  // کلید تغییرات
+  const key = managementUsers.map(([p, u]) =>
+    p + '|' + (u.rank || '') + '|' + (u.name || '') + '|' +
+    (u.avatar || '') + '|' + (u.exclusiveAvatar || '') + '|' +
+    (u.useExclusive ? '1' : '0') + '|' + (u.currentTemplate || '')
+  ).join('||');
+
+  if (key === __lastRenderedKey) return;
+  __lastRenderedKey = key;
+
+  // پاک کردن پیام خالی اگه هست
+  const emptyEl = grid.querySelector('.empty-state');
+  if (emptyEl) emptyEl.remove();
+
+  const existingCards = {};
+  grid.querySelectorAll('.member-card').forEach(c => { existingCards[c.dataset.phone] = c; });
+  const newPhones = managementUsers.map(([p]) => p);
+
+  // حذف کارت‌های اضافی
+  Object.keys(existingCards).forEach(phone => {
+    if (!newPhones.includes(phone)) {
+      existingCards[phone].remove();
+      delete existingCards[phone];
     }
   });
 
-  setInterval(() => { loadManagementTeam(); }, 3000);
+  // اضافه/به‌روزرسانی با حفظ ترتیب
+  let lastCard = null;
+  managementUsers.forEach(([phone, user]) => {
+    let card = existingCards[phone];
+    if (card) {
+      updateCardInPlace(card, user);
+    } else {
+      card = buildMemberCard(phone, user);
+    }
+
+    // ترتیب درست
+    if (lastCard) {
+      if (lastCard.nextSibling !== card) {
+        grid.insertBefore(card, lastCard.nextSibling);
+      }
+    } else {
+      if (grid.firstChild !== card) {
+        grid.insertBefore(card, grid.firstChild);
+      }
+    }
+    lastCard = card;
+  });
 }
 
+/* ============================================================ */
+/*  Polling پشتیبان (اگر Firebase کار نکرد)                        */
+/* ============================================================ */
+function startPolling() {
+  // هر ۴ ثانیه یه بار (کمتر از قبل - چون Firebase زنده هست)
+  setInterval(() => {
+    if (!fbReady) {
+      loadManagementTeam();
+    }
+  }, 4000);
+}
+
+/* ============================================================ */
+/*  Play Click Sound                                              */
+/* ============================================================ */
 function playClickSound() {
   try {
     const s = document.getElementById('clickSound');
@@ -542,9 +649,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ⚡ بارگذاری فوری اولیه
   loadManagementTeam();
-  monitorChanges();
+
+  // ⚡ فعال‌سازی Firebase
+  initFirebase();
+
+  // ⚡ polling پشتیبان
+  startPolling();
+
+  // ⚡ وقتی کاربر به تب برگشت
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      forceReload();
+    }
+  });
+
+  // ⚡ اگر Firebase SDK با تأخیر لود شد
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (!fbReady) initFirebase();
+    }, 500);
+  });
 });
+
+window.addEventListener('focus', () => forceReload());
 </script>
 </body>
 </html>
