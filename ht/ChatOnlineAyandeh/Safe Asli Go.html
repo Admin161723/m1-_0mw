@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Safe Asli Go</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Safe Asli Go.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="shadow"></div>
+  <div class="main"></div>
+  <button class="settings-btn" id="settingsBtn" aria-label="تنظیمات">
+    <img src="6.webp" alt="تنظیمات">
+  </button>
+  <div class="coin-display">
+    <img src="2.webp" alt="سکه">
+    <span class="coin-value" id="coinValue">1500</span>
+  </div>
+</div>
+
+<div class="game-area">
+  <div class="profile-wrap" id="profileWrap">
+    <div class="profile-frame">
+      <img src="Av.jpg" alt="آواتار" class="avatar">
+      <img src="Ga.webp" alt="قالب" class="frame-img">
+      <div class="shine"></div>
+    </div>
+    <div class="profile-name" id="profileName">کاربر</div>
+  </div>
+
+  <div class="side-buttons">
+    <button class="side-btn" data-side="notifications">
+      <img src="1.webp" alt="اطلاعیه"><span class="side-label">اطلاعیه</span>
+    </button>
+    <button class="side-btn" data-side="contact">
+      <img src="4.webp" alt="ارتباط"><span class="side-label">ارتباط</span>
+    </button>
+    <button class="side-btn" data-side="tutorials">
+      <img src="5.webp" alt="آموزش‌ها"><span class="side-label">آموزش‌ها</span>
+    </button>
+    <button class="side-btn admin-btn" id="adminPanelBtn" data-side="admin">
+      <img src="3.webp" alt="مدیریت"><span class="side-label">مدیریت</span>
+    </button>
+  </div>
+</div>
+
+<button class="friends-btn" id="friendsBtn">
+  <svg class="friend-icon" viewBox="0 0 24 24" fill="none">
+    <circle cx="9" cy="7" r="4" fill="#9c4000"/>
+    <path d="M2 21c0-4 3-6 7-6s7 2 7 6" fill="#ffc1bf"/>
+    <circle cx="17" cy="8" r="3.5" fill="#9c4000"/>
+    <path d="M22 21c0-3-2-5-5-5" stroke="#ffc1bf" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </svg>
+  <span class="friend-text">دوستانه</span>
+</button>
+
+<div class="bottom-menu">
+  <div class="menu-panel">
+    <button class="menu-btn" data-nav="group">
+      <img src="Pas5.webp" alt="گروه" class="icon-group"><span class="label">گروه</span>
+    </button>
+    <button class="menu-btn active" data-nav="home">
+      <img src="Pas6.webp" alt="خانه" class="icon-home"><span class="label">خانه</span>
+    </button>
+    <button class="menu-btn" data-nav="shop">
+      <img src="Pas7.webp" alt="فروشگاه" class="icon-shop"><span class="label">فروشگاه</span>
+    </button>
+  </div>
+</div>
+
+<div class="profile-menu-overlay" id="profileMenu">
+  <div class="profile-menu-box">
+    <button class="pm-close" id="pmCloseBtn">×</button>
+    <div class="pm-title">مشخصات کاربری</div>
+
+    <div class="pm-dark-box">
+      <div class="pm-avatar-wrap">
+        <img src="Av.jpg" alt="آواتار" class="pm-avatar-img">
+        <img src="Ga.webp" alt="قالب" class="pm-frame-img">
+        <div class="pm-frame-shine"></div>
+        <button class="pm-pencil-avatar" id="pmEditBtn1" aria-label="ویرایش">✎</button>
+      </div>
+      <div class="pm-name-wrap">
+        <span class="pm-name-text" id="pmName">مرتضی</span>
+        <button class="pm-pencil-name" id="pmEditBtn2" aria-label="ویرایش نام">✎</button>
+      </div>
+    </div>
+
+    <div class="pm-dark-box">
+      <div class="pm-stats-row">
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmGames">0</div>
+          <div class="pm-stat-label">تعداد بازی</div>
+        </div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmWins">0</div>
+          <div class="pm-stat-label">تعداد برد</div>
+        </div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmMinutes">0</div>
+          <div class="pm-stat-label">دقایق بازی</div>
+        </div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmScore">0</div>
+          <div class="pm-stat-label">تعداد امتیاز</div>
+        </div>
+      </div>
+
+      <div class="pm-user-role">
+        <span class="pm-role-label">نوع کاربری :</span>
+        <span class="pm-role-value">
+          <span id="pmRoleText">کاربر عادی</span>
+          <span class="pm-check" id="pmCheck">✓</span>
+        </span>
+      </div>
+
+      <div class="pm-info-row">
+        <div class="pm-info-box">کد کاربری : <span id="pmUserCode">10</span></div>
+        <div class="pm-info-box">کلن : <span>به زودی</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="comingSoonModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">به زودی</h3>
+  </div>
+</div>
+
+<div class="edit-modal" id="editNameModal">
+  <div class="edit-modal-box">
+    <h3>ویرایش نام</h3>
+    <div class="edit-price">هزینه: ۱۵۰ سکه</div>
+    <input type="text" id="editNameInput" maxlength="20" placeholder="نام جدید را وارد کنید">
+    <div class="edit-modal-actions">
+      <button class="edit-save" id="editSaveBtn">ذخیره</button>
+      <button class="edit-cancel" id="editCancelBtn">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<script src="Safe Asli Go.js"></script>
+</body>
+</html>
