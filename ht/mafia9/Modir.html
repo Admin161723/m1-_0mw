@@ -83,7 +83,7 @@ const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjM
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 const CACHE_KEY = '__management_team_cache_v3__';
 const CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
-const SIGNAL_FRESH_MS = 120000;
+const POLL_INTERVAL = 1500;  // ⚡ هر ۱.۵ ثانیه fetch
 
 const FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -129,180 +129,62 @@ function isOffline() {
 }
 
 /* ============================================================ */
-/*  Firebase Init                                                  */
+/*  Firebase (اختیاری - اگه کار کرد سریع‌تر می‌شه)                  */
 /* ============================================================ */
 let fbDb = null;
 let fbReady = false;
-let __rtListenersAttached = false;
+let __rtAttached = false;
 
 function initFirebase() {
   try {
-    if (typeof firebase === 'undefined') {
-      console.warn('⚠️ Firebase SDK لود نشد');
-      return false;
-    }
+    if (typeof firebase === 'undefined') return false;
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
     fbDb = firebase.database();
     fbReady = true;
-    attachRealtimeListeners();
+    attachRealtime();
     console.log('✅ Firebase ready');
     return true;
   } catch(e) {
-    console.error('Firebase init error:', e);
+    console.warn('Firebase init failed:', e);
     return false;
   }
 }
 
-/* ============================================================ */
-/*  🔥 Realtime Listeners - مستقیم روی user_updates              */
-/* ============================================================ */
-function attachRealtimeListeners() {
-  if (!fbReady || !fbDb || __rtListenersAttached) return;
-  __rtListenersAttached = true;
-
-  /* ═══ 1) user_updates - هر بار ادمین کاربری رو تغییر می‌ده ═══ */
-  try {
-    const ref = fbDb.ref('user_updates');
-
-    ref.on('child_added', snap => {
-      handleUserUpdateSignal(snap.key, snap.val());
-    });
-
-    ref.on('child_changed', snap => {
-      handleUserUpdateSignal(snap.key, snap.val());
-    });
-
-    console.log('✅ user_updates listener فعال');
-  } catch(e) { console.warn('user_updates error:', e); }
-
-  /* ═══ 2) users_rt - mirror کامل کاربران برای realtime واقعی ═══ */
-  try {
-    const rtRef = fbDb.ref('users_rt');
-
-    rtRef.on('child_added', snap => {
-      applyRealtimeUser(snap.key, snap.val());
-    });
-
-    rtRef.on('child_changed', snap => {
-      applyRealtimeUser(snap.key, snap.val());
-    });
-
-    rtRef.on('child_removed', snap => {
-      removeCardForPhone(snap.key);
-    });
-
-    console.log('✅ users_rt listener فعال');
-  } catch(e) { console.warn('users_rt error:', e); }
-}
-
-/* ═══ وقتی سیگنال user_updates میاد، از Redis فقط همون کاربر رو fetch کن ═══ */
-async function handleUserUpdateSignal(phone, val) {
-  if (!phone || !val) return;
-  if (!val.at) return;
-  const age = Date.now() - val.at;
-  if (age > SIGNAL_FRESH_MS || age < 0) return;
+function attachRealtime() {
+  if (!fbReady || !fbDb || __rtAttached) return;
+  __rtAttached = true;
 
   try {
-    const user = await getUserFromRedis(phone);
-    if (user) {
-      applyRealtimeUser(phone, user);
-    } else {
-      // کاربر حذف شده
-      removeCardForPhone(phone);
-    }
+    // listen به user_updates
+    fbDb.ref('user_updates').on('child_added', snap => {
+      const v = snap.val();
+      if (!v || !v.at) return;
+      if (Date.now() - v.at > 120000) return;
+      console.log('🔥 Firebase signal:', snap.key);
+      __lastRenderedKey = '';
+      fetchAndRender();
+    });
+    fbDb.ref('user_updates').on('child_changed', snap => {
+      const v = snap.val();
+      if (!v || !v.at) return;
+      if (Date.now() - v.at > 120000) return;
+      console.log('🔥 Firebase signal:', snap.key);
+      __lastRenderedKey = '';
+      fetchAndRender();
+    });
+    console.log('✅ Firebase listener فعال');
   } catch(e) {
-    // خطای شبکه - بعداً با polling جبران می‌شه
+    console.warn('Firebase listener error:', e);
   }
-}
-
-/* ═══ اعمال داده realtime به کارت (اگر تیم مدیریت باشه) ═══ */
-function applyRealtimeUser(phone, data) {
-  if (!phone || !data) return;
-  const grid = document.getElementById('managementGrid');
-  if (!grid) return;
-
-  const isMgmt = data.rank && MANAGEMENT_ROLES.includes(data.rank.trim());
-  const existingCard = grid.querySelector(`.member-card[data-phone="${phone}"]`);
-
-  // اگه دیگه تیم مدیریت نیست → کارت رو حذف کن
-  if (!isMgmt) {
-    if (existingCard) {
-      const circle = existingCard.querySelector('.avatar-circle');
-      if (circle) destroyAvatarElement(circle.firstElementChild);
-      existingCard.remove();
-      console.log('❌ حذف شد:', phone);
-    }
-    return;
-  }
-
-  // اگه کارت هست → آپدیت
-  if (existingCard) {
-    updateCardInPlace(existingCard, data);
-    console.log('🔄 آپدیت:', phone, data.rank);
-  } else {
-    // کارت نیست → بساز
-    const newCard = buildMemberCard(phone, data);
-    grid.appendChild(newCard);
-    resortCards();
-    console.log('✅ اضافه شد:', phone, data.rank);
-  }
-}
-
-function removeCardForPhone(phone) {
-  const grid = document.getElementById('managementGrid');
-  if (!grid) return;
-  const card = grid.querySelector(`.member-card[data-phone="${phone}"]`);
-  if (card) {
-    const circle = card.querySelector('.avatar-circle');
-    if (circle) destroyAvatarElement(circle.firstElementChild);
-    card.remove();
-  }
-}
-
-/* ═══ مرتب‌سازی مجدد کارت‌ها بر اساس مقام ═══ */
-function resortCards() {
-  const grid = document.getElementById('managementGrid');
-  if (!grid) return;
-  const cards = Array.from(grid.querySelectorAll('.member-card'));
-  if (cards.length < 2) return;
-
-  cards.sort((a, b) => {
-    const rA = ROLE_ORDER[(a.querySelector('.member-role')?.textContent || '').trim()] ?? 99;
-    const rB = ROLE_ORDER[(b.querySelector('.member-role')?.textContent || '').trim()] ?? 99;
-    return rA - rB;
-  });
-
-  cards.forEach(card => grid.appendChild(card));
 }
 
 /* ============================================================ */
-/*  Redis - getUser تکی (برای realtime)                            */
-/* ============================================================ */
-async function getUserFromRedis(phone) {
-  const results = await Promise.allSettled([
-    upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'user:' + phone),
-    upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'user:' + phone)
-  ]);
-
-  const u1 = results[0].status === 'fulfilled' ? results[0].value : null;
-  const u2 = results[1].status === 'fulfilled' ? results[1].value : null;
-
-  if (!u1 && !u2) return null;
-  if (!u1) return u2;
-  if (!u2) return u1;
-
-  const t1 = u1.lastUpdatedAt || 0;
-  const t2 = u2.lastUpdatedAt || 0;
-  return t2 > t1 ? u2 : u1;
-}
-
-/* ============================================================ */
-/*  Redis - getAllUsers                                            */
+/*  Redis                                                         */
 /* ============================================================ */
 async function upstashGet(url, token, k) {
   try {
     const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 6000);
+    const t = setTimeout(() => c.abort(), 5000);
     const r = await fetch(url + '/get/' + encodeURIComponent(k), {
       headers: { 'Authorization': 'Bearer ' + token },
       signal: c.signal, cache: 'no-store'
@@ -312,7 +194,7 @@ async function upstashGet(url, token, k) {
     const d = await r.json();
     if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
     return null;
-  } catch (e) { throw e; }
+  } catch (e) { return null; }
 }
 
 async function getAllUsers() {
@@ -324,9 +206,7 @@ async function getAllUsers() {
   const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
   const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
 
-  if (results[0].status === 'rejected' && results[1].status === 'rejected') {
-    throw new Error('Network error');
-  }
+  if (!v1 && !v2) return null;
 
   const merged = {};
   let hasAnyData = false;
@@ -343,7 +223,7 @@ async function getAllUsers() {
     }
   }
 
-  if (!hasAnyData && !v1 && !v2) return null;
+  if (!hasAnyData) return null;
   return merged;
 }
 
@@ -563,6 +443,7 @@ function updateCardInPlace(card, userData) {
   if (avCircle) {
     const curHash = avCircle.dataset.avatarHash || '0_0';
     if (curHash !== newHash) {
+      console.log('🎬 آواتار عوض شد:', phone);
       destroyAvatarElement(avCircle.firstElementChild);
       while (avCircle.firstChild) {
         try { avCircle.removeChild(avCircle.firstChild); } catch(e) { break; }
@@ -587,6 +468,7 @@ function updateCardInPlace(card, userData) {
       }
       const curFrame = frameImg.getAttribute('src') || '';
       if (curFrame !== newFrame) {
+        console.log('🖼 قالب آواتار عوض شد:', phone);
         frameImg.style.display = '';
         frameImg.src = newFrame;
       }
@@ -628,7 +510,7 @@ function updateCardInPlace(card, userData) {
 }
 
 /* ============================================================ */
-/*  رندر کامل از داده                                              */
+/*  رندر کامل                                                      */
 /* ============================================================ */
 let __lastRenderedKey = '';
 let __hasRendered = false;
@@ -639,17 +521,17 @@ function renderTeam(users) {
   if (!users || typeof users !== 'object') return;
 
   const entries = Object.entries(users);
-  const managementUsers = entries.filter(([p, u]) =>
+  const mgmt = entries.filter(([p, u]) =>
     u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
   );
 
-  managementUsers.sort((a, b) => {
+  mgmt.sort((a, b) => {
     const rA = ROLE_ORDER[(a[1].rank || '').trim()] ?? 99;
     const rB = ROLE_ORDER[(b[1].rank || '').trim()] ?? 99;
     return rA - rB;
   });
 
-  if (managementUsers.length === 0) {
+  if (mgmt.length === 0) {
     if (grid.querySelector('.member-card')) return;
     if (__lastRenderedKey !== '__empty__') {
       grid.innerHTML = `
@@ -662,7 +544,7 @@ function renderTeam(users) {
     return;
   }
 
-  const key = managementUsers.map(([p, u]) =>
+  const key = mgmt.map(([p, u]) =>
     p + '@' + (u.rank || '') + '@' + (u.name || '') + '@' +
     srcHash(u.avatar || '') + '@' + srcHash(u.exclusiveAvatar || '') + '@' +
     (u.useExclusive ? '1' : '0') + '@' + (u.currentTemplate || '')
@@ -677,7 +559,7 @@ function renderTeam(users) {
 
   const existingCards = {};
   grid.querySelectorAll('.member-card').forEach(c => { existingCards[c.dataset.phone] = c; });
-  const newPhones = managementUsers.map(([p]) => p);
+  const newPhones = mgmt.map(([p]) => p);
 
   Object.keys(existingCards).forEach(phone => {
     if (!newPhones.includes(phone)) {
@@ -685,16 +567,18 @@ function renderTeam(users) {
       if (circle) destroyAvatarElement(circle.firstElementChild);
       existingCards[phone].remove();
       delete existingCards[phone];
+      console.log('❌ حذف شد:', phone);
     }
   });
 
   let lastCard = null;
-  managementUsers.forEach(([phone, user]) => {
+  mgmt.forEach(([phone, user]) => {
     let card = existingCards[phone];
     if (card) {
       updateCardInPlace(card, user);
     } else {
       card = buildMemberCard(phone, user);
+      console.log('✅ اضافه شد:', phone, user.rank);
     }
     if (lastCard) {
       if (lastCard.nextSibling !== card) grid.insertBefore(card, lastCard.nextSibling);
@@ -706,36 +590,38 @@ function renderTeam(users) {
 }
 
 /* ============================================================ */
-/*  fetch کامل                                                    */
+/*  ⚡ fetch + render - با قفل ضد تداخل                            */
 /* ============================================================ */
+let __fetchInFlight = false;
+
 async function fetchAndRender() {
   if (isOffline()) return;
+  if (__fetchInFlight) return;
+  __fetchInFlight = true;
 
-  let users = null;
   try {
-    users = await getAllUsers();
-  } catch(e) {
-    return;
-  }
-
-  if (users && typeof users === 'object' && Object.keys(users).length > 0) {
-    renderTeam(users);
-    saveCache(users);
-  } else {
-    if (!__hasRendered) {
+    const users = await getAllUsers();
+    if (users && typeof users === 'object' && Object.keys(users).length > 0) {
+      renderTeam(users);
+      saveCache(users);
+    } else if (!__hasRendered) {
       const grid = document.getElementById('managementGrid');
       if (grid && !grid.querySelector('.member-card')) {
-        grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد</div></div>`;
+        grid.innerHTML = `<div class="empty-state"><div>در حال اتصال...</div></div>`;
       }
     }
+  } catch(e) {
+    // ignore
   }
+
+  __fetchInFlight = false;
 }
 
 /* ============================================================ */
 /*  Boot                                                          */
 /* ============================================================ */
 async function boot() {
-  // 1) کش فوری
+  // 1) کش فوری (0ms)
   const cached = loadCache();
   if (cached && Object.keys(cached).length > 0) {
     renderTeam(cached);
@@ -747,19 +633,17 @@ async function boot() {
   // 3) fetch اولیه
   await fetchAndRender();
 
-  // 4) polling پشتیبان (کم - فقط اگه Firebase وصل نیست)
+  // ⚡ 4) polling قوی هر ۱.۵ ثانیه (تضمینی)
   setInterval(() => {
-    if (!fbReady && !isOffline()) {
-      fetchAndRender();
-    }
-  }, 8000);
+    if (!isOffline()) fetchAndRender();
+  }, POLL_INTERVAL);
 
-  // 5) برگشت آنلاین → رفرش
+  // 5) برگشت آنلاین
   window.addEventListener('online', () => {
     setTimeout(() => {
       __lastRenderedKey = '';
       fetchAndRender();
-    }, 500);
+    }, 300);
   });
 }
 
@@ -787,6 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && !isOffline()) {
+      __lastRenderedKey = '';
       fetchAndRender();
     }
   });
@@ -797,7 +682,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('focus', () => {
-  if (!isOffline()) fetchAndRender();
+  if (!isOffline()) {
+    __lastRenderedKey = '';
+    fetchAndRender();
+  }
 });
 </script>
 </body>
