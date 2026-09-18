@@ -36,6 +36,49 @@
   .role-observer-senior{background:linear-gradient(180deg,#00bcd4,#0097a7);color:#fff;}
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
   .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
+
+  /* ═══ Overlay آفلاین - طرح درخواستی ═══ */
+  #offlineOv{
+    position:fixed;inset:0;z-index:2147483647;
+    background:rgba(0,0,0,0.85);
+    display:none;align-items:center;justify-content:center;
+    padding:20px;box-sizing:border-box;direction:rtl;
+    font-family:'Vazirmatn',Tahoma,sans-serif;
+  }
+  #offlineOv.show{display:flex;}
+  #offlineOv .og-dialog{
+    width:340px;max-width:100%;border-radius:10px;padding:5px;
+    background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);
+    box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);
+    animation:ogPop .45s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes ogPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+  #offlineOv .og-box{
+    background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);
+    border-radius:7px;padding:32px 22px 28px;text-align:center;position:relative;overflow:hidden;
+  }
+  #offlineOv .og-msg{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}
+  #offlineOv .og-btn{
+    position:relative;overflow:hidden;border:none;cursor:pointer;
+    margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);
+    color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;
+    text-shadow:0 2px 2px rgba(0,70,0,.55);
+    box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.55);
+    transition:transform .12s ease;font-family:Tahoma,Vazirmatn,sans-serif;outline:none;
+  }
+  #offlineOv .og-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #36900a,inset 0 3px 8px rgba(0,0,0,.35);}
+  #offlineOv .og-btn::after{
+    content:"";position:absolute;top:-60%;left:-30%;width:38%;height:220%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.8),transparent);
+    transform:skewX(-20deg);animation:ogShine 2.4s ease-in-out infinite;
+  }
+  @keyframes ogShine{0%,55%{left:-40%;}100%{left:135%;}}
+  #offlineOv .og-btn.loading{
+    background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);
+    color:#5a3d00;text-shadow:none;
+  }
+  #offlineOv .og-btn.loading::after{animation:none;display:none;}
+
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
     .avatar-container{width:82px;height:82px;top:5%;}
@@ -61,11 +104,19 @@
 
 <div class="management-grid" id="managementGrid"></div>
 
+<!-- ═══ Overlay آفلاین ═══ -->
+<div id="offlineOv">
+  <div class="og-dialog">
+    <div class="og-box">
+      <div class="og-msg">اتصال اینترنت شما<br>قطع شده است</div>
+      <button class="og-btn" id="offlineBtn">تلاش مجدد</button>
+    </div>
+  </div>
+</div>
+
 <audio id="clickSound" preload="auto">
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
-
-<script src="offline-guard.js"></script>
 
 <script>
 /* ============================================================ */
@@ -107,6 +158,129 @@ function getCardTemplate(role) {
 }
 
 /* ============================================================ */
+/*  ⚡ آفلاین - تشخیص قوی                                         */
+/* ============================================================ */
+let __isOffline = false;
+let __offlineFailCount = 0;
+let __offlineCheckBusy = false;
+let __offlineRecoverInterval = null;
+
+function showOfflineOverlay() {
+  if (__isOffline) return;
+  __isOffline = true;
+  const ov = document.getElementById('offlineOv');
+  if (ov) ov.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  startOfflineWatch();
+}
+
+function hideOfflineOverlay() {
+  if (!__isOffline) return;
+  __isOffline = false;
+  const ov = document.getElementById('offlineOv');
+  if (ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
+  stopOfflineWatch();
+}
+
+function startOfflineWatch() {
+  stopOfflineWatch();
+  __offlineRecoverInterval = setInterval(async () => {
+    const online = await checkRealOnline();
+    if (online) {
+      hideOfflineOverlay();
+      // رفرش کامل
+      window.location.reload();
+    }
+  }, 1500);
+}
+
+function stopOfflineWatch() {
+  if (__offlineRecoverInterval) {
+    clearInterval(__offlineRecoverInterval);
+    __offlineRecoverInterval = null;
+  }
+}
+
+function checkRealOnline() {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let done = false;
+    const timer = setTimeout(() => {
+      if (!done) { done = true; resolve(false); }
+    }, 3000);
+    img.onload = () => {
+      if (!done) { done = true; clearTimeout(timer); resolve(true); }
+    };
+    img.onerror = () => {
+      if (!done) { done = true; clearTimeout(timer); resolve(false); }
+    };
+    img.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?_=' + Date.now();
+  });
+}
+
+async function checkOffline() {
+  if (__offlineCheckBusy) return;
+  __offlineCheckBusy = true;
+
+  try {
+    if (navigator.onLine === true) {
+      __offlineFailCount = 0;
+      if (__isOffline) hideOfflineOverlay();
+      __offlineCheckBusy = false;
+      return;
+    }
+
+    const really = await checkRealOnline();
+    if (really) {
+      __offlineFailCount = 0;
+      if (__isOffline) hideOfflineOverlay();
+    } else {
+      __offlineFailCount++;
+      if (__offlineFailCount >= 1 && !__isOffline) {
+        showOfflineOverlay();
+      }
+    }
+  } catch(e) {
+    __offlineFailCount = 0;
+  }
+
+  __offlineCheckBusy = false;
+}
+
+/* دکمه تلاش مجدد */
+function setupOfflineBtn() {
+  const btn = document.getElementById('offlineBtn');
+  if (!btn) return;
+  btn.onclick = async () => {
+    btn.classList.add('loading');
+    btn.textContent = 'در حال بررسی...';
+    btn.disabled = true;
+    const ok = await checkRealOnline();
+    if (ok) {
+      window.location.reload();
+    } else {
+      btn.classList.remove('loading');
+      btn.textContent = 'تلاش مجدد';
+      btn.disabled = false;
+    }
+  };
+}
+
+/* لیسنرهای مرورگر */
+window.addEventListener('offline', () => {
+  setTimeout(checkOffline, 500);
+});
+
+window.addEventListener('online', async () => {
+  const really = await checkRealOnline();
+  if (really) {
+    hideOfflineOverlay();
+    setTimeout(() => window.location.reload(), 300);
+  }
+});
+
+/* ============================================================ */
 /*  Redis                                                         */
 /* ============================================================ */
 async function redisGet(url, token, key) {
@@ -115,8 +289,7 @@ async function redisGet(url, token, key) {
     const t = setTimeout(() => c.abort(), 4000);
     const r = await fetch(url + '/get/' + encodeURIComponent(key), {
       headers: { 'Authorization': 'Bearer ' + token },
-      signal: c.signal,
-      cache: 'no-store'
+      signal: c.signal, cache: 'no-store'
     });
     clearTimeout(t);
     if (!r.ok) return null;
@@ -125,7 +298,7 @@ async function redisGet(url, token, key) {
       try { return JSON.parse(d.result); } catch(e) { return d.result; }
     }
     return null;
-  } catch(e) { return null; }
+  } catch(e) { throw e; }
 }
 
 async function getAllUsers() {
@@ -136,6 +309,11 @@ async function getAllUsers() {
 
   const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
   const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
+
+  // ⚡ اگه هر دو reject شدن → خطای شبکه
+  if (results[0].status === 'rejected' && results[1].status === 'rejected') {
+    throw new Error('Network');
+  }
 
   if (!v1 && !v2) return null;
 
@@ -174,12 +352,11 @@ function getFrameSrc(u) {
   return u.currentTemplate || null;
 }
 
-/* ═══ مقایسه سریع دو dataURL ═══ */
+/* ═══ مقایسه سریع ═══ */
 function srcKey(s) {
   if (!s || typeof s !== 'string') return '0';
   const len = s.length;
-  // فقط طول + ۳۰ کاراکتر اول + ۳۰ کاراکتر آخر
-  return len + '|' + s.substr(0, 30) + '|' + s.substr(-30);
+  return len + '|' + s.substr(0, 40) + '|' + s.substr(-40);
 }
 
 function applyTick(img, cands) {
@@ -240,7 +417,6 @@ function buildCard(phone, u) {
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  // قالب کارت
   const tplWrap = document.createElement('div');
   tplWrap.className = 'card-template';
   const tplImg = document.createElement('img');
@@ -249,7 +425,6 @@ function buildCard(phone, u) {
   tplWrap.appendChild(tplImg);
   card.appendChild(tplWrap);
 
-  // آواتار
   const avContainer = document.createElement('div');
   avContainer.className = 'avatar-container';
 
@@ -260,7 +435,6 @@ function buildCard(phone, u) {
   avCircle.appendChild(buildAvatarMedia(avSrc));
   avContainer.appendChild(avCircle);
 
-  // قالب دور آواتار
   const frameSrc = getFrameSrc(u);
   if (frameSrc) {
     const frameImg = document.createElement('img');
@@ -273,7 +447,6 @@ function buildCard(phone, u) {
   }
   card.appendChild(avContainer);
 
-  // اطلاعات
   const info = document.createElement('div');
   info.className = 'member-info';
 
@@ -302,13 +475,9 @@ function buildCard(phone, u) {
   return card;
 }
 
-/* ============================================================ */
-/*  آپدیت کارت - فقط اگه چیزی عوض شده                             */
-/* ============================================================ */
 function updateCard(card, u) {
   const phone = card.dataset.phone;
 
-  // ═══ قالب کارت ═══
   const tplImg = card.querySelector('.card-template img');
   const newTpl = getCardTemplate(u.rank);
   if (tplImg) {
@@ -319,7 +488,6 @@ function updateCard(card, u) {
     }
   }
 
-  // ═══ آواتار ═══
   const avCircle = card.querySelector('.avatar-circle');
   const newAvSrc = getAvatarSrc(phone, u);
   const newAvKey = srcKey(newAvSrc);
@@ -330,7 +498,6 @@ function updateCard(card, u) {
     avCircle.appendChild(buildAvatarMedia(newAvSrc));
   }
 
-  // ═══ قالب دور آواتار ═══
   const avContainer = card.querySelector('.avatar-container');
   if (avContainer) {
     let frameImg = avContainer.querySelector('.avatar-frame');
@@ -354,7 +521,6 @@ function updateCard(card, u) {
     }
   }
 
-  // ═══ نام ═══
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const curName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
@@ -375,7 +541,6 @@ function updateCard(card, u) {
     }
   }
 
-  // ═══ مقام ═══
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (u.rank || '').trim();
@@ -403,11 +568,9 @@ function render(users) {
     return rA - rB;
   });
 
-  // پاک کردن پیام‌های اضافی
   const emptyEl = grid.querySelector('.empty-state');
   if (emptyEl && mgmt.length > 0) emptyEl.remove();
 
-  // اگه خالی
   if (mgmt.length === 0) {
     if (!grid.querySelector('.member-card')) {
       grid.innerHTML = '<div class="empty-state"><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
@@ -415,12 +578,10 @@ function render(users) {
     return;
   }
 
-  // ساختار فعلی
   const existing = {};
   grid.querySelectorAll('.member-card').forEach(c => { existing[c.dataset.phone] = c; });
   const newPhones = mgmt.map(([p]) => p);
 
-  // حذف کارت‌های اضافی
   Object.keys(existing).forEach(phone => {
     if (!newPhones.includes(phone)) {
       const circle = existing[phone].querySelector('.avatar-circle');
@@ -430,7 +591,6 @@ function render(users) {
     }
   });
 
-  // ترتیب و آپدیت
   let prev = null;
   mgmt.forEach(([phone, u]) => {
     let card = existing[phone];
@@ -439,7 +599,6 @@ function render(users) {
     } else {
       card = buildCard(phone, u);
     }
-    // ترتیب
     if (prev) {
       if (prev.nextSibling !== card) grid.insertBefore(card, prev.nextSibling);
     } else {
@@ -450,19 +609,28 @@ function render(users) {
 }
 
 /* ============================================================ */
-/*  ⚡ Fetch loop - هر ۱ ثانیه، بدون پیام انتظار                  */
+/*  ⚡ Fetch loop - هر ۱ ثانیه                                    */
 /* ============================================================ */
 let fetching = false;
 
 async function refresh() {
   if (fetching) return;
-  if (navigator.onLine === false) return;
+  if (__isOffline) return;
+  if (navigator.onLine === false) {
+    checkOffline();
+    return;
+  }
   fetching = true;
 
   try {
     const users = await getAllUsers();
     if (users) render(users);
-  } catch(e) {}
+    // ⚡ اگه موفق شد، حالت آفلاین رو ریست کن
+    __offlineFailCount = 0;
+  } catch(e) {
+    // ⚡ خطای شبکه → چک آفلاین
+    checkOffline();
+  }
 
   fetching = false;
 }
@@ -490,18 +658,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ⚡ لود اولیه
-  refresh();
+  // آفلاین
+  setupOfflineBtn();
+  checkOffline();
+  setInterval(checkOffline, 2000);
 
-  // ⚡ loop هر ۱ ثانیه
+  // رفرش تیم
+  refresh();
   setInterval(refresh, 1000);
 
-  // ⚡ برگشت به تب
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refresh();
+    if (document.visibilityState === 'visible') {
+      checkOffline();
+      refresh();
+    }
   });
 
-  window.addEventListener('focus', refresh);
+  window.addEventListener('focus', () => {
+    checkOffline();
+    refresh();
+  });
 });
 </script>
 </body>
