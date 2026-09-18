@@ -9,34 +9,25 @@
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none!important;user-select:none!important;}
   body{font-family:'Vazirmatn',Tahoma,sans-serif;background:#041228;width:100%;min-height:100vh;overflow-x:hidden;}
-
   .bg-image{position:fixed;inset:0;background-image:url('53.jpg');background-size:cover;background-position:center;z-index:-1;}
   .bg-image::after{content:'';position:absolute;inset:0;background:rgba(4,18,40,0.75);}
-
   .header{background:linear-gradient(180deg,rgba(30,74,138,.95),rgba(18,53,106,.95));padding:20px 15px;text-align:center;border-bottom:2px solid #2a5a9a;backdrop-filter:blur(10px);}
   .header h1{color:#fff;font-size:22px;font-weight:900;margin-bottom:5px;letter-spacing:-0.5px;}
   .header p{color:rgba(255,255,255,.7);font-size:13px;}
-
   .back-btn{position:fixed;top:15px;left:15px;width:40px;height:40px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:100;transition:all 0.2s;}
   .back-btn:active{background:rgba(255,255,255,.3);transform:scale(0.92);}
-
   .management-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:15px;padding:20px;max-width:1200px;margin:0 auto;}
-
   .member-card{position:relative;transition:transform .3s, box-shadow .3s;border-radius:12px;overflow:hidden;}
   .member-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.5);}
-
   .card-template{width:100%;position:relative;aspect-ratio:3/4;overflow:hidden;}
   .card-template img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
-
   .avatar-container{position:absolute;top:6%;left:50%;transform:translateX(-50%);width:100px;height:100px;z-index:10;pointer-events:none;}
   .avatar-circle{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:68px;height:68px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);overflow:hidden;background:#1a3a6a;box-shadow:0 4px 15px rgba(0,0,0,.5);z-index:1;}
   .avatar-circle img,.avatar-circle video{width:100%;height:100%;object-fit:cover;display:block;}
   .avatar-frame{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:5;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.7));}
-
   .member-info{position:absolute;bottom:0;left:0;right:0;padding:40px 8px 12px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.85) 40%,rgba(0,0,0,0.95) 100%);z-index:5;}
   .member-name{color:#fff;font-size:13px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;text-shadow:0 2px 4px rgba(0,0,0,0.9);flex-wrap:wrap;}
   .member-role{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:0.5px;}
-
   .role-creator{background:linear-gradient(180deg,#ffd700,#ff8c00);color:#000;}
   .role-support{background:linear-gradient(180deg,#4a9eff,#2a7acc);color:#fff;}
   .role-supervisor{background:linear-gradient(180deg,#9c27b0,#7b1fa2);color:#fff;}
@@ -44,12 +35,9 @@
   .role-admin{background:linear-gradient(180deg,#f44336,#d32f2f);color:#fff;}
   .role-observer-senior{background:linear-gradient(180deg,#00bcd4,#0097a7);color:#fff;}
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
-
   .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
-
   .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);font-size:14px;grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:15px;}
   .empty-icon{width:60px;height:60px;fill:rgba(255,255,255,0.3);}
-
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
     .avatar-container{width:82px;height:82px;top:5%;}
@@ -79,12 +67,7 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!--  ⚡ Offline Guard - همون چیزی که تو صفحه اصلی بازیه            -->
-<!--  ⚠️ این خط باید قبل از اسکریپت اصلی باشه                       -->
-<!-- ═══════════════════════════════════════════════════════════ -->
 <script src="offline-guard.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -97,10 +80,10 @@ const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5Z
 const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
-const CREATOR_PHONE = '09904844031';
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-const CACHE_KEY = '__management_team_cache_v2__';
+const CACHE_KEY = '__management_team_cache_v3__';
 const CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
+const SIGNAL_FRESH_MS = 120000;
 
 const FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -140,127 +123,181 @@ function getCardTemplate(role) {
   return '51.webp';
 }
 
-/* ═══ چک آفلاین با استفاده از offline-guard ═══ */
 function isOffline() {
-  // اگه offline-guard لود شده، از تابع خودش استفاده کن
-  if (typeof window.ogIsOffline === 'function') {
-    return window.ogIsOffline();
-  }
-  // fallback: navigator.onLine
+  if (typeof window.ogIsOffline === 'function') return window.ogIsOffline();
   return navigator.onLine === false;
 }
 
 /* ============================================================ */
-/*  localStorage Cache                                            */
-/* ============================================================ */
-function saveCache(users) {
-  try {
-    const trimmed = {};
-    for (const phone in users) {
-      const u = users[phone];
-      if (!u) continue;
-      if (!u.rank || !MANAGEMENT_ROLES.includes(u.rank.trim())) continue;
-      trimmed[phone] = {
-        name: u.name || '',
-        rank: u.rank || '',
-        avatar: u.avatar || '',
-        exclusiveAvatar: u.exclusiveAvatar || '',
-        useExclusive: u.useExclusive === true,
-        currentTemplate: u.currentTemplate || '',
-        lastUpdatedAt: u.lastUpdatedAt || 0
-      };
-    }
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ users: trimmed, savedAt: Date.now() }));
-  } catch(e) {
-    try { localStorage.removeItem(CACHE_KEY); } catch(e2) {}
-  }
-}
-
-function loadCache() {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.users) return null;
-    if (parsed.savedAt && (Date.now() - parsed.savedAt) > CACHE_MAX_AGE) {
-      localStorage.removeItem(CACHE_KEY);
-      return null;
-    }
-    return parsed.users;
-  } catch(e) { return null; }
-}
-
-/* ============================================================ */
-/*  srcHash                                                       */
-/* ============================================================ */
-function srcHash(s) {
-  if (!s || typeof s !== 'string') return '0_0';
-  const len = s.length;
-  if (len < 500) {
-    let h = 0;
-    for (let i = 0; i < len; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
-    return h + '_' + len;
-  }
-  let h = 0;
-  for (let i = 0; i < 300; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
-  for (let i = Math.max(0, len - 300); i < len; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
-  return h + '_' + len;
-}
-
-/* ============================================================ */
-/*  Firebase                                                      */
+/*  Firebase Init                                                  */
 /* ============================================================ */
 let fbDb = null;
 let fbReady = false;
+let __rtListenersAttached = false;
 
 function initFirebase() {
   try {
-    if (typeof firebase === 'undefined') return false;
+    if (typeof firebase === 'undefined') {
+      console.warn('⚠️ Firebase SDK لود نشد');
+      return false;
+    }
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
     fbDb = firebase.database();
     fbReady = true;
-    setupRealtimeListeners();
+    attachRealtimeListeners();
+    console.log('✅ Firebase ready');
     return true;
-  } catch(e) { return false; }
-}
-
-function setupRealtimeListeners() {
-  if (!fbReady || !fbDb) return;
-
-  try {
-    var userUpdatesRef = fbDb.ref('user_updates');
-    var handler = function(snap) {
-      var val = snap.val();
-      if (!val || !val.at) return;
-      if (Date.now() - val.at > 120000) return;
-      forceReload();
-    };
-    userUpdatesRef.on('child_added', handler);
-    userUpdatesRef.on('child_changed', handler);
-  } catch(e) {}
-
-  try {
-    fbDb.ref('signals').on('child_added', function(userSnap) {
-      userSnap.ref.limitToLast(2).on('child_added', function(sigSnap) {
-        var sig = sigSnap.val();
-        if (!sig) return;
-        if (Date.now() - (sig.time || 0) > 120000) return;
-        var types = ['admin_edit','user_updated','banned','unbanned','codes_reset',
-                     'force_refresh','user_banned','updated','prize_received',
-                     'deleted','force_login','force_logout'];
-        if (types.indexOf(sig.type) > -1) forceReload();
-      });
-    });
-  } catch(e) {}
-}
-
-function forceReload() {
-  __lastRenderedKey = '';
-  fetchAndRender();
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    return false;
+  }
 }
 
 /* ============================================================ */
-/*  Redis                                                         */
+/*  🔥 Realtime Listeners - مستقیم روی user_updates              */
+/* ============================================================ */
+function attachRealtimeListeners() {
+  if (!fbReady || !fbDb || __rtListenersAttached) return;
+  __rtListenersAttached = true;
+
+  /* ═══ 1) user_updates - هر بار ادمین کاربری رو تغییر می‌ده ═══ */
+  try {
+    const ref = fbDb.ref('user_updates');
+
+    ref.on('child_added', snap => {
+      handleUserUpdateSignal(snap.key, snap.val());
+    });
+
+    ref.on('child_changed', snap => {
+      handleUserUpdateSignal(snap.key, snap.val());
+    });
+
+    console.log('✅ user_updates listener فعال');
+  } catch(e) { console.warn('user_updates error:', e); }
+
+  /* ═══ 2) users_rt - mirror کامل کاربران برای realtime واقعی ═══ */
+  try {
+    const rtRef = fbDb.ref('users_rt');
+
+    rtRef.on('child_added', snap => {
+      applyRealtimeUser(snap.key, snap.val());
+    });
+
+    rtRef.on('child_changed', snap => {
+      applyRealtimeUser(snap.key, snap.val());
+    });
+
+    rtRef.on('child_removed', snap => {
+      removeCardForPhone(snap.key);
+    });
+
+    console.log('✅ users_rt listener فعال');
+  } catch(e) { console.warn('users_rt error:', e); }
+}
+
+/* ═══ وقتی سیگنال user_updates میاد، از Redis فقط همون کاربر رو fetch کن ═══ */
+async function handleUserUpdateSignal(phone, val) {
+  if (!phone || !val) return;
+  if (!val.at) return;
+  const age = Date.now() - val.at;
+  if (age > SIGNAL_FRESH_MS || age < 0) return;
+
+  try {
+    const user = await getUserFromRedis(phone);
+    if (user) {
+      applyRealtimeUser(phone, user);
+    } else {
+      // کاربر حذف شده
+      removeCardForPhone(phone);
+    }
+  } catch(e) {
+    // خطای شبکه - بعداً با polling جبران می‌شه
+  }
+}
+
+/* ═══ اعمال داده realtime به کارت (اگر تیم مدیریت باشه) ═══ */
+function applyRealtimeUser(phone, data) {
+  if (!phone || !data) return;
+  const grid = document.getElementById('managementGrid');
+  if (!grid) return;
+
+  const isMgmt = data.rank && MANAGEMENT_ROLES.includes(data.rank.trim());
+  const existingCard = grid.querySelector(`.member-card[data-phone="${phone}"]`);
+
+  // اگه دیگه تیم مدیریت نیست → کارت رو حذف کن
+  if (!isMgmt) {
+    if (existingCard) {
+      const circle = existingCard.querySelector('.avatar-circle');
+      if (circle) destroyAvatarElement(circle.firstElementChild);
+      existingCard.remove();
+      console.log('❌ حذف شد:', phone);
+    }
+    return;
+  }
+
+  // اگه کارت هست → آپدیت
+  if (existingCard) {
+    updateCardInPlace(existingCard, data);
+    console.log('🔄 آپدیت:', phone, data.rank);
+  } else {
+    // کارت نیست → بساز
+    const newCard = buildMemberCard(phone, data);
+    grid.appendChild(newCard);
+    resortCards();
+    console.log('✅ اضافه شد:', phone, data.rank);
+  }
+}
+
+function removeCardForPhone(phone) {
+  const grid = document.getElementById('managementGrid');
+  if (!grid) return;
+  const card = grid.querySelector(`.member-card[data-phone="${phone}"]`);
+  if (card) {
+    const circle = card.querySelector('.avatar-circle');
+    if (circle) destroyAvatarElement(circle.firstElementChild);
+    card.remove();
+  }
+}
+
+/* ═══ مرتب‌سازی مجدد کارت‌ها بر اساس مقام ═══ */
+function resortCards() {
+  const grid = document.getElementById('managementGrid');
+  if (!grid) return;
+  const cards = Array.from(grid.querySelectorAll('.member-card'));
+  if (cards.length < 2) return;
+
+  cards.sort((a, b) => {
+    const rA = ROLE_ORDER[(a.querySelector('.member-role')?.textContent || '').trim()] ?? 99;
+    const rB = ROLE_ORDER[(b.querySelector('.member-role')?.textContent || '').trim()] ?? 99;
+    return rA - rB;
+  });
+
+  cards.forEach(card => grid.appendChild(card));
+}
+
+/* ============================================================ */
+/*  Redis - getUser تکی (برای realtime)                            */
+/* ============================================================ */
+async function getUserFromRedis(phone) {
+  const results = await Promise.allSettled([
+    upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'user:' + phone),
+    upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'user:' + phone)
+  ]);
+
+  const u1 = results[0].status === 'fulfilled' ? results[0].value : null;
+  const u2 = results[1].status === 'fulfilled' ? results[1].value : null;
+
+  if (!u1 && !u2) return null;
+  if (!u1) return u2;
+  if (!u2) return u1;
+
+  const t1 = u1.lastUpdatedAt || 0;
+  const t2 = u2.lastUpdatedAt || 0;
+  return t2 > t1 ? u2 : u1;
+}
+
+/* ============================================================ */
+/*  Redis - getAllUsers                                            */
 /* ============================================================ */
 async function upstashGet(url, token, k) {
   try {
@@ -311,7 +348,64 @@ async function getAllUsers() {
 }
 
 /* ============================================================ */
-/*  Helpers                                                       */
+/*  Cache                                                          */
+/* ============================================================ */
+function saveCache(users) {
+  try {
+    const trimmed = {};
+    for (const phone in users) {
+      const u = users[phone];
+      if (!u) continue;
+      if (!u.rank || !MANAGEMENT_ROLES.includes(u.rank.trim())) continue;
+      trimmed[phone] = {
+        name: u.name || '',
+        rank: u.rank || '',
+        avatar: u.avatar || '',
+        exclusiveAvatar: u.exclusiveAvatar || '',
+        useExclusive: u.useExclusive === true,
+        currentTemplate: u.currentTemplate || '',
+        lastUpdatedAt: u.lastUpdatedAt || 0
+      };
+    }
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ users: trimmed, savedAt: Date.now() }));
+  } catch(e) {
+    try { localStorage.removeItem(CACHE_KEY); } catch(e2) {}
+  }
+}
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.users) return null;
+    if (parsed.savedAt && (Date.now() - parsed.savedAt) > CACHE_MAX_AGE) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return parsed.users;
+  } catch(e) { return null; }
+}
+
+/* ============================================================ */
+/*  srcHash                                                        */
+/* ============================================================ */
+function srcHash(s) {
+  if (!s || typeof s !== 'string') return '0_0';
+  const len = s.length;
+  if (len < 500) {
+    let h = 0;
+    for (let i = 0; i < len; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
+    return h + '_' + len;
+  }
+  let h = 0;
+  for (let i = 0; i < 300; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
+  for (let i = Math.max(0, len - 300); i < len; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
+  return h + '_' + len;
+}
+
+/* ============================================================ */
+/*  Helpers                                                        */
 /* ============================================================ */
 function isVideoSrc(src) {
   if (!src || typeof src !== 'string') return false;
@@ -384,30 +478,30 @@ function destroyAvatarElement(el) {
 }
 
 /* ============================================================ */
-/*  ساخت و به‌روزرسانی کارت                                        */
+/*  ساخت / آپدیت کارت                                              */
 /* ============================================================ */
 function buildMemberCard(phone, userData) {
   const card = document.createElement('div');
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  const cardTplWrap = document.createElement('div');
-  cardTplWrap.className = 'card-template';
-  const cardTplImg = document.createElement('img');
-  cardTplImg.src = getCardTemplate(userData.rank);
-  cardTplImg.onerror = function() { this.style.display = 'none'; };
-  cardTplWrap.appendChild(cardTplImg);
-  card.appendChild(cardTplWrap);
+  const tpl = document.createElement('div');
+  tpl.className = 'card-template';
+  const tplImg = document.createElement('img');
+  tplImg.src = getCardTemplate(userData.rank);
+  tplImg.onerror = function() { this.style.display = 'none'; };
+  tpl.appendChild(tplImg);
+  card.appendChild(tpl);
 
-  const avatarContainer = document.createElement('div');
-  avatarContainer.className = 'avatar-container';
+  const avContainer = document.createElement('div');
+  avContainer.className = 'avatar-container';
 
-  const avatarCircle = document.createElement('div');
-  avatarCircle.className = 'avatar-circle';
-  const avatarSrc = getDisplayAvatar(phone, userData);
-  avatarCircle.dataset.avatarHash = srcHash(avatarSrc);
-  avatarCircle.appendChild(createAvatarElement(avatarSrc));
-  avatarContainer.appendChild(avatarCircle);
+  const avCircle = document.createElement('div');
+  avCircle.className = 'avatar-circle';
+  const avSrc = getDisplayAvatar(phone, userData);
+  avCircle.dataset.avatarHash = srcHash(avSrc);
+  avCircle.appendChild(createAvatarElement(avSrc));
+  avContainer.appendChild(avCircle);
 
   const frameSrc = getAvatarFrame(userData);
   if (frameSrc) {
@@ -416,70 +510,72 @@ function buildMemberCard(phone, userData) {
     frameImg.src = frameSrc;
     frameImg.alt = '';
     frameImg.onerror = function() { this.style.display = 'none'; };
-    avatarContainer.appendChild(frameImg);
+    avContainer.appendChild(frameImg);
   }
-  card.appendChild(avatarContainer);
+  card.appendChild(avContainer);
 
-  const infoDiv = document.createElement('div');
-  infoDiv.className = 'member-info';
+  const info = document.createElement('div');
+  info.className = 'member-info';
 
   const nameDiv = document.createElement('div');
   nameDiv.className = 'member-name';
   nameDiv.appendChild(document.createTextNode(userData.name || 'کاربر'));
 
   const roleKey = (userData.rank || '').trim();
-  const tickCandidates = ROLE_TICK_MAP[roleKey];
-  if (tickCandidates && tickCandidates.length) {
+  const ticks = ROLE_TICK_MAP[roleKey];
+  if (ticks && ticks.length) {
     const tickImg = document.createElement('img');
     tickImg.className = 'role-tick';
     tickImg.alt = '';
     tickImg.src = '';
     nameDiv.appendChild(tickImg);
-    applyTick(tickImg, tickCandidates);
+    applyTick(tickImg, ticks);
   }
-  infoDiv.appendChild(nameDiv);
+  info.appendChild(nameDiv);
 
   const roleDiv = document.createElement('div');
   roleDiv.className = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
   roleDiv.textContent = userData.rank || 'کاربر';
-  infoDiv.appendChild(roleDiv);
+  info.appendChild(roleDiv);
 
-  card.appendChild(infoDiv);
+  card.appendChild(info);
   return card;
 }
 
 function updateCardInPlace(card, userData) {
   const phone = card.dataset.phone;
 
-  const cardTplImg = card.querySelector('.card-template img');
-  const newCardTpl = getCardTemplate(userData.rank);
-  if (cardTplImg) {
-    const currentSrc = cardTplImg.getAttribute('src') || '';
-    if (!currentSrc.endsWith(newCardTpl)) {
-      cardTplImg.src = newCardTpl;
-      cardTplImg.style.display = '';
+  // قالب کارت
+  const tplImg = card.querySelector('.card-template img');
+  const newTpl = getCardTemplate(userData.rank);
+  if (tplImg) {
+    const cur = tplImg.getAttribute('src') || '';
+    if (!cur.endsWith(newTpl)) {
+      tplImg.src = newTpl;
+      tplImg.style.display = '';
     }
   }
 
-  const avatarCircle = card.querySelector('.avatar-circle');
-  const newAvatarSrc = getDisplayAvatar(phone, userData);
-  const newHash = srcHash(newAvatarSrc);
-  if (avatarCircle) {
-    const currentHash = avatarCircle.dataset.avatarHash || '0_0';
-    if (currentHash !== newHash) {
-      const oldEl = avatarCircle.firstElementChild;
-      destroyAvatarElement(oldEl);
-      while (avatarCircle.firstChild) {
-        try { avatarCircle.removeChild(avatarCircle.firstChild); } catch(e) { break; }
+  // آواتار
+  const avCircle = card.querySelector('.avatar-circle');
+  const newAvSrc = getDisplayAvatar(phone, userData);
+  const newHash = srcHash(newAvSrc);
+  if (avCircle) {
+    const curHash = avCircle.dataset.avatarHash || '0_0';
+    if (curHash !== newHash) {
+      destroyAvatarElement(avCircle.firstElementChild);
+      while (avCircle.firstChild) {
+        try { avCircle.removeChild(avCircle.firstChild); } catch(e) { break; }
       }
-      avatarCircle.dataset.avatarHash = newHash;
-      avatarCircle.appendChild(createAvatarElement(newAvatarSrc));
+      avCircle.dataset.avatarHash = newHash;
+      avCircle.appendChild(createAvatarElement(newAvSrc));
     }
   }
 
-  const avatarContainer = card.querySelector('.avatar-container');
-  if (avatarContainer) {
-    let frameImg = avatarContainer.querySelector('.avatar-frame');
+  // قالب دور آواتار
+  const avContainer = card.querySelector('.avatar-container');
+  if (avContainer) {
+    let frameImg = avContainer.querySelector('.avatar-frame');
     const newFrame = getAvatarFrame(userData);
     if (newFrame) {
       if (!frameImg) {
@@ -487,10 +583,10 @@ function updateCardInPlace(card, userData) {
         frameImg.className = 'avatar-frame';
         frameImg.alt = '';
         frameImg.onerror = function() { this.style.display = 'none'; };
-        avatarContainer.appendChild(frameImg);
+        avContainer.appendChild(frameImg);
       }
-      const currentFrameSrc = frameImg.getAttribute('src') || '';
-      if (currentFrameSrc !== newFrame) {
+      const curFrame = frameImg.getAttribute('src') || '';
+      if (curFrame !== newFrame) {
         frameImg.style.display = '';
         frameImg.src = newFrame;
       }
@@ -499,38 +595,40 @@ function updateCardInPlace(card, userData) {
     }
   }
 
+  // نام + تیک
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const roleKey = (userData.rank || '').trim();
-    const currentName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
+    const curName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
     const newName = userData.name || 'کاربر';
-    if (currentName !== newName) {
+    if (curName !== newName) {
       while (nameDiv.firstChild) nameDiv.removeChild(nameDiv.firstChild);
       nameDiv.appendChild(document.createTextNode(newName));
-      const tickCandidates = ROLE_TICK_MAP[roleKey];
-      if (tickCandidates && tickCandidates.length) {
+      const ticks = ROLE_TICK_MAP[roleKey];
+      if (ticks && ticks.length) {
         const tickImg = document.createElement('img');
         tickImg.className = 'role-tick';
         tickImg.alt = '';
         tickImg.src = '';
         nameDiv.appendChild(tickImg);
-        applyTick(tickImg, tickCandidates);
+        applyTick(tickImg, ticks);
       }
     }
   }
 
+  // مقام
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (userData.rank || '').trim();
-    const newRoleText = userData.rank || 'کاربر';
-    const newRoleClass = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
-    if (roleDiv.textContent !== newRoleText) roleDiv.textContent = newRoleText;
-    if (roleDiv.className !== newRoleClass) roleDiv.className = newRoleClass;
+    const newText = userData.rank || 'کاربر';
+    const newClass = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
+    if (roleDiv.textContent !== newText) roleDiv.textContent = newText;
+    if (roleDiv.className !== newClass) roleDiv.className = newClass;
   }
 }
 
 /* ============================================================ */
-/*  رندر                                                          */
+/*  رندر کامل از داده                                              */
 /* ============================================================ */
 let __lastRenderedKey = '';
 let __hasRendered = false;
@@ -608,17 +706,15 @@ function renderTeam(users) {
 }
 
 /* ============================================================ */
-/*  fetch + render                                                */
+/*  fetch کامل                                                    */
 /* ============================================================ */
 async function fetchAndRender() {
-  // ⚠️ اگه آفلاینیم، fetch نکن (offline-guard خودش overlay رو نشون می‌ده)
   if (isOffline()) return;
 
   let users = null;
   try {
     users = await getAllUsers();
   } catch(e) {
-    // خطای شبکه - offline-guard خودش مدیریت می‌کنه
     return;
   }
 
@@ -629,7 +725,7 @@ async function fetchAndRender() {
     if (!__hasRendered) {
       const grid = document.getElementById('managementGrid');
       if (grid && !grid.querySelector('.member-card')) {
-        grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد. لطفاً صفحه را رفرش کنید</div></div>`;
+        grid.innerHTML = `<div class="empty-state"><div>اتصال برقرار نشد</div></div>`;
       }
     }
   }
@@ -639,26 +735,26 @@ async function fetchAndRender() {
 /*  Boot                                                          */
 /* ============================================================ */
 async function boot() {
-  // ═══ 1) کش فوری ═══
+  // 1) کش فوری
   const cached = loadCache();
   if (cached && Object.keys(cached).length > 0) {
     renderTeam(cached);
   }
 
-  // ═══ 2) Firebase ═══
+  // 2) Firebase
   initFirebase();
 
-  // ═══ 3) fetch از Redis ═══
+  // 3) fetch اولیه
   await fetchAndRender();
 
-  // ═══ 4) polling پشتیبان ═══
+  // 4) polling پشتیبان (کم - فقط اگه Firebase وصل نیست)
   setInterval(() => {
-    if (!isOffline()) {
+    if (!fbReady && !isOffline()) {
       fetchAndRender();
     }
-  }, 5000);
+  }, 8000);
 
-  // ═══ 5) وقتی از آفلاین درومدیم، رفرش کن ═══
+  // 5) برگشت آنلاین → رفرش
   window.addEventListener('online', () => {
     setTimeout(() => {
       __lastRenderedKey = '';
@@ -690,10 +786,8 @@ document.addEventListener('DOMContentLoaded', () => {
   boot();
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      if (!isOffline()) {
-        fetchAndRender();
-      }
+    if (document.visibilityState === 'visible' && !isOffline()) {
+      fetchAndRender();
     }
   });
 
@@ -703,9 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('focus', () => {
-  if (!isOffline()) {
-    fetchAndRender();
-  }
+  if (!isOffline()) fetchAndRender();
 });
 </script>
 </body>
