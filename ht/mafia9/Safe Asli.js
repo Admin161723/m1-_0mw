@@ -1,9 +1,10 @@
 /* ============================================================ */
-/*  Safe Asli.js - نسخه نهایی                                    */
-/*  ✅ رفع باگ آواتار با sync guard                              */
-/*  ✅ لود آنی از کش                                             */
+/*  Safe Asli.js - نسخه نهایی با Firebase Realtime              */
+/*  ✅ رفع باگ بازگشت آواتار/قالب                                */
+/*  ✅ Firebase منبع اصلی sync                                   */
+/*  ✅ رتبه کلن نمایش داده می‌شه                                 */
 /*  ✅ دکمه امتیازی → Re.html                                    */
-/*  ✅ پنل مدیریت دقیقاً وسط صفحه                                */
+/*  ✅ پنل مدیریت وسط صفحه                                       */
 /* ============================================================ */
 
 var UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
@@ -14,8 +15,8 @@ var CREATOR_PHONE = '09904844031';
 
 var SIGNAL_FRESH_MS = 15000;
 var SESSION_KEEP_ALIVE_MS = 30000;
-var USER_MODIFY_GUARD_MS = 10000; // ⚡ بعد از تغییر کاربر، ۱۰ ثانیه sync override نکن
-var ADMIN_LOCK_MS = 3000; // ⚡ از ۸ ثانیه به ۳ ثانیه کاهش دادیم
+var USER_MODIFY_GUARD_MS = 60000;
+var ADMIN_LOCK_MS = 3000;
 
 var currentUserData = null;
 var currentPhone = null;
@@ -37,10 +38,12 @@ var currentAdminTab = 'all';
 var currentUserList = [];
 var viewingUserHistory = null;
 var fbServerListener = null;
+var fbUserListener = null;
 var __lastLoginLogged = 0;
 var banDetected = false;
 var banCheckInFlight = false;
-var __userModifiedAt = 0; // ⚡ زمان آخرین تغییر کاربر
+var __userModifiedAt = 0;
+var __lastFbWriteAt = 0;
 
 var FB_CFG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
@@ -153,6 +156,89 @@ function notifyUserUpdate(phone, type) {
       at: Date.now(), by: fbPhone, type: type || 'admin_edit'
     });
   } catch(e) {}
+}
+
+/* ═══ 🔥 آینه‌کردن کاربر به Firebase (منبع اصلی) ═══ */
+function mirrorUserToFirebase(phone, userData) {
+  if (!fbReady || !fbDb) return;
+  if (!phone || !userData) return;
+  
+  try {
+    __lastFbWriteAt = Date.now();
+    fbDb.ref('users_rt/' + phone).set({
+      name: userData.name || '',
+      rank: userData.rank || 'کاربر',
+      avatar: userData.avatar || '',
+      exclusiveAvatar: userData.exclusiveAvatar || '',
+      useExclusive: userData.useExclusive === true,
+      currentTemplate: userData.currentTemplate || '',
+      previousAvatar: userData.previousAvatar || '',
+      ownedAvatars: userData.ownedAvatars || [],
+      ownedTemplates: userData.ownedTemplates || [],
+      coins: userData.coins || 0,
+      gems: userData.gems || 0,
+      dollars: userData.dollars || 0,
+      userCode: userData.userCode || 0,
+      lastUpdatedAt: Date.now()
+    });
+    
+    // mirror به لیست تیم مدیریت (فقط اگه تیمه)
+    var rank = (userData.rank || '').trim();
+    var mgmtRoles = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+    if (mgmtRoles.indexOf(rank) > -1) {
+      fbDb.ref('team_mgmt/' + phone).set({
+        name: userData.name || '',
+        rank: rank,
+        avatar: userData.avatar || '',
+        exclusiveAvatar: userData.exclusiveAvatar || '',
+        useExclusive: userData.useExclusive === true,
+        currentTemplate: userData.currentTemplate || '',
+        lastUpdatedAt: Date.now()
+      });
+    } else {
+      fbDb.ref('team_mgmt/' + phone).remove();
+    }
+  } catch(e) { console.warn('mirror error:', e); }
+}
+
+/* ═══ 🔥 لیسنر realtime برای کاربر جاری ═══ */
+function attachUserRealtimeListener(phone) {
+  if (!fbReady || !fbDb || !phone) return;
+  
+  if (fbUserListener) {
+    try { fbDb.ref('users_rt/' + phone).off('value', fbUserListener); } catch(e) {}
+  }
+  
+  fbUserListener = fbDb.ref('users_rt/' + phone).on('value', function(snap) {
+    var data = snap.val();
+    if (!data) return;
+    
+    // اگه از خودمون نوشتیم و تازه، رد کن
+    var age = Date.now() - (data.lastUpdatedAt || 0);
+    if (age < 2000) return;
+    
+    // اگه بعد از __userModifiedAt هست و از یه منبع دیگه (نه خودمون)
+    if (Date.now() - __userModifiedAt < USER_MODIFY_GUARD_MS) {
+      // کاربر تازه تغییری نداده، یا اگه داده جدیدتره اعمال کن
+      if ((data.lastUpdatedAt || 0) <= (currentUserData && currentUserData.lastUpdatedAt || 0)) {
+        return;
+      }
+    }
+    
+    // اعمال
+    if (currentUserData) {
+      currentUserData.avatar = data.avatar || currentUserData.avatar;
+      currentUserData.exclusiveAvatar = data.exclusiveAvatar || '';
+      currentUserData.useExclusive = data.useExclusive === true;
+      currentUserData.currentTemplate = data.currentTemplate || '';
+      currentUserData.name = data.name || currentUserData.name;
+      currentUserData.rank = data.rank || currentUserData.rank;
+      currentUserData.lastUpdatedAt = data.lastUpdatedAt || Date.now();
+      
+      try { localStorage.setItem('user_cache_' + phone, JSON.stringify(currentUserData)); } catch(e) {}
+      updateUIWithData(currentUserData);
+    }
+  });
 }
 
 /* ============================================================ */
@@ -796,7 +882,7 @@ function updateUIWithData(user) {
 }
 
 /* ============================================================ */
-/*  Server Lock (شل)                                             */
+/*  Server Lock                                                   */
 /* ============================================================ */
 async function isServerLocked() {
   try {
@@ -820,7 +906,7 @@ function setAdminLock() {
 }
 
 /* ============================================================ */
-/*  saveUserData - با USER_MODIFY_GUARD                           */
+/*  saveUserData - با Firebase mirroring                          */
 /* ============================================================ */
 async function saveUserData() {
   if (!currentUserData || !currentPhone) return;
@@ -830,20 +916,22 @@ async function saveUserData() {
   var eu = document.getElementById('editUserModal');
   if (eu && eu.classList.contains('active')) return;
 
-  // ⚡ اگر admin lock فعاله، صرفاً ذخیره کن بدون fetch
   if (isAdminLocked()) {
     currentUserData.lastUpdatedAt = Date.now();
     try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
     await saveUser(currentPhone, currentUserData);
+    mirrorUserToFirebase(currentPhone, currentUserData);
     return;
   }
 
   currentUserData.lastUpdatedAt = Date.now();
   currentUserData = sanitizeUserData(currentUserData, currentPhone);
-
-  // ⚡ علامت‌گذاری: کاربر تغییر داد
   __userModifiedAt = Date.now();
 
+  // ⚡ 1) ذخیره فوری در Firebase (سریع + منبع اصلی)
+  mirrorUserToFirebase(currentPhone, currentUserData);
+
+  // ⚡ 2) ذخیره در localStorage
   try {
     localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData));
   } catch(e) {
@@ -853,10 +941,9 @@ async function saveUserData() {
       localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(light));
     } catch(e2) {}
   }
-  await saveUser(currentPhone, currentUserData);
-  var allUsers = await getAllUsers();
-  allUsers[currentPhone] = currentUserData;
-  await saveAllUsers(allUsers);
+
+  // ⚡ 3) ذخیره در Redis (backup، در پس‌زمینه)
+  saveUser(currentPhone, currentUserData).catch(function(){});
 }
 
 async function saveAvatarToStorage(src) {
@@ -864,7 +951,6 @@ async function saveAvatarToStorage(src) {
   if (src === '655.webm' && currentPhone !== CREATOR_PHONE) return;
   if (isAdminLocked()) return;
 
-  // ⚡ مهم: previousAvatar رو ذخیره کن
   if (currentUserData.avatar && currentUserData.avatar !== src) {
     currentUserData.previousAvatar = currentUserData.avatar;
   }
@@ -937,7 +1023,7 @@ function playClickSound() {
 }
 
 /* ============================================================ */
-/*  Group + Clan                                                  */
+/*  Group + Clan Rank                                             */
 /* ============================================================ */
 async function findUserGroup(phone) {
   try {
@@ -1018,7 +1104,14 @@ async function updateClanRank() {
     var group = await findUserGroup(currentPhone);
     if (!group) { el.textContent = '-'; return; }
     var myRank = ranking.find(function(r) { return r.id === group.id; });
-    el.textContent = myRank ? toPersianNum(myRank.rank) : '-';
+    if (myRank) {
+      el.textContent = toPersianNum(myRank.rank);
+      // رنگ بر اساس رتبه
+      el.style.color = myRank.rank === 1 ? '#ffd700' : myRank.rank === 2 ? '#c0c0c0' : myRank.rank === 3 ? '#cd7f32' : '#4fc3f7';
+      el.style.fontWeight = '900';
+    } else {
+      el.textContent = '-';
+    }
   } catch(e) { el.textContent = '-'; }
 }
 async function showClanRankingModal() {
@@ -1036,6 +1129,7 @@ async function showClanRankingModal() {
   body.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">در حال بارگذاری...</div>';
   var ranking = await getClanRanking();
   var cfg = await getTournamentConfig();
+  var myGroup = currentPhone ? await findUserGroup(currentPhone) : null;
   if (!ranking.length) {
     body.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">هیچ کلنی وجود ندارد</div>';
     return;
@@ -1043,6 +1137,7 @@ async function showClanRankingModal() {
   var html = '';
   for (var i = 0; i < ranking.length; i++) {
     var r = ranking[i];
+    var isMine = myGroup && r.id === myGroup.id;
     var medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : '#' + toPersianNum(r.rank);
     var logoHtml = '';
     if (r.logo && typeof r.logo === 'string' &&
@@ -1065,11 +1160,13 @@ async function showClanRankingModal() {
       if (pc.note) parts.push(pc.note);
       if (parts.length) prizeText = '🎁 ' + parts.join(' • ');
     }
-    html += '<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);padding:10px;border-radius:12px;margin-bottom:8px;border-right:4px solid ' + (r.rank === 1 ? '#ffd700' : r.rank === 2 ? '#c0c0c0' : r.rank === 3 ? '#cd7f32' : '#2a6ac0') + ';">';
+    var bg = isMine ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,.05)';
+    var border = isMine ? '#4caf50' : (r.rank === 1 ? '#ffd700' : r.rank === 2 ? '#c0c0c0' : r.rank === 3 ? '#cd7f32' : '#2a6ac0');
+    html += '<div style="display:flex;align-items:center;gap:12px;background:' + bg + ';padding:10px;border-radius:12px;margin-bottom:8px;border-right:4px solid ' + border + ';' + (isMine ? 'box-shadow:0 0 12px rgba(76,175,80,0.4);' : '') + '">';
     html += '<div style="font-size:22px;font-weight:900;min-width:40px;text-align:center;">' + medal + '</div>';
     html += '<div style="width:48px;height:48px;background:rgba(0,0,0,.3);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px;">' + logoHtml + '</div>';
     html += '<div style="flex:1;">';
-    html += '<div style="color:#fff;font-weight:700;font-size:14px;">' + r.name + '</div>';
+    html += '<div style="color:#fff;font-weight:700;font-size:14px;">' + r.name + (isMine ? ' <span style="color:#4caf50;font-size:11px;">(کلن شما)</span>' : '') + '</div>';
     html += '<div style="color:#4fc3f7;font-size:11px;">' + toPersianNum(r.points) + ' امتیاز • ' + toPersianNum(r.memberCount) + ' عضو</div>';
     if (prizeText) html += '<div style="color:#ffb74d;font-size:11px;margin-top:4px;">' + prizeText + '</div>';
     html += '</div></div>';
@@ -1360,12 +1457,14 @@ async function saveUserEdit() {
   }
   u.lastUpdatedAt = Date.now();
   allUsers[editingUserId] = u;
-  for (var attempt = 0; attempt < 3; attempt++) {
-    var saved = await saveUser(editingUserId, u);
-    if (saved) break;
-    await new Promise(function(r) { setTimeout(r, 500); });
-  }
-  await saveAllUsers(allUsers);
+
+  // ⚡ ذخیره فوری در Firebase
+  mirrorUserToFirebase(editingUserId, u);
+
+  // Redis backup
+  saveUser(editingUserId, u).catch(function(){});
+  saveAllUsers(allUsers).catch(function(){});
+
   notifyUserUpdate(editingUserId, 'admin_edit');
   sendLive('user_' + editingUserId, 'admin_edit', {
     phone: editingUserId, force: true, resetAvatar: true,
@@ -1374,7 +1473,7 @@ async function saveUserEdit() {
     useExclusive: u.useExclusive === true,
     avatar: u.avatar || 'Mafia2.png'
   });
-  sendLive('user_' + editingUserId, 'force_refresh', { phone: editingUserId, reason: 'admin_edit' });
+
   if (editingUserId === currentPhone) {
     setAdminLock();
     currentUserData = u;
@@ -1460,6 +1559,11 @@ async function deleteAccount() {
   delete allUsers[editingUserId];
   await saveAllUsers(allUsers);
   await redisDel('user:' + editingUserId);
+  // ⚡ حذف از Firebase
+  if (fbReady && fbDb) {
+    try { fbDb.ref('users_rt/' + editingUserId).remove(); } catch(e) {}
+    try { fbDb.ref('team_mgmt/' + editingUserId).remove(); } catch(e) {}
+  }
   notifyUserUpdate(editingUserId, 'deleted');
   sendLive('user_' + editingUserId, 'deleted', { phone: editingUserId });
   closeEditUser();
@@ -1535,6 +1639,7 @@ async function clearUserData() {
   user.coins = 0; user.gems = 0; user.dollars = 0;
   user.cups = 0; user.hours = 0; user.xp = 0; user.level = 1;
   await saveUser(phone, user);
+  mirrorUserToFirebase(phone, user);
   notifyUserUpdate(phone, 'admin_edit');
   showShopNotification('پاک شد');
 }
@@ -1781,6 +1886,7 @@ async function distributeClanPrizes(force) {
     await saveAllUsers(allUsers);
     for (var p = 0; p < awarded.length; p++) {
       try { await saveUser(awarded[p], allUsers[awarded[p]]); } catch(e) {}
+      mirrorUserToFirebase(awarded[p], allUsers[awarded[p]]);
       notifyUserUpdate(awarded[p], 'prize_received');
       sendLive('user_' + awarded[p], 'prize_received', {});
     }
@@ -2035,6 +2141,7 @@ function renderTemplates() {
       updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
       renderTemplates();
       saveTemplateToStorage(src);
+      showShopNotification('✅ قالب فعال شد');
     });
   });
 }
@@ -2074,7 +2181,7 @@ async function confirmPurchase() {
     updateUIWithData(currentUserData);
     renderTemplates();
     document.getElementById('purchaseModal').classList.remove('show');
-    await saveUser(currentPhone, currentUserData);
+    await saveUserData();
     return;
   }
   if (purchaseMode === 'avatar' && selectedAvatar) {
@@ -2088,7 +2195,7 @@ async function confirmPurchase() {
       updateUIWithData(currentUserData);
       renderAvatars();
       document.getElementById('purchaseModal').classList.remove('show');
-      await saveUser(currentPhone, currentUserData);
+      await saveUserData();
     } else {
       document.getElementById('purchaseModal').classList.remove('show');
       showShopNotification('الماس کافی نیست', 'error');
@@ -2168,7 +2275,7 @@ async function checkBanPeriodically() {
   if (eu && eu.classList.contains('active')) return;
 }
 
-/* ⚡ sync با USER_MODIFY_GUARD ⚡ */
+/* ⚡ sync با Firebase به عنوان منبع اصلی ⚡ */
 async function syncWithServerInBackground() {
   try {
     if (banDetected) return;
@@ -2182,27 +2289,66 @@ async function syncWithServerInBackground() {
     if (!session || !session.phone) return;
     if (session.phone !== currentPhone) currentPhone = session.phone;
 
-    // ⚡ اگر کاربر تازگی چیزی تغییر داده، sync رو skip کن
+    // ⚡ اگه کاربر تازه چیزی تغییر داده، sync رو skip کن
     if (Date.now() - __userModifiedAt < USER_MODIFY_GUARD_MS) {
       return;
     }
 
     currentDeviceId = getDeviceId();
 
-    var sUser2 = await getUser(currentPhone);
-    if (!sUser2) return;
-    if (!sUser2.userCode || isNaN(parseInt(sUser2.userCode))) {
-      sUser2 = await assignCodeIfMissing(currentPhone, sUser2);
+    // ⚡ اول از Firebase بخون (سریع + منبع اصلی)
+    var freshUser = null;
+    if (fbReady && fbDb) {
+      try {
+        var snap = await fbDb.ref('users_rt/' + currentPhone).once('value');
+        var fbData = snap.val();
+        if (fbData && fbData.lastUpdatedAt) {
+          // Firebase داره این کاربر رو
+          freshUser = {
+            name: fbData.name || (currentUserData && currentUserData.name),
+            rank: fbData.rank || (currentUserData && currentUserData.rank),
+            avatar: fbData.avatar || '',
+            exclusiveAvatar: fbData.exclusiveAvatar || '',
+            useExclusive: fbData.useExclusive === true,
+            currentTemplate: fbData.currentTemplate || '',
+            previousAvatar: fbData.previousAvatar || '',
+            ownedAvatars: fbData.ownedAvatars || [],
+            ownedTemplates: fbData.ownedTemplates || [],
+            coins: fbData.coins || 0,
+            gems: fbData.gems || 0,
+            dollars: fbData.dollars || 0,
+            userCode: fbData.userCode || 0,
+            lastUpdatedAt: fbData.lastUpdatedAt
+          };
+        }
+      } catch(e) {}
     }
 
-    var st = sUser2.lastUpdatedAt || 0;
+    // اگه Firebase نبود، از Redis بخون
+    if (!freshUser) {
+      freshUser = await getUser(currentPhone);
+    }
+
+    if (!freshUser) return;
+    if (!freshUser.userCode || isNaN(parseInt(freshUser.userCode))) {
+      freshUser = await assignCodeIfMissing(currentPhone, freshUser);
+    }
+
+    var st = freshUser.lastUpdatedAt || 0;
     var lt = (currentUserData && currentUserData.lastUpdatedAt) || 0;
 
-    // ⚡ فقط اگر سرور REAL تازه‌تر باشه
+    // ⚡ اگه داده تازه‌تره و کاربر تازه تغییر نداده
     if (st > lt && (Date.now() - __userModifiedAt >= USER_MODIFY_GUARD_MS)) {
-      currentUserData = sanitizeUserData(sUser2, currentPhone);
+      // ادغام: فیلدهای جدید رو بگیر ولی آواتار/قالب/نام رو از داده تازه‌تر
+      var merged = Object.assign({}, currentUserData || {}, freshUser);
+      currentUserData = sanitizeUserData(merged, currentPhone);
       try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
       updateUIWithData(currentUserData);
+    } else if (currentUserData) {
+      // سرور قدیمی‌تره ولی آواتار/قالب/نام رو sync کن
+      if (freshUser.avatar !== undefined && !currentUserData.avatar) {
+        currentUserData.avatar = freshUser.avatar;
+      }
     }
 
     refreshSession();
@@ -2280,17 +2426,14 @@ function setupLiveSubscriptions() {
     }
 
     if (sig.type === 'admin_edit' || sig.type === 'prize_received' || sig.type === 'force_refresh') {
-      // ⚡ فقط اگر کاربر تازگی تغییری نداده
       if (Date.now() - __userModifiedAt < 5000) return;
-
       setAdminLock();
       try {
         var fresh2 = await getUser(currentPhone);
         if (fresh2) {
-          currentUserData = sanitizeUserData(fresh2, currentPhone);
+          currentUserData = sanitizeUserData(Object.assign({}, currentUserData, fresh2), currentPhone);
           try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
           updateUIWithData(currentUserData);
-          updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
           refreshSession();
         }
       } catch(e) {}
@@ -2322,17 +2465,15 @@ function setupLiveSubscriptions() {
         return;
       }
 
-      // ⚡ محافظت از تغییرات اخیر کاربر
       if (Date.now() - __userModifiedAt < 5000) return;
 
       setAdminLock();
       try {
         var fresh = await getUser(currentPhone);
         if (!fresh) return;
-        currentUserData = sanitizeUserData(fresh, currentPhone);
+        currentUserData = sanitizeUserData(Object.assign({}, currentUserData, fresh), currentPhone);
         try { localStorage.setItem('user_cache_' + currentPhone, JSON.stringify(currentUserData)); } catch(e) {}
         updateUIWithData(currentUserData);
-        updateGlobalAvatar(currentUserData.avatar || 'Mafia2.png');
         refreshSession();
       } catch(e) {}
 
@@ -2349,12 +2490,11 @@ function setupLiveSubscriptions() {
 document.addEventListener('DOMContentLoaded', function() {
   var session = getSession();
   if (!session || !session.phone) {
-    // ⚡ اگر session نبود، به index برنگردون چون ممکنه بعد از رفرش سریع بیاد
     return;
   }
   currentPhone = session.phone;
 
-  // ═══ 1) اول کش رو فوراً نشون بده - بدون انتظار ═══
+  // ═══ 1) اول کش رو فوراً نشون بده ═══
   var cacheFirst = localStorage.getItem('user_cache_' + currentPhone);
   if (cacheFirst) {
     try {
@@ -2366,9 +2506,8 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(e) {}
   }
 
-  // ═══ 2) بقیه کارها در پس‌زمینه (بدون بلاک کردن UI) ═══
+  // ═══ 2) بقیه کارها در پس‌زمینه ═══
   setTimeout(async function() {
-    // بن چک
     var earlyBan = await getBanStatus(currentPhone);
     if (earlyBan && currentPhone !== CREATOR_PHONE) {
       banDetected = true;
@@ -2379,7 +2518,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initFB(currentPhone);
     if (window.FBLive && window.FBLive.init) window.FBLive.init(currentPhone);
 
-    // اگر کش نداشتیم، از سرور بگیر
+    // ⚡ لیسنر realtime روی کاربر جاری
+    if (fbReady) {
+      attachUserRealtimeListener(currentPhone);
+    }
+
     if (!currentUserData) {
       try {
         var u = await getUser(currentPhone);
@@ -2395,7 +2538,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!currentUserData) return;
 
-    // IP و لاگین در پس‌زمینه
     fetchUserIP().then(function(ip) {
       myIP = ip;
       currentDeviceId = getDeviceId();
@@ -2404,7 +2546,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }).catch(function() {});
 
-    // sync
     syncWithServerInBackground();
     setUserOnlineStatus(true);
     setupLiveSubscriptions();
@@ -2412,15 +2553,13 @@ document.addEventListener('DOMContentLoaded', function() {
     updateClanRank();
   }, 50);
 
-  // ═══ 3) interval ها ═══
   setInterval(refreshSession, SESSION_KEEP_ALIVE_MS);
   setInterval(checkBanPeriodically, 3000);
-  setInterval(syncWithServerInBackground, 6000);
+  setInterval(syncWithServerInBackground, 15000);
   setInterval(function() { setUserOnlineStatus(!document.hidden); }, 30000);
-  setInterval(updateClanRank, 20000);
+  setInterval(updateClanRank, 10000);
   setInterval(updateGroupDisplay, 30000);
 
-  // ═══ 4) Event Binders ═══
   var bind = function(id, fn) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('click', fn);
@@ -2511,7 +2650,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   bind('btnHelp', function() { playClickSound(); window.location.href = 'Amozesh.html'; });
 
-  // ✅ دکمه‌ها - دقیقاً طبق HTML
   bind('btnManagement', function() {
     playClickSound();
     window.location.href = 'Modir.html';
@@ -2531,7 +2669,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   bind('btnCompetitive', function() {
     playClickSound();
-    window.location.href = 'Re.html'; // ✅ اصلاح شد
+    window.location.href = 'Re.html';
   });
 
   bind('btnLive', function() { playClickSound(); showShopNotification('به زودی'); });
@@ -2727,7 +2865,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('click', function() { immediateBanCheck(); }, true);
   document.addEventListener('touchstart', function() { immediateBanCheck(); }, true);
 
-  console.log('✅ Safe Asli.js loaded');
+  console.log('✅ Safe Asli.js loaded - Firebase Realtime enabled');
 });
 
 document.addEventListener('visibilitychange', async function() {
@@ -2739,6 +2877,8 @@ document.addEventListener('visibilitychange', async function() {
     setUserOnlineStatus(true);
     await checkWhitelistNow();
     refreshSession();
+    // ⚡ وقتی برگشت، sync سریع
+    setTimeout(function() { syncWithServerInBackground(); }, 1000);
     try {
       if (myIP && (Date.now() - __lastLoginLogged > 300000)) {
         await logLoginSession(currentPhone, myIP, currentDeviceId);
@@ -2749,6 +2889,7 @@ document.addEventListener('visibilitychange', async function() {
 
 window.addEventListener('focus', function() {
   immediateBanCheck();
+  setTimeout(function() { syncWithServerInBackground(); }, 500);
 });
 
 window.addEventListener('beforeunload', function() {
@@ -2762,6 +2903,7 @@ window.addEventListener('pageshow', function(event) {
   if (event.persisted) {
     refreshSession();
     immediateBanCheck();
+    setTimeout(function() { syncWithServerInBackground(); }, 500);
   }
 });
 
@@ -2815,3 +2957,4 @@ window.safeLogout = safeLogout;
 window.getSession = getSession;
 window.refreshSession = refreshSession;
 window.clearSession = clearSession;
+window.mirrorUserToFirebase = mirrorUserToFirebase;
