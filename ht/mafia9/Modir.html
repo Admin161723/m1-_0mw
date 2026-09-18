@@ -36,8 +36,6 @@
   .role-observer-senior{background:linear-gradient(180deg,#00bcd4,#0097a7);color:#fff;}
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
   .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
-  .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);font-size:14px;grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:15px;}
-  .empty-icon{width:60px;height:60px;fill:rgba(255,255,255,0.3);}
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
     .avatar-container{width:82px;height:82px;top:5%;}
@@ -68,12 +66,10 @@
 </audio>
 
 <script src="offline-guard.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 /* ============================================================ */
-/*  تنظیمات                                                       */
+/*  Config                                                        */
 /* ============================================================ */
 const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -81,19 +77,6 @@ const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-const CACHE_KEY = '__management_team_cache_v3__';
-const CACHE_MAX_AGE = 24 * 60 * 60 * 1000;
-const POLL_INTERVAL = 1500;  // ⚡ هر ۱.۵ ثانیه fetch
-
-const FB_CFG = {
-  apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
-  authDomain: "mafiasu-681c7.firebaseapp.com",
-  databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
-  projectId: "mafiasu-681c7",
-  storageBucket: "mafiasu-681c7.firebasestorage.app",
-  messagingSenderId: "180192927804",
-  appId: "1:180192927804:web:e0c501a0d20af3b6892339"
-};
 
 const ROLE_TICK_MAP = {
   'سازنده': ['Tik1.png'],
@@ -123,84 +106,32 @@ function getCardTemplate(role) {
   return '51.webp';
 }
 
-function isOffline() {
-  if (typeof window.ogIsOffline === 'function') return window.ogIsOffline();
-  return navigator.onLine === false;
-}
-
-/* ============================================================ */
-/*  Firebase (اختیاری - اگه کار کرد سریع‌تر می‌شه)                  */
-/* ============================================================ */
-let fbDb = null;
-let fbReady = false;
-let __rtAttached = false;
-
-function initFirebase() {
-  try {
-    if (typeof firebase === 'undefined') return false;
-    if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
-    fbDb = firebase.database();
-    fbReady = true;
-    attachRealtime();
-    console.log('✅ Firebase ready');
-    return true;
-  } catch(e) {
-    console.warn('Firebase init failed:', e);
-    return false;
-  }
-}
-
-function attachRealtime() {
-  if (!fbReady || !fbDb || __rtAttached) return;
-  __rtAttached = true;
-
-  try {
-    // listen به user_updates
-    fbDb.ref('user_updates').on('child_added', snap => {
-      const v = snap.val();
-      if (!v || !v.at) return;
-      if (Date.now() - v.at > 120000) return;
-      console.log('🔥 Firebase signal:', snap.key);
-      __lastRenderedKey = '';
-      fetchAndRender();
-    });
-    fbDb.ref('user_updates').on('child_changed', snap => {
-      const v = snap.val();
-      if (!v || !v.at) return;
-      if (Date.now() - v.at > 120000) return;
-      console.log('🔥 Firebase signal:', snap.key);
-      __lastRenderedKey = '';
-      fetchAndRender();
-    });
-    console.log('✅ Firebase listener فعال');
-  } catch(e) {
-    console.warn('Firebase listener error:', e);
-  }
-}
-
 /* ============================================================ */
 /*  Redis                                                         */
 /* ============================================================ */
-async function upstashGet(url, token, k) {
+async function redisGet(url, token, key) {
   try {
     const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 5000);
-    const r = await fetch(url + '/get/' + encodeURIComponent(k), {
+    const t = setTimeout(() => c.abort(), 4000);
+    const r = await fetch(url + '/get/' + encodeURIComponent(key), {
       headers: { 'Authorization': 'Bearer ' + token },
-      signal: c.signal, cache: 'no-store'
+      signal: c.signal,
+      cache: 'no-store'
     });
     clearTimeout(t);
     if (!r.ok) return null;
     const d = await r.json();
-    if (d && d.result) { try { return JSON.parse(d.result); } catch (e) { return d.result; } }
+    if (d && d.result) {
+      try { return JSON.parse(d.result); } catch(e) { return d.result; }
+    }
     return null;
-  } catch (e) { return null; }
+  } catch(e) { return null; }
 }
 
 async function getAllUsers() {
   const results = await Promise.allSettled([
-    upstashGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'),
-    upstashGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users')
+    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'),
+    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users')
   ]);
 
   const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
@@ -209,83 +140,20 @@ async function getAllUsers() {
   if (!v1 && !v2) return null;
 
   const merged = {};
-  let hasAnyData = false;
-
-  if (v1 && typeof v1 === 'object') {
-    for (const k in v1) if (v1[k]) { merged[k] = v1[k]; hasAnyData = true; }
-  }
+  if (v1 && typeof v1 === 'object') for (const k in v1) if (v1[k]) merged[k] = v1[k];
   if (v2 && typeof v2 === 'object') {
     for (const k in v2) {
-      if (!merged[k]) { merged[k] = v2[k]; hasAnyData = true; continue; }
+      if (!merged[k]) { merged[k] = v2[k]; continue; }
       const t1 = merged[k].lastUpdatedAt || 0;
       const t2 = v2[k].lastUpdatedAt || 0;
       if (t2 > t1) merged[k] = v2[k];
     }
   }
-
-  if (!hasAnyData) return null;
   return merged;
 }
 
 /* ============================================================ */
-/*  Cache                                                          */
-/* ============================================================ */
-function saveCache(users) {
-  try {
-    const trimmed = {};
-    for (const phone in users) {
-      const u = users[phone];
-      if (!u) continue;
-      if (!u.rank || !MANAGEMENT_ROLES.includes(u.rank.trim())) continue;
-      trimmed[phone] = {
-        name: u.name || '',
-        rank: u.rank || '',
-        avatar: u.avatar || '',
-        exclusiveAvatar: u.exclusiveAvatar || '',
-        useExclusive: u.useExclusive === true,
-        currentTemplate: u.currentTemplate || '',
-        lastUpdatedAt: u.lastUpdatedAt || 0
-      };
-    }
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ users: trimmed, savedAt: Date.now() }));
-  } catch(e) {
-    try { localStorage.removeItem(CACHE_KEY); } catch(e2) {}
-  }
-}
-
-function loadCache() {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.users) return null;
-    if (parsed.savedAt && (Date.now() - parsed.savedAt) > CACHE_MAX_AGE) {
-      localStorage.removeItem(CACHE_KEY);
-      return null;
-    }
-    return parsed.users;
-  } catch(e) { return null; }
-}
-
-/* ============================================================ */
-/*  srcHash                                                        */
-/* ============================================================ */
-function srcHash(s) {
-  if (!s || typeof s !== 'string') return '0_0';
-  const len = s.length;
-  if (len < 500) {
-    let h = 0;
-    for (let i = 0; i < len; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
-    return h + '_' + len;
-  }
-  let h = 0;
-  for (let i = 0; i < 300; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
-  for (let i = Math.max(0, len - 300); i < len; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h = h & h; }
-  return h + '_' + len;
-}
-
-/* ============================================================ */
-/*  Helpers                                                        */
+/*  Helpers                                                       */
 /* ============================================================ */
 function isVideoSrc(src) {
   if (!src || typeof src !== 'string') return false;
@@ -297,14 +165,21 @@ function isVideoSrc(src) {
          lower.indexOf('.m4v') > -1;
 }
 
-function getDisplayAvatar(phone, userData) {
-  if (userData.exclusiveAvatar && userData.useExclusive === true) return userData.exclusiveAvatar;
-  if (userData.avatar) return userData.avatar;
-  return 'Mafia2.png';
+function getAvatarSrc(phone, u) {
+  if (u.exclusiveAvatar && u.useExclusive === true) return u.exclusiveAvatar;
+  return u.avatar || 'Mafia2.png';
 }
 
-function getAvatarFrame(userData) {
-  return userData.currentTemplate || null;
+function getFrameSrc(u) {
+  return u.currentTemplate || null;
+}
+
+/* ═══ مقایسه سریع دو dataURL ═══ */
+function srcKey(s) {
+  if (!s || typeof s !== 'string') return '0';
+  const len = s.length;
+  // فقط طول + ۳۰ کاراکتر اول + ۳۰ کاراکتر آخر
+  return len + '|' + s.substr(0, 30) + '|' + s.substr(-30);
 }
 
 function applyTick(img, cands) {
@@ -320,7 +195,7 @@ function applyTick(img, cands) {
   })();
 }
 
-function createAvatarElement(src) {
+function buildAvatarMedia(src) {
   if (!src) src = 'Mafia2.png';
   if (isVideoSrc(src)) {
     const v = document.createElement('video');
@@ -336,7 +211,7 @@ function createAvatarElement(src) {
     v.setAttribute('preload', 'auto');
     v.src = src;
     try { v.load(); } catch(e) {}
-    try { const p = v.play(); if (p && p.catch) p.catch(function(){}); } catch(e) {}
+    try { const p = v.play(); if (p && p.catch) p.catch(()=>{}); } catch(e) {}
     return v;
   }
   const img = document.createElement('img');
@@ -345,7 +220,7 @@ function createAvatarElement(src) {
   return img;
 }
 
-function destroyAvatarElement(el) {
+function destroyMedia(el) {
   if (!el) return;
   try {
     if (el.tagName === 'VIDEO') {
@@ -354,39 +229,43 @@ function destroyAvatarElement(el) {
       try { el.load(); } catch(e) {}
     }
   } catch(e) {}
-  try { if (el.parentNode) el.parentNode.removeChild(el); } catch(e) {}
+  if (el.parentNode) el.parentNode.removeChild(el);
 }
 
 /* ============================================================ */
-/*  ساخت / آپدیت کارت                                              */
+/*  ساخت کارت                                                     */
 /* ============================================================ */
-function buildMemberCard(phone, userData) {
+function buildCard(phone, u) {
   const card = document.createElement('div');
   card.className = 'member-card';
   card.dataset.phone = phone;
 
-  const tpl = document.createElement('div');
-  tpl.className = 'card-template';
+  // قالب کارت
+  const tplWrap = document.createElement('div');
+  tplWrap.className = 'card-template';
   const tplImg = document.createElement('img');
-  tplImg.src = getCardTemplate(userData.rank);
+  tplImg.src = getCardTemplate(u.rank);
   tplImg.onerror = function() { this.style.display = 'none'; };
-  tpl.appendChild(tplImg);
-  card.appendChild(tpl);
+  tplWrap.appendChild(tplImg);
+  card.appendChild(tplWrap);
 
+  // آواتار
   const avContainer = document.createElement('div');
   avContainer.className = 'avatar-container';
 
   const avCircle = document.createElement('div');
   avCircle.className = 'avatar-circle';
-  const avSrc = getDisplayAvatar(phone, userData);
-  avCircle.dataset.avatarHash = srcHash(avSrc);
-  avCircle.appendChild(createAvatarElement(avSrc));
+  const avSrc = getAvatarSrc(phone, u);
+  avCircle.dataset.srcKey = srcKey(avSrc);
+  avCircle.appendChild(buildAvatarMedia(avSrc));
   avContainer.appendChild(avCircle);
 
-  const frameSrc = getAvatarFrame(userData);
+  // قالب دور آواتار
+  const frameSrc = getFrameSrc(u);
   if (frameSrc) {
     const frameImg = document.createElement('img');
     frameImg.className = 'avatar-frame';
+    frameImg.dataset.srcKey = srcKey(frameSrc);
     frameImg.src = frameSrc;
     frameImg.alt = '';
     frameImg.onerror = function() { this.style.display = 'none'; };
@@ -394,14 +273,15 @@ function buildMemberCard(phone, userData) {
   }
   card.appendChild(avContainer);
 
+  // اطلاعات
   const info = document.createElement('div');
   info.className = 'member-info';
 
   const nameDiv = document.createElement('div');
   nameDiv.className = 'member-name';
-  nameDiv.appendChild(document.createTextNode(userData.name || 'کاربر'));
+  nameDiv.appendChild(document.createTextNode(u.name || 'کاربر'));
 
-  const roleKey = (userData.rank || '').trim();
+  const roleKey = (u.rank || '').trim();
   const ticks = ROLE_TICK_MAP[roleKey];
   if (ticks && ticks.length) {
     const tickImg = document.createElement('img');
@@ -415,19 +295,22 @@ function buildMemberCard(phone, userData) {
 
   const roleDiv = document.createElement('div');
   roleDiv.className = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
-  roleDiv.textContent = userData.rank || 'کاربر';
+  roleDiv.textContent = u.rank || 'کاربر';
   info.appendChild(roleDiv);
 
   card.appendChild(info);
   return card;
 }
 
-function updateCardInPlace(card, userData) {
+/* ============================================================ */
+/*  آپدیت کارت - فقط اگه چیزی عوض شده                             */
+/* ============================================================ */
+function updateCard(card, u) {
   const phone = card.dataset.phone;
 
-  // قالب کارت
+  // ═══ قالب کارت ═══
   const tplImg = card.querySelector('.card-template img');
-  const newTpl = getCardTemplate(userData.rank);
+  const newTpl = getCardTemplate(u.rank);
   if (tplImg) {
     const cur = tplImg.getAttribute('src') || '';
     if (!cur.endsWith(newTpl)) {
@@ -436,28 +319,22 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // آواتار
+  // ═══ آواتار ═══
   const avCircle = card.querySelector('.avatar-circle');
-  const newAvSrc = getDisplayAvatar(phone, userData);
-  const newHash = srcHash(newAvSrc);
-  if (avCircle) {
-    const curHash = avCircle.dataset.avatarHash || '0_0';
-    if (curHash !== newHash) {
-      console.log('🎬 آواتار عوض شد:', phone);
-      destroyAvatarElement(avCircle.firstElementChild);
-      while (avCircle.firstChild) {
-        try { avCircle.removeChild(avCircle.firstChild); } catch(e) { break; }
-      }
-      avCircle.dataset.avatarHash = newHash;
-      avCircle.appendChild(createAvatarElement(newAvSrc));
-    }
+  const newAvSrc = getAvatarSrc(phone, u);
+  const newAvKey = srcKey(newAvSrc);
+  if (avCircle && avCircle.dataset.srcKey !== newAvKey) {
+    destroyMedia(avCircle.firstElementChild);
+    while (avCircle.firstChild) avCircle.removeChild(avCircle.firstChild);
+    avCircle.dataset.srcKey = newAvKey;
+    avCircle.appendChild(buildAvatarMedia(newAvSrc));
   }
 
-  // قالب دور آواتار
+  // ═══ قالب دور آواتار ═══
   const avContainer = card.querySelector('.avatar-container');
   if (avContainer) {
     let frameImg = avContainer.querySelector('.avatar-frame');
-    const newFrame = getAvatarFrame(userData);
+    const newFrame = getFrameSrc(u);
     if (newFrame) {
       if (!frameImg) {
         frameImg = document.createElement('img');
@@ -466,26 +343,26 @@ function updateCardInPlace(card, userData) {
         frameImg.onerror = function() { this.style.display = 'none'; };
         avContainer.appendChild(frameImg);
       }
-      const curFrame = frameImg.getAttribute('src') || '';
-      if (curFrame !== newFrame) {
-        console.log('🖼 قالب آواتار عوض شد:', phone);
+      const newFrameKey = srcKey(newFrame);
+      if (frameImg.dataset.srcKey !== newFrameKey) {
         frameImg.style.display = '';
+        frameImg.dataset.srcKey = newFrameKey;
         frameImg.src = newFrame;
       }
-    } else {
-      if (frameImg) frameImg.remove();
+    } else if (frameImg) {
+      frameImg.remove();
     }
   }
 
-  // نام + تیک
+  // ═══ نام ═══
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
-    const roleKey = (userData.rank || '').trim();
     const curName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
-    const newName = userData.name || 'کاربر';
+    const newName = u.name || 'کاربر';
     if (curName !== newName) {
       while (nameDiv.firstChild) nameDiv.removeChild(nameDiv.firstChild);
       nameDiv.appendChild(document.createTextNode(newName));
+      const roleKey = (u.rank || '').trim();
       const ticks = ROLE_TICK_MAP[roleKey];
       if (ticks && ticks.length) {
         const tickImg = document.createElement('img');
@@ -498,11 +375,11 @@ function updateCardInPlace(card, userData) {
     }
   }
 
-  // مقام
+  // ═══ مقام ═══
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
-    const roleKey = (userData.rank || '').trim();
-    const newText = userData.rank || 'کاربر';
+    const roleKey = (u.rank || '').trim();
+    const newText = u.rank || 'کاربر';
     const newClass = 'member-role ' + (ROLE_CLASS_MAP[roleKey] || 'role-observer');
     if (roleDiv.textContent !== newText) roleDiv.textContent = newText;
     if (roleDiv.className !== newClass) roleDiv.className = newClass;
@@ -510,18 +387,13 @@ function updateCardInPlace(card, userData) {
 }
 
 /* ============================================================ */
-/*  رندر کامل                                                      */
+/*  رندر                                                          */
 /* ============================================================ */
-let __lastRenderedKey = '';
-let __hasRendered = false;
-
-function renderTeam(users) {
+function render(users) {
   const grid = document.getElementById('managementGrid');
-  if (!grid) return;
-  if (!users || typeof users !== 'object') return;
+  if (!grid || !users) return;
 
-  const entries = Object.entries(users);
-  const mgmt = entries.filter(([p, u]) =>
+  const mgmt = Object.entries(users).filter(([p, u]) =>
     u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
   );
 
@@ -531,126 +403,77 @@ function renderTeam(users) {
     return rA - rB;
   });
 
+  // پاک کردن پیام‌های اضافی
+  const emptyEl = grid.querySelector('.empty-state');
+  if (emptyEl && mgmt.length > 0) emptyEl.remove();
+
+  // اگه خالی
   if (mgmt.length === 0) {
-    if (grid.querySelector('.member-card')) return;
-    if (__lastRenderedKey !== '__empty__') {
-      grid.innerHTML = `
-        <div class="empty-state">
-          <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          <div>هنوز عضوی در تیم مدیریت وجود ندارد</div>
-        </div>`;
-      __lastRenderedKey = '__empty__';
+    if (!grid.querySelector('.member-card')) {
+      grid.innerHTML = '<div class="empty-state"><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
     }
     return;
   }
 
-  const key = mgmt.map(([p, u]) =>
-    p + '@' + (u.rank || '') + '@' + (u.name || '') + '@' +
-    srcHash(u.avatar || '') + '@' + srcHash(u.exclusiveAvatar || '') + '@' +
-    (u.useExclusive ? '1' : '0') + '@' + (u.currentTemplate || '')
-  ).join('||');
-
-  if (key === __lastRenderedKey) return;
-  __lastRenderedKey = key;
-  __hasRendered = true;
-
-  const emptyEl = grid.querySelector('.empty-state');
-  if (emptyEl) emptyEl.remove();
-
-  const existingCards = {};
-  grid.querySelectorAll('.member-card').forEach(c => { existingCards[c.dataset.phone] = c; });
+  // ساختار فعلی
+  const existing = {};
+  grid.querySelectorAll('.member-card').forEach(c => { existing[c.dataset.phone] = c; });
   const newPhones = mgmt.map(([p]) => p);
 
-  Object.keys(existingCards).forEach(phone => {
+  // حذف کارت‌های اضافی
+  Object.keys(existing).forEach(phone => {
     if (!newPhones.includes(phone)) {
-      const circle = existingCards[phone].querySelector('.avatar-circle');
-      if (circle) destroyAvatarElement(circle.firstElementChild);
-      existingCards[phone].remove();
-      delete existingCards[phone];
-      console.log('❌ حذف شد:', phone);
+      const circle = existing[phone].querySelector('.avatar-circle');
+      if (circle) destroyMedia(circle.firstElementChild);
+      existing[phone].remove();
+      delete existing[phone];
     }
   });
 
-  let lastCard = null;
-  mgmt.forEach(([phone, user]) => {
-    let card = existingCards[phone];
+  // ترتیب و آپدیت
+  let prev = null;
+  mgmt.forEach(([phone, u]) => {
+    let card = existing[phone];
     if (card) {
-      updateCardInPlace(card, user);
+      updateCard(card, u);
     } else {
-      card = buildMemberCard(phone, user);
-      console.log('✅ اضافه شد:', phone, user.rank);
+      card = buildCard(phone, u);
     }
-    if (lastCard) {
-      if (lastCard.nextSibling !== card) grid.insertBefore(card, lastCard.nextSibling);
+    // ترتیب
+    if (prev) {
+      if (prev.nextSibling !== card) grid.insertBefore(card, prev.nextSibling);
     } else {
       if (grid.firstChild !== card) grid.insertBefore(card, grid.firstChild);
     }
-    lastCard = card;
+    prev = card;
   });
 }
 
 /* ============================================================ */
-/*  ⚡ fetch + render - با قفل ضد تداخل                            */
+/*  ⚡ Fetch loop - هر ۱ ثانیه، بدون پیام انتظار                  */
 /* ============================================================ */
-let __fetchInFlight = false;
+let fetching = false;
 
-async function fetchAndRender() {
-  if (isOffline()) return;
-  if (__fetchInFlight) return;
-  __fetchInFlight = true;
+async function refresh() {
+  if (fetching) return;
+  if (navigator.onLine === false) return;
+  fetching = true;
 
   try {
     const users = await getAllUsers();
-    if (users && typeof users === 'object' && Object.keys(users).length > 0) {
-      renderTeam(users);
-      saveCache(users);
-    } else if (!__hasRendered) {
-      const grid = document.getElementById('managementGrid');
-      if (grid && !grid.querySelector('.member-card')) {
-        grid.innerHTML = `<div class="empty-state"><div>در حال اتصال...</div></div>`;
-      }
-    }
-  } catch(e) {
-    // ignore
-  }
+    if (users) render(users);
+  } catch(e) {}
 
-  __fetchInFlight = false;
+  fetching = false;
 }
 
 /* ============================================================ */
 /*  Boot                                                          */
 /* ============================================================ */
-async function boot() {
-  // 1) کش فوری (0ms)
-  const cached = loadCache();
-  if (cached && Object.keys(cached).length > 0) {
-    renderTeam(cached);
-  }
-
-  // 2) Firebase
-  initFirebase();
-
-  // 3) fetch اولیه
-  await fetchAndRender();
-
-  // ⚡ 4) polling قوی هر ۱.۵ ثانیه (تضمینی)
-  setInterval(() => {
-    if (!isOffline()) fetchAndRender();
-  }, POLL_INTERVAL);
-
-  // 5) برگشت آنلاین
-  window.addEventListener('online', () => {
-    setTimeout(() => {
-      __lastRenderedKey = '';
-      fetchAndRender();
-    }, 300);
-  });
-}
-
 function playClickSound() {
   try {
     const s = document.getElementById('clickSound');
-    if (s) { s.currentTime = 0; s.volume = 0.3; s.play().catch(() => {}); }
+    if (s) { s.currentTime = 0; s.volume = 0.3; s.play().catch(()=>{}); }
   } catch(e) {}
 }
 
@@ -667,25 +490,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  boot();
+  // ⚡ لود اولیه
+  refresh();
 
+  // ⚡ loop هر ۱ ثانیه
+  setInterval(refresh, 1000);
+
+  // ⚡ برگشت به تب
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && !isOffline()) {
-      __lastRenderedKey = '';
-      fetchAndRender();
-    }
+    if (document.visibilityState === 'visible') refresh();
   });
 
-  window.addEventListener('load', () => {
-    setTimeout(() => { if (!fbReady) initFirebase(); }, 500);
-  });
-});
-
-window.addEventListener('focus', () => {
-  if (!isOffline()) {
-    __lastRenderedKey = '';
-    fetchAndRender();
-  }
+  window.addEventListener('focus', refresh);
 });
 </script>
 </body>
