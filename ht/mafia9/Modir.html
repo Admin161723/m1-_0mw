@@ -88,10 +88,6 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
-<!-- ⚡ Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 <script>
 /* ============================================================ */
 /*  Config                                                        */
@@ -101,17 +97,8 @@ const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5Z
 const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
-const FB_CFG = {
-  apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
-  authDomain: "mafiasu-681c7.firebaseapp.com",
-  databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
-  projectId: "mafiasu-681c7",
-  storageBucket: "mafiasu-681c7.firebasestorage.app",
-  messagingSenderId: "180192927804",
-  appId: "1:180192927804:web:e0c501a0d20af3b6892339"
-};
-
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
+const REFRESH_INTERVAL = 2000;
 
 const ROLE_TICK_MAP = {
   'سازنده': ['Tik1.png'],
@@ -142,58 +129,7 @@ function getCardTemplate(role) {
 }
 
 /* ============================================================ */
-/*  ⚡ Firebase Realtime                                          */
-/* ============================================================ */
-let fbDb = null;
-let fbReady = false;
-
-function initFirebase() {
-  try {
-    if (typeof firebase === 'undefined') return false;
-    if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
-    fbDb = firebase.database();
-    fbReady = true;
-    attachRealtime();
-    console.log('✅ Firebase connected');
-    return true;
-  } catch(e) {
-    console.warn('Firebase error:', e);
-    return false;
-  }
-}
-
-function attachRealtime() {
-  if (!fbReady || !fbDb) return;
-
-  // ⚡ گوش دادن به user_updates (هر تغییری از Safe Asli)
-  try {
-    const ref = fbDb.ref('user_updates');
-    ref.on('child_added', (snap) => {
-      const v = snap.val();
-      if (!v || !v.at) return;
-      if (Date.now() - v.at > 120000) return;
-      console.log('🔥 signal:', snap.key);
-      forceRefresh();
-    });
-    ref.on('child_changed', (snap) => {
-      const v = snap.val();
-      if (!v || !v.at) return;
-      if (Date.now() - v.at > 120000) return;
-      console.log('🔥 signal:', snap.key);
-      forceRefresh();
-    });
-    console.log('✅ Firebase listener active');
-  } catch(e) { console.warn(e); }
-}
-
-let __forceRefreshTimer = null;
-function forceRefresh() {
-  if (__forceRefreshTimer) clearTimeout(__forceRefreshTimer);
-  __forceRefreshTimer = setTimeout(() => { refresh(); }, 100);
-}
-
-/* ============================================================ */
-/*  ⚡ Offline Detection                                          */
+/*  Offline Detection                                             */
 /* ============================================================ */
 let __isOffline = false;
 let __offlineFailCount = 0;
@@ -285,7 +221,7 @@ window.addEventListener('online', async () => {
 async function redisGet(url, token, key) {
   try {
     const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 5000);
+    const t = setTimeout(() => c.abort(), 8000);
     const r = await fetch(url + '/get/' + encodeURIComponent(key), {
       headers: { 'Authorization': 'Bearer ' + token },
       signal: c.signal, cache: 'no-store'
@@ -300,6 +236,7 @@ async function redisGet(url, token, key) {
   } catch(e) { throw e; }
 }
 
+/* ⚡ همه کاربران از all_users */
 async function getAllUsers() {
   const results = await Promise.allSettled([
     redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'),
@@ -325,6 +262,23 @@ async function getAllUsers() {
   return merged;
 }
 
+/* ⚡⚡⚡ جدید: خواندن تکی یه کاربر مستقیم از user:PHONE */
+async function redisGetUser(phone) {
+  const key = 'user:' + phone;
+  const results = await Promise.allSettled([
+    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key),
+    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key)
+  ]);
+  const u1 = results[0].status === 'fulfilled' ? results[0].value : null;
+  const u2 = results[1].status === 'fulfilled' ? results[1].value : null;
+  if (!u1 && !u2) return null;
+  if (!u1) return u2;
+  if (!u2) return u1;
+  const t1 = u1.lastUpdatedAt || 0;
+  const t2 = u2.lastUpdatedAt || 0;
+  return t2 > t1 ? u2 : u1;
+}
+
 /* ============================================================ */
 /*  Helpers                                                       */
 /* ============================================================ */
@@ -347,12 +301,10 @@ function getFrameSrc(u) {
   return u.currentTemplate || null;
 }
 
-/* ═══ ⚡ FIX: مقایسه دقیق برای dataURL ═══ */
+/* ⚡ مقایسه دقیق برای dataURL و path */
 function srcKey(s) {
   if (!s || typeof s !== 'string') return '0';
-  // برای dataURL یا blob → hash کامل
   if (s.indexOf('data:') === 0 || s.indexOf('blob:') === 0) {
-    // hash سریع FNV-1a روی کل رشته
     let h = 2166136261;
     for (let i = 0; i < s.length; i++) {
       h ^= s.charCodeAt(i);
@@ -360,7 +312,6 @@ function srcKey(s) {
     }
     return 'h' + (h >>> 0) + '_' + s.length;
   }
-  // برای فایل‌های معمولی (path) → خود رشته
   return s;
 }
 
@@ -483,7 +434,6 @@ function buildCard(phone, u) {
 function updateCard(card, u) {
   const phone = card.dataset.phone;
 
-  // قالب کارت
   const tplImg = card.querySelector('.card-template img');
   const newTpl = getCardTemplate(u.rank);
   if (tplImg) {
@@ -494,14 +444,12 @@ function updateCard(card, u) {
     }
   }
 
-  // ⚡ آواتار - با مقایسه دقیق
   const avCircle = card.querySelector('.avatar-circle');
   const newAvSrc = getAvatarSrc(phone, u);
   const newAvKey = srcKey(newAvSrc);
   if (avCircle) {
     const curKey = avCircle.dataset.srcKey || '0';
     if (curKey !== newAvKey) {
-      console.log('🎬 avatar changed for', phone);
       destroyMedia(avCircle.firstElementChild);
       while (avCircle.firstChild) avCircle.removeChild(avCircle.firstChild);
       avCircle.dataset.srcKey = newAvKey;
@@ -509,7 +457,6 @@ function updateCard(card, u) {
     }
   }
 
-  // قالب دور آواتار
   const avContainer = card.querySelector('.avatar-container');
   if (avContainer) {
     let frameImg = avContainer.querySelector('.avatar-frame');
@@ -524,7 +471,6 @@ function updateCard(card, u) {
       }
       const newFrameKey = srcKey(newFrame);
       if (frameImg.dataset.srcKey !== newFrameKey) {
-        console.log('🖼 frame changed for', phone);
         frameImg.style.display = '';
         frameImg.dataset.srcKey = newFrameKey;
         frameImg.src = newFrame;
@@ -534,7 +480,6 @@ function updateCard(card, u) {
     }
   }
 
-  // نام
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const curName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
@@ -555,7 +500,6 @@ function updateCard(card, u) {
     }
   }
 
-  // مقام
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (u.rank || '').trim();
@@ -569,11 +513,11 @@ function updateCard(card, u) {
 /* ============================================================ */
 /*  Render                                                        */
 /* ============================================================ */
-function render(users) {
+function render(usersMap) {
   const grid = document.getElementById('managementGrid');
-  if (!grid || !users) return;
+  if (!grid || !usersMap) return;
 
-  const mgmt = Object.entries(users).filter(([p, u]) =>
+  const mgmt = Object.entries(usersMap).filter(([p, u]) =>
     u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
   );
 
@@ -621,7 +565,7 @@ function render(users) {
 }
 
 /* ============================================================ */
-/*  Refresh Loop                                                  */
+/*  ⚡⚡⚡ Refresh - با خواندن تکی هر کاربر تیم                     */
 /* ============================================================ */
 let fetching = false;
 
@@ -630,13 +574,52 @@ async function refresh() {
   if (__isOffline) return;
   if (navigator.onLine === false) { checkOffline(); return; }
   fetching = true;
+
   try {
-    const users = await getAllUsers();
-    if (users) render(users);
+    // 1) اول all_users (برای پیدا کردن لیست کاربران تیم)
+    const allUsers = await getAllUsers();
+    if (!allUsers) { fetching = false; return; }
+
+    // 2) پیدا کردن کاربران تیم مدیریت
+    const mgmtPhones = Object.entries(allUsers)
+      .filter(([p, u]) => u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim()))
+      .map(([p]) => p);
+
+    if (mgmtPhones.length === 0) {
+      render(allUsers);
+      __offlineFailCount = 0;
+      fetching = false;
+      return;
+    }
+
+    // 3) ⚡⚡⚡ برای هر کاربر، user:PHONE رو تکی و تازه بگیر (موازی)
+    const freshResults = await Promise.allSettled(
+      mgmtPhones.map(phone => redisGetUser(phone))
+    );
+
+    // 4) finalUsers بساز
+    const finalUsers = {};
+    mgmtPhones.forEach((phone, idx) => {
+      const r = freshResults[idx];
+      if (r.status === 'fulfilled' && r.value) {
+        // اگه fresh واقعاً برگشت
+        const fresh = r.value;
+        // چک کن که آخرین ورژن باشه
+        const stale = allUsers[phone];
+        const tFresh = fresh.lastUpdatedAt || 0;
+        const tStale = stale.lastUpdatedAt || 0;
+        finalUsers[phone] = tFresh >= tStale ? fresh : stale;
+      } else {
+        finalUsers[phone] = allUsers[phone];
+      }
+    });
+
+    render(finalUsers);
     __offlineFailCount = 0;
   } catch(e) {
     checkOffline();
   }
+
   fetching = false;
 }
 
@@ -663,21 +646,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ⚡ Firebase
-  initFirebase();
-
   // Offline
   setupOfflineBtn();
   checkOffline();
   setInterval(checkOffline, 2000);
 
-  // Refresh اولیه
+  // رفرش اولیه
   refresh();
 
-  // ⚡ Polling پشتیبان هر ۱.۵ ثانیه (اگه Firebase کار نکرد)
-  setInterval(refresh, 1500);
+  // ⚡ polling هر ۲ ثانیه
+  setInterval(refresh, REFRESH_INTERVAL);
 
-  // Visibility
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       checkOffline();
@@ -689,8 +668,6 @@ document.addEventListener('DOMContentLoaded', () => {
     checkOffline();
     refresh();
   });
-
-  console.log('✅ Team Management ready');
 });
 </script>
 </body>
