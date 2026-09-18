@@ -50,54 +50,6 @@
   .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);font-size:14px;grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:15px;}
   .empty-icon{width:60px;height:60px;fill:rgba(255,255,255,0.3);}
 
-  /* ═══ Overlay طرح درخواستی کاربر ═══ */
-  .og-wrap{
-    position:fixed !important;
-    top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;
-    width:100vw !important;height:100vh !important;
-    z-index:2147483647 !important;
-    background:rgba(0,0,0,0.85) !important;
-    display:none !important;
-    align-items:center !important;justify-content:center !important;
-    padding:20px !important;box-sizing:border-box !important;direction:rtl !important;
-    font-family:Tahoma,Vazirmatn,sans-serif !important;
-  }
-  .og-wrap.show{display:flex !important;}
-  .og-dialog{
-    width:340px;max-width:100%;border-radius:10px;padding:5px;
-    background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);
-    box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);
-    animation:ogPop .45s cubic-bezier(.2,1.4,.4,1) both;
-  }
-  @keyframes ogPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
-  .og-box{
-    background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);
-    border-radius:7px;padding:32px 22px 28px;text-align:center;position:relative;overflow:hidden;
-  }
-  .og-msg{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}
-  .og-btn{
-    position:relative;overflow:hidden;border:none;cursor:pointer;
-    margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);
-    color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;
-    text-shadow:0 2px 2px rgba(0,70,0,.55);
-    box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.55);
-    transition:transform .12s ease,filter .12s ease;
-    font-family:Tahoma,Vazirmatn,sans-serif;outline:none;
-  }
-  .og-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #36900a,inset 0 3px 8px rgba(0,0,0,.35);}
-  .og-btn::after{
-    content:"";position:absolute;top:-60%;left:-30%;width:38%;height:220%;
-    background:linear-gradient(100deg,transparent,rgba(255,255,255,.8),transparent);
-    transform:skewX(-20deg);animation:ogShine 2.4s ease-in-out infinite;
-  }
-  @keyframes ogShine{0%,55%{left:-40%;}100%{left:135%;}}
-  .og-btn.og-loading{
-    background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);
-    color:#5a3d00;text-shadow:none;
-    box-shadow:0 5px 0 #a58a00,0 10px 18px rgba(0,0,0,.4);
-  }
-  .og-btn.og-loading::after{animation:none;display:none;}
-
   @media (max-width:768px){
     .management-grid{grid-template-columns:repeat(3,1fr);gap:12px;padding:15px;}
     .avatar-container{width:82px;height:82px;top:5%;}
@@ -123,19 +75,15 @@
 
 <div class="management-grid" id="managementGrid"></div>
 
-<!-- ═══ Overlay طرح درخواستی ═══ -->
-<div class="og-wrap" id="__og_overlay__">
-  <div class="og-dialog">
-    <div class="og-box">
-      <div class="og-msg" id="__og_msg__">اتصال اینترنت شما<br>قطع شده است</div>
-      <button id="__og_btn__" class="og-btn">تلاش مجدد</button>
-    </div>
-  </div>
-</div>
-
 <audio id="clickSound" preload="auto">
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  ⚡ Offline Guard - همون چیزی که تو صفحه اصلی بازیه            -->
+<!--  ⚠️ این خط باید قبل از اسکریپت اصلی باشه                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script src="offline-guard.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -192,147 +140,14 @@ function getCardTemplate(role) {
   return '51.webp';
 }
 
-/* ============================================================ */
-/*  ⚡ سیستم Overlay (طرح درخواستی)                                */
-/* ============================================================ */
-let __og_isShown = false;
-let __og_currentMode = 'offline';
-let __og_offlineFailCount = 0;
-let __og_checkBusy = false;
-let __og_checkInterval = null;
-
-function ogGetEl(id) { return document.getElementById(id); }
-
-function ogSetMessage(html) {
-  const m = ogGetEl('__og_msg__');
-  if (m) m.innerHTML = html;
-}
-
-function ogShow() {
-  const o = ogGetEl('__og_overlay__');
-  if (!o) return;
-  o.classList.add('show');
-  o.style.setProperty('display', 'flex', 'important');
-  __og_isShown = true;
-}
-
-function ogHide() {
-  const o = ogGetEl('__og_overlay__');
-  if (!o) return;
-  o.classList.remove('show');
-  o.style.setProperty('display', 'none', 'important');
-  __og_isShown = false;
-  __og_offlineFailCount = 0;
-}
-
-function ogSetBtnLoading() {
-  const btn = ogGetEl('__og_btn__');
-  if (btn) {
-    btn.classList.add('og-loading');
-    btn.textContent = 'در حال بررسی...';
-    btn.disabled = true;
+/* ═══ چک آفلاین با استفاده از offline-guard ═══ */
+function isOffline() {
+  // اگه offline-guard لود شده، از تابع خودش استفاده کن
+  if (typeof window.ogIsOffline === 'function') {
+    return window.ogIsOffline();
   }
-}
-
-function ogSetBtnNormal() {
-  const btn = ogGetEl('__og_btn__');
-  if (btn) {
-    btn.classList.remove('og-loading');
-    btn.textContent = 'تلاش مجدد';
-    btn.disabled = false;
-  }
-}
-
-/* ⚡ چک واقعی اتصال (jsdelivr) */
-function ogRealCheck() {
-  return new Promise(function(resolve) {
-    const img = new Image();
-    let done = false;
-    const timer = setTimeout(function() {
-      if (!done) { done = true; resolve(false); }
-    }, 3500);
-    img.onload = function() {
-      if (!done) { done = true; clearTimeout(timer); resolve(true); }
-    };
-    img.onerror = function() {
-      if (!done) { done = true; clearTimeout(timer); resolve(false); }
-    };
-    img.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?_=' + Date.now();
-  });
-}
-
-/* ⚡ چک دوره‌ای */
-async function ogCheckNow() {
-  if (__og_checkBusy) return;
-  __og_checkBusy = true;
-
-  try {
-    if (navigator.onLine === true) {
-      __og_offlineFailCount = 0;
-      if (__og_isShown && __og_currentMode === 'offline') ogHide();
-      __og_checkBusy = false;
-      return;
-    }
-
-    const reallyOnline = await ogRealCheck();
-    if (reallyOnline) {
-      __og_offlineFailCount = 0;
-      if (__og_isShown && __og_currentMode === 'offline') ogHide();
-    } else {
-      __og_offlineFailCount++;
-      if (__og_offlineFailCount >= 2 && !__og_isShown) {
-        __og_currentMode = 'offline';
-        ogSetMessage('اتصال اینترنت شما<br>قطع شده است');
-        ogSetBtnNormal();
-        ogShow();
-      }
-    }
-  } catch(e) {
-    __og_offlineFailCount = 0;
-  }
-
-  __og_checkBusy = false;
-}
-
-/* ⚡ دکمه تلاش مجدد */
-function ogOnRetryClick() {
-  ogSetBtnLoading();
-
-  ogRealCheck().then(function(ok) {
-    if (ok) {
-      try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
-      try { window.location.reload(); } catch(e) {}
-    } else {
-      ogSetBtnNormal();
-    }
-  }).catch(function() {
-    ogSetBtnNormal();
-  });
-}
-
-/* ⚡ راه‌اندازی */
-function ogInit() {
-  const btn = ogGetEl('__og_btn__');
-  if (btn) btn.onclick = ogOnRetryClick;
-
-  window.addEventListener('offline', function() {
-    setTimeout(function() { ogCheckNow(); }, 1500);
-  });
-
-  window.addEventListener('online', function() {
-    __og_offlineFailCount = 0;
-    if (__og_isShown && __og_currentMode === 'offline') {
-      ogHide();
-      setTimeout(function() {
-        try { window.location.reload(); } catch(e) {}
-      }, 300);
-    }
-  });
-
-  if (__og_checkInterval) clearInterval(__og_checkInterval);
-  __og_checkInterval = setInterval(ogCheckNow, 3000);
-
-  setTimeout(ogCheckNow, 1000);
+  // fallback: navigator.onLine
+  return navigator.onLine === false;
 }
 
 /* ============================================================ */
@@ -796,19 +611,18 @@ function renderTeam(users) {
 /*  fetch + render                                                */
 /* ============================================================ */
 async function fetchAndRender() {
-  if (__og_isShown && __og_currentMode === 'offline') return;
+  // ⚠️ اگه آفلاینیم، fetch نکن (offline-guard خودش overlay رو نشون می‌ده)
+  if (isOffline()) return;
 
   let users = null;
   try {
     users = await getAllUsers();
   } catch(e) {
-    // خطای شبکه → چک آفلاین
-    ogCheckNow();
+    // خطای شبکه - offline-guard خودش مدیریت می‌کنه
     return;
   }
 
   if (users && typeof users === 'object' && Object.keys(users).length > 0) {
-    if (__og_isShown && __og_currentMode === 'offline') ogHide();
     renderTeam(users);
     saveCache(users);
   } else {
@@ -831,23 +645,26 @@ async function boot() {
     renderTeam(cached);
   }
 
-  // ═══ 2) Overlay init ═══
-  ogInit();
-
-  // ═══ 3) Firebase ═══
+  // ═══ 2) Firebase ═══
   initFirebase();
 
-  // ═══ 4) fetch از Redis ═══
+  // ═══ 3) fetch از Redis ═══
   await fetchAndRender();
 
-  // ═══ 5) polling پشتیبان ═══
-  if (!fbReady) {
-    setInterval(() => {
-      if (!(__og_isShown && __og_currentMode === 'offline')) {
-        fetchAndRender();
-      }
-    }, 2000);
-  }
+  // ═══ 4) polling پشتیبان ═══
+  setInterval(() => {
+    if (!isOffline()) {
+      fetchAndRender();
+    }
+  }, 5000);
+
+  // ═══ 5) وقتی از آفلاین درومدیم، رفرش کن ═══
+  window.addEventListener('online', () => {
+    setTimeout(() => {
+      __lastRenderedKey = '';
+      fetchAndRender();
+    }, 500);
+  });
 }
 
 function playClickSound() {
@@ -874,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      if (!(__og_isShown && __og_currentMode === 'offline')) {
+      if (!isOffline()) {
         fetchAndRender();
       }
     }
@@ -886,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('focus', () => {
-  if (!(__og_isShown && __og_currentMode === 'offline')) {
+  if (!isOffline()) {
     fetchAndRender();
   }
 });
