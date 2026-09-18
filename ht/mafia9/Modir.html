@@ -37,46 +37,17 @@
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
   .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
 
-  /* ═══ Overlay آفلاین - طرح درخواستی ═══ */
-  #offlineOv{
-    position:fixed;inset:0;z-index:2147483647;
-    background:rgba(0,0,0,0.85);
-    display:none;align-items:center;justify-content:center;
-    padding:20px;box-sizing:border-box;direction:rtl;
-    font-family:'Vazirmatn',Tahoma,sans-serif;
-  }
+  #offlineOv{position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;direction:rtl;font-family:'Vazirmatn',Tahoma,sans-serif;}
   #offlineOv.show{display:flex;}
-  #offlineOv .og-dialog{
-    width:340px;max-width:100%;border-radius:10px;padding:5px;
-    background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);
-    box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);
-    animation:ogPop .45s cubic-bezier(.2,1.4,.4,1) both;
-  }
+  #offlineOv .og-dialog{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);animation:ogPop .45s cubic-bezier(.2,1.4,.4,1) both;}
   @keyframes ogPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
-  #offlineOv .og-box{
-    background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);
-    border-radius:7px;padding:32px 22px 28px;text-align:center;position:relative;overflow:hidden;
-  }
+  #offlineOv .og-box{background:linear-gradient(180deg,#e0218a,#c4187a 60%,#a8126b);border-radius:7px;padding:32px 22px 28px;text-align:center;position:relative;overflow:hidden;}
   #offlineOv .og-msg{color:#fff;font-size:18px;font-weight:700;line-height:1.9;text-shadow:0 2px 3px rgba(0,0,0,.4);}
-  #offlineOv .og-btn{
-    position:relative;overflow:hidden;border:none;cursor:pointer;
-    margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);
-    color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;
-    text-shadow:0 2px 2px rgba(0,70,0,.55);
-    box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.55);
-    transition:transform .12s ease;font-family:Tahoma,Vazirmatn,sans-serif;outline:none;
-  }
+  #offlineOv .og-btn{position:relative;overflow:hidden;border:none;cursor:pointer;margin-top:28px;background:linear-gradient(180deg,#9bf53a,#6fdc1e 50%,#4dbb0c);color:#fff;font-weight:800;font-size:19px;border-radius:8px;padding:11px 42px;text-shadow:0 2px 2px rgba(0,70,0,.55);box-shadow:0 5px 0 #36900a,0 10px 18px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.55);transition:transform .12s ease;font-family:Tahoma,Vazirmatn,sans-serif;outline:none;}
   #offlineOv .og-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #36900a,inset 0 3px 8px rgba(0,0,0,.35);}
-  #offlineOv .og-btn::after{
-    content:"";position:absolute;top:-60%;left:-30%;width:38%;height:220%;
-    background:linear-gradient(100deg,transparent,rgba(255,255,255,.8),transparent);
-    transform:skewX(-20deg);animation:ogShine 2.4s ease-in-out infinite;
-  }
+  #offlineOv .og-btn::after{content:"";position:absolute;top:-60%;left:-30%;width:38%;height:220%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.8),transparent);transform:skewX(-20deg);animation:ogShine 2.4s ease-in-out infinite;}
   @keyframes ogShine{0%,55%{left:-40%;}100%{left:135%;}}
-  #offlineOv .og-btn.loading{
-    background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);
-    color:#5a3d00;text-shadow:none;
-  }
+  #offlineOv .og-btn.loading{background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);color:#5a3d00;text-shadow:none;}
   #offlineOv .og-btn.loading::after{animation:none;display:none;}
 
   @media (max-width:768px){
@@ -104,7 +75,6 @@
 
 <div class="management-grid" id="managementGrid"></div>
 
-<!-- ═══ Overlay آفلاین ═══ -->
 <div id="offlineOv">
   <div class="og-dialog">
     <div class="og-box">
@@ -118,6 +88,10 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
+<!-- ⚡ Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
 /* ============================================================ */
 /*  Config                                                        */
@@ -126,6 +100,16 @@ const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+
+const FB_CFG = {
+  apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
+  authDomain: "mafiasu-681c7.firebaseapp.com",
+  databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
+  projectId: "mafiasu-681c7",
+  storageBucket: "mafiasu-681c7.firebasestorage.app",
+  messagingSenderId: "180192927804",
+  appId: "1:180192927804:web:e0c501a0d20af3b6892339"
+};
 
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
 
@@ -158,7 +142,58 @@ function getCardTemplate(role) {
 }
 
 /* ============================================================ */
-/*  ⚡ آفلاین - تشخیص قوی                                         */
+/*  ⚡ Firebase Realtime                                          */
+/* ============================================================ */
+let fbDb = null;
+let fbReady = false;
+
+function initFirebase() {
+  try {
+    if (typeof firebase === 'undefined') return false;
+    if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
+    fbDb = firebase.database();
+    fbReady = true;
+    attachRealtime();
+    console.log('✅ Firebase connected');
+    return true;
+  } catch(e) {
+    console.warn('Firebase error:', e);
+    return false;
+  }
+}
+
+function attachRealtime() {
+  if (!fbReady || !fbDb) return;
+
+  // ⚡ گوش دادن به user_updates (هر تغییری از Safe Asli)
+  try {
+    const ref = fbDb.ref('user_updates');
+    ref.on('child_added', (snap) => {
+      const v = snap.val();
+      if (!v || !v.at) return;
+      if (Date.now() - v.at > 120000) return;
+      console.log('🔥 signal:', snap.key);
+      forceRefresh();
+    });
+    ref.on('child_changed', (snap) => {
+      const v = snap.val();
+      if (!v || !v.at) return;
+      if (Date.now() - v.at > 120000) return;
+      console.log('🔥 signal:', snap.key);
+      forceRefresh();
+    });
+    console.log('✅ Firebase listener active');
+  } catch(e) { console.warn(e); }
+}
+
+let __forceRefreshTimer = null;
+function forceRefresh() {
+  if (__forceRefreshTimer) clearTimeout(__forceRefreshTimer);
+  __forceRefreshTimer = setTimeout(() => { refresh(); }, 100);
+}
+
+/* ============================================================ */
+/*  ⚡ Offline Detection                                          */
 /* ============================================================ */
 let __isOffline = false;
 let __offlineFailCount = 0;
@@ -173,7 +208,6 @@ function showOfflineOverlay() {
   document.body.style.overflow = 'hidden';
   startOfflineWatch();
 }
-
 function hideOfflineOverlay() {
   if (!__isOffline) return;
   __isOffline = false;
@@ -182,47 +216,29 @@ function hideOfflineOverlay() {
   document.body.style.overflow = '';
   stopOfflineWatch();
 }
-
 function startOfflineWatch() {
   stopOfflineWatch();
   __offlineRecoverInterval = setInterval(async () => {
     const online = await checkRealOnline();
-    if (online) {
-      hideOfflineOverlay();
-      // رفرش کامل
-      window.location.reload();
-    }
+    if (online) { hideOfflineOverlay(); window.location.reload(); }
   }, 1500);
 }
-
 function stopOfflineWatch() {
-  if (__offlineRecoverInterval) {
-    clearInterval(__offlineRecoverInterval);
-    __offlineRecoverInterval = null;
-  }
+  if (__offlineRecoverInterval) { clearInterval(__offlineRecoverInterval); __offlineRecoverInterval = null; }
 }
-
 function checkRealOnline() {
   return new Promise((resolve) => {
     const img = new Image();
     let done = false;
-    const timer = setTimeout(() => {
-      if (!done) { done = true; resolve(false); }
-    }, 3000);
-    img.onload = () => {
-      if (!done) { done = true; clearTimeout(timer); resolve(true); }
-    };
-    img.onerror = () => {
-      if (!done) { done = true; clearTimeout(timer); resolve(false); }
-    };
+    const timer = setTimeout(() => { if (!done) { done = true; resolve(false); } }, 3000);
+    img.onload = () => { if (!done) { done = true; clearTimeout(timer); resolve(true); } };
+    img.onerror = () => { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
     img.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?_=' + Date.now();
   });
 }
-
 async function checkOffline() {
   if (__offlineCheckBusy) return;
   __offlineCheckBusy = true;
-
   try {
     if (navigator.onLine === true) {
       __offlineFailCount = 0;
@@ -230,25 +246,17 @@ async function checkOffline() {
       __offlineCheckBusy = false;
       return;
     }
-
     const really = await checkRealOnline();
     if (really) {
       __offlineFailCount = 0;
       if (__isOffline) hideOfflineOverlay();
     } else {
       __offlineFailCount++;
-      if (__offlineFailCount >= 1 && !__isOffline) {
-        showOfflineOverlay();
-      }
+      if (__offlineFailCount >= 1 && !__isOffline) showOfflineOverlay();
     }
-  } catch(e) {
-    __offlineFailCount = 0;
-  }
-
+  } catch(e) { __offlineFailCount = 0; }
   __offlineCheckBusy = false;
 }
-
-/* دکمه تلاش مجدد */
 function setupOfflineBtn() {
   const btn = document.getElementById('offlineBtn');
   if (!btn) return;
@@ -257,27 +265,18 @@ function setupOfflineBtn() {
     btn.textContent = 'در حال بررسی...';
     btn.disabled = true;
     const ok = await checkRealOnline();
-    if (ok) {
-      window.location.reload();
-    } else {
+    if (ok) window.location.reload();
+    else {
       btn.classList.remove('loading');
       btn.textContent = 'تلاش مجدد';
       btn.disabled = false;
     }
   };
 }
-
-/* لیسنرهای مرورگر */
-window.addEventListener('offline', () => {
-  setTimeout(checkOffline, 500);
-});
-
+window.addEventListener('offline', () => { setTimeout(checkOffline, 500); });
 window.addEventListener('online', async () => {
   const really = await checkRealOnline();
-  if (really) {
-    hideOfflineOverlay();
-    setTimeout(() => window.location.reload(), 300);
-  }
+  if (really) { hideOfflineOverlay(); setTimeout(() => window.location.reload(), 300); }
 });
 
 /* ============================================================ */
@@ -286,7 +285,7 @@ window.addEventListener('online', async () => {
 async function redisGet(url, token, key) {
   try {
     const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 4000);
+    const t = setTimeout(() => c.abort(), 5000);
     const r = await fetch(url + '/get/' + encodeURIComponent(key), {
       headers: { 'Authorization': 'Bearer ' + token },
       signal: c.signal, cache: 'no-store'
@@ -310,11 +309,7 @@ async function getAllUsers() {
   const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
   const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
 
-  // ⚡ اگه هر دو reject شدن → خطای شبکه
-  if (results[0].status === 'rejected' && results[1].status === 'rejected') {
-    throw new Error('Network');
-  }
-
+  if (results[0].status === 'rejected' && results[1].status === 'rejected') throw new Error('Network');
   if (!v1 && !v2) return null;
 
   const merged = {};
@@ -352,11 +347,21 @@ function getFrameSrc(u) {
   return u.currentTemplate || null;
 }
 
-/* ═══ مقایسه سریع ═══ */
+/* ═══ ⚡ FIX: مقایسه دقیق برای dataURL ═══ */
 function srcKey(s) {
   if (!s || typeof s !== 'string') return '0';
-  const len = s.length;
-  return len + '|' + s.substr(0, 40) + '|' + s.substr(-40);
+  // برای dataURL یا blob → hash کامل
+  if (s.indexOf('data:') === 0 || s.indexOf('blob:') === 0) {
+    // hash سریع FNV-1a روی کل رشته
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return 'h' + (h >>> 0) + '_' + s.length;
+  }
+  // برای فایل‌های معمولی (path) → خود رشته
+  return s;
 }
 
 function applyTick(img, cands) {
@@ -410,7 +415,7 @@ function destroyMedia(el) {
 }
 
 /* ============================================================ */
-/*  ساخت کارت                                                     */
+/*  Build / Update Card                                           */
 /* ============================================================ */
 function buildCard(phone, u) {
   const card = document.createElement('div');
@@ -478,6 +483,7 @@ function buildCard(phone, u) {
 function updateCard(card, u) {
   const phone = card.dataset.phone;
 
+  // قالب کارت
   const tplImg = card.querySelector('.card-template img');
   const newTpl = getCardTemplate(u.rank);
   if (tplImg) {
@@ -488,16 +494,22 @@ function updateCard(card, u) {
     }
   }
 
+  // ⚡ آواتار - با مقایسه دقیق
   const avCircle = card.querySelector('.avatar-circle');
   const newAvSrc = getAvatarSrc(phone, u);
   const newAvKey = srcKey(newAvSrc);
-  if (avCircle && avCircle.dataset.srcKey !== newAvKey) {
-    destroyMedia(avCircle.firstElementChild);
-    while (avCircle.firstChild) avCircle.removeChild(avCircle.firstChild);
-    avCircle.dataset.srcKey = newAvKey;
-    avCircle.appendChild(buildAvatarMedia(newAvSrc));
+  if (avCircle) {
+    const curKey = avCircle.dataset.srcKey || '0';
+    if (curKey !== newAvKey) {
+      console.log('🎬 avatar changed for', phone);
+      destroyMedia(avCircle.firstElementChild);
+      while (avCircle.firstChild) avCircle.removeChild(avCircle.firstChild);
+      avCircle.dataset.srcKey = newAvKey;
+      avCircle.appendChild(buildAvatarMedia(newAvSrc));
+    }
   }
 
+  // قالب دور آواتار
   const avContainer = card.querySelector('.avatar-container');
   if (avContainer) {
     let frameImg = avContainer.querySelector('.avatar-frame');
@@ -512,6 +524,7 @@ function updateCard(card, u) {
       }
       const newFrameKey = srcKey(newFrame);
       if (frameImg.dataset.srcKey !== newFrameKey) {
+        console.log('🖼 frame changed for', phone);
         frameImg.style.display = '';
         frameImg.dataset.srcKey = newFrameKey;
         frameImg.src = newFrame;
@@ -521,6 +534,7 @@ function updateCard(card, u) {
     }
   }
 
+  // نام
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const curName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
@@ -541,6 +555,7 @@ function updateCard(card, u) {
     }
   }
 
+  // مقام
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (u.rank || '').trim();
@@ -552,7 +567,7 @@ function updateCard(card, u) {
 }
 
 /* ============================================================ */
-/*  رندر                                                          */
+/*  Render                                                        */
 /* ============================================================ */
 function render(users) {
   const grid = document.getElementById('managementGrid');
@@ -594,11 +609,8 @@ function render(users) {
   let prev = null;
   mgmt.forEach(([phone, u]) => {
     let card = existing[phone];
-    if (card) {
-      updateCard(card, u);
-    } else {
-      card = buildCard(phone, u);
-    }
+    if (card) updateCard(card, u);
+    else card = buildCard(phone, u);
     if (prev) {
       if (prev.nextSibling !== card) grid.insertBefore(card, prev.nextSibling);
     } else {
@@ -609,29 +621,22 @@ function render(users) {
 }
 
 /* ============================================================ */
-/*  ⚡ Fetch loop - هر ۱ ثانیه                                    */
+/*  Refresh Loop                                                  */
 /* ============================================================ */
 let fetching = false;
 
 async function refresh() {
   if (fetching) return;
   if (__isOffline) return;
-  if (navigator.onLine === false) {
-    checkOffline();
-    return;
-  }
+  if (navigator.onLine === false) { checkOffline(); return; }
   fetching = true;
-
   try {
     const users = await getAllUsers();
     if (users) render(users);
-    // ⚡ اگه موفق شد، حالت آفلاین رو ریست کن
     __offlineFailCount = 0;
   } catch(e) {
-    // ⚡ خطای شبکه → چک آفلاین
     checkOffline();
   }
-
   fetching = false;
 }
 
@@ -658,15 +663,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // آفلاین
+  // ⚡ Firebase
+  initFirebase();
+
+  // Offline
   setupOfflineBtn();
   checkOffline();
   setInterval(checkOffline, 2000);
 
-  // رفرش تیم
+  // Refresh اولیه
   refresh();
-  setInterval(refresh, 1000);
 
+  // ⚡ Polling پشتیبان هر ۱.۵ ثانیه (اگه Firebase کار نکرد)
+  setInterval(refresh, 1500);
+
+  // Visibility
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       checkOffline();
@@ -678,6 +689,8 @@ document.addEventListener('DOMContentLoaded', () => {
     checkOffline();
     refresh();
   });
+
+  console.log('✅ Team Management ready');
 });
 </script>
 </body>
