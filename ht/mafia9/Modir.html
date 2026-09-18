@@ -37,6 +37,36 @@
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
   .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
 
+  /* وضعیت‌های صفحه */
+  .status-box{
+    grid-column:1/-1;
+    text-align:center;
+    padding:60px 20px;
+    color:rgba(255,255,255,.8);
+    font-size:15px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+  }
+  .spinner{
+    width:44px;height:44px;
+    border:4px solid rgba(79,195,247,0.2);
+    border-top-color:#4fc3f7;
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .retry-btn{
+    background:#2ecc71;border:none;color:#fff;
+    padding:10px 26px;border-radius:60px;
+    font-size:15px;font-weight:700;cursor:pointer;
+    font-family:inherit;
+    box-shadow:0 4px 12px rgba(46,204,113,0.4);
+  }
+  .retry-btn:active{transform:scale(0.96);}
+
   #offlineOv{position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;direction:rtl;font-family:'Vazirmatn',Tahoma,sans-serif;}
   #offlineOv.show{display:flex;}
   #offlineOv .og-dialog{width:340px;max-width:100%;border-radius:10px;padding:5px;background:linear-gradient(180deg,#ffe066,#f5c518 50%,#d9a404);box-shadow:0 0 28px rgba(245,197,24,.4),0 18px 40px rgba(0,0,0,.55);animation:ogPop .45s cubic-bezier(.2,1.4,.4,1) both;}
@@ -73,7 +103,13 @@
   <p>اعضای رسمی تیم مدیریت و پشتیبانی بازی</p>
 </div>
 
-<div class="management-grid" id="managementGrid"></div>
+<!-- ⚡ حالا با لودینگ اولیه -->
+<div class="management-grid" id="managementGrid">
+  <div class="status-box" id="initialStatus">
+    <div class="spinner"></div>
+    <div>در حال بارگذاری...</div>
+  </div>
+</div>
 
 <div id="offlineOv">
   <div class="og-dialog">
@@ -98,7 +134,8 @@ const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
 const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
 
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-const REFRESH_INTERVAL = 2000;
+const REFRESH_INTERVAL = 3000;
+const MGMT_LIST_KEY = 'mgmt_list_v1';
 
 const ROLE_TICK_MAP = {
   'سازنده': ['Tik1.png'],
@@ -188,7 +225,7 @@ async function checkOffline() {
       if (__isOffline) hideOfflineOverlay();
     } else {
       __offlineFailCount++;
-      if (__offlineFailCount >= 1 && !__isOffline) showOfflineOverlay();
+      if (__offlineFailCount >= 2 && !__isOffline) showOfflineOverlay();
     }
   } catch(e) { __offlineFailCount = 0; }
   __offlineCheckBusy = false;
@@ -221,7 +258,7 @@ window.addEventListener('online', async () => {
 async function redisGet(url, token, key) {
   try {
     const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 8000);
+    const t = setTimeout(() => c.abort(), 6000);
     const r = await fetch(url + '/get/' + encodeURIComponent(key), {
       headers: { 'Authorization': 'Bearer ' + token },
       signal: c.signal, cache: 'no-store'
@@ -233,10 +270,40 @@ async function redisGet(url, token, key) {
       try { return JSON.parse(d.result); } catch(e) { return d.result; }
     }
     return null;
-  } catch(e) { throw e; }
+  } catch(e) { return null; }
 }
 
-/* ⚡ همه کاربران از all_users */
+async function redisSet(url, token, key, value) {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 8000);
+    const r = await fetch(url + '/set/' + encodeURIComponent(key) + '/' + encodeURIComponent(JSON.stringify(value)), {
+      headers: { 'Authorization': 'Bearer ' + token },
+      signal: c.signal
+    });
+    clearTimeout(t);
+    return r.ok;
+  } catch(e) { return false; }
+}
+
+/* ⚡ خواندن یه کاربر تکی */
+async function redisGetUser(phone) {
+  const key = 'user:' + phone;
+  const results = await Promise.allSettled([
+    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key),
+    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key)
+  ]);
+  const u1 = results[0].status === 'fulfilled' ? results[0].value : null;
+  const u2 = results[1].status === 'fulfilled' ? results[1].value : null;
+  if (!u1 && !u2) return null;
+  if (!u1) return u2;
+  if (!u2) return u1;
+  const t1 = u1.lastUpdatedAt || 0;
+  const t2 = u2.lastUpdatedAt || 0;
+  return t2 > t1 ? u2 : u1;
+}
+
+/* ⚡ همه کاربران */
 async function getAllUsers() {
   const results = await Promise.allSettled([
     redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'),
@@ -246,7 +313,6 @@ async function getAllUsers() {
   const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
   const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
 
-  if (results[0].status === 'rejected' && results[1].status === 'rejected') throw new Error('Network');
   if (!v1 && !v2) return null;
 
   const merged = {};
@@ -262,21 +328,26 @@ async function getAllUsers() {
   return merged;
 }
 
-/* ⚡⚡⚡ جدید: خواندن تکی یه کاربر مستقیم از user:PHONE */
-async function redisGetUser(phone) {
-  const key = 'user:' + phone;
+/* ⚡⚡⚡ ایندکس کوچیک تیم مدیریت */
+async function saveMgmtIndex(phones) {
+  try {
+    await Promise.allSettled([
+      redisSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, MGMT_LIST_KEY, phones),
+      redisSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, MGMT_LIST_KEY, phones)
+    ]);
+  } catch(e) {}
+}
+
+async function loadMgmtIndex() {
   const results = await Promise.allSettled([
-    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key),
-    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key)
+    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, MGMT_LIST_KEY),
+    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, MGMT_LIST_KEY)
   ]);
-  const u1 = results[0].status === 'fulfilled' ? results[0].value : null;
-  const u2 = results[1].status === 'fulfilled' ? results[1].value : null;
-  if (!u1 && !u2) return null;
-  if (!u1) return u2;
-  if (!u2) return u1;
-  const t1 = u1.lastUpdatedAt || 0;
-  const t2 = u2.lastUpdatedAt || 0;
-  return t2 > t1 ? u2 : u1;
+  const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
+  const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
+  const list = v1 || v2;
+  if (Array.isArray(list)) return list;
+  return null;
 }
 
 /* ============================================================ */
@@ -301,7 +372,6 @@ function getFrameSrc(u) {
   return u.currentTemplate || null;
 }
 
-/* ⚡ مقایسه دقیق برای dataURL و path */
 function srcKey(s) {
   if (!s || typeof s !== 'string') return '0';
   if (s.indexOf('data:') === 0 || s.indexOf('blob:') === 0) {
@@ -511,14 +581,16 @@ function updateCard(card, u) {
 }
 
 /* ============================================================ */
-/*  Render                                                        */
+/*  Render - با مدیریت کامل حالات                                 */
 /* ============================================================ */
-function render(usersMap) {
-  const grid = document.getElementById('managementGrid');
-  if (!grid || !usersMap) return;
+let __hasRenderedOnce = false;
 
-  const mgmt = Object.entries(usersMap).filter(([p, u]) =>
-    u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim())
+function renderUsers(usersMap) {
+  const grid = document.getElementById('managementGrid');
+  if (!grid) return;
+
+  const mgmt = Object.entries(usersMap || {}).filter(([p, u]) =>
+    u && u.rank && MANAGEMENT_ROLES.includes((u.rank || '').trim())
   );
 
   mgmt.sort((a, b) => {
@@ -527,14 +599,24 @@ function render(usersMap) {
     return rA - rB;
   });
 
-  const emptyEl = grid.querySelector('.empty-state');
-  if (emptyEl && mgmt.length > 0) emptyEl.remove();
-
+  // اگه خالی
   if (mgmt.length === 0) {
-    if (!grid.querySelector('.member-card')) {
-      grid.innerHTML = '<div class="empty-state"><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
+    if (!__hasRenderedOnce) {
+      // اولین بار و لیست خالیه → پیام
+      grid.innerHTML = '<div class="status-box"><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
+      __hasRenderedOnce = true;
     }
     return;
+  }
+
+  // اگه اولین بار → پاک کن و بساز
+  if (!__hasRenderedOnce) {
+    grid.innerHTML = '';
+    __hasRenderedOnce = true;
+  } else {
+    // پاک کردن status-box اگه هست
+    const statusBox = grid.querySelector('.status-box');
+    if (statusBox) statusBox.remove();
   }
 
   const existing = {};
@@ -564,10 +646,30 @@ function render(usersMap) {
   });
 }
 
+function showStatus(message, withRetry) {
+  const grid = document.getElementById('managementGrid');
+  if (!grid) return;
+  if (__hasRenderedOnce) return; // اگه کاربرا رو دیدیم، دیگه پیام نده
+
+  grid.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'status-box';
+  box.innerHTML = '<div class="spinner"></div><div>' + message + '</div>';
+  if (withRetry) {
+    const btn = document.createElement('button');
+    btn.className = 'retry-btn';
+    btn.textContent = '🔄 تلاش مجدد';
+    btn.onclick = () => { __hasRenderedOnce = false; refresh(); };
+    box.appendChild(btn);
+  }
+  grid.appendChild(box);
+}
+
 /* ============================================================ */
-/*  ⚡⚡⚡ Refresh - با خواندن تکی هر کاربر تیم                     */
+/*  ⚡⚡⚡ Refresh اصلی                                            */
 /* ============================================================ */
 let fetching = false;
+let __emptyRetries = 0;
 
 async function refresh() {
   if (fetching) return;
@@ -576,47 +678,72 @@ async function refresh() {
   fetching = true;
 
   try {
-    // 1) اول all_users (برای پیدا کردن لیست کاربران تیم)
-    const allUsers = await getAllUsers();
-    if (!allUsers) { fetching = false; return; }
+    // ⚡ 1) اول ایندکس کوچیک تیم مدیریت رو بخون
+    let mgmtPhones = await loadMgmtIndex();
 
-    // 2) پیدا کردن کاربران تیم مدیریت
-    const mgmtPhones = Object.entries(allUsers)
-      .filter(([p, u]) => u && u.rank && MANAGEMENT_ROLES.includes(u.rank.trim()))
-      .map(([p]) => p);
+    // اگه نبود، از all_users بساز
+    if (!mgmtPhones || mgmtPhones.length === 0) {
+      const allUsers = await getAllUsers();
+      if (allUsers && Object.keys(allUsers).length > 0) {
+        mgmtPhones = Object.entries(allUsers)
+          .filter(([p, u]) => u && u.rank && MANAGEMENT_ROLES.includes((u.rank || '').trim()))
+          .map(([p]) => p);
+        // ذخیره ایندکس برای بار بعد
+        if (mgmtPhones.length > 0) saveMgmtIndex(mgmtPhones);
+      }
+    }
 
-    if (mgmtPhones.length === 0) {
-      render(allUsers);
-      __offlineFailCount = 0;
+    if (!mgmtPhones || mgmtPhones.length === 0) {
+      __emptyRetries++;
+      if (__emptyRetries > 3) {
+        renderUsers({});
+        fetching = false;
+        return;
+      }
+      showStatus('در حال بارگذاری تیم مدیریت...', false);
       fetching = false;
       return;
     }
 
-    // 3) ⚡⚡⚡ برای هر کاربر، user:PHONE رو تکی و تازه بگیر (موازی)
-    const freshResults = await Promise.allSettled(
+    // ⚡ 2) برای هر شماره، user:PHONE تکی بخون
+    const results = await Promise.allSettled(
       mgmtPhones.map(phone => redisGetUser(phone))
     );
 
-    // 4) finalUsers بساز
     const finalUsers = {};
-    mgmtPhones.forEach((phone, idx) => {
-      const r = freshResults[idx];
-      if (r.status === 'fulfilled' && r.value) {
-        // اگه fresh واقعاً برگشت
-        const fresh = r.value;
-        // چک کن که آخرین ورژن باشه
-        const stale = allUsers[phone];
-        const tFresh = fresh.lastUpdatedAt || 0;
-        const tStale = stale.lastUpdatedAt || 0;
-        finalUsers[phone] = tFresh >= tStale ? fresh : stale;
-      } else {
-        finalUsers[phone] = allUsers[phone];
+    let validCount = 0;
+    results.forEach((r, idx) => {
+      const phone = mgmtPhones[idx];
+      if (r.status === 'fulfilled' && r.value && r.value.rank) {
+        finalUsers[phone] = r.value;
+        validCount++;
       }
     });
 
-    render(finalUsers);
+    if (validCount === 0) {
+      __emptyRetries++;
+      if (__emptyRetries > 3) {
+        showStatus('خطا در دریافت اطلاعات کاربران', true);
+      } else {
+        showStatus('در حال بارگذاری...', false);
+      }
+      fetching = false;
+      return;
+    }
+
+    __emptyRetries = 0;
+    renderUsers(finalUsers);
+
+    // ⚡ 3) آپدیت ایندکس (اگه کاربری از لیست خارج شد)
+    const activePhones = Object.keys(finalUsers);
+    if (activePhones.length !== mgmtPhones.length ||
+        activePhones.some((p, i) => p !== mgmtPhones[i])) {
+      saveMgmtIndex(activePhones);
+    }
+
     __offlineFailCount = 0;
   } catch(e) {
+    console.warn('Refresh error:', e);
     checkOffline();
   }
 
@@ -654,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // رفرش اولیه
   refresh();
 
-  // ⚡ polling هر ۲ ثانیه
+  // ⚡ polling هر ۳ ثانیه
   setInterval(refresh, REFRESH_INTERVAL);
 
   document.addEventListener('visibilitychange', () => {
