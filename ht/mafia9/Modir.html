@@ -37,35 +37,9 @@
   .role-observer{background:linear-gradient(180deg,#4caf50,#388e3c);color:#fff;}
   .role-tick{width:18px;height:18px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.8));}
 
-  /* وضعیت‌های صفحه */
-  .status-box{
-    grid-column:1/-1;
-    text-align:center;
-    padding:60px 20px;
-    color:rgba(255,255,255,.8);
-    font-size:15px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:16px;
-  }
-  .spinner{
-    width:44px;height:44px;
-    border:4px solid rgba(79,195,247,0.2);
-    border-top-color:#4fc3f7;
-    border-radius:50%;
-    animation:spin 0.8s linear infinite;
-  }
+  .status-box{grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,.8);font-size:15px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .spinner{width:44px;height:44px;border:4px solid rgba(79,195,247,0.2);border-top-color:#4fc3f7;border-radius:50%;animation:spin 0.8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-
-  .retry-btn{
-    background:#2ecc71;border:none;color:#fff;
-    padding:10px 26px;border-radius:60px;
-    font-size:15px;font-weight:700;cursor:pointer;
-    font-family:inherit;
-    box-shadow:0 4px 12px rgba(46,204,113,0.4);
-  }
-  .retry-btn:active{transform:scale(0.96);}
 
   #offlineOv{position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;direction:rtl;font-family:'Vazirmatn',Tahoma,sans-serif;}
   #offlineOv.show{display:flex;}
@@ -103,9 +77,8 @@
   <p>اعضای رسمی تیم مدیریت و پشتیبانی بازی</p>
 </div>
 
-<!-- ⚡ حالا با لودینگ اولیه -->
 <div class="management-grid" id="managementGrid">
-  <div class="status-box" id="initialStatus">
+  <div class="status-box">
     <div class="spinner"></div>
     <div>در حال بارگذاری...</div>
   </div>
@@ -124,18 +97,25 @@
     <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
 
+<!-- ⚡ Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
 /* ============================================================ */
 /*  Config                                                        */
 /* ============================================================ */
-const UPSTASH_OLD_URL = "https://smooth-werewolf-200782.upstash.io";
-const UPSTASH_OLD_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
-const UPSTASH_NEW_URL = "https://holy-hamster-122717.upstash.io";
-const UPSTASH_NEW_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+const FB_CFG = {
+  apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
+  authDomain: "mafiasu-681c7.firebaseapp.com",
+  databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
+  projectId: "mafiasu-681c7",
+  storageBucket: "mafiasu-681c7.firebasestorage.app",
+  messagingSenderId: "180192927804",
+  appId: "1:180192927804:web:e0c501a0d20af3b6892339"
+};
 
 const MANAGEMENT_ROLES = ['سازنده','پشتیبانی','گرداننده','ادمین ارشد','ادمین','ناظر ارشد','ناظر'];
-const REFRESH_INTERVAL = 3000;
-const MGMT_LIST_KEY = 'mgmt_list_v1';
 
 const ROLE_TICK_MAP = {
   'سازنده': ['Tik1.png'],
@@ -166,188 +146,46 @@ function getCardTemplate(role) {
 }
 
 /* ============================================================ */
-/*  Offline Detection                                             */
+/*  Firebase Init                                                 */
 /* ============================================================ */
-let __isOffline = false;
-let __offlineFailCount = 0;
-let __offlineCheckBusy = false;
-let __offlineRecoverInterval = null;
+let fbDb = null;
+let fbReady = false;
+let __fbUserMap = {}; // { phone: userData }
 
-function showOfflineOverlay() {
-  if (__isOffline) return;
-  __isOffline = true;
-  const ov = document.getElementById('offlineOv');
-  if (ov) ov.classList.add('show');
-  document.body.style.overflow = 'hidden';
-  startOfflineWatch();
-}
-function hideOfflineOverlay() {
-  if (!__isOffline) return;
-  __isOffline = false;
-  const ov = document.getElementById('offlineOv');
-  if (ov) ov.classList.remove('show');
-  document.body.style.overflow = '';
-  stopOfflineWatch();
-}
-function startOfflineWatch() {
-  stopOfflineWatch();
-  __offlineRecoverInterval = setInterval(async () => {
-    const online = await checkRealOnline();
-    if (online) { hideOfflineOverlay(); window.location.reload(); }
-  }, 1500);
-}
-function stopOfflineWatch() {
-  if (__offlineRecoverInterval) { clearInterval(__offlineRecoverInterval); __offlineRecoverInterval = null; }
-}
-function checkRealOnline() {
-  return new Promise((resolve) => {
-    const img = new Image();
-    let done = false;
-    const timer = setTimeout(() => { if (!done) { done = true; resolve(false); } }, 3000);
-    img.onload = () => { if (!done) { done = true; clearTimeout(timer); resolve(true); } };
-    img.onerror = () => { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
-    img.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?_=' + Date.now();
-  });
-}
-async function checkOffline() {
-  if (__offlineCheckBusy) return;
-  __offlineCheckBusy = true;
+function initFirebase() {
   try {
-    if (navigator.onLine === true) {
-      __offlineFailCount = 0;
-      if (__isOffline) hideOfflineOverlay();
-      __offlineCheckBusy = false;
-      return;
+    if (typeof firebase === 'undefined') {
+      console.warn('⚠️ Firebase SDK not loaded');
+      return false;
     }
-    const really = await checkRealOnline();
-    if (really) {
-      __offlineFailCount = 0;
-      if (__isOffline) hideOfflineOverlay();
-    } else {
-      __offlineFailCount++;
-      if (__offlineFailCount >= 2 && !__isOffline) showOfflineOverlay();
-    }
-  } catch(e) { __offlineFailCount = 0; }
-  __offlineCheckBusy = false;
-}
-function setupOfflineBtn() {
-  const btn = document.getElementById('offlineBtn');
-  if (!btn) return;
-  btn.onclick = async () => {
-    btn.classList.add('loading');
-    btn.textContent = 'در حال بررسی...';
-    btn.disabled = true;
-    const ok = await checkRealOnline();
-    if (ok) window.location.reload();
-    else {
-      btn.classList.remove('loading');
-      btn.textContent = 'تلاش مجدد';
-      btn.disabled = false;
-    }
-  };
-}
-window.addEventListener('offline', () => { setTimeout(checkOffline, 500); });
-window.addEventListener('online', async () => {
-  const really = await checkRealOnline();
-  if (really) { hideOfflineOverlay(); setTimeout(() => window.location.reload(), 300); }
-});
-
-/* ============================================================ */
-/*  Redis                                                         */
-/* ============================================================ */
-async function redisGet(url, token, key) {
-  try {
-    const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 6000);
-    const r = await fetch(url + '/get/' + encodeURIComponent(key), {
-      headers: { 'Authorization': 'Bearer ' + token },
-      signal: c.signal, cache: 'no-store'
-    });
-    clearTimeout(t);
-    if (!r.ok) return null;
-    const d = await r.json();
-    if (d && d.result) {
-      try { return JSON.parse(d.result); } catch(e) { return d.result; }
-    }
-    return null;
-  } catch(e) { return null; }
-}
-
-async function redisSet(url, token, key, value) {
-  try {
-    const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 8000);
-    const r = await fetch(url + '/set/' + encodeURIComponent(key) + '/' + encodeURIComponent(JSON.stringify(value)), {
-      headers: { 'Authorization': 'Bearer ' + token },
-      signal: c.signal
-    });
-    clearTimeout(t);
-    return r.ok;
-  } catch(e) { return false; }
-}
-
-/* ⚡ خواندن یه کاربر تکی */
-async function redisGetUser(phone) {
-  const key = 'user:' + phone;
-  const results = await Promise.allSettled([
-    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, key),
-    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, key)
-  ]);
-  const u1 = results[0].status === 'fulfilled' ? results[0].value : null;
-  const u2 = results[1].status === 'fulfilled' ? results[1].value : null;
-  if (!u1 && !u2) return null;
-  if (!u1) return u2;
-  if (!u2) return u1;
-  const t1 = u1.lastUpdatedAt || 0;
-  const t2 = u2.lastUpdatedAt || 0;
-  return t2 > t1 ? u2 : u1;
-}
-
-/* ⚡ همه کاربران */
-async function getAllUsers() {
-  const results = await Promise.allSettled([
-    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, 'all_users'),
-    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, 'all_users')
-  ]);
-
-  const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
-  const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
-
-  if (!v1 && !v2) return null;
-
-  const merged = {};
-  if (v1 && typeof v1 === 'object') for (const k in v1) if (v1[k]) merged[k] = v1[k];
-  if (v2 && typeof v2 === 'object') {
-    for (const k in v2) {
-      if (!merged[k]) { merged[k] = v2[k]; continue; }
-      const t1 = merged[k].lastUpdatedAt || 0;
-      const t2 = v2[k].lastUpdatedAt || 0;
-      if (t2 > t1) merged[k] = v2[k];
-    }
+    if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
+    fbDb = firebase.database();
+    fbReady = true;
+    console.log('✅ Firebase connected');
+    return true;
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    return false;
   }
-  return merged;
 }
 
-/* ⚡⚡⚡ ایندکس کوچیک تیم مدیریت */
-async function saveMgmtIndex(phones) {
-  try {
-    await Promise.allSettled([
-      redisSet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, MGMT_LIST_KEY, phones),
-      redisSet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, MGMT_LIST_KEY, phones)
-    ]);
-  } catch(e) {}
-}
-
-async function loadMgmtIndex() {
-  const results = await Promise.allSettled([
-    redisGet(UPSTASH_OLD_URL, UPSTASH_OLD_TOKEN, MGMT_LIST_KEY),
-    redisGet(UPSTASH_NEW_URL, UPSTASH_NEW_TOKEN, MGMT_LIST_KEY)
-  ]);
-  const v1 = results[0].status === 'fulfilled' ? results[0].value : null;
-  const v2 = results[1].status === 'fulfilled' ? results[1].value : null;
-  const list = v1 || v2;
-  if (Array.isArray(list)) return list;
-  return null;
+function attachRealtimeListener() {
+  if (!fbReady || !fbDb) return;
+  
+  console.log('📡 Listening to team_mgmt...');
+  
+  // ⚡⚡⚡ یک listener روی کل team_mgmt → هر تغییری، آنی میاد
+  fbDb.ref('team_mgmt').on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    __fbUserMap = data;
+    
+    console.log('🔥 Realtime update:', Object.keys(data).length, 'members');
+    
+    // رندر فوری
+    renderUsers(data);
+  }, (error) => {
+    console.warn('Firebase listener error:', error);
+  });
 }
 
 /* ============================================================ */
@@ -436,7 +274,7 @@ function destroyMedia(el) {
 }
 
 /* ============================================================ */
-/*  Build / Update Card                                           */
+/*  Build Card / Update Card                                      */
 /* ============================================================ */
 function buildCard(phone, u) {
   const card = document.createElement('div');
@@ -504,6 +342,7 @@ function buildCard(phone, u) {
 function updateCard(card, u) {
   const phone = card.dataset.phone;
 
+  // قالب کارت
   const tplImg = card.querySelector('.card-template img');
   const newTpl = getCardTemplate(u.rank);
   if (tplImg) {
@@ -514,6 +353,7 @@ function updateCard(card, u) {
     }
   }
 
+  // آواتار
   const avCircle = card.querySelector('.avatar-circle');
   const newAvSrc = getAvatarSrc(phone, u);
   const newAvKey = srcKey(newAvSrc);
@@ -527,6 +367,7 @@ function updateCard(card, u) {
     }
   }
 
+  // قالب دور آواتار
   const avContainer = card.querySelector('.avatar-container');
   if (avContainer) {
     let frameImg = avContainer.querySelector('.avatar-frame');
@@ -550,6 +391,7 @@ function updateCard(card, u) {
     }
   }
 
+  // نام + تیک
   const nameDiv = card.querySelector('.member-name');
   if (nameDiv) {
     const curName = nameDiv.firstChild ? nameDiv.firstChild.nodeValue : '';
@@ -570,6 +412,7 @@ function updateCard(card, u) {
     }
   }
 
+  // مقام
   const roleDiv = card.querySelector('.member-role');
   if (roleDiv) {
     const roleKey = (u.rank || '').trim();
@@ -581,7 +424,7 @@ function updateCard(card, u) {
 }
 
 /* ============================================================ */
-/*  Render - با مدیریت کامل حالات                                 */
+/*  Render                                                        */
 /* ============================================================ */
 let __hasRenderedOnce = false;
 
@@ -599,30 +442,24 @@ function renderUsers(usersMap) {
     return rA - rB;
   });
 
-  // اگه خالی
+  // خالی
   if (mgmt.length === 0) {
     if (!__hasRenderedOnce) {
-      // اولین بار و لیست خالیه → پیام
       grid.innerHTML = '<div class="status-box"><div>هنوز عضوی در تیم مدیریت وجود ندارد</div></div>';
       __hasRenderedOnce = true;
     }
     return;
   }
 
-  // اگه اولین بار → پاک کن و بساز
-  if (!__hasRenderedOnce) {
-    grid.innerHTML = '';
-    __hasRenderedOnce = true;
-  } else {
-    // پاک کردن status-box اگه هست
-    const statusBox = grid.querySelector('.status-box');
-    if (statusBox) statusBox.remove();
-  }
+  // پاک کردن status اولیه
+  const statusBox = grid.querySelector('.status-box');
+  if (statusBox) statusBox.remove();
 
   const existing = {};
   grid.querySelectorAll('.member-card').forEach(c => { existing[c.dataset.phone] = c; });
   const newPhones = mgmt.map(([p]) => p);
 
+  // حذف کارت‌های اضافی
   Object.keys(existing).forEach(phone => {
     if (!newPhones.includes(phone)) {
       const circle = existing[phone].querySelector('.avatar-circle');
@@ -632,6 +469,7 @@ function renderUsers(usersMap) {
     }
   });
 
+  // ترتیب
   let prev = null;
   mgmt.forEach(([phone, u]) => {
     let card = existing[phone];
@@ -644,111 +482,81 @@ function renderUsers(usersMap) {
     }
     prev = card;
   });
-}
 
-function showStatus(message, withRetry) {
-  const grid = document.getElementById('managementGrid');
-  if (!grid) return;
-  if (__hasRenderedOnce) return; // اگه کاربرا رو دیدیم، دیگه پیام نده
-
-  grid.innerHTML = '';
-  const box = document.createElement('div');
-  box.className = 'status-box';
-  box.innerHTML = '<div class="spinner"></div><div>' + message + '</div>';
-  if (withRetry) {
-    const btn = document.createElement('button');
-    btn.className = 'retry-btn';
-    btn.textContent = '🔄 تلاش مجدد';
-    btn.onclick = () => { __hasRenderedOnce = false; refresh(); };
-    box.appendChild(btn);
-  }
-  grid.appendChild(box);
+  __hasRenderedOnce = true;
 }
 
 /* ============================================================ */
-/*  ⚡⚡⚡ Refresh اصلی                                            */
+/*  Offline Detection                                             */
 /* ============================================================ */
-let fetching = false;
-let __emptyRetries = 0;
+let __isOffline = false;
+let __offlineRecoverInterval = null;
 
-async function refresh() {
-  if (fetching) return;
+function showOfflineOverlay() {
   if (__isOffline) return;
-  if (navigator.onLine === false) { checkOffline(); return; }
-  fetching = true;
-
-  try {
-    // ⚡ 1) اول ایندکس کوچیک تیم مدیریت رو بخون
-    let mgmtPhones = await loadMgmtIndex();
-
-    // اگه نبود، از all_users بساز
-    if (!mgmtPhones || mgmtPhones.length === 0) {
-      const allUsers = await getAllUsers();
-      if (allUsers && Object.keys(allUsers).length > 0) {
-        mgmtPhones = Object.entries(allUsers)
-          .filter(([p, u]) => u && u.rank && MANAGEMENT_ROLES.includes((u.rank || '').trim()))
-          .map(([p]) => p);
-        // ذخیره ایندکس برای بار بعد
-        if (mgmtPhones.length > 0) saveMgmtIndex(mgmtPhones);
-      }
+  __isOffline = true;
+  const ov = document.getElementById('offlineOv');
+  if (ov) ov.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  
+  if (__offlineRecoverInterval) clearInterval(__offlineRecoverInterval);
+  __offlineRecoverInterval = setInterval(async () => {
+    const online = await checkRealOnline();
+    if (online) {
+      hideOfflineOverlay();
+      window.location.reload();
     }
-
-    if (!mgmtPhones || mgmtPhones.length === 0) {
-      __emptyRetries++;
-      if (__emptyRetries > 3) {
-        renderUsers({});
-        fetching = false;
-        return;
-      }
-      showStatus('در حال بارگذاری تیم مدیریت...', false);
-      fetching = false;
-      return;
-    }
-
-    // ⚡ 2) برای هر شماره، user:PHONE تکی بخون
-    const results = await Promise.allSettled(
-      mgmtPhones.map(phone => redisGetUser(phone))
-    );
-
-    const finalUsers = {};
-    let validCount = 0;
-    results.forEach((r, idx) => {
-      const phone = mgmtPhones[idx];
-      if (r.status === 'fulfilled' && r.value && r.value.rank) {
-        finalUsers[phone] = r.value;
-        validCount++;
-      }
-    });
-
-    if (validCount === 0) {
-      __emptyRetries++;
-      if (__emptyRetries > 3) {
-        showStatus('خطا در دریافت اطلاعات کاربران', true);
-      } else {
-        showStatus('در حال بارگذاری...', false);
-      }
-      fetching = false;
-      return;
-    }
-
-    __emptyRetries = 0;
-    renderUsers(finalUsers);
-
-    // ⚡ 3) آپدیت ایندکس (اگه کاربری از لیست خارج شد)
-    const activePhones = Object.keys(finalUsers);
-    if (activePhones.length !== mgmtPhones.length ||
-        activePhones.some((p, i) => p !== mgmtPhones[i])) {
-      saveMgmtIndex(activePhones);
-    }
-
-    __offlineFailCount = 0;
-  } catch(e) {
-    console.warn('Refresh error:', e);
-    checkOffline();
-  }
-
-  fetching = false;
+  }, 2000);
 }
+
+function hideOfflineOverlay() {
+  if (!__isOffline) return;
+  __isOffline = false;
+  const ov = document.getElementById('offlineOv');
+  if (ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
+  if (__offlineRecoverInterval) { clearInterval(__offlineRecoverInterval); __offlineRecoverInterval = null; }
+}
+
+function checkRealOnline() {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { done = true; resolve(false); } }, 2500);
+    img.onload = () => { if (!done) { done = true; clearTimeout(timer); resolve(true); } };
+    img.onerror = () => { if (!done) { done = true; clearTimeout(timer); resolve(false); } };
+    img.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?_=' + Date.now();
+  });
+}
+
+function setupOfflineBtn() {
+  const btn = document.getElementById('offlineBtn');
+  if (!btn) return;
+  btn.onclick = async () => {
+    btn.classList.add('loading');
+    btn.textContent = 'در حال بررسی...';
+    btn.disabled = true;
+    const ok = await checkRealOnline();
+    if (ok) window.location.reload();
+    else {
+      btn.classList.remove('loading');
+      btn.textContent = 'تلاش مجدد';
+      btn.disabled = false;
+    }
+  };
+}
+
+window.addEventListener('offline', () => {
+  if (navigator.onLine === false) showOfflineOverlay();
+});
+
+window.addEventListener('online', async () => {
+  const really = await checkRealOnline();
+  if (really) {
+    hideOfflineOverlay();
+    setTimeout(() => window.location.reload(), 300);
+  }
+});
 
 /* ============================================================ */
 /*  Boot                                                          */
@@ -773,28 +581,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Offline
   setupOfflineBtn();
-  checkOffline();
-  setInterval(checkOffline, 2000);
 
-  // رفرش اولیه
-  refresh();
-
-  // ⚡ polling هر ۳ ثانیه
-  setInterval(refresh, REFRESH_INTERVAL);
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      checkOffline();
-      refresh();
+  // ⚡⚡⚡ Firebase Realtime - instant
+  const fbOk = initFirebase();
+  if (fbOk) {
+    attachRealtimeListener();
+  } else {
+    // Firebase کار نکرد → پیام بده
+    const grid = document.getElementById('managementGrid');
+    if (grid) {
+      grid.innerHTML = '<div class="status-box"><div>⚠️ Firebase در دسترس نیست</div></div>';
     }
-  });
+  }
+});
 
-  window.addEventListener('focus', () => {
-    checkOffline();
-    refresh();
-  });
+// visibility - Firebase خودش realtime هست، نیازی به refresh نیست
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && __isOffline) {
+    checkRealOnline().then(ok => { if (ok) hideOfflineOverlay(); });
+  }
 });
 </script>
 </body>
