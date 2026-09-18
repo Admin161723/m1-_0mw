@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>دوستانه</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Safe TalarDs.css">
+</head>
+<body>
+
+<div class="friends-bg"></div>
+
+<div class="top-bar">
+  <button class="back-btn" id="backBtn">→</button>
+  <div class="search-box">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="7" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+      <path d="M16 16 L21 21" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="جستجوی نام یا کد کاربری..." autocomplete="off">
+  </div>
+</div>
+
+<div class="tabs-row">
+  <button class="tab-btn active" id="tabFriendsBtn">
+    دوستان من
+    <span class="tab-badge" id="tabFriendsBadge"></span>
+  </button>
+  <button class="tab-btn" id="tabRequestsBtn">
+    درخواست‌ها
+    <span class="tab-badge" id="tabRequestsBadge"></span>
+  </button>
+</div>
+
+<div class="friends-list" id="friendsList"></div>
+
+<button class="add-btn" id="addBtn" aria-label="افزودن دوست">
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 5V19M5 12H19" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<div class="player-modal" id="playerModal">
+  <div class="player-box">
+    <button class="pm-close" id="playerCloseBtn">×</button>
+
+    <div class="pm-title" id="ppTitle">مشخصات کاربری</div>
+
+    <div class="pm-avatar-wrap">
+      <img src="Av.jpg" class="pm-avatar-img" id="ppAvatar" onerror="this.src='Av.jpg'">
+      <img src="Ga.webp" class="pm-frame-img" onerror="this.style.display='none'">
+    </div>
+
+    <div class="pm-name-text" id="ppNameWrap">
+      <span id="ppNameText">کاربر</span>
+    </div>
+    <div class="pm-code" id="ppCode">کد کاربری: ---</div>
+
+    <div class="pm-info">
+      <div class="pm-row">
+        <span class="pm-label">نوع کاربری:</span>
+        <span class="pm-value" id="ppRole">کاربر عادی</span>
+      </div>
+      <div class="pm-row">
+        <span class="pm-label">تعداد بازی:</span>
+        <span class="pm-value" id="ppGames">۰</span>
+      </div>
+      <div class="pm-row">
+        <span class="pm-label">تعداد برد:</span>
+        <span class="pm-value" id="ppWins">۰</span>
+      </div>
+      <div class="pm-row">
+        <span class="pm-label">امتیاز:</span>
+        <span class="pm-value" id="ppScore">۰</span>
+      </div>
+    </div>
+
+    <div class="pm-actions" id="ppActions"></div>
+  </div>
+</div>
+
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">تایید</div>
+    <div class="confirm-text" id="confirmText">آیا مطمئن هستید؟</div>
+    <div class="confirm-actions">
+      <button class="conf-cancel" id="confCancelBtn">انصراف</button>
+      <button class="conf-ok" id="confOkBtn">تایید</button>
+    </div>
+  </div>
+</div>
+
+<script src="Safe TalarDs.js"></script>
+</body>
+</html>
