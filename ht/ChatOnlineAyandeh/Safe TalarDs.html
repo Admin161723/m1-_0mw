@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>دوستانه</title>
+<title>لابی</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="Safe TalarDs.css">
 </head>
@@ -12,110 +12,62 @@
 <div class="bg-list" id="bgList"></div>
 <div class="bg-room" id="bgRoom"></div>
 
-<!-- ============ LIST VIEW ============ -->
-<div id="listView" class="view active">
+<div class="view active" id="listView">
   <div class="top-bar">
     <div class="shadow"></div>
     <div class="main">
       <button class="back-btn" id="backBtn">→</button>
       <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#fff" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        <input type="text" id="searchInput" placeholder="جستجوی لابی...">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+          <path d="M16 16 L21 21" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="جستجوی لابی..." autocomplete="off">
       </div>
     </div>
   </div>
   <div class="lobbies-list" id="lobbiesList"></div>
   <div class="bottom-menu">
     <div class="menu-panel">
-      <button class="admin-panel-btn" id="adminPanelBtn">مدیریت<span class="badge" id="adminBadge" style="display:none"></span></button>
-      <button class="add-btn" id="addBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></button>
+      <button class="admin-panel-btn" id="adminBtn">پنل<span class="badge" id="adminBadge" style="display:none">0</span></button>
+      <button class="add-btn" id="addBtn" aria-label="ساخت لابی">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/></svg>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ============ ROOM VIEW ============ -->
-<div id="roomView" class="view">
+<div id="roomView">
   <div class="room-top-bar">
     <div class="room-top-shadow"></div>
     <div class="room-top-main">
       <button class="room-back-btn" id="roomBackBtn">→</button>
-      <div class="room-lobby-name" id="roomLobbyName">لابی</div>
+      <div class="room-lobby-name" id="roomLobbyName">نام لابی</div>
       <div class="room-top-spacer"></div>
     </div>
   </div>
   <div class="room-grid-area" id="roomGridArea">
-    <div class="player-slot tr"></div>
-    <div class="player-slot tl"></div>
-    <div class="player-slot br"></div>
-    <div class="player-slot bl"></div>
+    <div class="player-slot tr" data-slot="0" data-pos="tr"></div>
+    <div class="player-slot tl" data-slot="1" data-pos="tl"></div>
+    <div class="player-slot br" data-slot="2" data-pos="br"></div>
+    <div class="player-slot bl" data-slot="3" data-pos="bl"></div>
   </div>
   <div class="room-bottom-bar">
     <div class="room-bottom-shadow"></div>
     <div class="room-bottom-main">
       <div class="left-actions" id="leftActions"></div>
       <div class="right-actions">
-        <button class="ctrl-btn like-btn" id="likeBtn"><img src="Po2.webp" alt="لایک"></button>
-        <button class="ctrl-btn dislike-btn" id="dislikeBtn"><img src="Po3.webp" alt="دیس"></button>
-        <button class="ctrl-btn mic-btn" id="micBtn"><img id="micImg" src="Po4.webp" alt="میک"></button>
+        <button class="ctrl-btn like-btn" id="likeBtn"><img src="Po2.webp" alt="لایک" onerror="this.style.display='none'"></button>
+        <button class="ctrl-btn dislike-btn" id="dislikeBtn"><img src="Po3.webp" alt="دیس‌لایک" onerror="this.style.display='none'"></button>
+        <button class="ctrl-btn mic-btn" id="micBtn"><img id="micImg" src="Po4.webp" alt="مایک" onerror="this.style.display='none'"></button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ============ PLAYER PROFILE ============ -->
-<div class="profile-menu-overlay" id="playerProfileMenu">
-  <div class="profile-menu-box">
-    <button class="pm-close" id="playerProfileCloseBtn">×</button>
-    <div class="pm-title" id="ppTitle">مشخصات کاربری</div>
-    <div class="pm-dark-box">
-      <div class="pm-avatar-wrap">
-        <img id="ppAvatar" class="pm-avatar-img" src="Av.jpg" alt="">
-        <img src="Ga.webp" class="pm-frame-img" alt="">
-      </div>
-      <div class="pm-name-wrap" id="ppNameWrap"></div>
-    </div>
-    <div class="pm-dark-box">
-      <div class="pm-stats-row">
-        <div class="pm-stat-square"><div class="pm-stat-value" id="ppGames">0</div><div class="pm-stat-label">تعداد بازی</div></div>
-        <div class="pm-stat-square"><div class="pm-stat-value" id="ppWins">0</div><div class="pm-stat-label">تعداد برد</div></div>
-        <div class="pm-stat-square"><div class="pm-stat-value" id="ppMinutes">0</div><div class="pm-stat-label">دقایق بازی</div></div>
-        <div class="pm-stat-square"><div class="pm-stat-value" id="ppScore">0</div><div class="pm-stat-label">تعداد امتیاز</div></div>
-      </div>
-      <div class="pm-user-role">
-        <span class="pm-role-label">نوع کاربری :</span>
-        <span class="pm-role-value"><span id="ppRoleText">کاربر عادی</span><span class="pm-check" id="ppCheck">✓</span></span>
-      </div>
-      <div class="pm-info-row"><div class="pm-info-box">کد کاربری : <span id="ppUserCode">---</span></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ MINI MENU ============ -->
-<div class="mini-menu" id="miniMenu">
-  <div class="mini-menu-box">
-    <div class="mini-menu-title" id="miniMenuTitle">کاربر</div>
-    <button class="mini-menu-btn mm-profile" id="miniProfileBtn">مشاهده پروفایل</button>
-    <button class="mini-menu-btn mm-report" id="miniReportBtn">گزارش تخلف</button>
-    <button class="mini-menu-btn mm-cancel" id="miniCancelBtn">انصراف</button>
-  </div>
-</div>
-
-<!-- ============ REPORT MODAL ============ -->
-<div class="report-modal" id="reportModal">
-  <div class="report-modal-box">
-    <div class="report-modal-title">گزارش تخلف</div>
-    <div class="report-modal-sub">از <span id="reportTargetName">کاربر</span></div>
-    <div class="report-reasons" id="reportReasons"></div>
-    <div class="report-modal-actions">
-      <button class="rp-cancel" id="rpCancelBtn">انصراف</button>
-      <button class="rp-send" id="rpSendBtn">ارسال گزارش</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============ CREATE MODAL ============ -->
 <div class="modal" id="createModal">
   <div class="modal-box">
+    <button class="modal-close" data-close="createModal">×</button>
     <div class="modal-title">ساخت لابی</div>
     <button class="btn-select" id="selectNameBtn"><span id="selectedNameLabel">انتخاب لابی</span><span class="arrow">‹</span></button>
     <div class="lock-row">
@@ -123,30 +75,26 @@
       <button class="lock-toggle" id="lockToggle"></button>
     </div>
     <div class="password-field" id="passwordField">
-      <input type="password" class="form-input" id="lobbyPassword" placeholder="رمز لابی" maxlength="20">
+      <div class="form-label">رمز عبور</div>
+      <input type="text" id="lobbyPassword" class="form-input" placeholder="رمز را وارد کن" maxlength="10" autocomplete="off">
     </div>
-    <div class="create-actions">
-      <button class="cancel-btn" data-close="createModal">انصراف</button>
-      <button class="do-create-btn" id="doCreateBtn">ساخت</button>
-    </div>
+    <button class="btn-green" id="doCreateBtn">ساخت لابی</button>
   </div>
 </div>
 
-<!-- ============ MY NAMES MODAL ============ -->
-<div class="my-names-modal" id="myNamesModal">
-  <div class="names-box">
-    <div class="names-title">اسم‌های من</div>
+<div class="modal" id="myNamesModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close="myNamesModal">×</button>
+    <div class="modal-title">لابی‌های من</div>
     <div class="names-list" id="myNamesList"></div>
-    <button class="close-btn" data-close="myNamesModal">بستن</button>
   </div>
 </div>
 
-<!-- ============ NAME PICKER ============ -->
 <div class="name-picker" id="namePicker">
   <div class="name-picker-box">
-    <div class="name-picker-title">انتخاب اسم</div>
+    <div class="name-picker-title">اسم لابی</div>
     <div class="name-picker-hint">هزینه: ۱۰۰ سکه</div>
-    <input type="text" class="name-input" id="namePickerInput" maxlength="15" placeholder="اسم دلخواه">
+    <input type="text" class="name-input" id="namePickerInput" placeholder="اسم لابی را بنویس..." maxlength="15" autocomplete="off">
     <div class="name-picker-actions">
       <button class="np-cancel" id="npCancel">انصراف</button>
       <button class="np-confirm" id="npConfirm">تایید</button>
@@ -154,12 +102,11 @@
   </div>
 </div>
 
-<!-- ============ PASSWORD MODAL ============ -->
 <div class="pw-modal" id="passwordModal">
   <div class="pw-box">
-    <img src="Go1.webp" class="pw-lock-icon" alt="قفل" onerror="this.style.display='none'">
+    <img src="Go1.webp" alt="قفل" class="pw-lock-icon" onerror="this.style.display='none'">
     <div class="pw-title">رمز لابی را وارد کنید</div>
-    <input type="password" class="pw-input" id="passwordInput" placeholder="••••" maxlength="20">
+    <input type="text" id="passwordInput" class="pw-input" placeholder="رمز..." maxlength="10" autocomplete="off">
     <div class="pw-error" id="pwError"></div>
     <div class="pw-actions">
       <button class="pw-cancel" id="pwCancel">انصراف</button>
@@ -168,25 +115,73 @@
   </div>
 </div>
 
-<!-- ============ ADMIN PANEL ============ -->
 <div class="modal" id="adminPanel">
   <div class="modal-box">
+    <button class="modal-close" data-close="adminPanel">×</button>
     <div class="modal-title">پنل مدیریت</div>
     <div class="tab-row">
-      <button class="tab-btn active" id="tabNamesBtn">اسم‌ها<span class="tab-badge" id="tabNamesBadge"></span></button>
-      <button class="tab-btn" id="tabReportsBtn">گزارش‌ها<span class="tab-badge" id="tabReportsBadge"></span></button>
+      <button class="tab-btn active" id="tabNamesBtn">نام‌های لابی<span class="tab-badge" id="tabNamesBadge"></span></button>
+      <button class="tab-btn" id="tabReportsBtn">گزارشات<span class="tab-badge" id="tabReportsBadge"></span></button>
     </div>
     <div class="admin-list" id="adminList"></div>
   </div>
 </div>
 
-<!-- ============ CONFIRM EXIT ============ -->
+<div class="mini-menu" id="miniMenu">
+  <div class="mini-menu-box">
+    <div class="mini-menu-title" id="miniMenuTitle">کاربر</div>
+    <button class="mini-menu-btn mm-profile" id="miniProfileBtn">👤 پروفایل</button>
+    <button class="mini-menu-btn mm-report" id="miniReportBtn">⚠️ گزارش کردن</button>
+    <button class="mini-menu-btn mm-cancel" id="miniCancelBtn">انصراف</button>
+  </div>
+</div>
+
+<div class="report-modal" id="reportModal">
+  <div class="report-modal-box">
+    <div class="report-modal-title">گزارش کاربر</div>
+    <div class="report-modal-sub" id="reportTargetName">کاربر</div>
+    <div class="report-reasons" id="reportReasons"></div>
+    <div class="report-modal-actions">
+      <button class="rp-cancel" id="rpCancelBtn">انصراف</button>
+      <button class="rp-send" id="rpSendBtn">ارسال گزارش</button>
+    </div>
+  </div>
+</div>
+
+<div class="profile-menu-overlay" id="playerProfileMenu">
+  <div class="profile-menu-box">
+    <button class="pm-close" id="playerProfileCloseBtn">×</button>
+    <div class="pm-title" id="ppTitle">مشخصات کاربری</div>
+    <div class="pm-dark-box">
+      <div class="pm-avatar-wrap">
+        <img src="Av.jpg" alt="آواتار" class="pm-avatar-img" id="ppAvatar" onerror="this.src='Av.jpg'">
+        <img src="Ga.webp" alt="قالب" class="pm-frame-img" onerror="this.style.display='none'">
+      </div>
+      <div class="pm-name-wrap"><span class="pm-name-text" id="ppNameWrap"><span id="ppNameText">کاربر</span></span></div>
+    </div>
+    <div class="pm-dark-box">
+      <div class="pm-stats-row">
+        <div class="pm-stat-square"><div class="pm-stat-value" id="ppGames">0</div><div class="pm-stat-label">تعداد بازی</div></div>
+        <div class="pm-stat-square"><div class="pm-stat-value" id="ppWins">0</div><div class="pm-stat-label">تعداد برد</div></div>
+        <div class="pm-stat-square"><div class="pm-stat-value" id="ppMinutes">0</div><div class="pm-stat-label">دقایق بازی</div></div>
+        <div class="pm-stat-square"><div class="pm-stat-value" id="ppScore">0</div><div class="pm-stat-label">تعداد امتیاز</div></div>
+      </div>
+      <div class="pm-user-role"><span class="pm-role-label">نوع کاربری :</span><span class="pm-role-value"><span id="ppRoleText">کاربر عادی</span><span class="pm-check" id="ppCheck">✓</span></span></div>
+      <div class="pm-info-row">
+        <div class="pm-info-box">کد کاربری : <span id="ppUserCode">---</span></div>
+        <div class="pm-info-box">کلن : <span>به زودی</span></div>
+      </div>
+    </div>
+    <div class="pm-actions-row" id="ppActionsRow" style="display:none"></div>
+  </div>
+</div>
+
 <div class="confirm-modal" id="confirmExitModal">
   <div class="confirm-box">
     <div class="confirm-title">خروج از لابی</div>
-    <div class="confirm-text" id="confirmExitText">مطمئنی؟</div>
+    <div class="confirm-text" id="confirmExitText">آیا می‌خواهی از لابی خارج شوی؟</div>
     <div class="confirm-actions">
-      <button class="conf-cancel" id="confCancelBtn">انصراف</button>
+      <button class="conf-cancel" id="confCancelBtn">بمان</button>
       <button class="conf-exit" id="confExitBtn">خروج</button>
     </div>
   </div>
