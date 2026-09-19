@@ -8,79 +8,52 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="security-screen" id="securityScreen">
-  <div class="shield">📱</div>
-  <h2>لطفاً نسخه اندروید دریافت کنید</h2>
-  <p id="securityMessage">این برنامه فقط از طریق اپلیکیشن اندروید قابل دسترسی است. لطفاً نسخه اندروید بازی را از منابع رسمی دریافت کنید.</p>
-</div>
-
-<div class="loading-screen" id="loadingScreen">
-  <div class="loader"></div>
-  <div class="loading-text" id="loadingText">در حال بررسی...</div>
-  <div class="version">نسخه 1.0.0</div>
-</div>
-
+<div class="security-screen" id="securityScreen"><div class="shield">📱</div><h2>لطفاً نسخه اندروید دریافت کنید</h2><p id="securityMessage">این برنامه فقط از طریق اپلیکیشن اندروید قابل دسترسی است. لطفاً نسخه اندروید بازی را از منابع رسمی دریافت کنید.</p></div>
+<div class="loading-screen" id="loadingScreen"><div class="loader"></div><div class="loading-text" id="loadingText">در حال بررسی...</div><button class="logout-loading-btn" id="logoutBtn" onclick="logout()">تغییر حساب</button><div class="version">نسخه 1.0.0</div></div>
 <div class="panel" id="mainPanel">
-  <div class="panel-shadow"></div>
-  <div class="panel-main">
-
-    <div class="page active" id="page-login">
-      <div class="title">ورود به اکانت / ثبت نام</div>
-      <div class="input-wrapper" id="field1"><div class="input-teal"></div><div class="input-white"><input type="tel" id="phoneInput" placeholder="شماره تماس" maxlength="11"></div></div>
-      <div class="input-wrapper" id="field2"><div class="input-teal"></div><div class="input-white"><input type="password" id="passInput" placeholder="رمز عبور"></div></div>
-      <div class="buttons-row">
-        <button class="btn btn-green" onclick="login()">ورود</button>
-        <button class="btn btn-blue" onclick="showPage('page-register')">ساخت اکانت جدید</button>
-      </div>
-      <button class="btn-yellow" onclick="showPage('page-forgot-step1')">فراموشی رمز عبور</button>
-    </div>
-
-    <div class="page" id="page-register">
-      <button class="back-btn" onclick="showPage('page-login')">→</button>
-      <div class="title">ساخت اکانت جدید</div>
-      <div class="input-wrapper" id="reg-name"><div class="input-teal"></div><div class="input-white"><input type="text" id="nameInput" placeholder="نام" maxlength="20"></div></div>
-      <div class="input-wrapper" id="reg-phone"><div class="input-teal"></div><div class="input-white"><input type="tel" id="regPhoneInput" placeholder="شماره تماس" maxlength="11"></div></div>
-      <div class="input-wrapper" id="reg-pass"><div class="input-teal"></div><div class="input-white"><input type="password" id="regPassInput" placeholder="رمز عبور جدید"></div></div>
-      <div class="input-wrapper" id="reg-pass2"><div class="input-teal"></div><div class="input-white"><input type="password" id="regPass2Input" placeholder="تکرار رمز عبور جدید"></div></div>
-      <button class="btn-confirm" onclick="confirmRegister()">تایید</button>
-    </div>
-
-    <div class="page" id="page-forgot-step1">
-      <button class="back-btn" onclick="showPage('page-login')">→</button>
-      <div class="title">شماره خود را وارد کنید</div>
-      <div class="input-wrapper" id="forgot-phone"><div class="input-teal"></div><div class="input-white"><input type="tel" id="forgotPhoneInput" placeholder="وارد کردن شماره" maxlength="11"></div></div>
-      <button class="btn-confirm" onclick="sendSMSCode()">تایید</button>
-    </div>
-
-    <div class="page" id="page-forgot-step2">
-      <button class="back-btn" onclick="showPage('page-forgot-step1')">→</button>
-      <div class="title">کد تایید را وارد کنید</div>
-      <div class="code-display" id="codeDisplay"><div class="code" id="generatedCode">----</div></div>
-      <div class="timer-text" id="timerText">کد تا 10 ثانیه دیگر مخفی می‌شود</div>
-      <div class="input-wrapper" id="forgot-code"><div class="input-teal"></div><div class="input-white"><input type="tel" id="codeInput" placeholder="کد 4 رقمی" maxlength="4"></div></div>
-      <button class="resend-btn" id="resendBtn" onclick="resendCode()">ارسال مجدد کد</button>
-      <button class="btn-confirm" onclick="verifyCode()">تایید</button>
-    </div>
-
-    <div class="page" id="page-forgot-step3">
-      <button class="back-btn" onclick="showPage('page-forgot-step2')">→</button>
-      <div class="title">رمز عبور جدید</div>
-      <div class="input-wrapper" id="new-pass"><div class="input-teal"></div><div class="input-white"><input type="password" id="newPassInput" placeholder="انتخاب رمز عبور جدید"></div></div>
-      <div class="input-wrapper" id="new-pass2"><div class="input-teal"></div><div class="input-white"><input type="password" id="newPass2Input" placeholder="تکرار رمز عبور جدید"></div></div>
-      <button class="btn-confirm" onclick="confirmNewPassword()">تایید</button>
-    </div>
-
-  </div>
+<div class="panel-shadow"></div>
+<div class="panel-main">
+<div class="page active" id="page-login">
+<div class="title">ورود به اکانت / ثبت نام</div>
+<div class="input-wrapper" id="field1"><div class="input-teal"></div><div class="input-white"><input type="tel" id="phoneInput" placeholder="شماره تماس" maxlength="11"></div></div>
+<div class="input-wrapper" id="field2"><div class="input-teal"></div><div class="input-white"><input type="password" id="passInput" placeholder="رمز عبور"></div></div>
+<div class="buttons-row"><button class="btn btn-green" onclick="login()">ورود</button><button class="btn btn-blue" onclick="showPage('page-register')">ساخت اکانت جدید</button></div>
+<button class="btn-yellow" onclick="showPage('page-forgot-step1')">فراموشی رمز عبور</button>
 </div>
-
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <div class="icon" id="modalIcon">✓</div>
-    <p id="modalText">عملیات موفق</p>
-  </div>
+<div class="page" id="page-register">
+<button class="back-btn" onclick="showPage('page-login')">→</button>
+<div class="title">ساخت اکانت جدید</div>
+<div class="input-wrapper" id="reg-name"><div class="input-teal"></div><div class="input-white"><input type="text" id="nameInput" placeholder="نام" maxlength="20"></div></div>
+<div class="input-wrapper" id="reg-phone"><div class="input-teal"></div><div class="input-white"><input type="tel" id="regPhoneInput" placeholder="شماره تماس" maxlength="11"></div></div>
+<div class="input-wrapper" id="reg-pass"><div class="input-teal"></div><div class="input-white"><input type="password" id="regPassInput" placeholder="رمز عبور جدید"></div></div>
+<div class="input-wrapper" id="reg-pass2"><div class="input-teal"></div><div class="input-white"><input type="password" id="regPass2Input" placeholder="تکرار رمز عبور جدید"></div></div>
+<button class="btn-confirm" onclick="confirmRegister()">تایید</button>
 </div>
-
+<div class="page" id="page-forgot-step1">
+<button class="back-btn" onclick="showPage('page-login')">→</button>
+<div class="title">شماره خود را وارد کنید</div>
+<div class="input-wrapper" id="forgot-phone"><div class="input-teal"></div><div class="input-white"><input type="tel" id="forgotPhoneInput" placeholder="وارد کردن شماره" maxlength="11"></div></div>
+<button class="btn-confirm" onclick="sendSMSCode()">تایید</button>
+</div>
+<div class="page" id="page-forgot-step2">
+<button class="back-btn" onclick="showPage('page-forgot-step1')">→</button>
+<div class="title">کد تایید را وارد کنید</div>
+<div class="code-display" id="codeDisplay"><div class="code" id="generatedCode">----</div></div>
+<div class="timer-text" id="timerText">کد تا 10 ثانیه دیگر مخفی می‌شود</div>
+<div class="input-wrapper" id="forgot-code"><div class="input-teal"></div><div class="input-white"><input type="tel" id="codeInput" placeholder="کد 4 رقمی" maxlength="4"></div></div>
+<button class="resend-btn" id="resendBtn" onclick="resendCode()">ارسال مجدد کد</button>
+<button class="btn-confirm" onclick="verifyCode()">تایید</button>
+</div>
+<div class="page" id="page-forgot-step3">
+<button class="back-btn" onclick="showPage('page-forgot-step2')">→</button>
+<div class="title">رمز عبور جدید</div>
+<div class="input-wrapper" id="new-pass"><div class="input-teal"></div><div class="input-white"><input type="password" id="newPassInput" placeholder="انتخاب رمز عبور جدید"></div></div>
+<div class="input-wrapper" id="new-pass2"><div class="input-teal"></div><div class="input-white"><input type="password" id="newPass2Input" placeholder="تکرار رمز عبور جدید"></div></div>
+<button class="btn-confirm" onclick="confirmNewPassword()">تایید</button>
+</div>
+</div>
+</div>
+<div class="modal" id="modal"><div class="modal-box"><div class="icon" id="modalIcon">✓</div><p id="modalText">عملیات موفق</p></div></div>
 <script src="script.js"></script>
 </body>
 </html>
