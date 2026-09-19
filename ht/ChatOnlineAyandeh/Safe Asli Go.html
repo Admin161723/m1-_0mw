@@ -73,8 +73,11 @@
 
 <div class="profile-menu-overlay" id="profileMenu" onclick="closeProfileMenu(event)">
   <div class="profile-menu-box" onclick="event.stopPropagation()">
+
     <button class="pm-close" onclick="closeProfileMenu()">×</button>
+
     <div class="pm-title">مشخصات کاربری</div>
+
     <div class="pm-dark-box">
       <div class="pm-avatar-wrap">
         <img src="Av.jpg" alt="آواتار" class="pm-avatar-img">
@@ -86,13 +89,27 @@
         <button class="pm-pencil-name" onclick="openEditName()" aria-label="ویرایش نام">✎</button>
       </div>
     </div>
+
     <div class="pm-dark-box">
       <div class="pm-stats-row">
-        <div class="pm-stat-square"><div class="pm-stat-value" id="pmGames">0</div><div class="pm-stat-label">تعداد بازی</div></div>
-        <div class="pm-stat-square"><div class="pm-stat-value" id="pmWins">0</div><div class="pm-stat-label">تعداد برد</div></div>
-        <div class="pm-stat-square"><div class="pm-stat-value" id="pmMinutes">0</div><div class="pm-stat-label">دقایق بازی</div></div>
-        <div class="pm-stat-square"><div class="pm-stat-value" id="pmScore">0</div><div class="pm-stat-label">تعداد امتیاز</div></div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmGames">0</div>
+          <div class="pm-stat-label">تعداد بازی</div>
+        </div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmWins">0</div>
+          <div class="pm-stat-label">تعداد برد</div>
+        </div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmMinutes">0</div>
+          <div class="pm-stat-label">دقایق بازی</div>
+        </div>
+        <div class="pm-stat-square">
+          <div class="pm-stat-value" id="pmScore">0</div>
+          <div class="pm-stat-label">تعداد امتیاز</div>
+        </div>
       </div>
+
       <div class="pm-user-role">
         <span class="pm-role-label">نوع کاربری :</span>
         <span class="pm-role-value">
@@ -100,16 +117,19 @@
           <span class="pm-check" id="pmCheck">✓</span>
         </span>
       </div>
+
       <div class="pm-info-row">
         <div class="pm-info-box">کد کاربری : <span id="pmUserCode">10</span></div>
         <div class="pm-info-box">کلن : <span>به زودی</span></div>
       </div>
     </div>
+
   </div>
 </div>
 
 <div class="modal" id="comingSoonModal">
   <div class="modal-box">
+    <div class="icon" id="modalIcon">🚧</div>
     <h3 id="modalTitle">به زودی</h3>
   </div>
 </div>
