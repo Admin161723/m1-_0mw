@@ -1,19 +1,266 @@
-<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"><title>Safe Asli Go</title><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="Safe Asli Go.css"></head><body>
-<div class="top-bar"><div class="shadow"></div><div class="main"></div><button class="settings-btn" id="settingsBtn" aria-label="تنظیمات"><img src="6.webp" alt="تنظیمات"></button><div class="coin-display"><img src="2.webp" alt="سکه"><span class="coin-value" id="coinValue">1500</span></div></div>
-<div id="listView" class="view active"><div class="game-area"><div class="profile-wrap" id="profileWrap"><div class="profile-frame"><img src="Av.jpg" alt="آواتار" class="avatar"><img src="Ga.webp" alt="قالب" class="frame-img"><div class="shine"></div></div><div class="profile-name" id="profileName">کاربر</div></div><div class="side-buttons"><button class="side-btn" data-side="notifications"><img src="1.webp" alt=""><span class="side-label">اطلاعیه</span></button><button class="side-btn" data-side="contact"><img src="4.webp" alt=""><span class="side-label">ارتباط</span></button><button class="side-btn" data-side="tutorials"><img src="5.webp" alt=""><span class="side-label">آموزش‌ها</span></button><button class="side-btn admin-btn" id="adminBtn" data-side="admin"><img src="3.webp" alt=""><span class="side-label">مدیریت</span><span class="admin-badge" id="adminBadge"></span></button></div><div class="lobby-section"><div class="search-row"><input type="text" id="searchInput" placeholder="جستجوی لابی..."><button class="add-btn" id="addBtn">+</button></div><div id="lobbiesList" class="lobbies-list"></div></div><button class="back-btn" id="backBtn">→</button></div><button class="friends-btn" id="friendsBtn"><svg class="friend-icon" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" fill="#9c4000"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6" fill="#ffc1bf"/><circle cx="17" cy="8" r="3.5" fill="#9c4000"/><path d="M22 21c0-3-2-5-5-5" stroke="#ffc1bf" stroke-width="2" stroke-linecap="round" fill="none"/></svg><span class="friend-text">دوستانه</span></button></div>
-<div id="roomView" class="view"><div class="room-wrap"><button class="back-btn-room" id="roomBackBtn">→</button><div class="room-name" id="roomLobbyName">لابی</div><div class="room-grid" id="roomGridArea"><div class="player-slot"></div><div class="player-slot"></div><div class="player-slot"></div><div class="player-slot"></div></div><div class="room-bottom"><div class="room-mic-wrap"><button class="mic-btn" id="micBtn"><img id="micImg" src="Po4.webp" alt="مایک"></button></div><div class="room-react-wrap"><button class="react-btn" id="likeBtn"><img src="Po2.webp" alt="پسند"></button><button class="react-btn" id="dislikeBtn"><img src="Po3.webp" alt="نپسند"></button></div><div class="left-actions" id="leftActions"></div></div></div></div>
-<div class="bg-layer" id="bgList"></div><div class="bg-layer" id="bgRoom"></div>
-<div class="bottom-menu"><div class="menu-panel"><button class="menu-btn" data-nav="group"><img src="Pas5.webp" alt="" class="icon-group"><span class="label">گروه</span></button><button class="menu-btn active" data-nav="home"><img src="Pas6.webp" alt="" class="icon-home"><span class="label">خانه</span></button><button class="menu-btn" data-nav="shop"><img src="Pas7.webp" alt="" class="icon-shop"><span class="label">فروشگاه</span></button></div></div>
-<div class="profile-menu-overlay" id="profileMenu"><div class="profile-menu-box"><button class="pm-close" id="pmCloseBtn">×</button><div class="pm-title">مشخصات کاربری</div><div class="pm-dark-box"><div class="pm-avatar-wrap"><img src="Av.jpg" alt="" class="pm-avatar-img"><img src="Ga.webp" alt="" class="pm-frame-img"><div class="pm-frame-shine"></div><button class="pm-pencil-avatar" id="pmEditBtn1">✎</button></div><div class="pm-name-wrap"><span class="pm-name-text" id="pmName">مرتضی</span><button class="pm-pencil-name" id="pmEditBtn2">✎</button></div></div><div class="pm-dark-box"><div class="pm-stats-row"><div class="pm-stat-square"><div class="pm-stat-value" id="pmGames">0</div><div class="pm-stat-label">تعداد بازی</div></div><div class="pm-stat-square"><div class="pm-stat-value" id="pmWins">0</div><div class="pm-stat-label">تعداد برد</div></div><div class="pm-stat-square"><div class="pm-stat-value" id="pmMinutes">0</div><div class="pm-stat-label">دقایق بازی</div></div><div class="pm-stat-square"><div class="pm-stat-value" id="pmScore">0</div><div class="pm-stat-label">تعداد امتیاز</div></div></div><div class="pm-user-role"><span class="pm-role-label">نوع کاربری :</span><span class="pm-role-value"><span id="pmRoleText">کاربر عادی</span><span class="pm-check" id="pmCheck">✓</span></span></div><div class="pm-info-row"><div class="pm-info-box">کد کاربری : <span id="pmUserCode">10</span></div><div class="pm-info-box">کلن : <span>به زودی</span></div></div></div></div></div>
-<div class="player-profile-overlay" id="playerProfileMenu"><div class="pp-box"><button class="pp-close" id="playerProfileCloseBtn">×</button><div class="pp-title" id="ppTitle">مشخصات کاربری</div><div class="pp-dark-box"><div class="pp-avatar-wrap"><img id="ppAvatar" class="pp-avatar-img" src="Av.jpg" alt=""><img src="Ga.webp" class="pp-frame-img" alt=""><div class="pp-frame-shine"></div></div><div class="pp-name-wrap" id="ppNameWrap"></div></div><div class="pp-dark-box"><div class="pp-stats-row"><div class="pp-stat-square"><div class="pp-stat-value" id="ppGames">0</div><div class="pp-stat-label">تعداد بازی</div></div><div class="pp-stat-square"><div class="pp-stat-value" id="ppWins">0</div><div class="pp-stat-label">تعداد برد</div></div><div class="pp-stat-square"><div class="pp-stat-value" id="ppMinutes">0</div><div class="pp-stat-label">دقایق بازی</div></div><div class="pp-stat-square"><div class="pp-stat-value" id="ppScore">0</div><div class="pp-stat-label">تعداد امتیاز</div></div></div><div class="pp-user-role"><span class="pp-role-label">نوع کاربری :</span><span class="pp-role-value"><span id="ppRoleText">کاربر عادی</span><span class="pp-check" id="ppCheck">✓</span></span></div><div class="pp-info-row"><div class="pp-info-box">کد کاربری : <span id="ppUserCode">10</span></div></div></div><div class="pp-actions-row" id="ppActionsRow" style="display:none"></div></div></div>
-<div class="mini-menu-overlay" id="miniMenu"><div class="mini-menu-box"><div class="mini-menu-title" id="miniMenuTitle">کاربر</div><button class="mini-btn mini-profile" id="miniProfileBtn">مشاهده پروفایل</button><button class="mini-btn mini-report" id="miniReportBtn">گزارش تخلف</button><button class="mini-btn mini-cancel" id="miniCancelBtn">انصراف</button></div></div>
-<div class="report-modal" id="reportModal"><div class="report-box"><div class="report-title">گزارش تخلف از <span id="reportTargetName">کاربر</span></div><div class="report-reasons" id="reportReasons"></div><div class="report-actions"><button class="rep-send" id="rpSendBtn">ارسال گزارش</button><button class="rep-cancel" id="rpCancelBtn">انصراف</button></div></div></div>
-<div class="create-modal" id="createModal"><div class="create-box"><div class="create-title">ساخت لابی</div><button class="select-name-btn" id="selectNameBtn"><span id="selectedNameLabel">انتخاب لابی</span></button><div class="lock-row"><button class="lock-toggle" id="lockToggle"></button><div class="password-field" id="passwordField"><input type="password" id="lobbyPassword" placeholder="رمز لابی" maxlength="20"></div></div><div class="create-actions"><button class="do-create-btn" id="doCreateBtn">ساخت</button><button class="cancel-btn" data-close="createModal">انصراف</button></div></div></div>
-<div class="my-names-modal" id="myNamesModal"><div class="names-box"><div class="names-title">اسم‌های من</div><div class="my-names-list" id="myNamesList"></div><button class="close-btn" data-close="myNamesModal">بستن</button></div></div>
-<div class="name-picker" id="namePicker"><div class="name-picker-box"><div class="np-title">انتخاب اسم</div><input type="text" id="namePickerInput" maxlength="15" placeholder="اسم دلخواه"><div class="np-actions"><button class="np-confirm" id="npConfirm">تایید</button><button class="np-cancel" id="npCancel">انصراف</button></div></div></div>
-<div class="password-modal" id="passwordModal"><div class="pw-box"><div class="pw-title">ورود رمز</div><input type="password" id="passwordInput" placeholder="رمز لابی" maxlength="20"><div class="pw-error" id="pwError"></div><div class="pw-actions"><button class="pw-ok" id="pwOk">تایید</button><button class="pw-cancel" id="pwCancel">انصراف</button></div></div></div>
-<div class="admin-modal" id="adminPanel"><div class="admin-box"><div class="admin-header"><div class="admin-title">پنل مدیریت</div><button class="admin-close" data-close="adminPanel">×</button></div><div class="admin-tabs"><button class="adm-tab active" id="tabNamesBtn">اسم‌ها<span class="tab-badge" id="tabNamesBadge"></span></button><button class="adm-tab" id="tabReportsBtn">گزارش‌ها<span class="tab-badge" id="tabReportsBadge"></span></button></div><div class="admin-list" id="adminList"></div></div></div>
-<div class="confirm-exit-modal" id="confirmExitModal"><div class="conf-box"><div class="conf-text" id="confirmExitText">خارج می‌شوی؟</div><div class="conf-actions"><button class="conf-exit" id="confExitBtn">بله، خروج</button><button class="conf-cancel" id="confCancelBtn">انصراف</button></div></div></div>
-<div class="modal" id="comingSoonModal"><div class="modal-box"><h3 id="modalTitle">به زودی</h3></div></div>
-<div class="edit-modal" id="editNameModal"><div class="edit-modal-box"><h3>ویرایش نام</h3><div class="edit-price">هزینه: ۱۵۰ سکه</div><input type="text" id="editNameInput" maxlength="20" placeholder="نام جدید را وارد کنید"><div class="edit-modal-actions"><button class="edit-save" id="editSaveBtn">ذخیره</button><button class="edit-cancel" id="editCancelBtn">انصراف</button></div></div></div>
-<script src="Safe Asli Go.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Safe Asli Go</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Safe Asli Go.css">
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="shadow"></div>
+  <div class="main"></div>
+  <button class="settings-btn" id="settingsBtn" aria-label="تنظیمات">
+    <img src="6.webp" alt="تنظیمات">
+  </button>
+  <div class="coin-display">
+    <img src="2.webp" alt="سکه">
+    <span class="coin-value" id="coinValue">1500</span>
+  </div>
+</div>
+
+<div id="listView" class="view active">
+  <div class="game-area">
+    <div class="profile-wrap" id="profileWrap">
+      <div class="profile-frame">
+        <img src="Av.jpg" alt="آواتار" class="avatar">
+        <img src="Ga.webp" alt="قالب" class="frame-img">
+        <div class="shine"></div>
+      </div>
+      <div class="profile-name" id="profileName">کاربر</div>
+    </div>
+
+    <div class="side-buttons">
+      <button class="side-btn" data-side="notifications"><img src="1.webp" alt="اطلاعیه"><span class="side-label">اطلاعیه</span></button>
+      <button class="side-btn" data-side="contact"><img src="4.webp" alt="ارتباط"><span class="side-label">ارتباط</span></button>
+      <button class="side-btn" data-side="tutorials"><img src="5.webp" alt="آموزش‌ها"><span class="side-label">آموزش‌ها</span></button>
+      <button class="side-btn admin-btn" id="adminBtn" data-side="admin"><img src="3.webp" alt="مدیریت"><span class="side-label">مدیریت</span><span class="admin-badge" id="adminBadge"></span></button>
+    </div>
+
+    <div class="lobby-section">
+      <div class="search-row">
+        <input type="text" id="searchInput" placeholder="جستجوی لابی...">
+        <button class="add-btn" id="addBtn">+</button>
+      </div>
+      <div id="lobbiesList" class="lobbies-list"></div>
+    </div>
+  </div>
+  <button class="friends-btn" id="friendsBtn">
+    <svg class="friend-icon" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="7" r="4" fill="#9c4000"/>
+      <path d="M2 21c0-4 3-6 7-6s7 2 7 6" fill="#ffc1bf"/>
+      <circle cx="17" cy="8" r="3.5" fill="#9c4000"/>
+      <path d="M22 21c0-3-2-5-5-5" stroke="#ffc1bf" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </svg>
+    <span class="friend-text">دوستانه</span>
+  </button>
+</div>
+
+<div id="roomView" class="view">
+  <div class="room-wrap">
+    <button class="back-btn-room" id="roomBackBtn">→</button>
+    <div class="room-name" id="roomLobbyName">لابی</div>
+    <div class="room-grid" id="roomGridArea">
+      <div class="player-slot"></div>
+      <div class="player-slot"></div>
+      <div class="player-slot"></div>
+      <div class="player-slot"></div>
+    </div>
+    <div class="room-bottom">
+      <div class="room-mic-wrap">
+        <button class="mic-btn" id="micBtn"><img id="micImg" src="Po4.webp" alt="مایک"></button>
+      </div>
+      <div class="room-react-wrap">
+        <button class="react-btn" id="likeBtn"><img src="Po2.webp" alt="پسند"></button>
+        <button class="react-btn" id="dislikeBtn"><img src="Po3.webp" alt="نپسند"></button>
+      </div>
+      <div class="left-actions" id="leftActions"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-menu">
+  <div class="menu-panel">
+    <button class="menu-btn" data-nav="group"><img src="Pas5.webp" alt="گروه" class="icon-group"><span class="label">گروه</span></button>
+    <button class="menu-btn active" data-nav="home"><img src="Pas6.webp" alt="خانه" class="icon-home"><span class="label">خانه</span></button>
+    <button class="menu-btn" data-nav="shop"><img src="Pas7.webp" alt="فروشگاه" class="icon-shop"><span class="label">فروشگاه</span></button>
+  </div>
+</div>
+
+<div class="profile-menu-overlay" id="profileMenu">
+  <div class="profile-menu-box">
+    <button class="pm-close" id="pmCloseBtn">×</button>
+    <div class="pm-title">مشخصات کاربری</div>
+    <div class="pm-dark-box">
+      <div class="pm-avatar-wrap">
+        <img src="Av.jpg" alt="آواتار" class="pm-avatar-img">
+        <img src="Ga.webp" alt="قالب" class="pm-frame-img">
+        <div class="pm-frame-shine"></div>
+        <button class="pm-pencil-avatar" id="pmEditBtn1">✎</button>
+      </div>
+      <div class="pm-name-wrap">
+        <span class="pm-name-text" id="pmName">کاربر</span>
+        <button class="pm-pencil-name" id="pmEditBtn2">✎</button>
+      </div>
+    </div>
+    <div class="pm-dark-box">
+      <div class="pm-stats-row">
+        <div class="pm-stat-square"><div class="pm-stat-value" id="pmGames">0</div><div class="pm-stat-label">تعداد بازی</div></div>
+        <div class="pm-stat-square"><div class="pm-stat-value" id="pmWins">0</div><div class="pm-stat-label">تعداد برد</div></div>
+        <div class="pm-stat-square"><div class="pm-stat-value" id="pmMinutes">0</div><div class="pm-stat-label">دقایق بازی</div></div>
+        <div class="pm-stat-square"><div class="pm-stat-value" id="pmScore">0</div><div class="pm-stat-label">تعداد امتیاز</div></div>
+      </div>
+      <div class="pm-user-role">
+        <span class="pm-role-label">نوع کاربری :</span>
+        <span class="pm-role-value"><span id="pmRoleText">کاربر عادی</span><span class="pm-check" id="pmCheck">✓</span></span>
+      </div>
+      <div class="pm-info-row">
+        <div class="pm-info-box">کد کاربری : <span id="pmUserCode">10</span></div>
+        <div class="pm-info-box">کلن : <span>به زودی</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="player-profile-overlay" id="playerProfileMenu">
+  <div class="pp-box">
+    <button class="pp-close" id="playerProfileCloseBtn">×</button>
+    <div class="pp-title" id="ppTitle">مشخصات کاربری</div>
+    <div class="pp-dark-box">
+      <div class="pp-avatar-wrap">
+        <img id="ppAvatar" class="pp-avatar-img" src="Av.jpg" alt="">
+        <img src="Ga.webp" class="pp-frame-img" alt="">
+        <div class="pp-frame-shine"></div>
+      </div>
+      <div class="pp-name-wrap" id="ppNameWrap"></div>
+    </div>
+    <div class="pp-dark-box">
+      <div class="pp-stats-row">
+        <div class="pp-stat-square"><div class="pp-stat-value" id="ppGames">0</div><div class="pp-stat-label">تعداد بازی</div></div>
+        <div class="pp-stat-square"><div class="pp-stat-value" id="ppWins">0</div><div class="pp-stat-label">تعداد برد</div></div>
+        <div class="pp-stat-square"><div class="pp-stat-value" id="ppMinutes">0</div><div class="pp-stat-label">دقایق بازی</div></div>
+        <div class="pp-stat-square"><div class="pp-stat-value" id="ppScore">0</div><div class="pp-stat-label">تعداد امتیاز</div></div>
+      </div>
+      <div class="pp-user-role">
+        <span class="pp-role-label">نوع کاربری :</span>
+        <span class="pp-role-value"><span id="ppRoleText">کاربر عادی</span><span class="pp-check" id="ppCheck">✓</span></span>
+      </div>
+      <div class="pp-info-row"><div class="pp-info-box">کد کاربری : <span id="ppUserCode">10</span></div></div>
+    </div>
+    <div class="pp-actions-row" id="ppActionsRow" style="display:none"></div>
+  </div>
+</div>
+
+<div class="mini-menu-overlay" id="miniMenu">
+  <div class="mini-menu-box">
+    <div class="mini-menu-title" id="miniMenuTitle">کاربر</div>
+    <button class="mini-btn mini-profile" id="miniProfileBtn">مشاهده پروفایل</button>
+    <button class="mini-btn mini-report" id="miniReportBtn">گزارش تخلف</button>
+    <button class="mini-btn mini-cancel" id="miniCancelBtn">انصراف</button>
+  </div>
+</div>
+
+<div class="report-modal" id="reportModal">
+  <div class="report-box">
+    <div class="report-title">گزارش تخلف از <span id="reportTargetName">کاربر</span></div>
+    <div class="report-reasons" id="reportReasons"></div>
+    <div class="report-actions">
+      <button class="rep-send" id="rpSendBtn">ارسال گزارش</button>
+      <button class="rep-cancel" id="rpCancelBtn">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="create-modal" id="createModal">
+  <div class="create-box">
+    <div class="create-title">ساخت لابی</div>
+    <button class="select-name-btn" id="selectNameBtn"><span id="selectedNameLabel">انتخاب لابی</span></button>
+    <div class="lock-row">
+      <button class="lock-toggle" id="lockToggle"></button>
+      <div class="password-field" id="passwordField">
+        <input type="password" id="lobbyPassword" placeholder="رمز لابی" maxlength="20">
+      </div>
+    </div>
+    <div class="create-actions">
+      <button class="do-create-btn" id="doCreateBtn">ساخت</button>
+      <button class="cancel-btn" data-close="createModal">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="my-names-modal" id="myNamesModal">
+  <div class="names-box">
+    <div class="names-title">اسم‌های من</div>
+    <div class="my-names-list" id="myNamesList"></div>
+    <button class="close-btn" data-close="myNamesModal">بستن</button>
+  </div>
+</div>
+
+<div class="name-picker" id="namePicker">
+  <div class="name-picker-box">
+    <div class="np-title">انتخاب اسم</div>
+    <input type="text" id="namePickerInput" maxlength="15" placeholder="اسم دلخواه">
+    <div class="np-actions">
+      <button class="np-confirm" id="npConfirm">تایید</button>
+      <button class="np-cancel" id="npCancel">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="password-modal" id="passwordModal">
+  <div class="pw-box">
+    <div class="pw-title">ورود رمز</div>
+    <input type="password" id="passwordInput" placeholder="رمز لابی" maxlength="20">
+    <div class="pw-error" id="pwError"></div>
+    <div class="pw-actions">
+      <button class="pw-ok" id="pwOk">تایید</button>
+      <button class="pw-cancel" id="pwCancel">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-modal" id="adminPanel">
+  <div class="admin-box">
+    <div class="admin-header">
+      <div class="admin-title">پنل مدیریت</div>
+      <button class="admin-close" data-close="adminPanel">×</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="adm-tab active" id="tabNamesBtn">اسم‌ها<span class="tab-badge" id="tabNamesBadge"></span></button>
+      <button class="adm-tab" id="tabReportsBtn">گزارش‌ها<span class="tab-badge" id="tabReportsBadge"></span></button>
+    </div>
+    <div class="admin-list" id="adminList"></div>
+  </div>
+</div>
+
+<div class="confirm-exit-modal" id="confirmExitModal">
+  <div class="conf-box">
+    <div class="conf-text" id="confirmExitText">خارج می‌شوی؟</div>
+    <div class="conf-actions">
+      <button class="conf-exit" id="confExitBtn">بله، خروج</button>
+      <button class="conf-cancel" id="confCancelBtn">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="comingSoonModal">
+  <div class="modal-box"><h3 id="modalTitle">به زودی</h3></div>
+</div>
+
+<div class="edit-modal" id="editNameModal">
+  <div class="edit-modal-box">
+    <h3>ویرایش نام</h3>
+    <div class="edit-price">هزینه: ۱۵۰ سکه</div>
+    <input type="text" id="editNameInput" maxlength="20" placeholder="نام جدید را وارد کنید">
+    <div class="edit-modal-actions">
+      <button class="edit-save" id="editSaveBtn">ذخیره</button>
+      <button class="edit-cancel" id="editCancelBtn">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<script src="Safe Asli Go.js"></script>
+</body>
+</html>
