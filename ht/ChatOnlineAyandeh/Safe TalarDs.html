@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Safe TalarDs</title>
+<title>دوستانه - Safe TalarDs</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="Safe Asli Go.css">
 </head>
@@ -12,7 +12,7 @@
 <div class="top-bar">
   <div class="shadow"></div>
   <div class="main"></div>
-  <button class="settings-btn" aria-label="تنظیمات"><img src="6.webp" alt="تنظیمات"></button>
+  <button class="settings-btn" id="settingsBtn" aria-label="تنظیمات"><img src="6.webp" alt="تنظیمات"></button>
   <div class="coin-display">
     <img src="2.webp" alt="سکه">
     <span class="coin-value" id="coinValue">1500</span>
@@ -20,29 +20,13 @@
 </div>
 
 <div id="listView" class="view active">
-  <div class="game-area">
-    <div class="profile-wrap" style="top:15px">
-      <div class="profile-frame">
-        <img src="Av.jpg" alt="آواتار" class="avatar">
-        <img src="Ga.webp" alt="قالب" class="frame-img">
-        <div class="shine"></div>
-      </div>
-      <div class="profile-name" id="profileName">کاربر</div>
-    </div>
-
-    <div class="lobby-section">
+  <div class="game-area" style="background:url('Pas4.webp') center center/cover no-repeat">
+    <div class="lobby-section" style="top:15px">
       <div class="search-row">
         <input type="text" id="searchInput" placeholder="جستجوی لابی...">
         <button class="add-btn" id="addBtn">+</button>
       </div>
       <div id="lobbiesList" class="lobbies-list"></div>
-    </div>
-
-    <div class="side-buttons">
-      <button class="side-btn admin-btn" id="adminBtn" style="display:none">
-        <img src="3.webp" alt="مدیریت"><span class="side-label">مدیریت</span>
-        <span class="admin-badge" id="adminBadge"></span>
-      </button>
     </div>
   </div>
 </div>
@@ -70,13 +54,18 @@
   </div>
 </div>
 
-<button class="back-btn" id="backBtn" style="display:none"></button>
+<div class="side-buttons">
+  <button class="side-btn admin-btn" id="adminBtn">
+    <img src="3.webp" alt="مدیریت"><span class="side-label">مدیریت</span>
+    <span class="admin-badge" id="adminBadge"></span>
+  </button>
+</div>
 
 <div class="bottom-menu">
   <div class="menu-panel">
-    <button class="menu-btn" id="menuGroup"><img src="Pas5.webp" alt="گروه" class="menu-icon"><span class="label">گروه</span></button>
-    <button class="menu-btn active" id="menuHome"><img src="Pas6.webp" alt="خانه" class="menu-icon"><span class="label">خانه</span></button>
-    <button class="menu-btn" id="menuShop"><img src="Pas7.webp" alt="فروشگاه" class="menu-icon"><span class="label">فروشگاه</span></button>
+    <button class="menu-btn" id="menuGroupBtn"><img src="Pas5.webp" alt="گروه" class="menu-icon"><span class="label">گروه</span></button>
+    <button class="menu-btn" id="menuHomeBtn"><img src="Pas6.webp" alt="خانه" class="menu-icon"><span class="label">خانه</span></button>
+    <button class="menu-btn active" id="menuShopBtn"><img src="Pas7.webp" alt="دوستانه" class="menu-icon"><span class="label">دوستانه</span></button>
   </div>
 </div>
 
@@ -99,7 +88,7 @@
         <div class="pp-stat-square"><div class="pp-stat-value" id="ppScore">0</div><div class="pp-stat-label">تعداد امتیاز</div></div>
       </div>
       <div class="pp-user-role">
-        <span>نوع کاربری :</span>
+        <span class="pp-role-label">نوع کاربری :</span>
         <span class="pp-role-value"><span id="ppRoleText">کاربر عادی</span><span class="pp-check" id="ppCheck">✓</span></span>
       </div>
       <div class="pp-info-row"><div class="pp-info-box">کد کاربری : <span id="ppUserCode">---</span></div></div>
