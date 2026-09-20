@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>فروشگاه - بازی مافیا</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        html { width: 100% !important; height: 100% !important; overflow: hidden !important; position: fixed !important; inset: 0; background: #0a1628 !important; touch-action: none !important; }
+        body { font-family: 'Vazirmatn', Tahoma, sans-serif; background: #0a1628 !important; background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px); width: 100% !important; height: 100% !important; position: fixed !important; inset: 0; display: flex; justify-content: center; overflow: hidden !important; color: #fff; }
+        .page-wrapper { width: 100%; max-width: 420px; height: 100vh; height: 100dvh; background: #0a1628; background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.3) 19px, rgba(0,0,0,0.3) 20px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.2) 39px, rgba(0,0,0,0.2) 40px); position: relative; display: flex; flex-direction: column; overflow: hidden !important; padding-bottom: 68px; }
+
+        /* Top Bar */
+        .top-bar { background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%); padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; border-bottom: 2px solid #2a5a9a; flex-shrink: 0; }
+        .currency-item { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2); }
+        .coin-icon-top { width: 32px; height: 32px; background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%); border-radius: 50%; box-shadow: 0 0 10px rgba(255,215,0,0.6); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .gem-icon-top { width: 28px; height: 28px; background: linear-gradient(135deg, #e040fb 0%, #b030e0 40%, #7c4dff 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); box-shadow: 0 0 10px rgba(124,77,255,0.6); }
+        .currency-value { font-weight: 900; font-size: 18px; color: #fff; min-width: 35px; text-align: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+
+        /* Image Carousel (Thinner, No Dots) */
+        .carousel-container { position: relative; width: 100%; height: 120px; overflow: hidden; background: #000; }
+        .carousel-slide { position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Navigation Buttons (All Blue with Active State) */
+        .nav-buttons { display: flex; gap: 6px; padding: 10px 10px; background: linear-gradient(180deg, #1e4a8a 0%, #163d75 100%); border-bottom: 2px solid #2a5a9a; }
+        .nav-btn { flex: 1; background: linear-gradient(180deg, #4a9eff 0%, #2a7acc 100%); border: none; border-radius: 10px; padding: 12px 4px; color: white; font-family: 'Vazirmatn', sans-serif; font-size: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 3px 10px rgba(74,158,255,0.4); transition: all 0.2s; white-space: nowrap; text-align: center; }
+        .nav-btn:active { transform: scale(0.95); }
+        .nav-btn.active-tab { 
+            background: linear-gradient(180deg, #6ab7ff 0%, #4a9eff 100%); 
+            box-shadow: 0 0 15px rgba(106,183,255,0.8), inset 0 1px 0 rgba(255,255,255,0.3); 
+            border-bottom: 3px solid #ffd700; 
+            transform: translateY(-2px); 
+        }
+
+        /* Scroll Content */
+        .scroll-content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: auto; touch-action: pan-y; padding: 15px; }
+        .section-header { background: linear-gradient(90deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%); padding: 12px; text-align: center; font-size: 20px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin: 0 0 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .section-header.purple { background: linear-gradient(90deg, #e040fb 0%, #7c4dff 50%, #e040fb 100%); }
+        .section-header.green { background: linear-gradient(90deg, #4caf50 0%, #2e7d32 50%, #4caf50 100%); }
+
+        /* Cards Grid */
+        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
+        .card { border-radius: 15px; padding: 15px 10px; text-align: center; box-shadow: 0 6px 15px rgba(0,0,0,0.4); transition: transform 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%; background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%); border-radius: 12px 12px 0 0; pointer-events: none; }
+        .card:active { transform: scale(0.95); }
+        .card-amount { font-size: 26px; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 8px; }
+        .card-image { width: 60px; height: 60px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 45px; }
+        .card-price { background: rgba(0,0,0,0.4); padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; color: #fff; margin-top: 8px; }
+        .coin-card { background: linear-gradient(180deg, #ffc107 0%, #ff9800 100%); border: 3px solid #ffb300; }
+        .diamond-card { background: linear-gradient(180deg, #e040fb 0%, #7c4dff 100%); border: 3px solid #ab47bc; }
+        .coin-img { width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #ffe066 0%, #ffd700 30%, #ffa500 100%); border-radius: 50%; margin: 10px auto; box-shadow: 0 0 15px rgba(255,215,0,0.6); }
+        .diamond-img { width: 45px; height: 45px; background: linear-gradient(135deg, #ff66ff 0%, #cc00cc 50%, #990099 100%); clip-path: polygon(50% 0%, 100% 38%, 50% 100%, 0% 38%); margin: 10px auto; box-shadow: 0 0 15px rgba(255,0,255,0.6); }
+        .emoji-card { background: linear-gradient(180deg, #ff5252 0%, #ff1744 100%); border: 3px solid #ff5252; }
+        .emoji-img { font-size: 40px; margin: 10px auto; }
+
+        /* Free Coin Card */
+        .free-coin-card { background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%); border: 3px solid #81c784; grid-column: 1 / -1; padding: 20px 15px; position: relative; animation: pulseCard 2s ease-in-out infinite; border-radius: 15px; cursor: pointer; }
+        .free-coin-card.waiting { background: linear-gradient(180deg, #757575 0%, #424242 100%); border-color: #9e9e9e; animation: none; cursor: not-allowed; opacity: 0.7; }
+        @keyframes pulseCard { 0%, 100% { box-shadow: 0 0 20px rgba(76,175,80,0.5); } 50% { box-shadow: 0 0 40px rgba(76,175,80,0.9); } }
+        .free-coin-card-content { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+        .free-coin-info { flex: 1; text-align: right; }
+        .free-coin-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .free-coin-subtitle { font-size: 13px; color: rgba(255,255,255,0.9); font-weight: 700; }
+        .free-coin-amount { font-size: 28px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.6); display: flex; align-items: center; gap: 6px; }
+        .video-icon-big { font-size: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+
+        /* Bottom Nav */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #1e4a8a 0%, #163d75 50%, #12356a 100%); display: flex; align-items: center; justify-content: space-around; z-index: 100; border-top: 2px solid #2a5a9a; box-shadow: 0 -2px 8px rgba(0,0,0,0.3); height: 68px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 6px 20px; flex: 1; height: 100%; position: relative; }
+        .nav-item.active { background: rgba(255,255,255,0.08); }
+        .nav-label { color: white; font-size: 11px; font-weight: 700; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); }
+        .nav-shop { width: 40px; height: 34px; position: relative; }
+        .shop-awning { width: 40px; height: 12px; background: repeating-linear-gradient(90deg, #f44336 0px, #f44336 8px, #ffeb3b 8px, #ffeb3b 16px, #4caf50 16px, #4caf50 24px, #2196f3 24px, #2196f3 32px, #f44336 32px, #f44336 40px); border-radius: 3px 3px 0 0; }
+        .shop-base { width: 34px; height: 20px; background: linear-gradient(180deg, #5c6bc0, #3f51b5); margin: 0 auto; border-radius: 0 0 4px 4px; position: relative; border: 1px solid #3949ab; }
+        .nav-home { width: 44px; height: 40px; position: relative; }
+        .home-roof { width: 0; height: 0; border-left: 24px solid transparent; border-right: 24px solid transparent; border-bottom: 20px solid #f44336; margin: 0 auto; }
+        .home-body { width: 34px; height: 20px; background: white; margin: 0 auto; border-radius: 0 0 3px 3px; position: relative; }
+        .home-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 13px; height: 15px; background: #5d4037; border-radius: 3px 3px 0 0; }
+        .nav-friends { display: flex; align-items: center; gap: 0; }
+        .friend-head { width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; position: relative; }
+        .friend-head::before { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 26px; height: 12px; background: inherit; border-radius: 13px 13px 0 0; }
+        .friend-1 { background: #42a5f5; z-index: 2; margin-right: -6px; }
+        .friend-2 { background: #66bb6a; }
+
+        /* Toast */
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%); padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 10001; white-space: nowrap; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; white-space: normal; max-width: 90%; text-align: center; }
+        .toast.error { background: linear-gradient(180deg, #f44336 0%, #da190b 100%); }
+
+        /* Hidden sections */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* ==========================================
+           WHEEL OF FORTUNE STYLES
+           ========================================== */
+        .wheel-page {
+            display: none; position: fixed; inset: 0; z-index: 2000;
+            font-family: 'Vazirmatn', sans-serif;
+            background: radial-gradient(ellipse at 50% 40%, #170d33 0%, #0b0716 65%);
+            flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+            color: #fff;
+        }
+        .wheel-page.active { display: flex; }
+
+        .wheel-glow { position: absolute; left: 50%; top: 50%; width: min(95vw, 480px); height: min(95vw, 480px); transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, rgba(142,45,226,.28), rgba(255,157,0,.10) 45%, transparent 70%); filter: blur(10px); pointer-events: none; z-index: 0; }
+        .wheel-stage { position: relative; z-index: 4; width: min(86vw, 370px); height: min(86vw, 370px); }
+        .wheel-frame { position: absolute; inset: -13px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd35c, #b06a00, #ffd35c, #8a5200, #ffd35c, #b06a00, #ffd35c); box-shadow: 0 0 40px rgba(255,170,0,.32), 0 12px 40px rgba(0,0,0,.7), inset 0 0 18px rgba(0,0,0,.55); }
+        .wheel-inner { position: absolute; inset: -13px; border-radius: 50%; box-shadow: inset 0 0 0 3px rgba(255,255,255,.25); pointer-events: none; }
+        #wheelCanvas { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 22px rgba(123,47,247,.45)); }
+        .bulbs { position: absolute; inset: -13px; pointer-events: none; animation: bulbsBlink 1.5s steps(2) infinite; }
+        @keyframes bulbsBlink { 50% { opacity: .3; } }
+        .bulb { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #ffe27a 55%, #ff9800); box-shadow: 0 0 12px 3px rgba(255,220,100,.9); transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(min(43vw, 185px) * -1)); }
+
+        .pointer { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 6; width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 30px solid #ffd35c; filter: drop-shadow(0 0 8px rgba(255,200,0,.9)) drop-shadow(0 4px 4px rgba(0,0,0,.5)); animation: pointerBob 1.2s ease-in-out infinite; }
+        .pointer::after { content: ''; position: absolute; top: -28px; left: -6px; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #ffcf5c 60%, #b06000); box-shadow: 0 0 6px rgba(255,220,100,.9); }
+        @keyframes pointerBob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(5px); } }
+
+        .hub { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 7; width: 33%; height: 33%; border-radius: 50%; border: none; cursor: pointer; background: radial-gradient(circle at 32% 28%, #ffe9a8, #ffb300 48%, #c26100 85%); box-shadow: 0 0 28px rgba(255,180,0,.65), 0 8px 18px rgba(0,0,0,.6), inset 0 4px 8px rgba(255,255,255,.55), inset 0 -6px 12px rgba(120,40,0,.55); font-family: 'Vazirmatn'; font-weight: 900; font-size: clamp(17px, 4.6vw, 24px); color: #5c2a00; text-shadow: 0 1px 0 rgba(255,255,255,.5); transition: transform .12s, filter .25s; }
+        .hub:active { transform: translate(-50%, -50%) scale(.92); }
+        .hub.locked { filter: grayscale(.6) brightness(.7); pointer-events: none; }
+        .hub .ring { position: absolute; inset: -9px; border-radius: 50%; border: 3px dashed rgba(255,255,255,.7); animation: ringSpin 8s linear infinite; pointer-events: none; }
+        @keyframes ringSpin { to { transform: rotate(360deg); } }
+
+        .wheel-status { z-index: 5; font-weight: 800; font-size: 15px; padding: 9px 22px; border-radius: 999px; background: linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.03)); border: 1px solid rgba(255,211,92,.4); box-shadow: 0 4px 16px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.2); color: #e8dcff; }
+        .wheel-status b { color: #ffd35c; }
+
+        .overlay { position: fixed; inset: 0; z-index: 2050; display: flex; align-items: center; justify-content: center; background: rgba(6,4,14,.75); backdrop-filter: blur(7px); opacity: 0; pointer-events: none; transition: opacity .35s; }
+        .overlay.show { opacity: 1; pointer-events: auto; }
+        .modal { width: min(84vw, 320px); padding: 32px 24px 26px; border-radius: 26px; text-align: center; position: relative; overflow: hidden; background: linear-gradient(160deg, rgba(45,20,90,.95), rgba(15,8,40,.97)); border: 2px solid rgba(255,211,92,.6); box-shadow: 0 0 55px rgba(255,170,0,.32), 0 24px 60px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.2); transform: scale(.6); transition: transform .45s cubic-bezier(.34,1.56,.64,1); }
+        .overlay.show .modal { transform: scale(1); }
+        .modal .gift { font-size: 56px; display: block; animation: giftPop .6s cubic-bezier(.34,1.56,.64,1) .15s backwards; }
+        @keyframes giftPop { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+        .modal h2 { font-size: 23px; font-weight: 900; margin: 12px 0 6px; color: #ffd35c; text-shadow: 0 0 14px rgba(255,190,0,.5); }
+        .modal p { font-size: 15px; color: #cfc4ff; margin-bottom: 20px; }
+        .modal .close { font-family: 'Vazirmatn'; font-weight: 800; font-size: 16px; padding: 12px 40px; border: none; border-radius: 999px; cursor: pointer; color: #4a2400; background: linear-gradient(180deg, #ffe9a8, #ffb300); box-shadow: 0 6px 16px rgba(255,180,0,.5), inset 0 1px 0 #fff; transition: transform .12s; }
+        .modal .close:active { transform: scale(.92); }
+        .rays { position: absolute; inset: -2px; pointer-events: none; }
+        .rays > span { position: absolute; left: 50%; top: 50%; width: 240%; height: 240%; transform: translate(-50%, -50%); }
+        .rays > span::before { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent 0 20deg, rgba(255,211,92,.12) 20deg 40deg, transparent 40deg 60deg, rgba(255,211,92,.12) 60deg 80deg, transparent 80deg 100deg, rgba(255,211,92,.12) 100deg 120deg, transparent 120deg 140deg, rgba(255,211,92,.12) 140deg 160deg, transparent 160deg 180deg, rgba(255,211,92,.12) 180deg 200deg, transparent 200deg 220deg, rgba(255,211,92,.12) 220deg 240deg, transparent 240deg 260deg, rgba(255,211,92,.12) 260deg 280deg, transparent 280deg 300deg, rgba(255,211,92,.12) 300deg 320deg, transparent 320deg 340deg, rgba(255,211,92,.12) 340deg 360deg); animation: raysSpin 9s linear infinite; }
+        @keyframes raysSpin { to { transform: rotate(360deg); } }
+
+        .fx { position: fixed; z-index: 2060; pointer-events: none; font-size: 26px; animation: fly 1.4s ease-out forwards; }
+        @keyframes fly { 0% { transform: translate(0,0) scale(.4) rotate(0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1.15) rotate(300deg); opacity: 0; } }
+
+        /* Video Ad Modal */
+        .ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; padding: 15px; }
+        .ad-modal.show { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .ad-container { background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; border: 3px solid #4a9eff; box-shadow: 0 0 40px rgba(74,158,255,0.5); position: relative; overflow: hidden; }
+        .ad-header { text-align: center; margin-bottom: 15px; }
+        .ad-label { display: inline-block; background: linear-gradient(180deg, #ff9800, #f57c00); color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 900; margin-bottom: 8px; }
+        .ad-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .ad-subtitle { font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 700; }
+        .ad-video-wrapper { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 2px solid rgba(255,255,255,0.1); }
+        .ad-video-wrapper video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .video-loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: white; font-weight: 700; z-index: 5; }
+        .video-loading.hidden { display: none; }
+        .video-spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #4a9eff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .ad-progress-container { margin-bottom: 12px; }
+        .ad-progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
+        .ad-progress-fill { height: 100%; background: linear-gradient(90deg, #4a9eff, #00ffff); border-radius: 5px; transition: width 0.3s linear; box-shadow: 0 0 10px rgba(74,158,255,0.6); width: 0%; }
+        .ad-timer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 700; }
+        .ad-reward { background: rgba(76,175,80,0.2); border: 2px solid #4caf50; border-radius: 12px; padding: 10px; text-align: center; margin-bottom: 12px; }
+        .ad-reward-text { font-size: 13px; color: #81c784; font-weight: 900; margin-bottom: 4px; }
+        .ad-reward-amount { font-size: 22px; font-weight: 900; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.6); }
+        .ad-close-btn { background: linear-gradient(180deg, #757575, #424242); color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Vazirmatn', sans-serif; font-size: 15px; font-weight: 900; cursor: not-allowed; opacity: 0.5; width: 100%; transition: all 0.3s; }
+        .ad-close-btn.ready { background: linear-gradient(180deg, #4caf50, #388e3c); cursor: pointer; opacity: 1; box-shadow: 0 0 15px rgba(76,175,80,0.6); animation: readyPulse 1s ease-in-out infinite; }
+        @keyframes readyPulse { 0%, 100% { box-shadow: 0 0 15px rgba(76,175,80,0.6); } 50% { box-shadow: 0 0 25px rgba(76,175,80,1); } }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="currency-item"><div class="coin-icon-top">🪙</div><span class="currency-value" id="shopCoins">۰</span></div>
+        <div class="currency-item"><div class="gem-icon-top"></div><span class="currency-value" id="shopGems">۰</span></div>
+    </div>
+
+    <!-- Image Carousel (Thinner, No Dots) -->
+    <div class="carousel-container" id="carouselContainer">
+        <div class="carousel-slide active"><img src="FAR1.webp" alt="تبلیغ ۱"></div>
+        <div class="carousel-slide"><img src="FAR2.webp" alt="تبلیغ ۲"></div>
+        <div class="carousel-slide"><img src="FAR3.webp" alt="تبلیغ ۳"></div>
+        <div class="carousel-slide"><img src="FAR4.webp" alt="تبلیغ ۴"></div>
+        <div class="carousel-slide"><img src="FAR5.webp" alt="تبلیغ ۵"></div>
+    </div>
+
+    <!-- Navigation Buttons (All Blue) -->
+    <div class="nav-buttons">
+        <button class="nav-btn active-tab" onclick="showSection('gems-coins', this)">خرید جم و سکه</button>
+        <button class="nav-btn" onclick="showSection('special-products', this)">محصولات ویژه</button>
+        <button class="nav-btn" onclick="showSection('emojis', this)">خرید ایموجی</button>
+        <button class="nav-btn" onclick="showSection('gifts', this)">هدیه های ویژه</button>
+    </div>
+
+    <!-- Scroll Content -->
+    <div class="scroll-content" id="scrollContent">
+
+        <!-- Gems & Coins Section -->
+        <div class="section active" id="gems-coins">
+            <div class="section-header">💎 بسته‌های جم (الماس)</div>
+            <div class="cards-grid">
+                <div class="card diamond-card" onclick="buyProduct('Jam1')"><div class="card-amount">۲۰</div><div class="diamond-img"></div><div class="card-price">۱۰,۰۰۰ تومان</div></div>
+                <div class="card diamond-card" onclick="buyProduct('Jam2')"><div class="card-amount">۱۰۰</div><div class="diamond-img" style="transform: scale(1.2);"></div><div class="card-price">۵۰,۰۰۰ تومان</div></div>
+                <div class="card diamond-card" onclick="buyProduct('Jam3')"><div class="card-amount">۳۰۰</div><div class="diamond-img" style="transform: scale(1.4);"></div><div class="card-price">۱۵۰,۰۰۰ تومان</div></div>
+                <div class="card diamond-card" onclick="buyProduct('Jam4')"><div class="card-amount">۱۰۰۰</div><div class="diamond-img" style="transform: scale(1.6);"></div><div class="card-price">۵۰۰,۰۰۰ تومان</div></div>
+                <div class="card diamond-card" onclick="buyProduct('Jam5')"><div class="card-amount">۲۰۰۰</div><div class="card-image">💎</div><div class="card-price">۱,۰۰۰,۰۰۰ تومان</div></div>
+            </div>
+
+            <div class="section-header" style="background: linear-gradient(90deg, #ffc107 0%, #ff9800 50%, #ffc107 100%);">🪙 بسته‌های سکه</div>
+            <div class="cards-grid">
+                <div class="card coin-card" onclick="buyProduct('Coin1')"><div class="card-amount">۵۰۰</div><div class="coin-img"></div><div class="card-price">۲۰,۰۰۰ تومان</div></div>
+                <div class="card coin-card" onclick="buyProduct('Coin2')"><div class="card-amount">۱۰۰۰</div><div class="coin-img"></div><div class="card-price">۴۰,۰۰۰ تومان</div></div>
+                <div class="card coin-card" onclick="buyProduct('Coin3')"><div class="card-amount">۲۰۰۰</div><div class="coin-img"></div><div class="card-price">۸۰,۰۰۰ تومان</div></div>
+                <div class="card coin-card" onclick="buyProduct('Coin4')"><div class="card-amount">۵۰۰۰</div><div class="coin-img"></div><div class="card-price">۲۰۰,۰۰۰ تومان</div></div>
+                <div class="card coin-card" onclick="buyProduct('Coin5')"><div class="card-amount">۱۰۰۰۰</div><div class="card-image">💰</div><div class="card-price">۳۵۰,۰۰۰ تومان</div></div>
+            </div>
+        </div>
+
+        <!-- Special Products Section (COMPLETELY EMPTY OF ITEMS) -->
+        <div class="section" id="special-products">
+            <div class="section-header purple">🌟 محصولات ویژه</div>
+            <div style="text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.5); font-size: 16px; font-weight: 700;">
+                به زودی محصولات ویژه اضافه خواهد شد...
+            </div>
+        </div>
+
+        <!-- Emojis Section -->
+        <div class="section" id="emojis">
+            <div class="section-header" style="background: linear-gradient(90deg, #ff5252 0%, #ff1744 50%, #ff5252 100%);">😊 بسته‌های ایموجی متحرک</div>
+            <div class="cards-grid">
+                <div class="card emoji-card" onclick="buyEmoji('Emoji1', 20)"><div class="card-amount">۱۰۰</div><div class="emoji-img">😘</div><div class="card-price">۲۰ جم</div></div>
+                <div class="card emoji-card" onclick="buyEmoji('Emoji2', 30)"><div class="card-amount">۲۵۰</div><div class="emoji-img">😍</div><div class="card-price">۳۰ جم</div></div>
+                <div class="card emoji-card" onclick="buyEmoji('Emoji3', 45)"><div class="card-amount">۵۰۰</div><div class="emoji-img">😎</div><div class="card-price">۴۵ جم</div></div>
+            </div>
+        </div>
+
+        <!-- Gifts Section -->
+        <div class="section" id="gifts">
+            <div class="section-header green">🎁 هدیه های رایگان</div>
+            <div class="cards-grid">
+                <div class="card free-coin-card" id="freeCoinCard" onclick="watchAdForCoins()">
+                    <div class="free-coin-card-content">
+                        <div class="video-icon-big">🎬</div>
+                        <div class="free-coin-info">
+                            <div class="free-coin-title">تماشای تبلیغ</div>
+                            <div class="free-coin-subtitle" id="freeCoinSubtitle">یک ویدیو کوتاه تماشا کن و سکه بگیر!</div>
+                        </div>
+                        <div class="free-coin-amount" id="freeCoinAmount">۳۰</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="nav-btn" style="width: 100%; margin: 20px 0; padding: 18px; font-size: 18px; background: linear-gradient(180deg, #9c27b0 0%, #7b1fa2 100%);" onclick="openWheelPage()">
+                🎡 گردونه ی شانس
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item active"><div class="nav-shop"><div class="shop-awning"></div><div class="shop-base"></div></div><span class="nav-label">فروشگاه</span></div>
+        <div class="nav-item" onclick="goHome()"><div class="nav-home"><div class="home-roof"></div><div class="home-body"><div class="home-door"></div></div></div><span class="nav-label">خانه</span></div>
+        <div class="nav-item" onclick="goToGroup()"><div class="nav-friends"><div class="friend-head friend-1"></div><div class="friend-head friend-2"></div></div><span class="nav-label">گروه</span></div>
+    </div>
+</div>
+
+<!-- ==========================================
+     WHEEL OF FORTUNE PAGE
+     ========================================== -->
+<div class="wheel-page" id="wheelPage">
+    <div class="wheel-glow"></div>
+    <button class="back-btn" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.5); border:2px solid #fff; border-radius:50%; width:45px; height:45px; display:flex; align-items:center; justify-content:center; font-size:24px; cursor:pointer; color:white; z-index:10;" onclick="closeWheelPage()">✕</button>
+
+    <div class="wheel-stage">
+        <div class="wheel-frame"></div>
+        <div class="wheel-inner"></div>
+        <div class="bulbs" id="bulbs"></div>
+        <canvas id="wheelCanvas" width="760" height="760"></canvas>
+        <div class="pointer"></div>
+        <button class="hub" id="spinBtn"><span class="ring"></span>بچرخون</button>
+    </div>
+
+    <div class="wheel-status" id="wheelStatus">🎟️ چرخش امروز: <b>۱</b></div>
+
+    <div class="overlay" id="wheelOverlay">
+        <div class="modal">
+            <div class="rays"><span></span></div>
+            <span class="gift" id="giftIco">🎉</span>
+            <h2 id="giftTitle">تبریک!</h2>
+            <p id="giftDesc">۱۰۰ سکه برنده شدی</p>
+            <button class="close" onclick="closeWheelModal()">عالیه!</button>
+        </div>
+    </div>
+</div>
+
+<!-- Video Ad Modal -->
+<div class="ad-modal" id="adModal">
+    <div class="ad-container">
+        <div class="ad-header">
+            <div class="ad-label">🎬 تبلیغ ویدیویی</div>
+            <div class="ad-title">تماشای ویدیو کامل</div>
+            <div class="ad-subtitle">تا پایان صبر کن تا جایزه‌ات رو بگیری</div>
+        </div>
+        <div class="ad-video-wrapper">
+            <div class="video-loading" id="videoLoading"><div class="video-spinner"></div><div>در حال بارگذاری...</div></div>
+            <video id="adVideo" playsinline webkit-playsinline muted></video>
+        </div>
+        <div class="ad-progress-container">
+            <div class="ad-progress-bar"><div class="ad-progress-fill" id="adProgressFill"></div></div>
+            <div class="ad-timer"><span>⏱️ زمان باقیمانده</span><span id="adTimerText">۰:۰۰</span></div>
+        </div>
+        <div class="ad-reward">
+            <div class="ad-reward-text">🎁 جایزه شما:</div>
+            <div class="ad-reward-amount">🪙 <span id="adRewardAmount">۳۰</span> سکه</div>
+        </div>
+        <button class="ad-close-btn" id="adCloseBtn" disabled onclick="closeAdModal()">⏳ لطفاً تا پایان ویدیو صبر کنید</button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+    // ================================================================
+    // Upstash Redis Configuration (NEW)
+    // ================================================================
+    const UPSTASH_URL = "https://holy-hamster-122717.upstash.io";
+    const UPSTASH_TOKEN = "gQAAAAAAAd9dAAIgcDFlNmYwM2VkZDJiM2Y0YWI2ODBmNmIyMTZjMmRkMTZmNg";
+
+    async function redisGet(key) {
+        try {
+            const res = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
+                headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
+            });
+            const data = await res.json();
+            if (data && data.result) {
+                try { return JSON.parse(data.result); } catch(e) { return data.result; }
+            }
+            return null;
+        } catch(e) { console.error("Redis Get Error:", e); return null; }
+    }
+
+    async function redisSet(key, value) {
+        try {
+            const jsonValue = JSON.stringify(value);
+            const res = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(key)}/${encodeURIComponent(jsonValue)}`, {
+                headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
+            });
+            return res.ok;
+        } catch(e) { console.error("Redis Set Error:", e); return false; }
+    }
+
+    // ================================================================
+    // Main Shop Variables
+    // ================================================================
+    let currentCarouselIndex = 0;
+    let currentUser = null;
+    let currentPhone = null;
+    let adState = { count: 0, lastClaimTime: 0, cycleStart: 0 };
+    let adVideoCompleted = false;
+    let adVideo = null;
+
+    const VIDEO_SOURCES = [
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
+    ];
+    function getRandomVideo() { return VIDEO_SOURCES[Math.floor(Math.random() * VIDEO_SOURCES.length)]; }
+    const REWARDS = [30, 30, 40];
+    const MAX_DAILY_ADS = 3;
+
+    // ================================================================
+    // Carousel (2 Seconds, No Dots)
+    // ================================================================
+    function initCarousel() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        setInterval(() => {
+            slides[currentCarouselIndex].classList.remove('active');
+            currentCarouselIndex = (currentCarouselIndex + 1) % slides.length;
+            slides[currentCarouselIndex].classList.add('active');
+        }, 2000);
+    }
+
+    // ================================================================
+    // Section Navigation (with Active Button State)
+    // ================================================================
+    function showSection(sectionId, btnElement) {
+        playClickSound();
+        document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab'));
+        if (btnElement) btnElement.classList.add('active-tab');
+
+        document.getElementById('scrollContent').scrollTop = 0;
+    }
+
+    // ================================================================
+    // Wheel of Fortune Logic (10 Segments)
+    // ================================================================
+    const bulbs = document.getElementById('bulbs');
+    for (let i = 0; i < 16; i++) {
+        const b = document.createElement('div'); b.className = 'bulb'; b.style.setProperty('--a', (i * 22.5) + 'deg');
+        bulbs.appendChild(b);
+    }
+
+    const canvas = document.getElementById('wheelCanvas'), ctx = canvas.getContext('2d');
+    // 10 Segments including the new 200 Coins prize
+    const SEG = [
+        { label: 'پوچ', icon: '💨', color: '#241344', edge: '#452a7d', prize: null, type: 'empty', amount: 0 },
+        { label: '۱۰۰ سکه', icon: '🪙', color: '#f7971e', edge: '#ffc75c', prize: '۱۰۰ سکه', type: 'coin', amount: 100 },
+        { label: 'پوچ', icon: '💨', color: '#241344', edge: '#452a7d', prize: null, type: 'empty', amount: 0 },
+        { label: '۱۰ جم', icon: '💎', color: '#00c6ff', edge: '#7be9ff', prize: '۱۰ جم', type: 'gem', amount: 10 },
+        { label: 'پوچ', icon: '💨', color: '#241344', edge: '#452a7d', prize: null, type: 'empty', amount: 0 },
+        { label: '۱۵ ایموجی', icon: '😍', color: '#8e2de2', edge: '#b45cff', prize: '۱۵ ایموجی', type: 'emoji', amount: 15 },
+        { label: 'پوچ', icon: '💨', color: '#241344', edge: '#452a7d', prize: null, type: 'empty', amount: 0 },
+        { label: '۱۰۰۰ سکه', icon: '💰', color: '#ff416c', edge: '#ff8fa5', prize: '۱۰۰۰ سکه', type: 'coin', amount: 1000 },
+        { label: 'پوچ', icon: '💨', color: '#241344', edge: '#452a7d', prize: null, type: 'empty', amount: 0 },
+        { label: '۲۰۰ سکه', icon: '💰', color: '#f7971e', edge: '#ffc75c', prize: '۲۰۰ سکه', type: 'coin', amount: 200 }
+    ];
+    const N = SEG.length, ARC = Math.PI * 2 / N, CX = 380, CY = 380, R = 340;
+
+    function drawWheel(angle) {
+        ctx.clearRect(0, 0, 760, 760);
+        ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
+        for (let i = 0; i < N; i++) {
+            const s = SEG[i], a0 = i * ARC;
+            const g = ctx.createRadialGradient(0, 0, R * 0.15, 0, 0, R);
+            g.addColorStop(0, shade(s.color, 22));
+            g.addColorStop(1, s.color);
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, R, a0, a0 + ARC); ctx.closePath();
+            ctx.fillStyle = g; ctx.fill();
+            ctx.strokeStyle = s.edge; ctx.lineWidth = 6; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a0) * R, Math.sin(a0) * R); ctx.stroke();
+            ctx.save(); ctx.rotate(a0 + ARC / 2);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.font = '50px serif';
+            ctx.fillText(s.icon, R * 0.66, -16);
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 8;
+            ctx.font = '900 38px Vazirmatn, sans-serif';
+            ctx.fillText(s.label, R * 0.66, 40);
+            ctx.restore();
+            ctx.beginPath(); ctx.arc(0, 0, R * 0.92, a0 + 0.02, a0 + ARC - 0.02);
+            ctx.strokeStyle = 'rgba(255,255,255,.20)'; ctx.lineWidth = 3; ctx.stroke();
+        }
+        const cg = ctx.createRadialGradient(-30, -30, 10, 0, 0, R * 0.34);
+        cg.addColorStop(0, '#4a2f8f'); cg.addColorStop(1, '#1a0b3d');
+        ctx.beginPath(); ctx.arc(0, 0, R * 0.36, 0, Math.PI * 2); ctx.fillStyle = cg; ctx.fill();
+        ctx.strokeStyle = 'rgba(255,211,92,.85)'; ctx.lineWidth = 7;
+        ctx.shadowColor = 'rgba(255,180,0,.7)'; ctx.shadowBlur = 18; ctx.stroke(); ctx.shadowBlur = 0;
+        for (let i = 0; i < N; i++) {
+            const a = i * ARC;
+            ctx.beginPath(); ctx.arc(Math.cos(a) * R, Math.sin(a) * R, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffd35c'; ctx.shadowColor = 'rgba(255,200,0,.9)'; ctx.shadowBlur = 14; ctx.fill(); ctx.shadowBlur = 0;
+        }
+        ctx.restore();
+    }
+    function shade(hex, amt) {
+        const n = parseInt(hex.slice(1), 16);
+        let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
+        r = Math.min(255, Math.max(0, r)); g = Math.min(255, Math.max(0, g)); b = Math.min(255, Math.max(0, b));
+        return `rgb(${r},${g},${b})`;
+    }
+    let angle = 0; drawWheel(0);
+
+    const SPIN_KEY = 'wheel_last_spin';
+    const today = new Date().toDateString();
+    let used = localStorage.getItem(SPIN_KEY) === today;
+    const spinBtn = document.getElementById('spinBtn');
+    const statusEl = document.getElementById('wheelStatus');
+
+    function renderWheelStatus() {
+        if (used) {
+            statusEl.innerHTML = '⏳ چرخش امروز استفاده شد — فردا برگرد!';
+            spinBtn.classList.add('locked');
+            spinBtn.innerHTML = '<span class="ring"></span>فردا';
+        } else {
+            statusEl.innerHTML = '🎟️ چرخش امروز: <b>۱</b>';
+            spinBtn.classList.remove('locked');
+            spinBtn.innerHTML = '<span class="ring"></span>بچرخون';
+        }
+    }
+    renderWheelStatus();
+
+    function snd(freq, dur, type = 'sine', vol = .18, delay = 0) {
+        try {
+            const ac = snd.ac || (snd.ac = new (window.AudioContext || window.webkitAudioContext)());
+            const o = ac.createOscillator(), g = ac.createGain();
+            o.type = type; o.frequency.value = freq;
+            g.gain.setValueAtTime(0, ac.currentTime + delay);
+            g.gain.linearRampToValueAtTime(vol, ac.currentTime + delay + .02);
+            g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + delay + dur);
+            o.connect(g); g.connect(ac.destination);
+            o.start(ac.currentTime + delay); o.stop(ac.currentTime + delay + dur + .05);
+        } catch (e) {}
+    }
+    const tickSnd = () => snd(900, .05, 'square', .06);
+    const winSnd = () => [523, 659, 784, 1046].forEach((f, i) => snd(f, .28, 'triangle', .2, i * .13));
+
+    let spinning = false, lastTick = -1;
+    spinBtn.addEventListener('click', () => {
+        if (spinning || used) return;
+        spinning = true;
+        const idx = Math.floor(Math.random() * N);
+        const target = 360 * 6 + (360 - (idx * (360 / N) + (360 / N) / 2));
+        const from = angle % 360;
+        let delta = ((target - from) % 360 + 360) % 360 + 360 * 6;
+        const start = performance.now(), dur = 5200;
+        function ease(t) { return 1 - Math.pow(1 - t, 4.2); }
+        function frame(now) {
+            const t = Math.min(1, (now - start) / dur);
+            angle = from + delta * ease(t);
+            drawWheel(angle * Math.PI / 180);
+            if (t < 1) {
+                const sector = Math.floor(((360 - (angle % 360)) % 360) / (360 / N));
+                if (sector !== lastTick) { lastTick = sector; tickSnd(); }
+                requestAnimationFrame(frame);
+            } else {
+                spinning = false;
+                used = true; localStorage.setItem(SPIN_KEY, today);
+                renderWheelStatus();
+                award(idx);
+            }
+        }
+        requestAnimationFrame(frame);
+    });
+
+    function award(idx) {
+        const s = SEG[idx];
+        if (!s.prize) {
+            showResult({ icon: '💨', title: 'پوچ شد!', desc: 'متأسفم! هیچ جایزه‌ای نگرفتی، فردا دوباره امتحان کن' });
+            snd(300, .35, 'sawtooth', .1);
+            return;
+        }
+        winSnd(); confettiBurst(); coinBurst();
+        showResult({ icon: s.icon, title: 'تبریک! 🎉', desc: s.prize + ' برنده شدی' });
+
+        // --- INTEGRATION WITH MAIN APP USER DATA (Upstash) ---
+        if (currentUser) {
+            if (s.type === 'coin') {
+                currentUser.coins = (currentUser.coins || 0) + s.amount;
+            } else if (s.type === 'gem') {
+                currentUser.gems = (currentUser.gems || 0) + s.amount;
+            }
+            saveUserData();
+        }
+    }
+
+    function showResult(o) {
+        document.getElementById('giftIco').textContent = o.icon || '🎁';
+        document.getElementById('giftTitle').textContent = o.title;
+        document.getElementById('giftDesc').textContent = o.desc;
+        document.getElementById('wheelOverlay').classList.add('show');
+    }
+    function closeWheelModal() { 
+        document.getElementById('wheelOverlay').classList.remove('show'); 
+    }
+    function openWheelPage() {
+        playClickSound();
+        document.getElementById('wheelPage').classList.add('active');
+        renderWheelStatus();
+    }
+    function closeWheelPage() {
+        document.getElementById('wheelPage').classList.remove('active');
+    }
+    document.getElementById('wheelOverlay').addEventListener('click', e => { if (e.target.id === 'wheelOverlay') closeWheelModal(); });
+
+    function coinBurst() {
+        for (let i = 0; i < 14; i++) {
+            const c = document.createElement('div'); c.className = 'fx'; c.textContent = '🪙';
+            c.style.left = '50%'; c.style.top = '45%';
+            c.style.setProperty('--dx', (Math.random() * 360 - 180) + 'px');
+            c.style.setProperty('--dy', (Math.random() * -320 - 40) + 'px');
+            document.body.appendChild(c); setTimeout(() => c.remove(), 1500);
+        }
+    }
+    function confettiBurst() {
+        const em = ['🎉', '✨', '⭐', '💎', '🪙'];
+        for (let i = 0; i < 20; i++) {
+            const c = document.createElement('div'); c.className = 'fx';
+            c.textContent = em[Math.floor(Math.random() * em.length)];
+            c.style.left = '50%'; c.style.top = '40%'; c.style.fontSize = (18 + Math.random() * 20) + 'px';
+            c.style.setProperty('--dx', (Math.random() * 440 - 220) + 'px');
+            c.style.setProperty('--dy', (Math.random() * -360 + 60) + 'px');
+            document.body.appendChild(c); setTimeout(() => c.remove(), 1500);
+        }
+    }
+
+    // ================================================================
+    // Video Ad System
+    // ================================================================
+    function getCurrentReward() {
+        if (adState.count >= MAX_DAILY_ADS) return 0;
+        return REWARDS[adState.count] || 0;
+    }
+
+    function updateFreeCoinUI() {
+        const card = document.getElementById('freeCoinCard');
+        const amountEl = document.getElementById('freeCoinAmount');
+        const subtitleEl = document.getElementById('freeCoinSubtitle');
+        if (adState.count >= MAX_DAILY_ADS) {
+            card.classList.add('waiting');
+            amountEl.textContent = '⏱️';
+            subtitleEl.textContent = 'همه جایزه‌های امروز رو گرفتی!';
+        } else {
+            card.classList.remove('waiting');
+            amountEl.textContent = toPersianNum(getCurrentReward());
+            subtitleEl.textContent = `بار ${toPersianNum(adState.count + 1)} از ۳ - ویدیو کوتاه تماشا کن!`;
+        }
+    }
+
+    async function watchAdForCoins() {
+        playClickSound();
+        if (!currentUser) { showToast('خطا در بارگذاری اطلاعات', 'error'); return; }
+        if (adState.count >= MAX_DAILY_ADS) { showToast('همه جایزه‌های امروز رو گرفتی!', 'info'); return; }
+
+        const reward = getCurrentReward();
+        document.getElementById('adRewardAmount').textContent = toPersianNum(reward);
+        const closeBtn = document.getElementById('adCloseBtn');
+        closeBtn.disabled = true; closeBtn.classList.remove('ready');
+        closeBtn.textContent = '⏳ لطفاً تا پایان ویدیو صبر کنید';
+        document.getElementById('adProgressFill').style.width = '0%';
+        document.getElementById('adTimerText').textContent = '۰:۰۰';
+        document.getElementById('videoLoading').classList.remove('hidden');
+
+        adVideoCompleted = false;
+        if (adVideo) { adVideo.pause(); adVideo.src = ''; }
+        adVideo = document.getElementById('adVideo');
+        adVideo.src = getRandomVideo();
+        document.getElementById('adModal').classList.add('show');
+        adVideo.muted = true; adVideo.playsInline = true;
+
+        try {
+            await adVideo.play();
+            document.getElementById('videoLoading').classList.add('hidden');
+        } catch (err) {
+            document.getElementById('videoLoading').innerHTML = `<div style="text-align:center; padding: 20px;"><div style="font-size: 40px; margin-bottom: 10px;">👆</div><div>برای پخش روی ویدیو ضربه بزن</div></div>`;
+            adVideo.onclick = async () => {
+                try { await adVideo.play(); document.getElementById('videoLoading').classList.add('hidden'); adVideo.onclick = null; } catch (e) {}
+            };
+        }
+    }
+
+    function setupVideoListeners() {
+        const video = document.getElementById('adVideo');
+        video.addEventListener('timeupdate', () => {
+            if (!video.duration) return;
+            const progress = (video.currentTime / video.duration) * 100;
+            document.getElementById('adProgressFill').style.width = `${progress}%`;
+            const remaining = video.duration - video.currentTime;
+            const m = Math.floor(remaining / 60);
+            const s = Math.floor(remaining % 60).toString().padStart(2, '0');
+            document.getElementById('adTimerText').textContent = `${toPersianNum(m)}:${toPersianNum(s)}`;
+        });
+        video.addEventListener('ended', () => {
+            adVideoCompleted = true;
+            const closeBtn = document.getElementById('adCloseBtn');
+            closeBtn.disabled = false; closeBtn.classList.add('ready');
+            closeBtn.innerHTML = '✓ دریافت جایزه';
+            document.getElementById('adProgressFill').style.width = '100%';
+            document.getElementById('adTimerText').textContent = 'تمام شد! 🎉';
+        });
+        video.addEventListener('pause', () => {
+            if (!adVideoCompleted && video.src && !video.ended) {
+                setTimeout(() => { if (!adVideoCompleted && video.src && !video.ended) video.play().catch(() => {}); }, 100);
+            }
+        });
+    }
+
+    async function closeAdModal() {
+        if (!adVideoCompleted) { showToast('باید تا پایان ویدیو صبر کنید!', 'error'); return; }
+        if (adVideo) { adVideo.pause(); adVideo.src = ''; }
+        document.getElementById('adModal').classList.remove('show');
+        const reward = getCurrentReward();
+        currentUser.coins = (currentUser.coins || 0) + reward;
+        adState.count++; adState.lastClaimTime = Date.now();
+        if (adState.count === 1) adState.cycleStart = Date.now();
+
+        // Save to Upstash
+        await redisSet(`ad_state:${currentPhone}`, adState);
+        saveUserData();
+
+        showToast(`🎉 ${toPersianNum(reward)} سکه به حسابت اضافه شد!`, 'success');
+        updateFreeCoinUI();
+    }
+
+    // ================================================================
+    // Payment & Utility
+    // ================================================================
+    const PRODUCTS = {
+        'Jam1': { toman: 10000, rewardType: 'gem', rewardAmount: 20 },
+        'Jam2': { toman: 50000, rewardType: 'gem', rewardAmount: 100 },
+        'Jam3': { toman: 150000, rewardType: 'gem', rewardAmount: 300 },
+        'Jam4': { toman: 500000, rewardType: 'gem', rewardAmount: 1000 },
+        'Jam5': { toman: 1000000, rewardType: 'gem', rewardAmount: 2000 },
+        'Coin1': { toman: 20000, rewardType: 'coin', rewardAmount: 500 },
+        'Coin2': { toman: 40000, rewardType: 'coin', rewardAmount: 1000 },
+        'Coin3': { toman: 80000, rewardType: 'coin', rewardAmount: 2000 },
+        'Coin4': { toman: 200000, rewardType: 'coin', rewardAmount: 5000 },
+        'Coin5': { toman: 350000, rewardType: 'coin', rewardAmount: 10000 }
+    };
+
+    function buyProduct(productId) {
+        playClickSound();
+        const product = PRODUCTS[productId];
+        if (!product) { showToast('محصول نامعتبر است', 'error'); return; }
+        showToast(`در حال انتقال به درگاه پرداخت...\n${product.toman.toLocaleString('fa-IR')} تومان`, 'info');
+    }
+
+    function buyEmoji(emojiId, gemCost) {
+        playClickSound();
+        if (!currentUser) { showToast('خطا در بارگذاری اطلاعات', 'error'); return; }
+        if ((currentUser.gems || 0) < gemCost) { showToast('جم کافی ندارید!', 'error'); return; }
+        currentUser.gems -= gemCost;
+        showToast(`${toPersianNum(gemCost)} جم کسر شد. ایموجی خریداری شد!`, 'success');
+        saveUserData();
+    }
+
+    function toPersianNum(num) {
+        const persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        return (num || 0).toString().replace(/[0-9]/g, w => persian[+w]);
+    }
+
+    function showToast(message, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = message;
+        t.className = 'toast show' + (type === 'error' ? ' error' : '');
+        setTimeout(() => { t.classList.remove('show'); }, 3000);
+    }
+
+    function playClickSound() { /* Implement click sound if needed */ }
+
+    async function saveUserData() {
+        if (!currentUser || !currentPhone) return;
+        document.getElementById('shopCoins').textContent = toPersianNum(currentUser.coins || 0);
+        document.getElementById('shopGems').textContent = toPersianNum(currentUser.gems || 0);
+        // Save to Upstash
+        await redisSet(`user:${currentPhone}`, currentUser);
+    }
+
+    function goHome() { playClickSound(); window.location.href = 'Safe Asli Bazi.html'; }
+    function goToGroup() { playClickSound(); window.location.href = 'Safe Goroh.html'; }
+
+    // ================================================================
+    // Initialization
+    // ================================================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        initCarousel();
+        setupVideoListeners();
+
+        const loggedIn = localStorage.getItem('currentLoggedInUser');
+        if (loggedIn) {
+            try {
+                const userInfo = JSON.parse(loggedIn);
+                currentPhone = userInfo.phone;
+
+                // Load user data from Upstash
+                const freshUser = await redisGet(`user:${currentPhone}`);
+                if (freshUser) {
+                    currentUser = freshUser;
+                } else {
+                    currentUser = userInfo; // Fallback to local
+                }
+
+                // Load ad state from Upstash
+                const savedAdState = await redisGet(`ad_state:${currentPhone}`);
+                if (savedAdState) {
+                    adState = savedAdState;
+                    const timeSinceCycleStart = Date.now() - (adState.cycleStart || 0);
+                    if (timeSinceCycleStart >= 24 * 60 * 60 * 1000) {
+                        adState = { count: 0, lastClaimTime: 0, cycleStart: 0 };
+                    }
+                }
+
+                document.getElementById('shopCoins').textContent = toPersianNum(currentUser.coins || 0);
+                document.getElementById('shopGems').textContent = toPersianNum(currentUser.gems || 0);
+            } catch (e) { console.error(e); }
+        }
+
+        updateFreeCoinUI();
+    });
+</script>
+
+</body>
+</html>
