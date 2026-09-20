@@ -2,7 +2,8 @@
   if (window.__OG_LOADED__) return;
   window.__OG_LOADED__ = true;
 
-  var CREATOR_PHONE = '09904844031';
+  // ═══ اصلاح: هر دو شماره ادمین رو بشناس ═══
+  var ADMIN_PHONES = ['09908823688', '09904844031'];
 
   function isCreator() {
     try {
@@ -10,7 +11,7 @@
       if (!loggedIn) return false;
       var data = JSON.parse(loggedIn);
       if (!data || !data.phone) return false;
-      return String(data.phone) === CREATOR_PHONE;
+      return ADMIN_PHONES.indexOf(String(data.phone)) > -1;
     } catch(e) { return false; }
   }
 
@@ -95,6 +96,7 @@
   }
 
   function show() {
+    // ═══ FIX: اگه ادمین هستیم و توی صفحه بازی هستیم، هیچوقت نشون نده ═══
     if (isCreator() && isGamePage()) return;
     var o = getOverlay();
     o.style.setProperty('display', 'flex', 'important');
@@ -126,7 +128,6 @@
     }
   }
 
-  // ⚡ چک واقعی از یه سرور مطمئن (jsdelivr تو ایران کار می‌کنه)
   function realCheck() {
     return new Promise(function(resolve) {
       var img = new Image();
@@ -144,13 +145,18 @@
     });
   }
 
-  // ⚡ چک اصلی - اگه navigator.onLine گفت آنلاینیم، همون قبوله
   async function checkNow() {
     if (checkBusy) return;
     checkBusy = true;
 
     try {
-      // 1. اگه مرورگر گفت آنلاینیم → قبول کن
+      // ═══ FIX: اگه ادمینیم، اصلاً چک نکن ═══
+      if (isCreator() && isGamePage()) {
+        if (isShown) hide();
+        checkBusy = false;
+        return;
+      }
+
       if (navigator.onLine === true) {
         offlineFailCount = 0;
         if (isShown && currentMode === 'offline') hide();
@@ -158,14 +164,11 @@
         return;
       }
 
-      // 2. مرورگر گفت آفلاینیم → یه چک واقعی بزن
       var reallyOnline = await realCheck();
       if (reallyOnline) {
-        // مرورگر اشتباه گفت، ما واقعاً آنلاینیم
         offlineFailCount = 0;
         if (isShown && currentMode === 'offline') hide();
       } else {
-        // واقعاً آفلاینیم
         offlineFailCount++;
         if (offlineFailCount >= 2 && !isShown) {
           currentMode = 'offline';
@@ -174,7 +177,6 @@
         }
       }
     } catch(e) {
-      // خطا تو چک → فرض کن آنلاینیم
       offlineFailCount = 0;
     }
 
@@ -192,7 +194,6 @@
       return;
     }
 
-    // حالت offline
     realCheck().then(function(ok) {
       if (ok) {
         try { localStorage.setItem('__og_skip__', '1'); } catch(e) {}
@@ -211,6 +212,7 @@
   }
 
   function showAway() {
+    // ═══ FIX: ادمین هم رد کن ═══
     if (isCreator() && isGamePage()) return;
     currentMode = 'away';
     setMessage('ارتباط شما با سرور<br>قطع شده است');
@@ -221,12 +223,8 @@
   function init() {
     getOverlay();
 
-    // رویداد مرورگر
     window.addEventListener('offline', function() {
-      // بلافاصله نشون نده، منتظر چک واقعی باش
-      setTimeout(function() {
-        checkNow();
-      }, 1500);
+      setTimeout(function() { checkNow(); }, 1500);
     });
 
     window.addEventListener('online', function() {
@@ -239,10 +237,7 @@
       }
     });
 
-    // چک دوره‌ای
     setInterval(checkNow, 3000);
-
-    // چک اولیه بعد از ۱ ثانیه (که اپ لود شه)
     setTimeout(checkNow, 1000);
   }
 
