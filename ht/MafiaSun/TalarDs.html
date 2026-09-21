@@ -14,7 +14,6 @@
   .view{position:absolute;inset:0;display:none;flex-direction:column;background:#0d1f35}
   .view.active{display:flex}
 
-  /* ============ TOP BARS ============ */
   .list-topbar,.room-top-bar{flex-shrink:0;padding-top:env(safe-area-inset-top);background:#052a42;z-index:20}
   .list-topmain,.room-top-main{height:54px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:0 0 14px 14px;display:flex;align-items:center;padding:0 10px;gap:6px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 4px 12px rgba(0,0,0,.35)}
   .top-title,.room-lobby-name{flex:1;text-align:center;color:#fff;font-size:15px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
@@ -40,202 +39,51 @@
   .gear-ico::before{content:'';position:absolute;inset:5px;background:#ffc107;border-radius:50%}
   .gear-ico::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(#5a4500 0 12%,transparent 12% 25%,#5a4500 25% 37%,transparent 37% 50%,#5a4500 50% 62%,transparent 62% 75%,#5a4500 75% 87%,transparent 87%)}
 
-  /* ============ SEARCH ============ */
   .search-wrap{margin:10px 12px;position:relative}
   .search-wrap input{width:100%;height:42px;padding:0 40px 0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(180deg,rgba(167,186,196,.35),rgba(2,88,163,.4));color:#fff;font-size:14px;font-weight:800;outline:none;text-align:right}
   .search-wrap input::placeholder{color:rgba(255,255,255,.65)}
   .s-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:3px solid #7ec3f0;border-radius:50%;pointer-events:none}
   .s-icon::after{content:'';position:absolute;width:8px;height:3px;background:#7ec3f0;bottom:-5px;right:-6px;transform:rotate(45deg);border-radius:2px}
 
-  /* ============ ROOM CARDS (طرح اصلی - گربه منفجره) ============ */
+  /* ============ ROOM CARDS ============ */
   .rooms-scroll{flex:1;overflow-y:auto;padding:8px 12px 100px;scrollbar-width:none}
   .rooms-scroll::-webkit-scrollbar{display:none}
   .empty-list{text-align:center;color:rgba(255,255,255,.55);padding:60px 20px;font-size:13px;font-weight:700}
 
-  /* کارت اصلی - دوطرفه، RTL درست */
   .room-card{
-    position:relative;
-    width:100%;
-    max-width:400px;
-    min-height:104px;
-    margin:0 auto 12px;
+    position:relative;width:100%;max-width:400px;min-height:104px;margin:0 auto 12px;
     border-radius:12px;
     background:linear-gradient(180deg,rgba(167,186,196,.55) 0%,rgba(132,176,191,.55) 27%,rgba(2,88,163,.6) 100%);
     box-shadow:0 4px 0 #050d18,0 5px 10px rgba(0,0,0,.5);
     border:1px solid rgba(255,255,255,.18);
-    display:flex;
-    align-items:center;
-    padding:10px 12px 30px;
-    gap:10px;
-    /* RTL: flex طبیعی است، اولین فرزند سمت راست قرار می‌گیرد */
+    display:flex;align-items:center;padding:10px 12px 30px;gap:10px;
   }
+  .lc-right{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;overflow:hidden;min-width:0}
+  .lc-name-row{display:flex;align-items:center;gap:6px}
+  .lc-name-tag{background:#642fa8;color:#fff;font-size:9px;font-weight:900;padding:2px 7px;border-radius:8px;flex-shrink:0}
+  .lc-name{color:#fff;font-size:14px;font-weight:900;text-shadow:0 2px 4px rgba(0,0,0,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .lc-code{color:rgba(255,255,255,.6);font-size:10px;font-weight:800;margin-right:2px}
+  .lc-divider{width:1px;height:60px;background:rgba(255,255,255,.35);flex-shrink:0}
+  .lc-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;flex-shrink:0;min-width:80px}
+  .lc-top-row{display:flex;align-items:center;justify-content:center;gap:10px}
+  .lc-counter{color:#fff;font-size:13px;font-weight:900;background:#1c1c1c;padding:3px 11px;border-radius:8px;box-shadow:inset 0 2px 3px rgba(0,0,0,.6);min-width:50px;text-align:center;letter-spacing:.8px;display:flex;align-items:center;justify-content:center;gap:3px}
+  .lc-counter .cnt-dot{width:9px;height:9px;border-radius:50%;background:#4aa3e0;display:inline-block}
+  .lc-super{color:#ffd700;font-size:11px;font-weight:900;background:rgba(255,215,0,.12);border:1px solid #d4b42a;border-radius:8px;padding:2px 8px;white-space:nowrap}
+  /* دکمه پیوستن بنفش */
+  .lc-join{padding:8px 18px;border:none;border-radius:9px;cursor:pointer;font-size:13px;font-weight:900;color:#fff;background:linear-gradient(180deg,#a677ed 0%,#642fa8 100%);box-shadow:0 3px 0 #3d1a6b,0 4px 8px rgba(100,47,168,.5);white-space:nowrap;min-width:80px;font-family:Tahoma,sans-serif;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .lc-join:active{transform:translateY(2px);box-shadow:0 1px 0 #3d1a6b}
+  .lc-join.locked{background:linear-gradient(180deg,#6a6a6a 0%,#3a3a3a 100%);box-shadow:0 3px 0 #1a1a1a,0 4px 8px rgba(0,0,0,.5)}
 
-  /* سمت راست (اول) - اطلاعات لابی */
-  .lc-right{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:8px;
-    overflow:hidden;
-    min-width:0;
-  }
-  .lc-name-row{
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-  .lc-name-tag{
-    background:#642fa8;
-    color:#fff;
-    font-size:9px;
-    font-weight:900;
-    padding:2px 7px;
-    border-radius:8px;
-    flex-shrink:0;
-  }
-  .lc-name{
-    color:#fff;
-    font-size:14px;
-    font-weight:900;
-    text-shadow:0 2px 4px rgba(0,0,0,.85);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    min-width:0;
-  }
-  .lc-code{
-    color:rgba(255,255,255,.6);
-    font-size:10px;
-    font-weight:800;
-    margin-right:2px;
-  }
-
-  /* خط وسط */
-  .lc-divider{
-    width:1px;
-    height:60px;
-    background:rgba(255,255,255,.35);
-    flex-shrink:0;
-  }
-
-  /* سمت چپ (دوم) - شمارنده و دکمه */
-  .lc-left{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    flex-shrink:0;
-    min-width:80px;
-  }
-  .lc-top-row{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-  }
-  .lc-counter{
-    color:#fff;
-    font-size:13px;
-    font-weight:900;
-    background:#1c1c1c;
-    padding:3px 11px;
-    border-radius:8px;
-    box-shadow:inset 0 2px 3px rgba(0,0,0,.6);
-    min-width:50px;
-    text-align:center;
-    letter-spacing:.8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:3px;
-  }
-  .lc-counter .cnt-dot{
-    width:9px;height:9px;border-radius:50%;
-    background:#4aa3e0;
-    display:inline-block;
-  }
-  .lc-super{
-    color:#ffd700;
-    font-size:11px;
-    font-weight:900;
-    background:rgba(255,215,0,.12);
-    border:1px solid #d4b42a;
-    border-radius:8px;
-    padding:2px 8px;
-    white-space:nowrap;
-  }
-  /* دکمه پیوستن (جایگزین آیکون شکلاتی) */
-  .lc-join{
-    padding:8px 18px;
-    border:none;
-    border-radius:9px;
-    cursor:pointer;
-    font-size:13px;
-    font-weight:900;
-    color:#fff;
-    background:linear-gradient(180deg,#55b055,#3f8f3f);
-    box-shadow:0 3px 0 #1a4a1a,0 4px 8px rgba(85,176,85,.4);
-    white-space:nowrap;
-    min-width:80px;
-    font-family:Tahoma,sans-serif;
-    text-shadow:0 1px 2px rgba(0,0,0,.4);
-  }
-  .lc-join:active{transform:translateY(2px);box-shadow:0 1px 0 #1a4a1a}
-  .lc-join.locked{
-    background:linear-gradient(180deg,#6a6a6a,#3a3a3a);
-    box-shadow:0 3px 0 #1a1a1a,0 4px 8px rgba(0,0,0,.5);
-  }
-
-  /* نوار بنفش پایین کارت - سازنده */
-  .lc-owner-badge{
-    position:absolute;
-    bottom:5px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    align-items:center;
-    gap:4px;
-    background:linear-gradient(180deg,rgba(255,217,74,.18) 0%,rgba(179,134,0,.18) 100%);
-    padding:2px 10px;
-    border-radius:8px;
-    border:1px solid rgba(255,217,74,.35);
-    font-size:10px;
-    font-weight:900;
-    color:#ffd94a;
-    text-shadow:0 1px 3px rgba(0,0,0,.95);
-    white-space:nowrap;
-    pointer-events:none;
-    max-width:85%;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
+  .lc-owner-badge{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;background:linear-gradient(180deg,rgba(255,217,74,.18) 0%,rgba(179,134,0,.18) 100%);padding:2px 10px;border-radius:8px;border:1px solid rgba(255,217,74,.35);font-size:10px;font-weight:900;color:#ffd94a;text-shadow:0 1px 3px rgba(0,0,0,.95);white-space:nowrap;pointer-events:none;max-width:85%;overflow:hidden;text-overflow:ellipsis}
   .lc-owner-crown{font-size:11px;line-height:1;display:inline-block}
   .lc-owner-name{color:#fff;font-size:10px;font-weight:900;overflow:hidden;text-overflow:ellipsis;max-width:130px}
-  .lc-owner-rank{
-    color:#e1bee7;
-    font-size:9px;
-    font-weight:900;
-    padding:0 4px;
-    border-right:1px solid rgba(255,255,255,.3);
-    margin-right:4px;
-  }
+  .lc-owner-rank{color:#e1bee7;font-size:9px;font-weight:900;padding:0 4px;border-right:1px solid rgba(255,255,255,.3);margin-right:4px}
 
-  .delete-room-btn{
-    position:absolute;top:6px;left:6px;
-    width:28px;height:28px;border-radius:50%;
-    background:linear-gradient(180deg,#e74c3c,#c0392b);
-    border:2px solid #ff6b6b;color:white;
-    font-size:13px;font-weight:900;
-    display:none;align-items:center;justify-content:center;
-    cursor:pointer;z-index:10;padding-bottom:2px;
-  }
+  .delete-room-btn{position:absolute;top:6px;left:6px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#e74c3c,#c0392b);border:2px solid #ff6b6b;color:white;font-size:13px;font-weight:900;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;padding-bottom:2px}
   .delete-room-btn.show{display:flex}
 
   .tick-img{width:14px;height:14px;object-fit:contain;vertical-align:middle}
 
-  /* CROWN جدید */
   .crown{
     display:inline-block;width:16px;height:13px;position:relative;vertical-align:middle;flex-shrink:0;
     background:linear-gradient(180deg,#FFE066 0%,#FFC107 45%,#B8860B 100%);
@@ -244,7 +92,6 @@
     filter:drop-shadow(0 1px 2px rgba(0,0,0,.85));
   }
 
-  /* ============ BOTTOM BAR LIST ============ */
   .list-bottombar{position:absolute;bottom:0;left:0;right:0;background:#052a42;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
   .list-bottommain{height:64px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:8px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -3px 10px rgba(0,0,0,.3)}
   .fab{width:50px;height:50px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:white;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2)}
@@ -271,16 +118,30 @@
   @keyframes readyG{0%,100%{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 0 2px #4CAF50,0 0 22px 6px rgba(76,175,80,.55),0 0 45px 14px rgba(76,175,80,.22)}50%{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 0 2px #66BB6A,0 0 32px 10px rgba(76,175,80,.95),0 0 65px 20px rgba(76,175,80,.45)}}
   @keyframes readyR{0%,100%{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 0 2px #f44336,0 0 22px 6px rgba(244,67,54,.55),0 0 45px 14px rgba(244,67,54,.22)}50%{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 0 2px #ef5350,0 0 32px 10px rgba(244,67,54,.95),0 0 65px 20px rgba(244,67,54,.45)}}
 
-  .slot img.avatar-mini,.slot video.avatar-mini{width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0}
+  /* آواتار داخل دایره - قفل شده روی مرکز */
+  .slot .avatar-wrap{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .slot img.avatar-mini,.slot video.avatar-mini{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
 
   .num{position:absolute;top:-7px;left:-7px;width:22px;height:22px;background:#304380;border-radius:50%;color:#cddcf5;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.15);z-index:5;pointer-events:none}
   .slot.observer .num{background:#5c4a8a}
 
+  /* حلقه بنفش مقام */
   .rank-layer{position:absolute;inset:-3px;border-radius:50%;border:3px solid #9c27b0;box-shadow:0 0 12px rgba(156,39,176,.85),inset 0 0 12px rgba(156,39,176,.35);pointer-events:none;z-index:8}
 
-  .rank-medal{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);padding:2px 6px;border-radius:7px;background:linear-gradient(180deg,#9c27b0,#6a1b9a);border:1px solid #ce93d8;box-shadow:0 0 8px rgba(156,39,176,.85),0 1px 3px rgba(0,0,0,.7);font-size:8px;font-weight:900;color:#fff;white-space:nowrap;z-index:20;pointer-events:none;display:flex;align-items:center;gap:3px;max-width:95%;overflow:hidden}
-  .rank-medal .rm-rank{display:flex;align-items:center;gap:2px;font-size:8px}
-  .rank-medal .rm-clan{margin-right:3px;padding-right:3px;border-right:1px solid rgba(255,255,255,.4);font-size:7px;display:flex;align-items:center;gap:2px;color:#ffe082}
+  /* لایه بنفش مقام - فقط متن مقام + اسم (بدون تاج/تیک) */
+  .rank-medal{
+    position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+    padding:2px 8px;border-radius:7px;
+    background:linear-gradient(180deg,#9c27b0,#6a1b9a);
+    border:1px solid #ce93d8;
+    box-shadow:0 0 8px rgba(156,39,176,.85),0 1px 3px rgba(0,0,0,.7);
+    font-size:8px;font-weight:900;color:#fff;
+    white-space:nowrap;z-index:20;pointer-events:none;
+    display:flex;align-items:center;gap:3px;
+    max-width:95%;overflow:hidden;text-overflow:ellipsis;
+  }
+  .rank-medal .rm-rank{font-size:8px;color:#fff;font-weight:900}
+  .rank-medal .rm-name{font-size:8px;color:#ffe082;font-weight:900;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   .voice-indicator{position:absolute;width:22px;height:22px;top:-8px;right:-8px;display:none;align-items:center;justify-content:center;z-index:15;background:rgba(15,173,7,.9);border-radius:50%;border:2px solid #81c784;box-shadow:0 0 10px rgba(15,173,7,.9);font-size:11px;color:#fff}
   .voice-indicator.speaking{display:flex;animation:voicePulse .8s ease-in-out infinite}
@@ -331,7 +192,6 @@
   .ready-btn.yes{background:linear-gradient(180deg,#55b055,#3f8f3f);box-shadow:0 3px 0 #1a4a1a}
   .ready-btn.disabled{background:linear-gradient(180deg,#888,#555);cursor:not-allowed;opacity:.7;box-shadow:0 3px 0 #222}
 
-  /* ============ MODALS ============ */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
   .overlay.active{display:flex}
   .modal{background:linear-gradient(180deg,#1e3a5f,#0d2135);border:2px solid #3f8fd4;border-radius:18px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;padding:22px 18px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.75);color:#fff}
@@ -687,6 +547,7 @@ async function boot(){
 }
 function startListView(){
   currentRoomId=null;overlayShown=false;disconnectVoice();stopTimers();
+  window._lastRoomHash=null;
   $('viewRoom').classList.remove('active');
   $('viewList').classList.add('active');
   refreshList();
@@ -699,7 +560,6 @@ async function refreshList(){
   renderList();
 }
 
-/* ==== renderList با کارت دوطرفه (مثل قبل) ==== */
 function renderList(){
   const q=($('searchInput').value||'').trim().toLowerCase();
   const rooms=Object.values(allRoomsCache).filter(r=>r.status==='waiting').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).filter(r=>!q||(r.name||'').toLowerCase().includes(q));
@@ -710,9 +570,7 @@ function renderList(){
   const myLvl=me?RANK_LEVEL[me.rank]||0:0;
   const canDel=isCreator||myLvl>=RANK_LEVEL['گرداننده'];
   rooms.forEach(r=>{
-    // تعداد بازیکن‌ها = نشسته‌های پر + بات‌ها
     const pc=Object.values(r.seats||{}).filter(Boolean).length + Object.keys(r.bots||{}).length;
-    // تعداد ناظرها = ناظرهای پر
     const sc=Object.values(r.supers||{}).filter(Boolean).length;
     const tk=getRoleTick(r.creatorRank);
     const ranked=r.creatorRank&&r.creatorRank!=='کاربر';
@@ -720,7 +578,6 @@ function renderList(){
     const lockCls=r.password?'locked':'';
     const ownerRank = ranked ? '<span class="lc-owner-rank">'+esc(r.creatorRank)+'</span>' : '';
     h+='<div class="room-card" data-card="'+r.id+'">'+delBtn+
-      /* اول در RTL: اطلاعات لابی سمت راست */
       '<div class="lc-right">'+
         '<div class="lc-name-row">'+
           '<span class="lc-name-tag">لابی</span>'+
@@ -728,27 +585,22 @@ function renderList(){
         '</div>'+
         '<div class="lc-code">کد: '+esc(r.code||'---')+'</div>'+
       '</div>'+
-      /* خط وسط */
       '<div class="lc-divider"></div>'+
-      /* دوم در RTL: شمارنده‌ها و دکمه سمت چپ */
       '<div class="lc-left">'+
         '<div class="lc-top-row">'+
           '<span class="lc-counter"><span class="cnt-dot"></span>'+toFa(pc)+'/۱۰</span>'+
           '<span class="lc-super">👁 '+toFa(sc)+'/۲</span>'+
         '</div>'+
-        '<button class="lc-join '+lockCls+'" data-join="'+r.id+'">'+ (r.password?'🔒 ورود':'پیوستن') +'</button>'+
+        '<button class="lc-join '+lockCls+'" data-join="'+r.id+'">'+(r.password?'🔒 ورود':'پیوستن')+'</button>'+
       '</div>'+
-      /* نوار پایین - سازنده */
       '<div class="lc-owner-badge">'+
         '<span class="lc-owner-crown">'+crownHtml()+'</span>'+
         ownerRank+
         '<span class="lc-owner-name">'+esc(r.creatorName||'مالک')+'</span>'+
-        (tk?'':'')+
       '</div>'+
     '</div>';
   });
   list.innerHTML=h;
-  list.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
   list.querySelectorAll('[data-join]').forEach(b=>b.onclick=e=>{e.stopPropagation();playClick();joinRoom(b.dataset.join)});
   list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=e=>{e.stopPropagation();playClick();deleteRoomFromList(b.dataset.delete)});
 }
@@ -808,6 +660,7 @@ async function createRoom(){
 
 function openRoom(id,rd){
   currentRoomId=id;overlayShown=false;
+  window._lastRoomHash=null;
   localStorage.setItem('current_in_lobby',id);
   $('viewList').classList.remove('active');
   $('viewRoom').classList.add('active');
@@ -824,7 +677,6 @@ async function refreshRoom(){
   if(!currentRoomId||overlayShown)return;
   const rs=await getRooms();const r=rs[currentRoomId];
   if(!r){
-    // اگه هنوز من داخل لابی هستم، نگه‌دار
     if(localStorage.getItem('current_in_lobby')===currentRoomId){
       setTimeout(refreshRoom,2000);return;
     }
@@ -833,7 +685,6 @@ async function refreshRoom(){
   if(r.status==='deleted'){overlayShown=true;stopTimers();disconnectVoice();$('deletedReason').textContent='دلیل: '+(r.deleteReason||'نامشخص');$('deletedOverlay').classList.add('show');return}
   if(r.kicked&&r.kicked[me.phone]&&!mySeat(r)){overlayShown=true;stopTimers();disconnectVoice();$('kickOverlay').classList.add('show');return}
   if(!mySeat(r)){
-    // خودم رو دوباره اضافه می‌کنم اگه حذف شدم
     let seat=null;
     for(let i=1;i<=MAX_PLAYERS;i++){if(!r.seats[i]&&!r.bots[i]){seat=i;break}}
     if(seat){r.seats[seat]=me.phone;await saveRooms(rs)}
@@ -842,6 +693,12 @@ async function refreshRoom(){
   if(r.status==='playing'){localStorage.setItem('current_game_room',currentRoomId);$('startOverlay').classList.add('show');return}
   const ld=await getLive(currentRoomId);
   if(ld.seats)r.seats=ld.seats;if(ld.supers)r.supers=ld.supers;if(ld.ready)r.ready=ld.ready;
+
+  /* جلوگیری از رندر مجدد وقتی چیزی تغییر نکرده - مشکل پرش آواتار */
+  const hash=JSON.stringify({s:r.seats,ss:r.supers,rd:r.ready,g:r.ghost,n:r.name,st:r.status});
+  if(hash===window._lastRoomHash)return;
+  window._lastRoomHash=hash;
+
   const u=await getUsersCached(false);
   renderRoom(r,u);
 }
@@ -891,7 +748,6 @@ async function renderRoom(room,allUsers){
     let rankLayer='';
     let rankMedal='';
     let clanLine='';
-    let tickHtml='';
 
     if(phone){
       dp=' data-phone="'+phone+'"';
@@ -902,31 +758,28 @@ async function renderRoom(room,allUsers){
       cls+=' filled '+(ready?'ready-green':'ready-red');
       if(isMgrUser)nameCls='manager';
       else if(phone===me.phone)nameCls='me';
-      const tk=getRoleTick(u.rank);
-      if(tk)tickHtml='<img class="tick-img" data-tick="'+tk.join(',')+'">';
 
       nameText='<span class="nm-text">'+esc(u.name||'کاربر')+'</span>';
 
-      if(isStaffUser){
-        rankLayer='<div class="rank-layer"></div>';
-        const gi2=groupCache[phone];
-        let clanInner='';
-        if(gi2){
-          const rl=roleLabel(gi2.role);
-          const tag=gi2.group.tag||gi2.group.name||'';
-          const shortTag=tag.length>5?tag.substring(0,5)+'…':tag;
-          clanInner='<span class="rm-clan">'+rl+' '+esc(shortTag)+'</span>';
-        }
-        rankMedal='<div class="rank-medal"><span class="rm-rank">'+crownHtml()+' '+esc(u.rank)+'</span>'+clanInner+'</div>';
-      }
-
       const gi=groupCache[phone];
-      if(gi&&!isStaffUser)clanLine='<div class="clan-tag-line">'+clanTagHtml(gi)+'</div>';
+
+      if(isStaffUser){
+        /* مقام دار: لایه بنفش + حلقه بنفش. فقط متن مقام و اسم داخل لایه - بدون تاج و تیک */
+        rankLayer='<div class="rank-layer"></div>';
+        rankMedal='<div class="rank-medal"><span class="rm-rank">'+esc(u.rank)+'</span><span class="rm-name">'+esc(u.name||'کاربر')+'</span></div>';
+        /* اگه در کلن هم هست، کلن تگ مشکی زیرش میاد */
+        if(gi)clanLine='<div class="clan-tag-line">'+clanTagHtml(gi)+'</div>';
+      } else if(gi){
+        /* بدون مقام ولی عضو کلن: فقط لایه مشکی کلن */
+        clanLine='<div class="clan-tag-line">'+clanTagHtml(gi)+'</div>';
+      }
+      /* بدون مقام و بدون کلن: هیچ لایه‌ای نمیاد */
 
       if(u.avatar){
         const av=u.avatar;
-        if(av.endsWith('.webm')||av.endsWith('.mp4'))inner='<video class="avatar-mini" src="'+esc(av)+'" autoplay muted loop playsinline></video>';
-        else inner='<img class="avatar-mini" src="'+esc(av)+'" onerror="this.style.display=\'none\'">';
+        /* آواتار داخل wrapper قفل می‌شه که پرش نکنه */
+        if(av.endsWith('.webm')||av.endsWith('.mp4'))inner='<div class="avatar-wrap"><video class="avatar-mini" src="'+esc(av)+'" autoplay muted loop playsinline></video></div>';
+        else inner='<div class="avatar-wrap"><img class="avatar-mini" src="'+esc(av)+'" onerror="this.style.display=\'none\'"></div>';
       }
     }else if(botAt){
       cls+=' filled ready-green';
@@ -934,9 +787,10 @@ async function renderRoom(room,allUsers){
       nameCls='staff';
     }
 
+    /* تاج فقط کنار اسم مالک لابی */
     const isMgrOwner = phone && phone===room.managerPhone;
     const crownBeside = isMgrOwner ? crownHtml() : '';
-    const nameRow = '<div class="name '+nameCls+'">'+nameText+crownBeside+tickHtml+'</div>';
+    const nameRow = '<div class="name '+nameCls+'">'+nameText+crownBeside+'</div>';
 
     return '<div class="slot-wrap"><div class="'+cls+'" data-slot-type="'+type+'" data-slot-idx="'+idx+'"'+dp+'>'+
       '<div class="num">'+num+'</div>'+
@@ -957,7 +811,6 @@ async function renderRoom(room,allUsers){
 
   document.querySelectorAll('.slot[data-slot-type="player"]').forEach(el=>{el.onclick=()=>{playClick();tapSeat(parseInt(el.dataset.slotIdx))}});
   document.querySelectorAll('.slot[data-slot-type="super"]').forEach(el=>{el.onclick=()=>{playClick();tapSuper(parseInt(el.dataset.slotIdx))}});
-  document.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
 
   const bl=$('bottomLeftArea');bl.innerHTML='';
   if(!isMgr){
@@ -969,33 +822,33 @@ async function renderRoom(room,allUsers){
   }
 }
 
-async function updateRoom(fn){if(!currentRoomId)return;const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;fn(r);await saveRooms(rs)}
+async function updateRoom(fn){if(!currentRoomId)return;const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;fn(r);await saveRooms(rs);window._lastRoomHash=null}
 async function tapSeat(i){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
   const ph=r.seats[i],bot=r.bots[i],my=mySeat(r);
   const isMgr=r.managerPhone===me.phone;
-  if(bot){if(isMgr){if(confirm('بات حذف شود؟')){delete r.bots[i];await saveRooms(rs);refreshRoom()}}return}
+  if(bot){if(isMgr){if(confirm('بات حذف شود؟')){delete r.bots[i];await saveRooms(rs);window._lastRoomHash=null;refreshRoom()}}return}
   if(my){if(ph)openUserMenu({phone:ph});return}
   if(ph){openUserMenu({phone:ph});return}
-  r.seats[i]=me.phone;await saveRooms(rs);refreshRoom();
+  r.seats[i]=me.phone;await saveRooms(rs);window._lastRoomHash=null;refreshRoom();
 }
 async function tapSuper(i){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
   const ph=r.supers[i],my=mySeat(r);
   const isMgr=r.managerPhone===me.phone;
-  if(my){if(ph){if(isMgr&&ph===me.phone){delete r.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){f=x;break}}if(f)r.seats[f]=me.phone;await saveRooms(rs);refreshRoom();return}openUserMenu({phone:ph})}return}
+  if(my){if(ph){if(isMgr&&ph===me.phone){delete r.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){f=x;break}}if(f)r.seats[f]=me.phone;await saveRooms(rs);window._lastRoomHash=null;refreshRoom();return}openUserMenu({phone:ph})}return}
   if(ph){openUserMenu({phone:ph});return}
   if(!isMgr)return;
-  r.supers[i]=me.phone;await saveRooms(rs);refreshRoom();
+  r.supers[i]=me.phone;await saveRooms(rs);window._lastRoomHash=null;refreshRoom();
 }
 async function toggleReady(){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];
   if(!r)return;
   r.ready=r.ready||{};r.ready[me.phone]=!(r.ready[me.phone]===true);
-  await saveRooms(rs);refreshRoom();
+  await saveRooms(rs);window._lastRoomHash=null;refreshRoom();
 }
 async function startGame(){
   await updateRoom(r=>{
@@ -1311,7 +1164,13 @@ async function syncLiveState(){
     const ch=(ld.seats&&JSON.stringify(ld.seats)!==JSON.stringify(window._lastL.seats))||(ld.supers&&JSON.stringify(ld.supers)!==JSON.stringify(window._lastL.supers))||(ld.ready&&JSON.stringify(ld.ready)!==JSON.stringify(window._lastL.ready));
     if(ch){
       const rs=await getRooms();const r=rs[currentRoomId];
-      if(r){if(ld.seats)r.seats=ld.seats;if(ld.supers)r.supers=ld.supers;if(ld.ready)r.ready=ld.ready;const u=await getUsersCached(false);renderRoom(r,u)}
+      if(r){
+        if(ld.seats)r.seats=ld.seats;
+        if(ld.supers)r.supers=ld.supers;
+        if(ld.ready)r.ready=ld.ready;
+        const u=await getUsersCached(false);
+        renderRoom(r,u);
+      }
     }
     window._lastL=ld;
   }
