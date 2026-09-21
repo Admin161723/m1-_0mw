@@ -406,10 +406,198 @@
 
 <audio id="clickSound" preload="none"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
 
+<!-- Firebase SDK (compat) برای Realtime Database -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
 <script>
 "use strict";
 let _agoraLoading=null;
 function loadAgora(){if(window.AgoraRTC)return Promise.resolve(true);if(_agoraLoading)return _agoraLoading;_agoraLoading=new Promise(res=>{const s=document.createElement('script');s.src='https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js';s.async=true;s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s)});return _agoraLoading}
+
+/* ============================================================ */
+/*  Firebase Live - سیستم زنده برای لابی مافیا                 */
+/* ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
+  authDomain: "mafiasu-681c7.firebaseapp.com",
+  databaseURL: "https://mafiasu-681c7-default-rtdb.firebaseio.com",
+  projectId: "mafiasu-681c7",
+  storageBucket: "mafiasu-681c7.firebasestorage.app",
+  messagingSenderId: "180192927804",
+  appId: "1:180192927804:web:e0c501a0d20af3b6892339"
+};
+
+let _fbDb = null, _fbReady = false, _myPhoneFB = null;
+let _liveUnsub = null;          // unsubscribe برای لابی فعلی
+let _lastLiveHash = null;
+
+function initFirebaseLive(myPhone) {
+  _myPhoneFB = myPhone || 'unknown';
+  try {
+    if (typeof firebase === 'undefined') {
+      console.warn('⚠️ Firebase SDK not loaded');
+      return false;
+    }
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    _fbDb = firebase.database();
+    _fbReady = true;
+    console.log('✅ Firebase Live ready for', _myPhoneFB);
+    return true;
+  } catch(e) {
+    console.error('❌ Firebase init error:', e);
+    return false;
+  }
+}
+
+async function fbSet(path, value) {
+  if (!_fbReady || !_fbDb) return false;
+  try {
+    await _fbDb.ref(path).set(value);
+    return true;
+  } catch(e) { console.warn('fbSet', path, e); return false; }
+}
+
+async function fbUpdate(path, value) {
+  if (!_fbReady || !_fbDb) return false;
+  try {
+    await _fbDb.ref(path).update(value);
+    return true;
+  } catch(e) { console.warn('fbUpdate', path, e); return false; }
+}
+
+async function fbGet(path) {
+  if (!_fbReady || !_fbDb) return null;
+  try {
+    const snap = await _fbDb.ref(path).once('value');
+    return snap.val();
+  } catch(e) { return null; }
+}
+
+async function fbRemove(path) {
+  if (!_fbReady || !_fbDb) return false;
+  try {
+    await _fbDb.ref(path).remove();
+    return true;
+  } catch(e) { return false; }
+}
+
+function fbSubscribe(path, callback) {
+  if (!_fbReady || !_fbDb) return function(){};
+  try {
+    const ref = _fbDb.ref(path);
+    const handler = ref.on('value', function(snapshot) {
+      try { callback(snapshot.val()); } catch(e) {}
+    });
+    return function() {
+      try { ref.off('value', handler); } catch(e) {}
+    };
+  } catch(e) {
+    return function(){};
+  }
+}
+
+/* مسیر زنده هر لابی */
+const livePath = id => 'live/' + id;
+
+/* جایگزین کامل getLive / setLive / deleteLive با Firebase */
+async function getLive(id) {
+  if (!id) return {};
+  // اول Firebase
+  if (_fbReady) {
+    const v = await fbGet(livePath(id));
+    if (v) return v;
+  }
+  // fallback Upstash (اگر هنوز داده قدیمی باشه)
+  try {
+    const old = await upstashGet('live:' + id);
+    return old || {};
+  } catch(e) { return {}; }
+}
+
+async function setLive(id, d) {
+  if (!id) return false;
+  // همیشه به Firebase بنویس (منبع حقیقت زنده)
+  if (_fbReady) {
+    return await fbSet(livePath(id), d);
+  }
+  // fallback
+  return upstashSet('live:' + id, d);
+}
+
+async function deleteLive(id) {
+  if (!id) return false;
+  if (_fbReady) await fbRemove(livePath(id));
+  try { await upstashDel('live:' + id); } catch(e) {}
+  return true;
+}
+
+/* شروع لیسنر زنده برای لابی فعلی */
+function startLiveListener(roomId) {
+  stopLiveListener();
+  if (!_fbReady || !roomId) return;
+  _lastLiveHash = null;
+  _liveUnsub = fbSubscribe(livePath(roomId), function(ld) {
+    if (!ld || !currentRoomId || currentRoomId !== roomId || overlayShown) return;
+    // فقط وقتی واقعاً تغییر کرده باشه
+    const hash = JSON.stringify({s: ld.seats, ss: ld.supers, rd: ld.ready, r: ld.reactions, c: (ld.chat||[]).length});
+    if (hash === _lastLiveHash) return;
+    _lastLiveHash = hash;
+
+    // اعمال تغییرات روی UI
+    (async () => {
+      try {
+        const rs = await getRooms();
+        const r = rs[currentRoomId];
+        if (!r) return;
+        if (ld.seats) r.seats = ld.seats;
+        if (ld.supers) r.supers = ld.supers;
+        if (ld.ready) r.ready = ld.ready;
+        window._lastRoomHash = null;
+
+        // چت
+        if (ld.chat && Array.isArray(ld.chat)) {
+          const newMsgs = ld.chat.filter(m => !chatMessages.some(c => c.time === m.time && c.phone === m.phone && c.text === m.text));
+          if (newMsgs.length) {
+            chatMessages.push(...newMsgs);
+            if ($('chatMenu').classList.contains('show')) renderChatMessages();
+          }
+        }
+
+        // ری‌اکشن
+        if (ld.reactions) {
+          const now = Date.now();
+          document.querySelectorAll('.slot[data-phone]').forEach(el => {
+            const p = el.getAttribute('data-phone');
+            const rct = ld.reactions[p];
+            if (rct && now - rct.time < 3500 && !el.querySelector('.reaction-overlay')) {
+              const ov = document.createElement('div');
+              ov.className = 'reaction-overlay show';
+              const im = document.createElement('img');
+              im.src = rct.type === 'dislike' ? 'like3.gif' : 'like1.gif';
+              ov.appendChild(im);
+              el.appendChild(ov);
+              setTimeout(() => ov.remove(), 3500);
+            }
+          });
+        }
+
+        const u = await getUsersCached(false);
+        renderRoom(r, u);
+      } catch(e) {}
+    })();
+  });
+}
+
+function stopLiveListener() {
+  if (_liveUnsub) {
+    try { _liveUnsub(); } catch(e) {}
+    _liveUnsub = null;
+  }
+  _lastLiveHash = null;
+}
 
 const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -417,7 +605,6 @@ const CREATOR_PHONE='09904844031';
 const MAX_NAMES=4, MAX_ROOMS_PER_USER=4, MAX_PLAYERS=10;
 const ROOMS_KEY='talar_rooms', REQ_KEY='talar_name_requests', REPORT_KEY='talar_reports';
 const namesKey=p=>'talar_names:'+p;
-const liveKey=roomId=>'live:'+roomId;
 const APP_ID="562fb91f42ae4cfc8490c54e4db1fa46";
 
 let agoraClient=null, localAudioTrack=null, isMicOn=false, speakingUids=new Set(), micInitAttempted=false;
@@ -429,10 +616,6 @@ function playClick(){try{const a=document.getElementById('clickSound');if(a){a.c
 async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result)}catch(e){return d.result}}return null}catch(e){return null}}
 async function upstashSet(k,v){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(JSON.stringify(v)),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
 async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
-
-const getLive=async id=>(await upstashGet(liveKey(id)))||{};
-const setLive=(id,d)=>upstashSet(liveKey(id),d);
-const deleteLive=id=>upstashDel(liveKey(id));
 const getAllUsers=async()=>(await upstashGet('all_users'))||{};
 const saveAllUsers=u=>upstashSet('all_users',u);
 const getUser=p=>upstashGet('user:'+p);
@@ -538,12 +721,14 @@ async function boot(){
   usersCache={ts:Date.now(),data:au};
   groupsCache={ts:Date.now(),data:gs||[]};
   me={phone,name:u.name||'کاربر',avatar:u.avatar||'Mafia2.png',rank:u.rank||'کاربر',coins:u.coins||0};
+  // راه‌اندازی Firebase Live
+  initFirebaseLive(me.phone);
   if(canAccessPanel(me.rank))$('btnCreatorPanel').classList.add('show');
   speakTimer=setInterval(updateSpeakingUI,400);
   refreshList();
 }
 function startListView(){
-  currentRoomId=null;overlayShown=false;disconnectVoice();stopTimers();
+  currentRoomId=null;overlayShown=false;disconnectVoice();stopTimers();stopLiveListener();
   window._lastRoomHash=null;
   $('viewRoom').classList.remove('active');
   $('viewList').classList.add('active');
@@ -652,11 +837,12 @@ function openRoom(id,rd){
   $('kickOverlay').classList.remove('show');
   $('deletedOverlay').classList.remove('show');
   if(listTimer){clearInterval(listTimer);listTimer=null}
+  chatMessages=[];
   if(rd){
     const cachedUsers=usersCache.data||{};
     renderRoom(rd,cachedUsers);
   }
-  // فوری رندر کامل با کاربران + کلن‌ها
+  // فوری رندر کامل با کاربران + کلن‌ها + شروع لیسنر زنده Firebase
   (async()=>{
     try{
       const [u,gs]=await Promise.all([getUsersCached(true),getGroupsCached(true)]);
@@ -673,8 +859,10 @@ function openRoom(id,rd){
       }
     }catch(e){}
   })();
+  // لیسنر زنده Firebase (به جای پولینگ)
+  startLiveListener(id);
+  // فقط چک وضعیت کلی لابی (حذف/اخراج/شروع بازی) هر ۸ ثانیه
   if(!roomTimer)roomTimer=setInterval(refreshRoom,8000);
-  if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1200);
   loadAgora().then(()=>initVoice());
 }
 async function refreshRoom(){
@@ -802,33 +990,49 @@ async function renderRoom(room,allUsers){
     bl.appendChild(rb);
   }
 }
-async function updateRoom(fn){if(!currentRoomId)return;const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;fn(r);await saveRooms(rs);window._lastRoomHash=null}
+async function pushLiveFromRoom(r){
+  if(!r||!r.id)return;
+  const ld = await getLive(r.id) || {};
+  ld.seats = r.seats || {};
+  ld.supers = r.supers || {};
+  ld.ready = r.ready || {};
+  // bots و ghost را هم نگه دار اگر لازم
+  if(r.bots) ld.bots = r.bots;
+  await setLive(r.id, ld);
+}
+async function updateRoom(fn){
+  if(!currentRoomId)return;
+  const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
+  fn(r);await saveRooms(rs);window._lastRoomHash=null;
+  // همزمان به Firebase هم بفرست
+  await pushLiveFromRoom(r);
+}
 async function tapSeat(i){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
   const ph=r.seats[i],bot=r.bots[i],my=mySeat(r);
   const isMgr=r.managerPhone===me.phone;
-  if(bot){if(isMgr){if(confirm('بات حذف شود؟')){delete r.bots[i];await saveRooms(rs);window._lastRoomHash=null;refreshRoom()}}return}
+  if(bot){if(isMgr){if(confirm('بات حذف شود؟')){delete r.bots[i];await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom()}}return}
   if(my){if(ph)openUserMenu({phone:ph});return}
   if(ph){openUserMenu({phone:ph});return}
-  r.seats[i]=me.phone;await saveRooms(rs);window._lastRoomHash=null;refreshRoom();
+  r.seats[i]=me.phone;await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();
 }
 async function tapSuper(i){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
   const ph=r.supers[i],my=mySeat(r);
   const isMgr=r.managerPhone===me.phone;
-  if(my){if(ph){if(isMgr&&ph===me.phone){delete r.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){f=x;break}}if(f)r.seats[f]=me.phone;await saveRooms(rs);window._lastRoomHash=null;refreshRoom();return}openUserMenu({phone:ph})}return}
+  if(my){if(ph){if(isMgr&&ph===me.phone){delete r.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){f=x;break}}if(f)r.seats[f]=me.phone;await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();return}openUserMenu({phone:ph})}return}
   if(ph){openUserMenu({phone:ph});return}
   if(!isMgr)return;
-  r.supers[i]=me.phone;await saveRooms(rs);window._lastRoomHash=null;refreshRoom();
+  r.supers[i]=me.phone;await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();
 }
 async function toggleReady(){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];
   if(!r)return;
   r.ready=r.ready||{};r.ready[me.phone]=!(r.ready[me.phone]===true);
-  await saveRooms(rs);window._lastRoomHash=null;refreshRoom();
+  await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();
 }
 async function startGame(){
   await updateRoom(r=>{
@@ -842,13 +1046,22 @@ async function startGame(){
 }
 async function leaveRoom(toMain){
   if(!currentRoomId)return;
-  stopTimers();disconnectVoice();overlayShown=true;
-  const rs=await getRooms();const r=rs[currentRoomId];
+  const rid=currentRoomId;
+  stopTimers();stopLiveListener();disconnectVoice();overlayShown=true;
+  const rs=await getRooms();const r=rs[rid];
   if(r&&r.status!=='deleted'){
     const my=mySeat(r);
     if(my){if(my.type==='player')delete r.seats[my.idx];else if(my.type==='super')delete r.supers[my.idx]}
+    // همزمان وضعیت زنده Firebase رو آپدیت کن
+    const ld=await getLive(rid);
+    if(ld){
+      if(my&&my.type==='player'&&ld.seats)delete ld.seats[my.idx];
+      if(my&&my.type==='super'&&ld.supers)delete ld.supers[my.idx];
+      if(ld.ready)delete ld.ready[me.phone];
+      await setLive(rid,ld);
+    }
     const left=Object.keys(r.seats||{}).length+Object.values(r.supers||{}).filter(Boolean).length;
-    if(left===0){r.status='deleted';r.deleteReason='لابی خالی شد';await saveRooms(rs);await deleteLive(currentRoomId)}
+    if(left===0){r.status='deleted';r.deleteReason='لابی خالی شد';await saveRooms(rs);await deleteLive(rid)}
     else await saveRooms(rs);
   }
   currentRoomId=null;localStorage.removeItem('current_in_lobby');
@@ -1175,7 +1388,7 @@ function sendChatMessage(){
   (async()=>{const ld=await getLive(currentRoomId);if(!ld.chat)ld.chat=[];ld.chat.push(m);await setLive(currentRoomId,ld)})();
   i.value='';renderChatMessages();
 }
-function stopTimers(){if(roomTimer){clearInterval(roomTimer);roomTimer=null}if(liveSyncTimer){clearInterval(liveSyncTimer);liveSyncTimer=null}}
+function stopTimers(){if(roomTimer){clearInterval(roomTimer);roomTimer=null}if(liveSyncTimer){clearInterval(liveSyncTimer);liveSyncTimer=null}stopLiveListener()}
 function showModal(icon,text){const el=document.createElement('div');el.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#296187,#074461);color:#fff;padding:12px 24px;border-radius:14px;font-size:13px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.6);text-align:center;max-width:85%';el.textContent=icon+' '+text;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 
 document.addEventListener('DOMContentLoaded',()=>{
