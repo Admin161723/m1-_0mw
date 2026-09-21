@@ -81,7 +81,7 @@
   .overlay.active{display:flex;}
   .modal{background:linear-gradient(180deg,#2a6aa0,#1a4a7a);border:3px solid #4aa3e0;border-radius:20px;width:88%;max-width:360px;max-height:84%;overflow-y:auto;padding:18px;position:relative;}
   .modal::-webkit-scrollbar{width:0;}
-  .close-x{position:absolute;top:12px;left:12px;width:38px;height:38px;border-radius:50%;background:#e02020;border:3px solid white;color:white;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;}
+  .close-x{position:absolute;top:12px;left:12px;width:38px;height:38px;border-radius:50%;background:#e02020;border:3px solid white;color:white;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;line-height:1;padding-bottom:3px;font-family:Arial,sans-serif;}
   .modal-title-y{color:#ffd700;font-size:19px;font-weight:900;text-align:center;margin-bottom:16px;}
 
   .name-input-wrap{position:relative;margin-bottom:15px;}
@@ -115,174 +115,156 @@
   .warn-box{border:2px solid #ffd700;background:rgba(140,140,70,.35);color:#ffd700;border-radius:12px;padding:10px;font-size:12px;font-weight:700;line-height:1.9;text-align:center;margin-bottom:14px;}
   .staff-box{border:2px solid #55b055;background:rgba(85,176,85,.15);color:#8fe08f;border-radius:12px;padding:9px;font-size:11px;font-weight:700;text-align:center;margin-bottom:14px;}
 
-  .room-topbar{height:48px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-bottom:3px solid #3f8fd4;display:flex;align-items:center;padding:0 8px;gap:6px;flex-shrink:0;z-index:10;}
-  .back-btn{width:36px;height:36px;border-radius:10px;border:none;background:linear-gradient(180deg,#f44336,#d32f2f);color:white;font-size:16px;font-weight:900;cursor:pointer;flex-shrink:0;}
-  .home-btn{width:36px;height:36px;border-radius:10px;border:none;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
-  .room-top-name{flex:1;text-align:center;color:#ffd700;font-size:15px;font-weight:900;}
-  .tool-btn{width:36px;height:36px;border-radius:10px;border:2px solid white;display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  /* ==== ROOM TOP BAR ==== */
+  .room-topbar{height:52px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-bottom:3px solid #3f8fd4;display:flex;align-items:center;padding:0 8px;gap:6px;flex-shrink:0;z-index:10;}
+  .back-btn{width:38px;height:38px;border-radius:10px;border:none;background:linear-gradient(180deg,#f44336,#d32f2f);color:white;font-size:18px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-bottom:2px;}
+  .home-btn{width:38px;height:38px;border-radius:10px;border:none;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .room-top-name{flex:1;text-align:center;color:#ffd700;font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tool-btn{width:38px;height:38px;border-radius:10px;border:2px solid white;display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .tool-btn.show{display:flex;}
   .tool-btn:active{transform:scale(.9);}
   .tool-settings{background:linear-gradient(180deg,#ffc107,#ff9800);}
   .tool-ghost{background:linear-gradient(180deg,#9c27b0,#7b1fa2);}
   .tool-ghost.on{box-shadow:0 0 12px #b040ff;border-color:#ffd700;}
 
+  /* ==== ROOM BODY - NEW CIRCULAR LAYOUT ==== */
   .room-body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:4px 2px 70px;}
-  .supers-row{display:flex;justify-content:center;gap:20px;padding:4px 0;flex-shrink:0;}
-  .super-slot{display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer;}
-  .super-circle{width:70px;height:70px;border-radius:50%;border:3px dashed #ffd700;position:relative;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;overflow:hidden;}
-  .super-circle.filled{border-style:solid;background:#173a5e;}
-  .super-circle img,.super-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-  .super-label{color:#ffd700;font-size:11px;font-weight:900;display:flex;align-items:center;gap:4px;max-width:120px;white-space:nowrap;overflow:hidden;margin-top:2px;}
+  .lobby-layout{
+    width:100%;height:100%;
+    display:flex;flex-direction:column;justify-content:space-evenly;
+    padding:14px 10px 6px;
+  }
+  .lobby-layout .row{
+    direction:ltr;display:flex;justify-content:space-between;align-items:flex-start;width:100%;
+  }
+  .lobby-layout .row.observers{justify-content:center;gap:20px;}
 
-  .seats-cols{flex:1;display:flex;justify-content:space-between;align-items:center;padding:0 15px;direction:ltr;}
-  .seat-col{display:flex;flex-direction:column;justify-content:space-evenly;gap:10px;flex:1;height:100%;}
-
-  .seat{display:flex;flex-direction:column;align-items:center;cursor:pointer;position:relative;}
-  .seat-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.05);border:2px solid rgba(120,170,220,.25);position:relative;display:flex;align-items:center;justify-content:center;overflow:visible;}
-  .seat-circle.filled{background:#173a5e;}
-  .seat-circle img,.seat-circle video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-  .seat-circle.glow-red{border:3px solid #f44336;box-shadow:0 0 10px rgba(244,67,54,.6);}
-  .seat-circle.glow-green{border:3px solid #4CAF50;box-shadow:none;}
-  .seat-circle.ghost-self{opacity:.55;border-style:dashed;}
-
-  /* شماره صندلی چسبیده به کنار پروفایل - سمت چپ */
-  .seat-num {
-    position: absolute;
-    top: 50%;
-    left: -14px;
-    transform: translateY(-50%);
-    background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
-    color: #ffd700;
-    font-size: 12px;
-    font-weight: 900;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid rgba(255,215,0,0.9);
-    z-index: 25;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  .lobby-layout .slot-wrap{
+    width:110px;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:8px;
   }
 
-  /* نشانگر صحبت کردن */
-  .voice-indicator {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: -15px;
-    right: -15px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 30;
-    background: rgba(0,0,0,0.7);
-    border-radius: 50%;
-    border: 2px solid #4a9eff;
-    overflow: hidden;
+  .lobby-layout .slot{
+    position:relative;
+    width:clamp(56px, 11.5vh, 88px);
+    height:clamp(56px, 11.5vh, 88px);
+    aspect-ratio:1 / 1;
+    border-radius:50%;
+    background:#1d294f;
+    box-shadow: inset 0 6px 9px rgba(0,0,0,.45), 0 3px 8px rgba(0,0,0,.4);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    overflow:visible;
+    cursor:pointer;
+  }
+  .lobby-layout .slot.filled{background:linear-gradient(180deg,#3a5a8f 0%,#24375a 100%);}
+  .lobby-layout .slot.observer{background:#23315c;border:2px dashed rgba(255,215,0,.4);}
+  .lobby-layout .slot.observer.filled{border-style:solid;background:linear-gradient(180deg,#4a3a7f,#24375a);}
+  .lobby-layout .slot.observer .num{background:#5c4a8a;}
+  .lobby-layout .slot.glow-green{box-shadow:inset 0 6px 9px rgba(0,0,0,.45),0 0 12px rgba(76,175,80,.7),0 0 0 2px #4CAF50;}
+  .lobby-layout .slot.glow-red{box-shadow:inset 0 6px 9px rgba(0,0,0,.45),0 0 12px rgba(244,67,54,.7),0 0 0 2px #f44336;}
+  .lobby-layout .slot.ghost-self{opacity:.55;border:2px dashed #4CAF50;}
+
+  .lobby-layout .slot .avatar-mini{
+    width:100%;height:100%;border-radius:50%;object-fit:cover;
+    position:absolute;inset:0;
+  }
+  .lobby-layout .slot .avatar-mini-letter{
+    width:100%;height:100%;border-radius:50%;
+    background:#1a2946;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:900;font-size:clamp(20px,4vh,30px);
+    position:absolute;inset:0;
+  }
+  .lobby-layout .slot video.avatar-mini{
+    width:100%;height:100%;border-radius:50%;object-fit:cover;
+    position:absolute;inset:0;
+  }
+
+  .lobby-layout .num{
+    position:absolute;top:-8px;left:-8px;
+    width:24px;height:24px;
+    background:#304380;border-radius:50%;
+    color:#cddcf5;font-size:12px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.15);
+    z-index:5;
+    pointer-events:none;
+  }
+  .lobby-layout .name{
+    direction:rtl;width:100%;
+    font-size:clamp(10px, 1.6vh, 13px);
+    color:#bcd0ee;font-weight:700;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  .lobby-layout .name.me{color:#ffd94a;}
+  .lobby-layout .name.staff{color:#ce93d8;}
+  .lobby-layout .name.manager{color:#ffd700;}
+
+  /* voice indicator for new slot */
+  .lobby-layout .slot .voice-indicator{
+    position:absolute;width:30px;height:30px;
+    top:-15px;right:-15px;
+    display:none;align-items:center;justify-content:center;
+    z-index:15;background:rgba(0,0,0,0.7);border-radius:50%;
+    border:2px solid #4a9eff;overflow:hidden;
     box-shadow: 0 0 15px rgba(74,158,255,0.9);
   }
-  .voice-indicator.speaking { display: flex !important; animation: voicePulse 0.8s ease-in-out infinite; }
-  .voice-indicator video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-  @keyframes voicePulse {
-    0%, 100% { transform: scale(1); border-color: #4a9eff; }
-    50% { transform: scale(1.2); border-color: #00ffff; }
+  .lobby-layout .slot .voice-indicator.speaking{display:flex!important;animation:voicePulse 0.8s ease-in-out infinite;}
+  .lobby-layout .slot .voice-indicator video{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+  @keyframes voicePulse{
+    0%,100%{transform:scale(1);border-color:#4a9eff;}
+    50%{transform:scale(1.2);border-color:#00ffff;}
   }
 
-  .disconnected-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    border-radius: 50%;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 15;
-    backdrop-filter: blur(3px);
+  .lobby-layout .slot .disconnected-overlay{
+    position:absolute;inset:0;background:rgba(0,0,0,0.85);
+    border-radius:50%;display:none;align-items:center;justify-content:center;
+    z-index:12;backdrop-filter:blur(3px);
   }
-  .disconnected-overlay.show { display: flex; animation: fadeIn 0.3s; }
-  .disconnected-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(180deg, #f44336, #d32f2f);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 20px rgba(244,67,54,0.9);
-    animation: pulse-red 1.5s infinite;
+  .lobby-layout .slot .disconnected-overlay.show{display:flex;animation:fadeIn 0.3s;}
+  .lobby-layout .slot .disconnected-overlay .disconnected-icon{
+    width:32px;height:32px;
+    background:linear-gradient(180deg,#f44336,#d32f2f);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 20px rgba(244,67,54,.9);animation:pulse-red 1.5s infinite;
   }
-  .disconnected-icon::before {
-    content: '!';
-    color: white;
-    font-size: 24px;
-    font-weight: 900;
+  .lobby-layout .slot .disconnected-overlay .disconnected-icon::before{
+    content:'!';color:white;font-size:22px;font-weight:900;
   }
-  @keyframes pulse-red {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse-red{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.2);opacity:.8;}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
-  .seat-tag-layer{position:relative;margin-top:-8px;z-index:10;max-width:90px;display:flex;align-items:center;justify-content:center;}
-  .seat-tag-badge{background:linear-gradient(180deg,#2a2a2a,#1a1a1a);color:#fff;border-radius:8px;padding:2px 6px;font-size:9px;font-weight:900;display:inline-flex;align-items:center;gap:2px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.2);box-shadow:0 2px 4px rgba(0,0,0,.5);line-height:1.3;}
-  .seat-tag-badge.staff-badge{background:linear-gradient(180deg,#6a1b9a,#4a148c);border-color:#9c27b0;box-shadow:0 0 6px rgba(156,39,176,.5);}
-  .seat-tag-badge.staff-badge .tag-color-text {
-    font-size: 8px !important;
-    padding: 1px 3px !important;
-    max-width: 70px;
+  .lobby-layout .slot .reaction-overlay{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:60px;height:60px;border-radius:50%;display:none;
+    align-items:center;justify-content:center;z-index:50;pointer-events:none;
   }
-  .seat-tag-badge .tag-color-text{font-weight:900;padding:1px 4px;border-radius:4px;font-size:9px;}
-  .seat-tag-badge .rank-text{color:#ffd700;font-size:9px;}
-
-  .seat-name{margin-top:2px;font-size:10px;font-weight:900;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.8);display:flex;align-items:center;gap:2px;white-space:nowrap;text-align:center;padding:0 2px;max-width:100px;}
-  .manager-tag{color:#ffd700;}
-  .bot-tag{color:#ce93d8;}
-  .normal-tag{color:white;}
-
-  .reaction-overlay {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 60px; height: 60px; border-radius: 50%; display: none;
-    align-items: center; justify-content: center; z-index: 50; pointer-events: none;
-  }
-  .reaction-overlay.show { display: flex; animation: reactionFade 5s ease-out forwards; }
-  .reaction-overlay img, .reaction-overlay video { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7)); }
-  @keyframes reactionFade {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    5% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-    10% { transform: translate(-50%, -50%) scale(1); }
-    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  .lobby-layout .slot .reaction-overlay.show{display:flex;animation:reactionFade 5s ease-out forwards;}
+  .lobby-layout .slot .reaction-overlay img,.lobby-layout .slot .reaction-overlay video{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.7));}
+  @keyframes reactionFade{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0.3);}
+    5%{opacity:1;transform:translate(-50%,-50%) scale(1.15);}
+    10%{transform:translate(-50%,-50%) scale(1);}
+    80%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(0.7);}
   }
 
+  /* ===== Bottom bar ===== */
   .room-bottombar{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-top:2px solid #3f8fd4;display:flex;align-items:center;justify-content:space-between;padding:0 8px;z-index:20;}
-  .bottom-left { display: flex; align-items: center; gap: 8px; }
-  .bottom-right { display: flex; align-items: center; gap: 6px; }
-  .action-btn { width: 40px; height: 40px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.1); padding: 0; }
-  .action-btn img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
-  .action-btn:active { transform: scale(0.9); }
-  .action-btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-  .action-btn.small { width: 34px; height: 34px; }
-  .action-btn.mic-on { 
-    background: linear-gradient(180deg, #4CAF50, #388e3c); 
-    box-shadow: 0 0 20px rgba(76,175,80,0.9); 
-    border: 2px solid #81c784;
-  }
-  .action-btn.mic-on img {
-    filter: brightness(0) invert(1);
-  }
+  .bottom-left{display:flex;align-items:center;gap:8px;}
+  .bottom-right{display:flex;align-items:center;gap:6px;}
+  .action-btn{width:40px;height:40px;border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.1);padding:0;}
+  .action-btn img{width:100%;height:100%;object-fit:contain;border-radius:10px;}
+  .action-btn:active{transform:scale(0.9);}
+  .action-btn.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none;}
+  .action-btn.small{width:34px;height:34px;}
+  .action-btn.mic-on{background:linear-gradient(180deg,#4CAF50,#388e3c);box-shadow:0 0 20px rgba(76,175,80,0.9);border:2px solid #81c784;}
+  .action-btn.mic-on img{filter:brightness(0) invert(1);}
 
-  .chat-ico { width: 20px; height: 20px; background: white; border-radius: 5px; position: relative; }
-  .chat-ico::after { content: ''; position: absolute; bottom: -4px; left: 3px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid white; }
-  .chat-ico::before { content: ''; position: absolute; top: 5px; left: 4px; width: 12px; height: 2px; background: #2a5a8a; box-shadow: 0 3px 0 #2a5a8a, 0 6px 0 #2a5a8a; }
+  .chat-ico{width:20px;height:20px;background:white;border-radius:5px;position:relative;}
+  .chat-ico::after{content:'';position:absolute;bottom:-4px;left:3px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid white;}
+  .chat-ico::before{content:'';position:absolute;top:5px;left:4px;width:12px;height:2px;background:#2a5a8a;box-shadow:0 3px 0 #2a5a8a,0 6px 0 #2a5a8a;}
 
-  .ready-btn{min-width: 100px; padding: 10px 8px; border: none; border-radius: 10px; font-family: 'Vazirmatn'; font-size: 12px; font-weight: 900; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;}
+  .ready-btn{min-width:100px;padding:10px 8px;border:none;border-radius:10px;font-family:'Vazirmatn';font-size:12px;font-weight:900;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
   .ready-btn.not{background:linear-gradient(180deg,#f44336,#d32f2f);}
   .ready-btn.yes{background:linear-gradient(180deg,#55b055,#3f8f3f);}
   .ready-btn.disabled{background:linear-gradient(180deg,#888,#555);cursor:not-allowed;opacity:.7;}
@@ -321,7 +303,7 @@
   .row-item .acts button{border:none;border-radius:8px;padding:8px 12px;font-family:'Vazirmatn';font-size:11px;font-weight:900;color:white;cursor:pointer;}
   .empty-list{text-align:center;color:rgba(255,255,255,.55);padding:25px 0;font-size:13px;}
 
-  .voice-status{position:absolute;top:55px;left:10px;background:rgba(0,0,0,.7);border:1px solid #4aa3e0;border-radius:10px;padding:5px 10px;font-size:10px;z-index:21;display:none;align-items:center;gap:5px;}
+  .voice-status{position:absolute;top:58px;left:10px;background:rgba(0,0,0,.7);border:1px solid #4aa3e0;border-radius:10px;padding:5px 10px;font-size:10px;z-index:21;display:none;align-items:center;gap:5px;}
   .voice-status.show{display:flex;}
   .voice-dot{width:8px;height:8px;border-radius:50%;background:#888;}
   .voice-dot.connected{background:#4CAF50;box-shadow:0 0 6px #4CAF50;}
@@ -336,32 +318,33 @@
 
   .pending-banner{background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;padding:8px 14px;text-align:center;font-size:12px;font-weight:900;flex-shrink:0;}
 
-  .chat-menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.85); z-index: 300; display: none; flex-direction: column; }
-  .chat-menu-overlay.show { display: flex; }
-  .chat-header { padding: 15px; background: linear-gradient(180deg, #2a5a8a, #1a3a5f); border-bottom: 2px solid #3f8fd4; display: flex; align-items: center; justify-content: space-between; }
-  .chat-header h3 { color: #ffd700; font-size: 16px; font-weight: 900; }
-  .chat-close { width: 36px; height: 36px; border-radius: 50%; background: #e02020; border: 2px solid white; color: white; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-  .chat-message { background: rgba(255,255,255,.1); border-radius: 12px; padding: 10px; max-width: 85%; align-self: flex-start; }
-  .chat-message.self { align-self: flex-end; background: rgba(74,158,255,.3); }
-  .chat-message .sender { font-size: 11px; color: #7ec3f0; margin-bottom: 4px; font-weight: 700; }
-  .chat-message .text { font-size: 13px; line-height: 1.5; }
-  .chat-message .actions { display: flex; gap: 8px; margin-top: 8px; }
-  .chat-message .actions button { padding: 4px 10px; border: none; border-radius: 6px; font-family: 'Vazirmatn'; font-size: 10px; font-weight: 700; cursor: pointer; }
-  .chat-message .actions .copy-btn { background: #4aa3e0; color: white; }
-  .chat-message .actions .delete-btn { background: #f44336; color: white; }
-  .chat-input-area { padding: 12px; background: linear-gradient(180deg, #1a3a5f, #0d2135); border-top: 2px solid #3f8fd4; display: flex; gap: 8px; }
-  .chat-input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 2px solid #3f8fd4; background: #0e2238; color: white; font-family: 'Vazirmatn'; font-size: 13px; outline: none; }
-  .chat-send { padding: 10px 20px; border: none; border-radius: 10px; background: linear-gradient(180deg, #55b055, #3f8f3f); color: white; font-family: 'Vazirmatn'; font-size: 13px; font-weight: 900; cursor: pointer; }
-  .chat-notification { position: fixed; top: 100px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(180deg, #4aa3e0, #2a7fb8); border: 2px solid #6ac4ff; border-radius: 12px; padding: 12px 20px; max-width: 85%; text-align: center; z-index: 400; opacity: 0; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,.4); }
-  .chat-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-  .chat-notification .sender-name { font-size: 11px; color: #ffd700; font-weight: 700; margin-bottom: 4px; }
-  .chat-notification .message-text { font-size: 13px; line-height: 1.4; }
+  .chat-menu-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;flex-direction:column;}
+  .chat-menu-overlay.show{display:flex;}
+  .chat-header{padding:15px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-bottom:2px solid #3f8fd4;display:flex;align-items:center;justify-content:space-between;}
+  .chat-header h3{color:#ffd700;font-size:16px;font-weight:900;}
+  .chat-close{width:36px;height:36px;border-radius:50%;background:#e02020;border:2px solid white;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .chat-messages{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;}
+  .chat-message{background:rgba(255,255,255,.1);border-radius:12px;padding:10px;max-width:85%;align-self:flex-start;}
+  .chat-message.self{align-self:flex-end;background:rgba(74,158,255,.3);}
+  .chat-message .sender{font-size:11px;color:#7ec3f0;margin-bottom:4px;font-weight:700;}
+  .chat-message .text{font-size:13px;line-height:1.5;}
+  .chat-message .actions{display:flex;gap:8px;margin-top:8px;}
+  .chat-message .actions button{padding:4px 10px;border:none;border-radius:6px;font-family:'Vazirmatn';font-size:10px;font-weight:700;cursor:pointer;}
+  .chat-message .actions .copy-btn{background:#4aa3e0;color:white;}
+  .chat-message .actions .delete-btn{background:#f44336;color:white;}
+  .chat-input-area{padding:12px;background:linear-gradient(180deg,#1a3a5f,#0d2135);border-top:2px solid #3f8fd4;display:flex;gap:8px;}
+  .chat-input{flex:1;padding:10px 12px;border-radius:10px;border:2px solid #3f8fd4;background:#0e2238;color:white;font-family:'Vazirmatn';font-size:13px;outline:none;}
+  .chat-send{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(180deg,#55b055,#3f8f3f);color:white;font-family:'Vazirmatn';font-size:13px;font-weight:900;cursor:pointer;}
+  .chat-notification{position:fixed;top:100px;left:50%;transform:translateX(-50%) translateY(-100px);background:linear-gradient(180deg,#4aa3e0,#2a7fb8);border:2px solid #6ac4ff;border-radius:12px;padding:12px 20px;max-width:85%;text-align:center;z-index:400;opacity:0;transition:all 0.3s;box-shadow:0 4px 15px rgba(0,0,0,.4);}
+  .chat-notification.show{transform:translateX(-50%) translateY(0);opacity:1;}
+  .chat-notification .sender-name{font-size:11px;color:#ffd700;font-weight:700;margin-bottom:4px;}
+  .chat-notification .message-text{font-size:13px;line-height:1.4;}
 </style>
 </head>
 <body>
 <div class="app">
 
+  <!-- ==== LIST VIEW ==== -->
   <div class="view active" id="viewList">
     <div class="list-header">
       <div class="list-title">لابی‌های مافیاسان</div>
@@ -377,9 +360,10 @@
     </div>
   </div>
 
+  <!-- ==== ROOM VIEW ==== -->
   <div class="view" id="viewRoom">
     <div class="room-topbar">
-      <button class="back-btn" id="backRoomBtn"></button>
+      <button class="back-btn" id="backRoomBtn">←</button>
       <div class="home-btn" id="homeRoomBtn"><div class="home-ico"></div></div>
       <div class="room-top-name" id="roomNameTop">-</div>
       <div class="tool-btn tool-ghost" id="btnGhost"><div class="ghost-ico"></div></div>
@@ -387,18 +371,50 @@
     </div>
     <div id="pendingBanner"></div>
     <div class="voice-status" id="voiceStatus"><div class="voice-dot" id="voiceDot"></div><span id="voiceLabel">در حال اتصال...</span></div>
+
     <div class="room-body">
-      <div class="supers-row" id="supersRow"></div>
-      <div class="seats-cols"><div class="seat-col" id="colLeft"></div><div class="seat-col" id="colRight"></div></div>
+      <div class="lobby-layout" id="lobbyLayout">
+        <div class="row observers">
+          <div class="slot-wrap" data-super="1">
+            <div class="slot observer" data-slot-type="super" data-slot-idx="1"></div>
+            <div class="name">ناظر ۱</div>
+          </div>
+          <div class="slot-wrap" data-super="2">
+            <div class="slot observer" data-slot-type="super" data-slot-idx="2"></div>
+            <div class="name">ناظر ۲</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="1"><div class="num">1</div></div><div class="name" data-name="1">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="2"><div class="num">2</div></div><div class="name" data-name="2">خالی</div></div>
+        </div>
+        <div class="row">
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="3"><div class="num">3</div></div><div class="name" data-name="3">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="4"><div class="num">4</div></div><div class="name" data-name="4">خالی</div></div>
+        </div>
+        <div class="row">
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="5"><div class="num">5</div></div><div class="name" data-name="5">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="6"><div class="num">6</div></div><div class="name" data-name="6">خالی</div></div>
+        </div>
+        <div class="row">
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="7"><div class="num">7</div></div><div class="name" data-name="7">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="8"><div class="num">8</div></div><div class="name" data-name="8">خالی</div></div>
+        </div>
+        <div class="row">
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="9"><div class="num">9</div></div><div class="name" data-name="9">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="10"><div class="num">10</div></div><div class="name" data-name="10">خالی</div></div>
+        </div>
+      </div>
     </div>
 
     <div class="room-bottombar">
       <div class="bottom-left" id="bottomLeftArea"></div>
       <div class="bottom-right">
-        <button class="action-btn small" id="dislikeBtn"><img src="dislike2.png" alt="دیس‌لایک" onerror="this.style.display='none'"></button>
-        <button class="action-btn small" id="likeBtn"><img src="like2.png" alt="لایک" onerror="this.style.display='none'"></button>
-        <button class="action-btn" id="micBtn"><img src="1008.png" alt="مایک" onerror="this.style.display='none'"></button>
-        <button class="action-btn" id="emojiBtn"><img src="Imo1.webp" alt="ایموجی" onerror="this.style.display='none'"></button>
+        <button class="action-btn small" id="dislikeBtn"><img src="dislike2.png" alt="" onerror="this.style.display='none'"></button>
+        <button class="action-btn small" id="likeBtn"><img src="like2.png" alt="" onerror="this.style.display='none'"></button>
+        <button class="action-btn" id="micBtn"><img src="1008.png" alt="" onerror="this.style.display='none'"></button>
+        <button class="action-btn" id="emojiBtn"><img src="Imo1.webp" alt="" onerror="this.style.display='none'"></button>
         <button class="action-btn" id="chatBtn"><div class="chat-ico"></div></button>
       </div>
     </div>
@@ -408,10 +424,7 @@
     <div class="msg-overlay" id="startOverlay"><h1 class="green">بازی شروع شد!</h1><button class="green-btn" style="max-width:240px" id="enterGameBtn">ورود به بازی</button></div>
 
     <div class="chat-menu-overlay" id="chatMenu">
-      <div class="chat-header">
-        <h3>چت لابی</h3>
-        <div class="chat-close" id="closeChat">✕</div>
-      </div>
+      <div class="chat-header"><h3>چت لابی</h3><div class="chat-close" id="closeChat">✕</div></div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-area">
         <input type="text" class="chat-input" id="chatInput" placeholder="پیام خود را بنویسید..." maxlength="200">
@@ -425,8 +438,9 @@
     </div>
   </div>
 
+  <!-- ==== MODALS ==== -->
   <div class="overlay" id="createModal"><div class="modal">
-    <div class="close-x" id="closeCreateBtn"></div>
+    <div class="close-x" id="closeCreateBtn">×</div>
     <div class="modal-title-y">ایجاد لابی مافیاسان</div>
     <div class="name-input-wrap">
       <input type="text" id="lobbyNameInput" placeholder="نام لابی" readonly>
@@ -440,14 +454,14 @@
   </div></div>
 
   <div class="overlay" id="namesModal"><div class="modal">
-    <div class="close-x" id="closeNamesBtn">✕</div>
+    <div class="close-x" id="closeNamesBtn">×</div>
     <div class="modal-title-y">نام لابی</div>
     <div id="namesList"></div>
     <button class="green-btn" id="addNameBtn">+ نام جدید (حداکثر ۴)</button>
   </div></div>
 
   <div class="overlay" id="editModal"><div class="modal">
-    <div class="close-x" id="closeEditBtn"></div>
+    <div class="close-x" id="closeEditBtn">×</div>
     <div class="modal-title-y" id="editTitle">ویرایش نام لابی</div>
     <div class="warn-box" id="editWarn">تغییرات برای تأیید به سازنده ارسال می‌شود.<br>هزینه هر بار تغییر: ۵۰ سکه</div>
     <div class="staff-box" id="editStaff" style="display:none">نام سازنده بدون تأیید فعال می‌شود.<br>هزینه: ۵۰ سکه</div>
@@ -456,19 +470,19 @@
   </div></div>
 
   <div class="overlay" id="userMenuModal"><div class="modal">
-    <div class="close-x" id="closeUserMenu">✕</div>
+    <div class="close-x" id="closeUserMenu">×</div>
     <div class="modal-title-y" id="userMenuTitle">کاربر</div>
     <div id="userMenuBody"></div>
   </div></div>
 
   <div class="overlay" id="profileModal"><div class="modal">
-    <div class="close-x" id="closeProfile"></div>
+    <div class="close-x" id="closeProfile">×</div>
     <div class="modal-title-y">پروفایل</div>
     <div id="profileBody"></div>
   </div></div>
 
   <div class="overlay" id="reportModal"><div class="modal">
-    <div class="close-x" id="closeReport">✕</div>
+    <div class="close-x" id="closeReport">×</div>
     <div class="modal-title-y">گزارش کاربر</div>
     <label class="edit-label">موضوع گزارش:</label>
     <select class="edit-input" id="reportSubject">
@@ -480,26 +494,26 @@
   </div></div>
 
   <div class="overlay" id="managerModal"><div class="modal">
-    <div class="close-x" id="closeManager"></div>
+    <div class="close-x" id="closeManager">×</div>
     <div class="modal-title-y">مدیریت لابی</div>
     <div id="managerBody"></div>
   </div></div>
 
   <div class="overlay" id="creatorPanelModal"><div class="modal">
-    <div class="close-x" id="closeCreatorPanel">✕</div>
+    <div class="close-x" id="closeCreatorPanel">×</div>
     <div class="modal-title-y">پنل مقام‌دار</div>
     <div class="tabs" id="creatorTabs"></div>
     <div id="creatorPanelBody"></div>
   </div></div>
 
   <div class="overlay" id="adminUserModal"><div class="modal">
-    <div class="close-x" id="closeAdminUser">✕</div>
+    <div class="close-x" id="closeAdminUser">×</div>
     <div class="modal-title-y">ویرایش کاربر</div>
     <div id="adminUserBody"></div>
   </div></div>
 
   <div class="overlay" id="banModal"><div class="modal">
-    <div class="close-x" id="closeBan"></div>
+    <div class="close-x" id="closeBan">×</div>
     <div class="modal-title-y">مسدودسازی کاربر</div>
     <label class="edit-label">مدت بن:</label>
     <select class="edit-input" id="banDuration"></select>
@@ -518,7 +532,6 @@
 <audio id="clickSound" preload="auto">
   <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
-
 <script>
   document.addEventListener('gesturestart',e=>e.preventDefault());
   document.addEventListener('gesturechange',e=>e.preventDefault());
@@ -557,11 +570,7 @@
   function playClick() {
     try {
       const audio = document.getElementById('clickSound');
-      if (audio) {
-        audio.currentTime = 0;
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-      }
+      if (audio) { audio.currentTime = 0; audio.volume = 0.5; audio.play().catch(()=>{}); }
     } catch (e) {}
   }
 
@@ -569,17 +578,9 @@
   async function upstashSet(k, v){try{const jsonValue=JSON.stringify(v);const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(jsonValue),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
   async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok;}catch(e){return false;}}
 
-  async function getLive(roomId) {
-    const data = await upstashGet(liveKey(roomId));
-    return data || {};
-  }
-  async function setLive(roomId, data) {
-    return await upstashSet(liveKey(roomId), data);
-  }
-  async function deleteLive(roomId) {
-    return await upstashDel(liveKey(roomId));
-  }
-
+  async function getLive(roomId) { const data = await upstashGet(liveKey(roomId)); return data || {}; }
+  async function setLive(roomId, data) { return await upstashSet(liveKey(roomId), data); }
+  async function deleteLive(roomId) { return await upstashDel(liveKey(roomId)); }
   async function redisGet(key){ return await upstashGet(key); }
   async function redisSet(key, value){ return await upstashSet(key, value); }
   async function redisDel(key){ return await upstashDel(key); }
@@ -732,15 +733,15 @@
     if (!avatarUrl) return fallbackHtml || '';
     const isVideo = avatarUrl.endsWith('.webm') || avatarUrl.endsWith('.mp4') || avatarUrl.endsWith('.mov');
     if (isVideo) {
-      return `<video src="${esc(avatarUrl)}" autoplay muted playsinline webkit-playsinline preload="auto" onended="let v=this; setTimeout(()=>{v.currentTime=0; v.play();}, 1000);" onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;>👤</span>'}'"></video>`;
+      return `<video class="avatar-mini" src="${esc(avatarUrl)}" autoplay muted playsinline webkit-playsinline preload="auto" onended="let v=this; setTimeout(()=>{v.currentTime=0; v.play();}, 1000);" onerror="this.outerHTML='${fallbackHtml || '<div class=&quot;avatar-mini-letter&quot;>👤</div>'}'"></video>`;
     } else {
-      return `<img src="${esc(avatarUrl)}" onerror="this.outerHTML='${fallbackHtml || '<span class=&quot;bot-face&quot;></span>'}'">`;
+      return `<img class="avatar-mini" src="${esc(avatarUrl)}" onerror="this.outerHTML='${fallbackHtml || '<div class=&quot;avatar-mini-letter&quot;>👤</div>'}'">`;
     }
   }
 
   function saveVideoTimes() {
     const times = {};
-    document.querySelectorAll('.seat-circle video, .super-circle video, .pf-avatar video').forEach((v, i) => {
+    document.querySelectorAll('.slot video, .pf-avatar video').forEach((v, i) => {
       const key = v.src + '_' + i;
       if (!isNaN(v.currentTime)) times[key] = v.currentTime;
     });
@@ -749,16 +750,14 @@
 
   function restoreVideoTimes(times) {
     setTimeout(() => {
-      document.querySelectorAll('.seat-circle video, .super-circle video, .pf-avatar video').forEach((v, i) => {
+      document.querySelectorAll('.slot video, .pf-avatar video').forEach((v, i) => {
         const key = v.src + '_' + i;
-        if (times[key] !== undefined && !isNaN(times[key])) {
-          v.currentTime = times[key];
-        }
+        if (times[key] !== undefined && !isNaN(times[key])) { v.currentTime = times[key]; }
       });
     }, 50);
   }
 
-  // سیستم صوتی Agora - کاملاً کار می‌کنه
+  // ===== Agora =====
   async function initVoice() {
     if (agoraClient || !window.AgoraRTC || !currentRoomId || !me) return;
     if (micInitAttempted) return;
@@ -773,56 +772,37 @@
           if (mediaType === "audio" && user.audioTrack) user.audioTrack.play();
         } catch (e) { console.log("Sub err:", e); }
       });
-
       agoraClient.on("user-unpublished", (user, mediaType) => {
         if (mediaType === "audio" && user.audioTrack) { try { user.audioTrack.stop(); } catch(e) {} }
       });
-
       agoraClient.enableAudioVolumeIndicator();
       agoraClient.on("volume-indicator", (volumes) => {
         speakingUids.clear();
-        volumes.forEach(volume => { 
-          if (volume.level > 15) {
-            speakingUids.add(String(volume.uid));
-          }
-        });
+        volumes.forEach(volume => { if (volume.level > 15) { speakingUids.add(String(volume.uid)); } });
         updateSpeakingUI();
       });
-
-      console.log('✅ Agora connected successfully');
+      console.log('✅ Agora connected');
     } catch (err) {
       console.error("Voice init error:", err);
       micInitAttempted = false;
     }
   }
 
-  // دکمه مایک - کاملاً کار می‌کنه
   async function toggleMic() {
     try {
-      console.log('🎤 Mic button clicked, current state:', isMicOn);
-
       if (!agoraClient) {
-        console.log('Initializing Agora...');
         await initVoice();
-        if (!agoraClient) { 
-          alert('خطا در اتصال صوتی. لطفاً دوباره تلاش کنید.');
-          return; 
-        }
+        if (!agoraClient) { alert('خطا در اتصال صوتی. لطفاً دوباره تلاش کنید.'); return; }
       }
-
       if (!localAudioTrack) {
-        console.log('Creating microphone track...');
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         await agoraClient.publish(localAudioTrack);
         isMicOn = true;
-        console.log('✅ Mic turned ON');
         updateMicUI();
         return;
       }
-
       isMicOn = !isMicOn;
       await localAudioTrack.setMuted(!isMicOn);
-      console.log(isMicOn ? '✅ Mic turned ON' : '🔇 Mic turned OFF');
       updateMicUI();
     } catch (err) {
       console.error("Mic toggle error:", err);
@@ -834,19 +814,13 @@
   }
 
   function updateMicUI() {
-    const btn = $('micBtn');
-    if (!btn) return;
-    if (isMicOn) {
-      btn.classList.add('mic-on');
-      btn.title = "مایکروفون باز است";
-    } else {
-      btn.classList.remove('mic-on');
-      btn.title = "مایکروفون بسته است";
-    }
+    const btn = $('micBtn'); if (!btn) return;
+    btn.classList.toggle('mic-on', isMicOn);
+    btn.title = isMicOn ? "مایکروفون باز است" : "مایکروفون بسته است";
   }
 
   function updateSpeakingUI() {
-    document.querySelectorAll('[data-phone]').forEach(el => {
+    document.querySelectorAll('.slot[data-phone]').forEach(el => {
       const phone = el.getAttribute('data-phone');
       if (!phone) return;
       const isSpeaking = (String(phone) === String(me.phone) && isMicOn) || speakingUids.has(String(phone));
@@ -898,7 +872,7 @@
       if (likeTimeoutId) clearTimeout(likeTimeoutId);
       likeTimeoutId = setTimeout(() => { $('likeBtn').classList.remove('disabled'); likeTimeoutId = null; }, REACTION_COOLDOWN);
     }
-    const circleEl = document.querySelector(`.seat-circle[data-phone="${targetPhone}"]`) || document.querySelector(`.super-circle[data-phone="${targetPhone}"]`);
+    const circleEl = document.querySelector(`.slot[data-phone="${targetPhone}"]`);
     if (circleEl) {
       const existing = circleEl.querySelector('.reaction-overlay');
       if (existing) existing.remove();
@@ -926,7 +900,7 @@
       if (!liveData) return;
 
       if (liveData.disconnected && liveData.discTime && (Date.now() - liveData.discTime < 10000)) {
-        const targetEl = document.querySelector(`[data-phone="${liveData.disconnected}"]`);
+        const targetEl = document.querySelector(`.slot[data-phone="${liveData.disconnected}"]`);
         if (targetEl) {
           let discOverlay = targetEl.querySelector('.disconnected-overlay');
           if (!discOverlay) {
@@ -934,22 +908,17 @@
             discOverlay.className = 'disconnected-overlay show';
             discOverlay.innerHTML = '<div class="disconnected-icon"></div>';
             targetEl.appendChild(discOverlay);
-          } else {
-            discOverlay.classList.add('show');
-          }
+          } else { discOverlay.classList.add('show'); }
         }
       } else {
         document.querySelectorAll('.disconnected-overlay').forEach(el => {
-          if (!el.closest(`[data-phone="${me.phone}"]`) || !document.hidden) {
-             el.classList.remove('show');
-          }
+          if (!el.closest(`.slot[data-phone="${me.phone}"]`) || !document.hidden) { el.classList.remove('show'); }
         });
       }
 
       if (liveData.reactions) {
         const now = Date.now();
-        const circles = document.querySelectorAll('.seat-circle[data-phone], .super-circle[data-phone]');
-        circles.forEach(el => {
+        document.querySelectorAll('.slot[data-phone]').forEach(el => {
           const phone = el.getAttribute('data-phone');
           if (!phone) return;
           const reaction = liveData.reactions[phone];
@@ -981,13 +950,9 @@
         if (newMessages.length > 0) {
           chatMessages.push(...newMessages);
           if (chatMessages.length > 50) chatMessages.splice(0, chatMessages.length - 50);
-          if ($('chatMenu').classList.contains('show')) {
-            renderChatMessages();
-          }
+          if ($('chatMenu').classList.contains('show')) { renderChatMessages(); }
           const last = newMessages[newMessages.length - 1];
-          if (last.phone !== me.phone) {
-            showChatNotification(last);
-          }
+          if (last.phone !== me.phone) { showChatNotification(last); }
         }
       }
 
@@ -999,7 +964,6 @@
                         (liveData.ready && JSON.stringify(liveData.ready) !== JSON.stringify(last.ready)) ||
                         (liveData.ghost && JSON.stringify(liveData.ghost) !== JSON.stringify(last.ghost));
         if (changed) {
-          window._lastLiveData = liveData;
           const rooms = await getRooms();
           const room = rooms[currentRoomId];
           if (room) {
@@ -1062,35 +1026,21 @@
     setTimeout(() => { notif.classList.remove('show'); }, 3000);
   }
 
-  window.copyChatMessage = function(idx) {
-    navigator.clipboard.writeText(chatMessages[idx].text).catch(() => {});
-  };
-  window.deleteChatMessage = function(idx) {
-    chatMessages.splice(idx, 1);
-    renderChatMessages();
-  }
+  window.copyChatMessage = function(idx) { navigator.clipboard.writeText(chatMessages[idx].text).catch(()=>{}); };
+  window.deleteChatMessage = function(idx) { chatMessages.splice(idx, 1); renderChatMessages(); };
 
   let isRedirecting=false;
   function go(u){if(!isRedirecting){isRedirecting=true;window.location.href=u;}}
 
-  window.addEventListener('offline', () => {
-    offlineTimer = setTimeout(() => { setTimeout(() => window.location.href = 'TalarDs.html', 1000); }, 3000);
-  });
-  window.addEventListener('online', () => {
-    if (offlineTimer) { clearTimeout(offlineTimer); offlineTimer = null; window.location.href = 'TalarDs.html'; }
-  });
-
-  window.addEventListener('beforeunload', () => {
-    if (currentRoomId && me) {
-      leaveRoom(true);
-    }
-  });
+  window.addEventListener('offline', () => { offlineTimer = setTimeout(() => { setTimeout(() => window.location.href = 'TalarDs.html', 1000); }, 3000); });
+  window.addEventListener('online', () => { if (offlineTimer) { clearTimeout(offlineTimer); offlineTimer = null; window.location.href = 'TalarDs.html'; } });
+  window.addEventListener('beforeunload', () => { if (currentRoomId && me) { leaveRoom(true); } });
 
   document.addEventListener('visibilitychange', () => {
     if (!currentRoomId || !me) return;
     if (document.hidden) {
       hiddenStartTime = Date.now();
-      const mySeatEl = document.querySelector(`.seat-circle[data-phone="${me.phone}"]`) || document.querySelector(`.super-circle[data-phone="${me.phone}"]`);
+      const mySeatEl = document.querySelector(`.slot[data-phone="${me.phone}"]`);
       if (mySeatEl) {
         let discOverlay = mySeatEl.querySelector('.disconnected-overlay');
         if (!discOverlay) {
@@ -1098,23 +1048,14 @@
           discOverlay.className = 'disconnected-overlay show';
           discOverlay.innerHTML = '<div class="disconnected-icon"></div>';
           mySeatEl.appendChild(discOverlay);
-        } else {
-          discOverlay.classList.add('show');
-        }
+        } else { discOverlay.classList.add('show'); }
       }
       setLive(currentRoomId, { disconnected: me.phone, discTime: Date.now() });
-      disconnectCheckTimer = setTimeout(() => {
-        if (document.hidden) {
-          leaveRoom(true);
-        }
-      }, 5000);
+      disconnectCheckTimer = setTimeout(() => { if (document.hidden) { leaveRoom(true); } }, 5000);
     } else {
       hiddenStartTime = null;
-      if (disconnectCheckTimer) {
-        clearTimeout(disconnectCheckTimer);
-        disconnectCheckTimer = null;
-      }
-      const mySeatEl = document.querySelector(`.seat-circle[data-phone="${me.phone}"]`) || document.querySelector(`.super-circle[data-phone="${me.phone}"]`);
+      if (disconnectCheckTimer) { clearTimeout(disconnectCheckTimer); disconnectCheckTimer = null; }
+      const mySeatEl = document.querySelector(`.slot[data-phone="${me.phone}"]`);
       if (mySeatEl) {
         const discOverlay = mySeatEl.querySelector('.disconnected-overlay');
         if (discOverlay) discOverlay.classList.remove('show');
@@ -1124,7 +1065,7 @@
     }
   });
 
-  function stopTimers(){ 
+  function stopTimers(){
     if(roomTimer){clearInterval(roomTimer);roomTimer=null;}
     if(liveSyncTimer){clearInterval(liveSyncTimer);liveSyncTimer=null;}
     if(disconnectCheckTimer){clearTimeout(disconnectCheckTimer);disconnectCheckTimer=null;}
@@ -1219,15 +1160,9 @@
     const room=rooms[id];
     if(!room||room.status!=='waiting'){return;}
     if((room.blocked||[]).includes(me.phone)){return;}
-
     const allUsers = await getAllUsers();
     const currentUser = allUsers[me.phone] || {};
-    // فقط بررسی موجودی سکه بدون کسر
-    if ((currentUser.coins || 0) < 50) {
-      alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ورود به لابی نیاز است)');
-      return;
-    }
-
+    if ((currentUser.coins || 0) < 50) { alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ورود به لابی نیاز است)'); return; }
     const already=myRoom(rooms);
     if(already&&already.id!==id){return;}
     if(room.password&&room.managerPhone!==me.phone){
@@ -1242,7 +1177,6 @@
       room.seats[seat]=me.phone;
     }
     if(room.kicked&&room.kicked[me.phone])delete room.kicked[me.phone];
-
     await saveRooms(rooms);
     const liveData = await getLive(id);
     if (!liveData.seats) liveData.seats = {};
@@ -1254,22 +1188,14 @@
   async function createRoom(){
     if (isProcessingAction) return;
     isProcessingAction = true;
-
     try {
       const rooms=await getRooms();
       if(myRoom(rooms)){isProcessingAction = false; return;}
       if(myRoomsCount(rooms)>=MAX_ROOMS_PER_USER){isProcessingAction = false; return;}
       if(!selectedName){isProcessingAction = false; return;}
-
       const allUsers = await getAllUsers();
       const currentUser = allUsers[me.phone] || {};
-      // فقط بررسی موجودی سکه بدون کسر
-      if ((currentUser.coins || 0) < 50) {
-        alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ایجاد لابی نیاز است)');
-        isProcessingAction = false;
-        return;
-      }
-
+      if ((currentUser.coins || 0) < 50) { alert('شما سکه کم دارید (حداقل ۵۰ سکه برای ایجاد لابی نیاز است)'); isProcessingAction = false; return; }
       const pass=passOn?$('lobbyPassInput').value.trim():null;
       if(passOn&&!pass){isProcessingAction = false; return;}
       const id='R'+Date.now();
@@ -1277,11 +1203,9 @@
       const selectedNameObj = names.find(n => n.name === selectedName);
       const isNameApproved = selectedNameObj && selectedNameObj.status === 'active';
       const isStaffUser = RANK_LEVEL[me.rank] >= RANK_LEVEL['پشتیبانی'] || me.phone === CREATOR_PHONE;
-
       await saveUser(me.phone, currentUser);
       await saveAllUsers(allUsers);
       usersCache={ts:0,data:{}};
-
       rooms[id]={
         id:id, name:selectedName, managerPhone:me.phone, creatorName:me.name, creatorRank:me.rank,
         scenario:'mafiasan', password:pass, seats:{1:me.phone}, bots:{}, supers:{}, ready:{},
@@ -1294,9 +1218,7 @@
       await setLive(id, liveData);
       $('createModal').classList.remove('active');
       openRoom(id,rooms[id]);
-    } finally {
-      setTimeout(() => { isProcessingAction = false; }, 1000);
-    }
+    } finally { setTimeout(() => { isProcessingAction = false; }, 1000); }
   }
 
   function openRoom(id,roomData){
@@ -1345,10 +1267,11 @@
     renderRoom(room,users);
   }
 
+  // ===== renderRoom با طرح جدید دایره‌ای =====
   async function renderRoom(room,allUsers){
     $('roomNameTop').textContent=room.name;
     const pendingBanner=$('pendingBanner');
-    if(room.status==='pending') pendingBanner.innerHTML='<div class="pending-banner"> این لابی در انتظار تأیید مقام‌دارها است</div>';
+    if(room.status==='pending') pendingBanner.innerHTML='<div class="pending-banner">این لابی در انتظار تأیید مقام‌دارها است</div>';
     else pendingBanner.innerHTML='';
 
     const isManager=room.managerPhone===me.phone;
@@ -1375,84 +1298,90 @@
 
     const videoTimes = saveVideoTimes();
 
-    async function buildSuper(i){
-      const ph=room.supers[i];
-      const u=ph?allUsers[ph]:null;
-      const tk=u?getRoleTick(u.rank):null;
-      const mgr=(ph===room.managerPhone)?crownHtml():'';
-      const tagLayer = u ? await buildTagLayer(ph,u,groupCache[ph]||null) : '';
-      const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
-      let inner='';
-      if(u) inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
-      const labelHtml='ناظر '+(i===1?'۱':'۲')+(u?' · '+mgr+esc(u.name||'کاربر')+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''):'');
-      return `<div class="super-slot" data-super="${i}">
-        <div class="super-circle ${u ? 'filled' : ''}" ${ph ? `data-phone="${ph}"` : ''}>
+    // تابع ساخت HTML یک اسلات
+    async function buildSlotHtml(type, idx, phone){
+      const isSuper = type === 'super';
+      const num = isSuper ? (idx===1?'۱':'۲') : toFa(idx);
+      const botAt = !isSuper && room.bots && room.bots[idx];
+
+      const isGhostMode = phone && (room.ghost||[]).includes(phone);
+      const ghostHidden = isGhostMode && phone !== me.phone;
+
+      let slotCls = isSuper ? 'slot observer' : 'slot';
+      let inner = `<div class="num">${num}</div>`;
+      let nameText = isSuper ? ('ناظر '+num) : 'خالی';
+      let nameClass = '';
+      let dp = '';
+
+      if (phone && phone === me.phone && isGhostMode) {
+        dp = ` data-phone="${phone}"`;
+        slotCls += ' filled ghost-self glow-green';
+        const u = allUsers[phone] || { avatar:'Mafia2.png' };
+        inner = `<div class="num">${num}</div>` + buildMediaTag(u.avatar, `<div class="avatar-mini-letter">👤</div>`);
+        nameText = 'روح (شما)';
+        nameClass = 'me';
+      }
+      else if (phone && !ghostHidden) {
+        dp = ` data-phone="${phone}"`;
+        const u = allUsers[phone] || { name:'کاربر', avatar:'Mafia2.png', rank:'کاربر' };
+        const ready = (phone === room.managerPhone) ? true : ((room.ready||{})[phone] === true);
+        slotCls += ' filled ' + (ready ? 'glow-green' : 'glow-red');
+        const tk = getRoleTick(u.rank);
+        const mgr = (phone === room.managerPhone) ? crownHtml() : '';
+        if (phone === room.managerPhone) nameClass = 'manager';
+        else if (isStaff(u.rank)) nameClass = 'staff';
+        if (phone === me.phone) nameClass += ' me';
+        nameText = `${mgr}${esc(u.name||'کاربر')}${phone===me.phone?' (شما)':''}${tk?' <img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':''}`;
+        inner = `<div class="num">${num}</div>` + buildMediaTag(u.avatar, `<div class="avatar-mini-letter">${esc((u.name||'؟').charAt(0))}</div>`);
+      }
+      else if (botAt) {
+        slotCls += ' filled glow-green';
+        nameText = 'بات';
+        nameClass = 'staff';
+        inner = `<div class="num">${num}</div><div class="avatar-mini-letter">🤖</div>`;
+      }
+
+      return `<div class="slot-wrap" data-slot-wrap-type="${type}" data-slot-wrap-idx="${idx}">
+        <div class="${slotCls}" data-slot-type="${type}" data-slot-idx="${idx}"${dp}>
           ${inner}
-          <div class="voice-indicator">
-            <video src="Ma10.webm" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
-          </div>
+          <div class="voice-indicator"><video src="Ma10.webm" autoplay loop muted playsinline onerror="this.style.display='none'"></video></div>
           <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
         </div>
-        ${tagLayer}
-        <div class="super-label ${nameClass}">${labelHtml}</div>
+        <div class="name ${nameClass}" data-name-type="${type}" data-name-idx="${idx}">${nameText}</div>
       </div>`;
     }
-    const superSlots=await Promise.all([1,2].map(buildSuper));
-    $('supersRow').innerHTML=superSlots.join('');
-    document.querySelectorAll('[data-super]').forEach(el=>{el.onclick=()=>{playClick();tapSuper(+el.dataset.super);};});
 
-    async function buildSeat(i){
-      const ph=room.seats[i],bot=room.bots[i];
-      const isGhostMode = (room.ghost||[]).includes(ph);
-      const ghostHidden = isGhostMode && ph !== me.phone;
-
-      let inner='',cls='seat-circle',tag='',tagLayer='',dp='';
-
-      if(ph && ph === me.phone && isGhostMode) {
-        dp=' data-phone="'+ph+'"';
-        const u=allUsers[ph]||{avatar:'Mafia2.png'};
-        cls+=' filled ghost-self glow-green';
-        inner = buildMediaTag(u.avatar, '<span class="bot-face">👤</span>');
-        tag='<div class="seat-name normal-tag"> روح (شما)</div>';
-      }
-      else if(ph && !ghostHidden){
-        dp=' data-phone="'+ph+'"';
-        const u=allUsers[ph]||{name:'کاربر',avatar:'Mafia2.png',rank:'کاربر'};
-        const ready=(ph===room.managerPhone)?true:((room.ready||{})[ph]===true);
-        cls+=' filled '+(ready?'glow-green':'glow-red');
-        const tk=getRoleTick(u.rank);
-        const mgr=(ph===room.managerPhone)?crownHtml():'';
-        const nameClass=(ph===room.managerPhone)?'manager-tag':'normal-tag';
-        tag='<div class="seat-name '+nameClass+'">'+mgr+' '+esc(u.name||'کاربر')+(ph===me.phone?' (شما)':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">':'')+'</div>';
-        tagLayer=await buildTagLayer(ph,u,groupCache[ph]||null);
-        inner = buildMediaTag(u.avatar, '<span class="bot-face"></span>');
-      }
-      else if(bot){
-        inner='<span class="bot-face"></span>';cls+=' filled glow-green';
-        tag='<div class="seat-name bot-tag">بات</div>';
-      }
-
-      return `<div class="seat" data-seat="${i}">
-        <div class="seat-num">${toFa(i)}</div>
-        <div class="${cls}" ${dp}>
-          ${inner}
-          <div class="voice-indicator">
-            <video src="Ma10.webm" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
-          </div>
-          <div class="disconnected-overlay"><div class="disconnected-icon"></div></div>
-        </div>
-        ${tagLayer}${tag}
-      </div>`;
+    // ساخت همه اسلات‌ها
+    const sup1 = await buildSlotHtml('super', 1, room.supers ? room.supers[1] : null);
+    const sup2 = await buildSlotHtml('super', 2, room.supers ? room.supers[2] : null);
+    const seats = [];
+    for (let i=1; i<=10; i++) {
+      seats.push(await buildSlotHtml('player', i, room.seats ? room.seats[i] : null));
     }
-    const leftSeats=await Promise.all([1,3,5,7,9].map(buildSeat));
-    const rightSeats=await Promise.all([2,4,6,8,10].map(buildSeat));
-    $('colLeft').innerHTML=leftSeats.join('');
-    $('colRight').innerHTML=rightSeats.join('');
-    document.querySelectorAll('.seat').forEach(el=>{el.onclick=()=>{playClick();tapSeat(+el.dataset.seat);};});
+
+    const layoutHtml = `
+      <div class="row observers">${sup1}${sup2}</div>
+      <div class="row">${seats[0]}${seats[1]}</div>
+      <div class="row">${seats[2]}${seats[3]}</div>
+      <div class="row">${seats[4]}${seats[5]}</div>
+      <div class="row">${seats[6]}${seats[7]}</div>
+      <div class="row">${seats[8]}${seats[9]}</div>
+    `;
+    $('lobbyLayout').innerHTML = layoutHtml;
+
+    // اتصال کلیک‌ها
+    document.querySelectorAll('.lobby-layout .slot[data-slot-type="player"]').forEach(el=>{
+      el.onclick = () => { playClick(); tapSeat(parseInt(el.dataset.slotIdx)); };
+    });
+    document.querySelectorAll('.lobby-layout .slot[data-slot-type="super"]').forEach(el=>{
+      el.onclick = () => { playClick(); tapSuper(parseInt(el.dataset.slotIdx)); };
+    });
+
     document.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
 
     restoreVideoTimes(videoTimes);
 
+    // دکمه آماده‌ام
     const bottomLeft = $('bottomLeftArea');
     bottomLeft.innerHTML = '';
 
@@ -1469,6 +1398,24 @@
         rb.onclick=()=>{playClick();toggleReady();};
       }
       bottomLeft.appendChild(rb);
+    } else {
+      // مدیر: دکمه شروع بازی
+      const humans = Object.values(room.seats||{}).filter(Boolean);
+      const bots = Object.keys(room.bots||{}).length;
+      const total = humans.length + bots;
+      const allReady = humans.every(p => p === room.managerPhone || ((room.ready||{})[p] === true));
+      const startBtn = document.createElement('button');
+      startBtn.id = 'startGameBtn';
+      if (total >= MAX_PLAYERS && allReady) {
+        startBtn.className = 'ready-btn yes';
+        startBtn.innerHTML = '▶ شروع بازی ('+toFa(total)+'/۱۰)';
+        startBtn.onclick = () => { playClick(); startGame(); };
+      } else {
+        startBtn.className = 'ready-btn disabled';
+        startBtn.innerHTML = 'شروع ('+toFa(total)+'/۱۰)';
+        startBtn.onclick = null;
+      }
+      bottomLeft.appendChild(startBtn);
     }
   }
 
@@ -1621,19 +1568,9 @@
           setTimeout(async()=>{const r2=await getRooms();delete r2[currentRoomId];await saveRooms(r2);},2000);
         }else{
           const liveData = await getLive(currentRoomId);
-          if (liveData.seats) {
-            for (const [i,p] of Object.entries(liveData.seats)) {
-              if (p===me.phone) delete liveData.seats[i];
-            }
-          }
-          if (liveData.supers) {
-            for (const [i,p] of Object.entries(liveData.supers)) {
-              if (p===me.phone) delete liveData.supers[i];
-            }
-          }
-          if (liveData.ghost) {
-            liveData.ghost = liveData.ghost.filter(x=>x!==me.phone);
-          }
+          if (liveData.seats) { for (const [i,p] of Object.entries(liveData.seats)) { if (p===me.phone) delete liveData.seats[i]; } }
+          if (liveData.supers) { for (const [i,p] of Object.entries(liveData.supers)) { if (p===me.phone) delete liveData.supers[i]; } }
+          if (liveData.ghost) { liveData.ghost = liveData.ghost.filter(x=>x!==me.phone); }
           await setLive(currentRoomId, liveData);
           await saveRooms(rooms);
         }
@@ -1664,7 +1601,7 @@
 
     const canBan=myLevel>=RANK_LEVEL['ناظر']&&!t.bot&&t.phone!==me.phone&&targetLevel<myLevel;
     if(canBan){
-      html+='<button class="menu-item-b mi-red" id="umBan"> بن کردن</button>';
+      html+='<button class="menu-item-b mi-red" id="umBan">بن کردن</button>';
       const ban=await getBan(t.phone);
       if(ban)html+='<button class="menu-item-b mi-green" id="umUnban">✅ رفع بن</button>';
     }
@@ -1685,13 +1622,9 @@
     const prof=$('umProfile');if(prof)prof.onclick=()=>{closeUm();openProfile(t);};
     const rp=$('umReport');if(rp)rp.onclick=()=>{closeUm();reportTarget=t;$('reportDesc').value='';$('reportModal').classList.add('active');};
     const banBtn=$('umBan');if(banBtn)banBtn.onclick=async()=>{closeUm();openBanModal(t.phone);};
-    const unb=$('umUnban');if(unb)unb.onclick=async()=>{closeUm();await redisSet('ban:'+t.phone,{isBanned:false});const au=await getAllUsers();if(au[t.phone]){au[t.phone].banned=false;await saveAllUsers(au);};};
-    const k=$('umKick');if(k)k.onclick=async()=>{
-      if(targetStaff){return;}
-      closeUm();await updateRoom(r=>{r.kicked=r.kicked||{};r.kicked[t.phone]=Date.now();for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];});};
-    const b=$('umBlock');if(b)b.onclick=async()=>{
-      if(targetStaff){return;}
-      closeUm();await updateRoom(r=>{r.blocked=r.blocked||[];if(!r.blocked.includes(t.phone))r.blocked.push(t.phone);for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];});};
+    const unb=$('umUnban');if(unb)unb.onclick=async()=>{closeUm();await redisSet('ban:'+t.phone,{isBanned:false});const au=await getAllUsers();if(au[t.phone]){au[t.phone].banned=false;await saveAllUsers(au);}};
+    const k=$('umKick');if(k)k.onclick=async()=>{ if(targetStaff){return;} closeUm();await updateRoom(r=>{r.kicked=r.kicked||{};r.kicked[t.phone]=Date.now();for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];});};
+    const b=$('umBlock');if(b)b.onclick=async()=>{ if(targetStaff){return;} closeUm();await updateRoom(r=>{r.blocked=r.blocked||[];if(!r.blocked.includes(t.phone))r.blocked.push(t.phone);for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];});};
     const ub=$('umUnblock');if(ub)ub.onclick=async()=>{closeUm();await updateRoom(r=>{r.blocked=(r.blocked||[]).filter(x=>x!==t.phone);});};
     const tr=$('umTransfer');if(tr)tr.onclick=async()=>{
       if(targetStaff){return;}
@@ -1770,7 +1703,6 @@
     const isCreator=me.phone===CREATOR_PHONE;
     const myLevel=RANK_LEVEL[me.rank]||0;
     const canAddBot=isCreator||myLevel>=RANK_LEVEL['پشتیبانی'];
-
     const canDelete = isCreator || myLevel >= RANK_LEVEL['گرداننده'];
 
     let html='';
@@ -1785,7 +1717,7 @@
       html += '<button class="menu-item-b mi-gold" style="opacity:0.5; cursor:not-allowed;" disabled>شروع بازی ('+toFa(total)+'/۱۰) - همه باید آماده باشند</button>';
     }
 
-    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot"> افزودن بات</button>';
+    if(canAddBot)html+='<button class="menu-item-b mi-purple" id="mgAddBot">افزودن بات</button>';
     const blocked=room.blocked||[];
     if(blocked.length){
       html+='<div class="row-item" style="margin-top:10px"><b style="color:#ffd700">مسدودها:</b>';
@@ -1830,12 +1762,8 @@
         if(r.ghostSuper && r.ghostSuper.phone === me.phone) { r.supers[r.ghostSuper.idx] = me.phone; r.ghostSuper = null; }
       } else {
         r.ghost.push(me.phone);
-        for(const[i,p]of Object.entries(r.seats||{})){
-          if(p===me.phone){ r.ghostSeat = {phone: me.phone, idx: i}; delete r.seats[i]; break; }
-        }
-        for(const[i,p]of Object.entries(r.supers||{})){
-          if(p===me.phone){ r.ghostSuper = {phone: me.phone, idx: i}; delete r.supers[i]; break; }
-        }
+        for(const[i,p]of Object.entries(r.seats||{})){ if(p===me.phone){ r.ghostSeat = {phone: me.phone, idx: i}; delete r.seats[i]; break; } }
+        for(const[i,p]of Object.entries(r.supers||{})){ if(p===me.phone){ r.ghostSuper = {phone: me.phone, idx: i}; delete r.supers[i]; break; } }
       }
     });
     refreshRoom();
@@ -1879,44 +1807,31 @@
   async function saveEdit(){
     if (isProcessingAction) return;
     isProcessingAction = true;
-
     try {
       const val=$('editInput').value.trim();if(!val){isProcessingAction = false; return;}
       const names=await getNames(me.phone);
       if(editMode==='add'&&names.length>=MAX_NAMES){isProcessingAction = false; return;}
-
       const allUsers=await getUsersCached(true);
       const u=allUsers[me.phone];
-      if(!u||((u.coins||0)<50)){
-        alert('شما سکه کم دارید (حداقل ۵۰ سکه نیاز است)');
-        isProcessingAction = false;
-        return;
-      }
-
+      if(!u||((u.coins||0)<50)){ alert('شما سکه کم دارید (حداقل ۵۰ سکه نیاز است)'); isProcessingAction = false; return; }
       u.coins=(u.coins||0)-50;
       allUsers[me.phone]=u;
       await saveUser(me.phone,u);
       await saveAllUsers(allUsers);
       usersCache={ts:0,data:{}};
-
       const isCreator=me.phone===CREATOR_PHONE;
       const isStaffUser=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی'];
       const status=(isCreator||isStaffUser)?'active':'pending';
-
       if(editMode==='add')names.push({name:val,status:status});
       else names[editIndex]={name:val,status:status};
-
       await saveNames(me.phone,names);
-
       if(!isCreator&&!isStaffUser){
         const reqs=await getReqs();reqs.push({id:Date.now(),phone:me.phone,requester:me.name,newName:val,status:'pending'});
         await saveReqs(reqs.slice(-60));
       }
       $('editModal').classList.remove('active');
       await renderNames();
-    } finally {
-      setTimeout(() => { isProcessingAction = false; }, 1000);
-    }
+    } finally { setTimeout(() => { isProcessingAction = false; }, 1000); }
   }
 
   async function openCreatorPanel(){
@@ -2016,13 +1931,10 @@
       body.querySelectorAll('[data-ldel]').forEach(b=>{b.onclick=async()=>{
         const reason=prompt('دلیل حذف لابی (برای نمایش به کاربران):');
         if(reason===null)return;
-        const rooms=await getRooms();
-        const roomId=b.dataset.ldel;
+        const rooms=await getRooms();const roomId=b.dataset.ldel;
         if(rooms[roomId]){
-          rooms[roomId].status='deleted';
-          rooms[roomId].deleteReason=reason;
-          await saveRooms(rooms);
-          await deleteLive(roomId);
+          rooms[roomId].status='deleted';rooms[roomId].deleteReason=reason;
+          await saveRooms(rooms);await deleteLive(roomId);
           setTimeout(async()=>{const r2=await getRooms();delete r2[roomId];await saveRooms(r2);},3000);
           renderCTab();
         }
@@ -2041,8 +1953,7 @@
       body.innerHTML = html;
       body.querySelectorAll('[data-apl]').forEach(b => {
         b.onclick = async () => {
-          const rooms = await getRooms();
-          const room = rooms[b.dataset.apl];
+          const rooms = await getRooms();const room = rooms[b.dataset.apl];
           if(room){ room.status = 'waiting'; delete room.approvalRequired; await saveRooms(rooms); }
           renderCTab();
         };
@@ -2051,13 +1962,10 @@
         b.onclick = async () => {
           const reason = prompt('دلیل رد لابی (برای نمایش به کاربر):');
           if(reason === null) return;
-          const rooms = await getRooms();
-          const roomId = b.dataset.rjl;
+          const rooms = await getRooms();const roomId = b.dataset.rjl;
           if(rooms[roomId]){
-            rooms[roomId].status = 'deleted';
-            rooms[roomId].deleteReason = reason || 'رد توسط مدیریت';
-            await saveRooms(rooms);
-            await deleteLive(roomId);
+            rooms[roomId].status = 'deleted';rooms[roomId].deleteReason = reason || 'رد توسط مدیریت';
+            await saveRooms(rooms);await deleteLive(roomId);
             setTimeout(async () => { const r2 = await getRooms(); delete r2[roomId]; await saveRooms(r2); }, 3000);
           }
           renderCTab();
@@ -2187,23 +2095,8 @@
       localStorage.setItem('current_game_room',currentRoomId);
       window.location.href='Safe Game.html';
     };
-
-    $('dislikeBtn').onclick = async () => {
-      playClick();
-      const rooms = await getRooms();
-      const room = rooms[currentRoomId];
-      if (!room) return;
-      showReactionOnProfile('dislike');
-    };
-
-    $('likeBtn').onclick = async () => {
-      playClick();
-      const rooms = await getRooms();
-      const room = rooms[currentRoomId];
-      if (!room) return;
-      showReactionOnProfile('like');
-    };
-
+    $('dislikeBtn').onclick = async () => { playClick(); const rooms = await getRooms(); const room = rooms[currentRoomId]; if (!room) return; showReactionOnProfile('dislike'); };
+    $('likeBtn').onclick = async () => { playClick(); const rooms = await getRooms(); const room = rooms[currentRoomId]; if (!room) return; showReactionOnProfile('like'); };
     $('chatBtn').onclick = ()=>{playClick();openChat();};
     $('closeChat').onclick = closeChat;
     $('sendChat').onclick = sendChatMessage;
