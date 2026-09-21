@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d2135">
 <title>مافیاسان</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" href="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js" as="script">
+<link rel="preconnect" href="https://download.agora.io" crossorigin>
+<link rel="preconnect" href="https://smooth-werewolf-200782.upstash.io" crossorigin>
 <style>
-@font-face{font-family:'Vazirmatn';font-style:normal;font-weight:700;font-display:swap;src:local('Vazirmatn'),local('Tahoma')}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;font-family:'Vazirmatn',Tahoma,Arial,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;font-family:Tahoma,'Vazirmatn',Arial,sans-serif}
 html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a2946}
 input,textarea,select{-webkit-user-select:text!important;user-select:text!important;font-size:16px!important}
 
@@ -22,7 +20,7 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .view{position:relative;z-index:5;width:100%;height:100%;display:none;flex-direction:column}
 .view.active{display:flex}
 
-/* ====== نوار بالا ====== */
+/* ====== TOP BAR ====== */
 .top-bar{position:relative;width:100%;height:62px;flex-shrink:0;z-index:20;padding-top:env(safe-area-inset-top)}
 .top-bar .shadow{position:absolute;inset:0;background:#052a42;border-radius:0 0 16px 16px}
 .top-bar .main{position:absolute;top:0;left:0;right:0;height:58px;border-radius:0 0 16px 16px;background:linear-gradient(179deg,#074461 0%,#296187 100%);display:flex;align-items:center;padding:0 10px;gap:8px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 4px 12px rgba(0,0,0,.35)}
@@ -33,32 +31,31 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .search-box input{flex:1;height:100%;border:none;background:transparent;color:#fff;font-size:14px;font-weight:800;outline:none;text-align:right}
 .search-box input::placeholder{color:rgba(255,255,255,.65);font-weight:700;font-size:13px}
 .room-title{flex:1;text-align:center;color:#fff;font-size:16px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
-.icon-btn{width:42px;height:42px;border-radius:11px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:transform .15s}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:#fff;font-weight:900;font-size:12px;line-height:1.1;text-align:center;transition:transform .15s}
 .icon-btn:active{transform:translateY(2px) scale(.96)}
 .icon-btn.hidden{display:none}
 .home-btn{background:linear-gradient(180deg,#4aa3e0,#2a7fb8);box-shadow:0 3px 0 #0a2f6b,inset 0 1px 2px rgba(255,255,255,.25)}
 .home-ico{width:18px;height:14px;background:white;border-radius:3px;position:relative;margin-top:7px}
 .home-ico::before{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:10px solid white}
 .home-ico::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:6px;height:8px;background:#2a7fb8;border-radius:2px 2px 0 0}
+.start-top-btn{background:linear-gradient(180deg,#ffc107,#ff9800);box-shadow:0 3px 0 #6b4f00,0 0 12px rgba(255,193,7,.5),inset 0 1px 2px rgba(255,255,255,.4);color:#3a2a00;font-size:11px;font-weight:900;padding:0 6px}
+.start-top-btn.disabled{opacity:.5;pointer-events:none;filter:grayscale(.7)}
 .settings-btn{background:linear-gradient(180deg,#ffc107,#ff9800);box-shadow:0 3px 0 #6b4f00,inset 0 1px 2px rgba(255,255,255,.35)}
 .gear-ico{width:22px;height:22px;background:#5a4500;border-radius:50%;position:relative}
 .gear-ico::before{content:'';position:absolute;inset:5px;background:#ffc107;border-radius:50%}
 .gear-ico::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(#5a4500 0 12%,transparent 12% 25%,#5a4500 25% 37%,transparent 37% 50%,#5a4500 50% 62%,transparent 62% 75%,#5a4500 75% 87%,transparent 87%)}
 
-/* ====== نوار پایین ====== */
+/* ====== BOTTOM MENU ====== */
 .bottom-menu{position:fixed;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none}
 .menu-panel{pointer-events:auto;position:relative;width:100%;max-width:540px;height:80px;border-radius:22px 22px 0 0;background:linear-gradient(180deg,#296187 0%,#0d3550 60%,#052a42 100%);box-shadow:0 -3px 0 rgba(255,255,255,.08) inset,0 3px 0 #021a2a;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border:1px solid rgba(255,255,255,.08);border-bottom:none;gap:8px}
 .menu-panel::before{content:'';position:absolute;inset:0 0 50% 0;border-radius:22px 22px 0 0;background:linear-gradient(180deg,rgba(255,255,255,.15),transparent);pointer-events:none}
 
 .admin-panel-btn{position:relative;width:56px;height:56px;border-radius:15px;border:none;cursor:pointer;background:linear-gradient(180deg,#d32f2f,#7f1a1a);box-shadow:0 4px 0 #4a0a0a,inset 0 2px 4px rgba(255,255,255,.25);color:#fff;font-size:11px;font-weight:900;display:none;align-items:center;justify-content:center;padding:0;flex-shrink:0}
 .admin-panel-btn.show{display:flex}
+.admin-panel-btn:active{transform:translateY(3px)}
 .add-btn{width:56px;height:56px;border-radius:15px;border:none;cursor:pointer;background:linear-gradient(180deg,rgba(167,186,196,.9),rgba(132,176,191,.9) 30%,rgba(2,88,163,.95));box-shadow:0 5px 0 #050d18,inset 0 2px 4px rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .add-btn svg{width:30px;height:30px}
 .add-btn:active{transform:translateY(4px) scale(.96)}
-.fab{width:50px;height:50px;border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:white;cursor:pointer;flex-shrink:0}
-.fab-refresh{background:linear-gradient(180deg,#ff9500,#ff6a00);box-shadow:0 4px 0 #6b2000}
-.fab-refresh.spinning span{display:inline-block;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 
 .circle-btn{width:52px;height:52px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0;background:linear-gradient(180deg,rgba(167,186,196,.9),rgba(132,176,191,.9) 30%,rgba(2,88,163,.95));box-shadow:0 4px 0 #050d18,inset 0 2px 4px rgba(255,255,255,.35);transition:transform .15s ease}
 .circle-btn:active{transform:translateY(3px) scale(.96)}
@@ -77,15 +74,14 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .ready-btn{min-width:110px;height:56px;padding:0 20px;border:none;border-radius:15px;font-family:inherit;font-size:14px;font-weight:900;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-shadow:0 1px 3px rgba(0,0,0,.6);flex-shrink:0}
 .ready-btn.not-ready{background:linear-gradient(180deg,#6a6a6a,#3a3a3a);box-shadow:0 4px 0 #1a1a1a}
 .ready-btn.ready{background:linear-gradient(180deg,#0fad07,#136b0e 50%,#084001);box-shadow:0 4px 0 #042000}
-.ready-btn.start{background:linear-gradient(180deg,#a677ed,#642fa8);box-shadow:0 4px 0 #3d1a6b}
 .ready-btn.disabled{background:linear-gradient(180deg,#6a6a6a,#3a3a3a);box-shadow:0 4px 0 #1a1a1a;opacity:.7;cursor:not-allowed}
 
-/* ====== لیست لابی ====== */
+/* ====== LOBBY LIST ====== */
 .lobbies-list{position:relative;z-index:5;overflow-y:auto;overflow-x:hidden;padding:8px 16px 100px;flex:1;scrollbar-width:none}
 .lobbies-list::-webkit-scrollbar{display:none}
 .lobby-card{position:relative;width:100%;max-width:400px;min-height:100px;margin:0 auto 12px;border-radius:12px;background:linear-gradient(180deg,rgba(167,186,196,.55),rgba(132,176,191,.55) 27%,rgba(2,88,163,.6));box-shadow:0 4px 0 #050d18,0 5px 10px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;padding:10px 12px 30px;gap:10px}
 .lc-left{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;overflow:hidden;min-width:0}
-.lc-name-row{display:flex;align-items:center;gap:6px}
+.lc-name-row{display:flex;align-items:center;gap:6px;min-width:0}
 .lc-name-tag{background:#642fa8;color:#fff;font-size:9px;font-weight:900;padding:2px 7px;border-radius:8px;flex-shrink:0}
 .lc-name{color:#fff;font-size:14px;font-weight:900;text-shadow:0 2px 4px rgba(0,0,0,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lc-code{color:rgba(255,255,255,.55);font-size:10px;font-weight:800}
@@ -96,46 +92,58 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .lc-lock{width:40px;height:40px;object-fit:contain}
 .lc-join{padding:6px 16px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:900;color:#fff;background:linear-gradient(180deg,#a677ed,#642fa8);box-shadow:0 2px 0 #3d1a6b;min-width:70px}
 .lc-join:active{transform:translateY(2px)}
-.lc-owner-badge{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;background:rgba(255,217,74,.18);padding:2px 10px;border-radius:8px;border:1px solid rgba(255,217,74,.35);font-size:10px;font-weight:900;color:#ffd94a;white-space:nowrap;max-width:85%;overflow:hidden;text-overflow:ellipsis}
-.lc-owner-name{color:#fff;font-size:10px;font-weight:900;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.lc-owner-badge{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;background:rgba(255,217,74,.18);padding:2px 10px;border-radius:8px;border:1px solid rgba(255,217,74,.35);font-size:10px;font-weight:900;color:#ffd94a;white-space:nowrap;max-width:90%;overflow:hidden}
+.lc-owner-badge.rank-staff{background:rgba(156,39,176,.25);border-color:rgba(206,147,216,.6);color:#e1bee7}
+.lc-owner-name{color:#fff;font-size:10px;font-weight:900;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.rank-tick{width:14px;height:14px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))}
+.rank-tick-inline{display:inline-block;width:13px;height:13px;margin:0 3px;vertical-align:middle;object-fit:contain}
+.rank-halo{position:relative;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:8px;background:radial-gradient(circle at center,rgba(156,39,176,.35),transparent 70%);box-shadow:0 0 8px rgba(156,39,176,.7),0 0 16px rgba(156,39,176,.4);border:1px solid rgba(206,147,216,.5)}
+.clan-tag{font-size:9px;font-weight:900;padding:2px 7px;border-radius:6px;color:#fff;white-space:nowrap}
+.clan-tag.owner{background:linear-gradient(180deg,#ffd700,#b38600);color:#3a2400;box-shadow:0 0 6px rgba(255,215,0,.6)}
+.clan-tag.deputy{background:linear-gradient(180deg,#42a5f5,#1565c0);box-shadow:0 0 6px rgba(66,165,245,.6)}
+.clan-tag.member{background:linear-gradient(180deg,#66bb6a,#2e7d32);box-shadow:0 0 6px rgba(102,187,106,.5)}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:130px;gap:10px}
 .empty-text{color:#fff;font-size:20px;font-weight:900;text-shadow:0 2px 6px rgba(0,0,0,.95)}
 .empty-sub{color:rgba(255,255,255,.6);font-size:13px;font-weight:700;text-align:center}
 
-/* ====== دایره‌های اتاق - تمیز ====== */
-.room-grid{flex:1;position:relative;min-height:0;overflow:hidden;padding:14px 8px 6px;display:flex;flex-direction:column;justify-content:space-evenly;z-index:2}
-.room-grid .row{direction:ltr;display:flex;justify-content:space-between;align-items:flex-start;width:100%}
-.room-grid .row.observers{justify-content:center;gap:24px}
-.slot-wrap{width:calc(50% - 12px);max-width:130px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.slot{position:relative;width:clamp(54px, 11vh, 82px);height:clamp(54px, 11vh, 82px);border-radius:50%;background:linear-gradient(180deg,rgba(167,186,196,.35),rgba(132,176,191,.35) 27%,rgba(2,88,163,.5));box-shadow:0 3px 0 #050d18,inset 0 2px 4px rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible}
-.slot:active{transform:scale(.95)}
+/* ====== ROOM GRID ====== */
+.room-grid{flex:1;position:relative;min-height:0;overflow:hidden;padding:12px 6px 4px;display:flex;flex-direction:column;justify-content:space-evenly;z-index:2;gap:2px}
+.room-grid .row{direction:ltr;display:flex;justify-content:space-between;align-items:flex-start;width:100%;gap:4px}
+.room-grid .row.observers{justify-content:center;gap:22px}
+.slot-wrap{flex:1;max-width:calc(50% - 2px);display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.slot{position:relative;width:min(15vw,12vh,72px);height:min(15vw,12vh,72px);min-width:44px;min-height:44px;border-radius:50%;background:linear-gradient(180deg,rgba(167,186,196,.35),rgba(132,176,191,.35) 27%,rgba(2,88,163,.5));box-shadow:0 3px 0 #050d18,inset 0 2px 4px rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible;transition:transform .15s}
+.slot:active{transform:scale(.94)}
 .slot.filled{background:linear-gradient(180deg,#3a5a8f,#24375a)}
-.slot.observer{background:linear-gradient(180deg,rgba(100,47,168,.5),rgba(60,20,120,.5));border-color:rgba(255,215,0,.4)}
+.slot.observer{background:linear-gradient(180deg,rgba(100,47,168,.55),rgba(60,20,120,.55));border-color:rgba(255,215,0,.45)}
 .slot.observer.filled{border-style:solid}
 .slot.glow-green{box-shadow:0 3px 0 #050d18,0 0 12px rgba(76,175,80,.7),0 0 0 2px #4CAF50}
 .slot.glow-red{box-shadow:0 3px 0 #050d18,0 0 12px rgba(244,67,54,.7),0 0 0 2px #f44336}
 .slot .avatar-mini{width:100%;height:100%;border-radius:50%;object-fit:cover;position:absolute;inset:0}
-.slot .avatar-letter{width:100%;height:100%;border-radius:50%;background:#1a2946;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:clamp(18px,3.5vh,26px);position:absolute;inset:0}
+.slot .avatar-letter{width:100%;height:100%;border-radius:50%;background:#1a2946;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:min(5vw,4vh,22px);position:absolute;inset:0}
 .slot video.avatar-mini{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
-.slot .num{position:absolute;top:-7px;left:-7px;width:24px;height:24px;background:linear-gradient(180deg,#a677ed,#642fa8);border-radius:50%;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 #3d1a6b;border:1px solid rgba(255,255,255,.2);z-index:2}
+.slot .num{position:absolute;top:-6px;left:-6px;width:min(6vw,4vh,24px);height:min(6vw,4vh,24px);min-width:18px;min-height:18px;background:linear-gradient(180deg,#a677ed,#642fa8);border-radius:50%;color:#fff;font-size:min(3vw,1.7vh,11px);font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 #3d1a6b;border:1px solid rgba(255,255,255,.2);z-index:2}
 .slot.observer .num{background:linear-gradient(180deg,#ffc107,#b38600);box-shadow:0 2px 0 #6b4f00}
-.slot .name{direction:rtl;font-size:clamp(10px,1.5vh,12px);color:#bcd0ee;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.7);max-width:100%}
+.slot .name{direction:rtl;font-size:min(3.2vw,1.6vh,11px);color:#bcd0ee;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.7);max-width:100%;display:flex;align-items:center;justify-content:center;gap:2px}
 .slot .name.me{color:#ffd94a}
 .slot .name.staff{color:#ce93d8}
 .slot .name.manager{color:#ffd700}
+.slot .name .nm-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
 
-/* voice indicator (فقط هنگام صحبت) */
-.voice-indicator{position:absolute;width:22px;height:22px;top:-8px;right:-8px;display:none;align-items:center;justify-content:center;z-index:15;background:rgba(15,173,7,.9);border-radius:50%;border:2px solid #81c784;box-shadow:0 0 10px rgba(15,173,7,.9);font-size:12px;color:#fff}
+.staff-halo{position:relative}
+.staff-halo::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle,rgba(156,39,176,.55),transparent 70%);z-index:-1;animation:haloPulse 2s ease-in-out infinite}
+@keyframes haloPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+
+.voice-indicator{position:absolute;width:min(5vw,3.5vh,22px);height:min(5vw,3.5vh,22px);min-width:16px;min-height:16px;top:-8px;right:-8px;display:none;align-items:center;justify-content:center;z-index:15;background:rgba(15,173,7,.9);border-radius:50%;border:2px solid #81c784;box-shadow:0 0 10px rgba(15,173,7,.9);font-size:min(3vw,1.8vh,12px);color:#fff}
 .voice-indicator.speaking{display:flex;animation:pulseV .8s ease-in-out infinite}
 @keyframes pulseV{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-.disconnected-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);border-radius:50%;display:none;align-items:center;justify-content:center;z-index:12;font-size:22px;font-weight:900;color:#f44336}
+.disconnected-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);border-radius:50%;display:none;align-items:center;justify-content:center;z-index:12;font-size:min(6vw,4vh,24px);font-weight:900;color:#f44336}
 .disconnected-overlay.show{display:flex}
 .reaction-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;display:none;align-items:center;justify-content:center;z-index:50;pointer-events:none}
 .reaction-overlay.show{display:flex;animation:reactionFade 4s ease-out forwards}
 .reaction-overlay img{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.7))}
 @keyframes reactionFade{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}14%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(.7)}}
 
-/* ====== مودال‌ها ====== */
+/* ====== MODALS ====== */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .overlay.active{display:flex}
 .modal{background:linear-gradient(180deg,#2a3d5e 0%,#1e3055 40%,#152238 100%);border-radius:20px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;padding:24px 18px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.75)}
@@ -164,7 +172,6 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .ns-status{font-size:9px;font-weight:900;padding:2px 8px;border-radius:6px;width:fit-content}
 .ns-status.active{background:linear-gradient(178deg,#0fad07,#084001);color:#fff}
 .ns-status.pending{background:linear-gradient(178deg,#ffb300,#b36b00);color:#fff}
-.ns-edit{width:38px;height:38px;border-radius:11px;border:2px solid #fff;cursor:pointer;background:linear-gradient(180deg,#0fad07,#084001);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
 .tab-row{display:flex;gap:6px;background:rgba(0,0,0,.3);border-radius:12px;padding:4px;margin-bottom:14px;flex-wrap:wrap}
 .tab-btn{flex:1;min-width:70px;height:38px;border:none;border-radius:9px;cursor:pointer;font-size:11px;font-weight:900;color:rgba(255,255,255,.6);background:transparent;padding:0}
 .tab-btn.active{background:linear-gradient(180deg,#4a9eff,#1565c0);color:#fff}
@@ -176,15 +183,14 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .edit-input{width:100%;padding:10px;border:2px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.1);color:white;font-size:16px;outline:none;margin-top:4px;font-family:inherit}
 .toast-msg{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#296187,#074461);color:#fff;padding:12px 24px;border-radius:14px;font-size:13px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.6);text-align:center;max-width:85%}
 
-/* پروفایل */
-.profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1500;display:none;padding:14px}
+.profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:1500;padding:14px}
 .profile-overlay.active{display:flex}
 .profile-box{position:relative;width:100%;max-width:360px;max-height:88vh;overflow-y:auto;background:linear-gradient(180deg,#3278a8,#1e5580 40%,#0f3d5e);border-radius:24px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 2px rgba(255,255,255,.1)}
 .pm-close{position:absolute;top:-12px;left:-12px;width:38px;height:38px;border-radius:50%;background:linear-gradient(180deg,#d32f2f,#7f1a1a);border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900;z-index:10}
 .pm-title{text-align:center;color:#fff;font-size:19px;font-weight:900;padding:2px 0 12px}
 .pm-dark-box{background:#172c3b;border-radius:14px;padding:14px 12px;margin-bottom:10px}
 .pm-avatar-wrap{position:relative;width:118px;height:118px;margin:0 auto}
-.pm-avatar-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;object-fit:cover;border-radius:14%!important;z-index:1;background:#1a2946}
+.pm-avatar-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;object-fit:cover;border-radius:50%;z-index:1;background:#1a2946}
 .pm-name-text{font-size:22px;font-weight:900;color:#fff;text-align:center;text-shadow:0 3px 6px rgba(0,0,0,.85);display:block;margin-top:12px}
 .pm-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
 .pm-stat-square{aspect-ratio:1;background:linear-gradient(180deg,#b28df0,#7a45c9 50%,#5a2a9e);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;box-shadow:0 2px 0 #2a0f52}
@@ -219,6 +225,21 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 .server-down.show{display:flex}
 .server-down-title{color:#ff6b6b;font-size:28px;font-weight:900}
 .server-down-text{color:rgba(255,255,255,.85);font-size:15px;line-height:2}
+
+@media (max-height:640px){
+  .top-bar{height:56px}
+  .top-bar .main{height:52px}
+  .menu-panel{height:72px}
+  .circle-btn{width:46px;height:46px}
+  .circle-btn img{width:26px;height:26px}
+  .circle-btn.small{width:42px;height:42px}
+  .circle-btn.small img{width:22px;height:22px}
+  .ready-btn{min-width:96px;height:50px;font-size:13px}
+  .add-btn,.admin-panel-btn{width:50px;height:50px}
+  .add-btn svg{width:26px;height:26px}
+  .icon-btn{width:40px;height:40px;font-size:10px}
+  .back-btn{width:40px;height:40px;font-size:20px}
+}
 </style>
 </head>
 <body>
@@ -226,7 +247,6 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 <div class="bg-list" id="bgList"></div>
 <div class="bg-room" id="bgRoom"></div>
 
-<!-- لیست لابی -->
 <div class="view active" id="viewList">
   <div class="top-bar">
     <div class="shadow"></div>
@@ -238,17 +258,17 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
       </div>
     </div>
   </div>
-  <div class="lobbies-list" id="roomsList"></div>
+  <div class="lobbies-list" id="roomsList">
+    <div class="empty-state"><div class="empty-text">در حال بارگذاری...</div></div>
+  </div>
   <div class="bottom-menu">
     <div class="menu-panel" style="justify-content:space-between">
       <button class="admin-panel-btn" id="btnCreatorPanel">پنل</button>
-      <button class="fab fab-refresh" id="refreshListBtn"><span>⟳</span></button>
       <button class="add-btn" id="openCreateBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
     </div>
   </div>
 </div>
 
-<!-- اتاق -->
 <div class="view" id="viewRoom">
   <div class="top-bar">
     <div class="shadow"></div>
@@ -256,6 +276,7 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
       <button class="back-btn" id="roomBackBtn">→</button>
       <button class="icon-btn home-btn" id="homeRoomBtn"><div class="home-ico"></div></button>
       <div class="room-title" id="roomNameTop">-</div>
+      <button class="icon-btn start-top-btn hidden" id="btnStartTop">▶ شروع</button>
       <button class="icon-btn settings-btn hidden" id="btnManagerSettings"><div class="gear-ico"></div></button>
     </div>
   </div>
@@ -267,12 +288,11 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
   <div class="bottom-menu">
     <div class="menu-panel">
       <div id="bottomLeftArea" style="display:flex;align-items:center;gap:8px"></div>
-      <div style="display:flex;align-items:center;gap:7px">
+      <div style="display:flex;align-items:center;gap:6px">
         <button class="circle-btn small dislike-circ" id="dislikeBtn"><img src="dislike2.png" alt="" onerror="this.style.display='none'"></button>
         <button class="circle-btn small like-circ" id="likeBtn"><img src="like2.png" alt="" onerror="this.style.display='none'"></button>
         <button class="circle-btn mic-circ" id="micBtn"><img src="1008.png" alt="" onerror="this.style.display='none'"></button>
-        <button class="circle-btn" id="emojiBtn"><img src="Imo1.webp" alt="" onerror="this.style.display='none'"></button>
-        <button class="circle-btn chat-circ" id="chatBtn"><div class="chat-ico"></div></button>
+        <button class="circle-btn" id="chatBtn"><div class="chat-ico"></div></button>
       </div>
     </div>
   </div>
@@ -291,7 +311,6 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
   </div>
 </div>
 
-<!-- مودال ساخت لابی -->
 <div class="overlay" id="createModal"><div class="modal">
   <div class="modal-close" id="closeCreateBtn">×</div>
   <div class="modal-title">ایجاد لابی مافیاسان</div>
@@ -386,7 +405,7 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
       <div class="pm-user-role"><span>نوع کاربری :</span><span id="ppRoleText">کاربر عادی</span></div>
       <div class="pm-info-row">
         <div class="pm-info-box">کد : <span id="ppUserCode">---</span></div>
-        <div class="pm-info-box">کلن : <span>به زودی</span></div>
+        <div class="pm-info-box">کلن : <span id="ppClanText">-</span></div>
       </div>
     </div>
   </div>
@@ -401,11 +420,11 @@ input,textarea,select{-webkit-user-select:text!important;user-select:text!import
 
 <script>
 "use strict";
-/* ============ Agora Lazy Load ============ */
-let agoraLoaded=false;
-function loadAgora(){return new Promise(res=>{if(window.AgoraRTC){agoraLoaded=true;return res(true)}const s=document.createElement('script');s.src='https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js';s.onload=()=>{agoraLoaded=true;res(true)};s.onerror=()=>res(false);document.head.appendChild(s)})}
 
-/* ============ Config ============ */
+/* ============ State ============ */
+let agoraLoaded=false;
+function loadAgora(){return new Promise(res=>{if(window.AgoraRTC)return res(true);if(agoraLoaded){let t=0;const i=setInterval(()=>{if(window.AgoraRTC||t++>50){clearInterval(i);res(!!window.AgoraRTC)}},100);return}agoraLoaded=true;const s=document.createElement('script');s.src='https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js';s.async=true;s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s)})}
+
 const UPSTASH_URL="https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_TOKEN="gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const CREATOR_PHONE='09904844031';
@@ -443,6 +462,7 @@ const saveReqs=r=>httpSet(REQ_KEY,r);
 const getReports=async()=>(await httpGet(REPORT_KEY))||[];
 const saveReports=r=>httpSet(REPORT_KEY,r);
 const getMaintenance=()=>httpGet('server_maintenance');
+const getGroups=async()=>(await httpGet('police_groups'))||[];
 async function getBan(p){const b=await httpGet('ban:'+p);if(b&&b.isBanned){if(b.expiresAt&&b.duration!=='permanent'&&new Date(b.expiresAt).getTime()<Date.now())return null;return b}return null}
 
 const RANK_LEVEL={'کاربر':0,'ناظر':1,'ناظر ارشد':2,'ادمین':3,'ادمین ارشد':4,'گرداننده':5,'پشتیبانی':6,'سازنده':7};
@@ -456,20 +476,51 @@ function getPanelTabs(r){
   return[{id:'names',l:'تأیید نام'},{id:'users',l:'کاربران'},{id:'lobbies',l:'لابی‌ها'},{id:'lobby_approvals',l:'تأیید لابی'},{id:'reports',l:'گزارش‌ها'}];
 }
 
+function getRoleTick(rank){if(!rank)return null;const r=String(rank).trim();if(r==='سازنده'||r==='پشتیبانی')return['Tik1.png'];if(r==='ادمین ارشد')return['Tik1000.png'];if(r==='ادمین')return['Tik2.png'];if(r==='گرداننده')return['Tik3.png'];if(r==='ناظر'||r==='ناظر ارشد')return['TIK4.png','Tik4.png'];return null}
+function tickImgHtml(rank,cls){const t=getRoleTick(rank);if(!t)return '';return '<img class="'+(cls||'rank-tick')+'" src="'+t[0]+'" onerror="this.onerror=null;if(this.src.indexOf(\''+t[0]+'\')>-1&&\''+(t[1]||'')+'\')this.src=\''+(t[1]||t[0])+'\';else this.style.display=\'none\'">'}
+
 let me=null, allRoomsCache={}, currentRoomId=null, listTimer=null, roomTimer=null, liveSyncTimer=null;
 let selectedName='', passOn=false, editMode='add', editIndex=-1;
 let banTarget=null, reportTarget=null, ctab='names', overlayShown=false;
+let usersCache={ts:0,data:{}}, groupsCache={ts:0,data:[]};
+let clanRoleCache={};
 
 const $=id=>document.getElementById(id);
 const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
 const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-let usersCache={ts:0,data:{}};
-async function getUsersCached(f){const n=Date.now();if(f||n-usersCache.ts>2000){usersCache={ts:n,data:await getAllUsers()}}return usersCache.data}
+async function getUsersCached(f){const n=Date.now();if(f||n-usersCache.ts>2500){usersCache={ts:n,data:await getAllUsers()}}return usersCache.data}
+async function getGroupsCached(f){const n=Date.now();if(f||n-groupsCache.ts>5000){groupsCache={ts:n,data:await getGroups()}}return groupsCache.data}
+
+async function getClanInfo(phone){
+  if(clanRoleCache[phone]!==undefined)return clanRoleCache[phone];
+  const gs=await getGroupsCached();
+  for(const g of gs){
+    if(!g)continue;
+    if(g.owner===phone){clanRoleCache[phone]={tag:g.tag||g.name,role:'owner',name:g.name};return clanRoleCache[phone]}
+    if(g.members&&g.members.includes(phone)){
+      const r=(g.deputies&&g.deputies.includes(phone))?'deputy':'member';
+      clanRoleCache[phone]={tag:g.tag||g.name,role:r,name:g.name};return clanRoleCache[phone]
+    }
+  }
+  clanRoleCache[phone]=null;return null;
+}
+
+function clanTagHtml(info){
+  if(!info)return '';
+  const cls=info.role==='owner'?'owner':(info.role==='deputy'?'deputy':'member');
+  const lbl=info.role==='owner'?('لیدر '+esc(info.tag)):(info.role==='deputy'?('معاون '+esc(info.tag)):esc(info.tag));
+  return '<span class="clan-tag '+cls+'">'+lbl+'</span>';
+}
 
 /* ============ Init ============ */
 async function boot(){
-  try{const m=await getMaintenance();const lg=localStorage.getItem('currentLoggedInUser');const ph=lg?JSON.parse(lg).phone:null;if(m&&m.on&&ph!==CREATOR_PHONE){$('serverDown').classList.add('show');return}}catch(e){}
+  try{
+    const m=await getMaintenance();
+    const lg=localStorage.getItem('currentLoggedInUser');
+    const ph=lg?JSON.parse(lg).phone:null;
+    if(m&&m.on&&ph!==CREATOR_PHONE){$('serverDown').classList.add('show');return}
+  }catch(e){}
   const lg=localStorage.getItem('currentLoggedInUser');
   if(!lg){location.href='TalarDs.html';return}
   const phone=JSON.parse(lg).phone;
@@ -477,11 +528,11 @@ async function boot(){
   if(ban){location.href='Ban.html';return}
   const u=await getUser(phone);
   if(!u){location.href='TalarDs.html';return}
-  const au=await getAllUsers();
-  if(!au[phone]){au[phone]=u;saveAllUsers(au)}
   me={phone,name:u.name||'کاربر',avatar:u.avatar||'Mafia2.png',rank:u.rank||'کاربر',coins:u.coins||0};
   if(canAccessPanel(me.rank))$('btnCreatorPanel').classList.add('show');
   startListView();
+  const au=await getAllUsers();
+  if(!au[phone]){au[phone]=u;saveAllUsers(au)}
 }
 
 function startListView(){
@@ -495,9 +546,7 @@ function startListView(){
 }
 
 async function refreshList(){
-  $('refreshListBtn').classList.add('spinning');
   allRoomsCache=await getRooms();
-  $('refreshListBtn').classList.remove('spinning');
   renderList();
 }
 
@@ -509,7 +558,10 @@ function renderList(){
   let h='';
   rooms.forEach(r=>{
     const pc=Object.keys(r.seats||{}).length+Object.keys(r.bots||{}).length;
-    h+='<div class="lobby-card"><div class="lc-left"><div class="lc-name-row"><span class="lc-name-tag">لابی</span><span class="lc-name">'+esc(r.name)+'</span></div><div class="lc-code">کد: '+esc(r.code||'---')+'</div></div><div class="lc-divider"></div><div class="lc-right"><div class="lc-top-row"><span class="lc-counter">'+toFa(pc)+'/۱۰</span>'+(r.password?'<img class="lc-lock" src="Go1.webp" onerror="this.style.display=\'none\'">':'')+'</div><button class="lc-join" data-join="'+r.id+'">پیوستن</button></div><div class="lc-owner-badge"><span>👑</span><span class="lc-owner-name">'+esc(r.creatorName||'مالک')+'</span></div></div>';
+    const rk=r.creatorRank||'کاربر';
+    const isStaffUser=rk!=='کاربر';
+    const tick=tickImgHtml(rk,'rank-tick');
+    h+='<div class="lobby-card"><div class="lc-left"><div class="lc-name-row"><span class="lc-name-tag">لابی</span><span class="lc-name">'+esc(r.name)+'</span></div><div class="lc-code">کد: '+esc(r.code||'---')+'</div></div><div class="lc-divider"></div><div class="lc-right"><div class="lc-top-row"><span class="lc-counter">'+toFa(pc)+'/۱۰</span>'+(r.password?'<img class="lc-lock" src="Go1.webp" onerror="this.style.display=\'none\'">':'')+'</div><button class="lc-join" data-join="'+r.id+'">پیوستن</button></div><div class="lc-owner-badge '+(isStaffUser?'rank-staff':'')+'"><span>👑</span>'+(isStaffUser?'<span class="rank-halo"><span class="lc-owner-name">'+esc(r.creatorName||'مالک')+'</span>'+tick+'</span>':'<span class="lc-owner-name">'+esc(r.creatorName||'مالک')+'</span>')+'</div></div>';
   });
   list.innerHTML=h;
   list.querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{playClick();joinRoom(b.dataset.join)});
@@ -544,7 +596,7 @@ async function createRoom(){
   const pass=passOn?$('lobbyPassInput').value.trim():null;
   if(passOn&&!pass){showModal('⚠️','رمز حداقل ۲ کاراکتر');return}
   const id='R'+Date.now();
-  rs[id]={id,name:selectedName,managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{},ghost:[],blocked:[],kicked:{},status:'waiting',createdAt:Date.now()};
+  rs[id]={id,name:selectedName,code:String(Math.floor(1000+Math.random()*9000)),managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{},ghost:[],blocked:[],kicked:{},status:'waiting',createdAt:Date.now()};
   await saveRooms(rs);
   await setLive(id,{seats:{1:me.phone},supers:{},ready:{},reactions:{},chat:[]});
   $('createModal').classList.remove('active');
@@ -577,7 +629,6 @@ async function refreshRoom(){
   renderRoom(r,u);
 }
 
-/* ============ Render Room ============ */
 async function renderRoom(room,allUsers){
   $('roomNameTop').textContent=room.name;
   const pb=$('pendingBanner');pb.innerHTML=room.status==='pending'?'<div class="pending-banner">در انتظار تأیید</div>':'';
@@ -586,10 +637,24 @@ async function renderRoom(room,allUsers){
   const canSettings=isMgr||myLvl>=RANK_LEVEL['گرداننده'];
   $('btnManagerSettings').classList.toggle('hidden',!canSettings);
 
+  const hum=Object.values(room.seats||{}).filter(Boolean);
+  const bots=Object.keys(room.bots||{}).length;
+  const tot=hum.length+bots;
+  const allRdy=hum.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
+  const startBtn=$('btnStartTop');
+  if(isMgr){
+    startBtn.classList.remove('hidden');
+    if(tot>=MAX_PLAYERS&&allRdy){startBtn.classList.remove('disabled');startBtn.innerHTML='▶ شروع';startBtn.onclick=()=>{playClick();startGame()}}
+    else{startBtn.classList.add('disabled');startBtn.innerHTML='شروع ('+toFa(tot)+'/۱۰)'}
+  }else{startBtn.classList.add('hidden')}
+
   const allP=new Set();
   Object.values(room.seats||{}).forEach(p=>{if(p)allP.add(p)});
   Object.values(room.supers||{}).forEach(p=>{if(p)allP.add(p)});
   for(const ph of allP){if(!allUsers[ph]){const u=await getUser(ph);if(u)allUsers[ph]=u}}
+
+  const clanMap={};
+  for(const ph of allP){clanMap[ph]=await getClanInfo(ph)}
 
   function slotHtml(type,idx,phone){
     const isSup=type==='super';
@@ -599,20 +664,28 @@ async function renderRoom(room,allUsers){
     let av='<div class="avatar-letter">'+num+'</div>';
     let nm='خالی';
     let nmCls='';
+    let tick='';
+    let clanTag='';
+    let halo=false;
     if(phone){
       dp=' data-phone="'+phone+'"';
       const u=allUsers[phone]||{name:'کاربر',avatar:'Mafia2.png',rank:'کاربر'};
       const ready=(phone===room.managerPhone)?true:((room.ready||{})[phone]===true);
+      const isRanked=u.rank&&u.rank!=='کاربر';
       cls+=' filled '+(ready?'glow-green':'glow-red');
-      if(phone===room.managerPhone)nmCls='manager';else if(u.rank&&u.rank!=='کاربر')nmCls='staff';if(phone===me.phone)nmCls+=' me';
+      if(phone===room.managerPhone)nmCls='manager';else if(isRanked)nmCls='staff';
+      if(phone===me.phone)nmCls+=' me';
       nm=esc(u.name||'کاربر')+(phone===me.phone?' (شما)':'');
+      if(isRanked){halo=true;tick=tickImgHtml(u.rank)}
+      const ci=clanMap[phone];
+      if(ci)clanTag=clanTagHtml(ci);
       if(u.avatar){
         const av2=u.avatar;
         if(av2.endsWith('.webm')||av2.endsWith('.mp4')){av='<video class="avatar-mini" src="'+esc(av2)+'" autoplay muted loop playsinline></video>'}
         else{av='<img class="avatar-mini" src="'+esc(av2)+'" onerror="this.outerHTML=\'<div class=&quot;avatar-letter&quot;>'+esc((u.name||'؟').charAt(0))+'</div>\'">'}
       }else{av='<div class="avatar-letter">'+esc((u.name||'؟').charAt(0))+'</div>'}
     }
-    return '<div class="slot-wrap" data-slot-wrap-idx="'+idx+'" data-slot-wrap-type="'+type+'"><div class="'+cls+'" data-slot-type="'+type+'" data-slot-idx="'+idx+'"'+dp+'><div class="num">'+num+'</div>'+av+'<div class="voice-indicator">🎤</div><div class="disconnected-overlay">!</div></div><div class="name '+nmCls+'">'+nm+'</div></div>';
+    return '<div class="slot-wrap"><div class="'+cls+(halo?' staff-halo':'')+'" data-slot-type="'+type+'" data-slot-idx="'+idx+'"'+dp+'><div class="num">'+num+'</div>'+av+'<div class="voice-indicator">🎤</div><div class="disconnected-overlay">!</div></div><div class="name '+nmCls+'"><span class="nm-text">'+nm+'</span>'+tick+clanTag+'</div></div>';
   }
 
   const s1=slotHtml('super',1,room.supers&&room.supers[1]);
@@ -633,15 +706,6 @@ async function renderRoom(room,allUsers){
     rb.textContent=rdy?'آماده‌ام':'آماده نیستم';
     rb.onclick=()=>{playClick();toggleReady()};
     bl.appendChild(rb);
-  }else{
-    const hum=Object.values(room.seats||{}).filter(Boolean);
-    const bots=Object.keys(room.bots||{}).length;
-    const tot=hum.length+bots;
-    const allRdy=hum.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
-    const sb=document.createElement('button');
-    if(tot>=MAX_PLAYERS&&allRdy){sb.className='ready-btn start';sb.textContent='▶ شروع بازی';sb.onclick=()=>{playClick();startGame()}}
-    else{sb.className='ready-btn disabled';sb.textContent='شروع ('+toFa(tot)+'/۱۰)'}
-    bl.appendChild(sb);
   }
 }
 
@@ -655,9 +719,9 @@ async function updateRoom(fn){
 async function tapSeat(i){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  const ph=r.seats[i],my=mySeat(r);
+  const ph=r.seats[i],bot=r.bots[i],my=mySeat(r);
   const isMgr=r.managerPhone===me.phone;
-  const myLvl=RANK_LEVEL[me.rank]||0;
+  if(bot){if(isMgr){if(confirm('بات حذف شود؟')){delete r.bots[i];await saveRooms(rs);refreshRoom()}}return}
   if(my){if(ph)openUserMenu({phone:ph});return}
   if(ph){openUserMenu({phone:ph});return}
   r.seats[i]=me.phone;await saveRooms(rs);refreshRoom();
@@ -687,7 +751,8 @@ async function toggleReady(){
 async function startGame(){
   await updateRoom(r=>{
     const hum=Object.values(r.seats||{}).filter(Boolean);
-    if(hum.length<MAX_PLAYERS)return;
+    const bots=Object.keys(r.bots||{}).length;
+    if(hum.length+bots<MAX_PLAYERS)return;
     for(const p of hum){if(p!==r.managerPhone&&!((r.ready||{})[p]===true))return}
     r.status='playing';
   });
@@ -754,7 +819,10 @@ async function setSuper(t,n){
 
 async function openProfile(t){
   const au=await getUsersCached();const u=au[t.phone]||{};
-  $('profileBody').innerHTML='<div style="text-align:center;font-size:18px;font-weight:900;color:#fff;margin-bottom:12px">'+esc(u.name||'کاربر')+'</div><div class="row-item"><b>کد:</b><span style="direction:ltr">'+esc(u.userCode||'----')+'</span></div><div class="row-item"><b>مقام:</b> '+esc(u.rank||'کاربر')+'</div><div class="row-item"><b>امتیاز:</b> '+toFa(u.score||0)+'</div><div class="row-item"><b>سطح:</b> '+toFa(u.level||1)+'</div>';
+  const ci=await getClanInfo(t.phone);
+  const clanTxt=ci?(ci.role==='owner'?'لیدر ':ci.role==='deputy'?'معاون ':'عضو ')+ci.name:'-';
+  const tick=tickImgHtml(u.rank,'rank-tick-inline');
+  $('profileBody').innerHTML='<div style="text-align:center;font-size:18px;font-weight:900;color:#fff;margin-bottom:12px">'+esc(u.name||'کاربر')+tick+'</div><div class="row-item"><b>کد:</b> <span style="direction:ltr">'+esc(u.userCode||'----')+'</span></div><div class="row-item"><b>مقام:</b> '+esc(u.rank||'کاربر')+'</div><div class="row-item"><b>کلن:</b> '+esc(clanTxt)+'</div><div class="row-item"><b>امتیاز:</b> '+toFa(u.score||0)+'</div><div class="row-item"><b>سطح:</b> '+toFa(u.level||1)+'</div>';
   $('profileModal').classList.add('active');
 }
 
@@ -772,16 +840,20 @@ async function sendReport(){
 async function openManager(){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  const isC=me.phone===CREATOR_PHONE;const myLvl=RANK_LEVEL[me.rank]||0;
+  const isMgr=r.managerPhone===me.phone;
+  const isC=me.phone===CREATOR_PHONE;
+  const myLvl=RANK_LEVEL[me.rank]||0;
   let h='';
   const hum=Object.values(r.seats||{}).filter(Boolean);
   const bots=Object.keys(r.bots||{}).length;
   const tot=hum.length+bots;
-  if(tot<MAX_PLAYERS)h+='<button class="btn-select" id="mgAddBot" style="background:linear-gradient(180deg,#9c27b0,#7b1fa2);box-shadow:0 4px 0 #3d1050;margin-bottom:8px">➕ افزودن بات</button>';
+  if((isMgr||isC)&&tot<MAX_PLAYERS)h+='<button class="btn-select" id="mgAddBot" style="background:linear-gradient(180deg,#9c27b0,#7b1fa2);box-shadow:0 4px 0 #3d1050;margin-bottom:8px">➕ افزودن بات</button>';
+  if(bots>0&&(isMgr||isC))h+='<button class="btn-red" id="mgRemoveBot" style="margin-bottom:8px">➖ حذف بات</button>';
   if(isC||myLvl>=RANK_LEVEL['گرداننده'])h+='<button class="btn-red" id="mgDelete" style="margin-top:8px">🗑 حذف لابی</button>';
   $('managerBody').innerHTML=h||'<div class="no-pending">گزینه‌ای نیست</div>';
   $('managerModal').classList.add('active');
   const ab=$('mgAddBot');if(ab)ab.onclick=async()=>{await updateRoom(rr=>{let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&!rr.bots[x]){f=x;break}}if(!f)return;rr.bots[f]={name:'بات'}});$('managerModal').classList.remove('active');refreshRoom()};
+  const rb=$('mgRemoveBot');if(rb)rb.onclick=async()=>{await updateRoom(rr=>{const keys=Object.keys(rr.bots||{});if(!keys.length)return;delete rr.bots[keys[0]]});$('managerModal').classList.remove('active');refreshRoom()};
   const db=$('mgDelete');if(db)db.onclick=async()=>{const reason=prompt('دلیل حذف:');if(reason===null)return;await updateRoom(rr=>{rr.status='deleted';rr.deleteReason=reason});await deleteLive(currentRoomId);currentRoomId=null;stopTimers();disconnectVoice();$('managerModal').classList.remove('active');startListView()};
 }
 
@@ -844,13 +916,13 @@ async function renderCTab(){
     const au=await getUsersCached(true);
     const allE=Object.entries(au);
     let h='<div style="color:#7ec3f0;font-size:11px;margin-bottom:8px">کل: '+toFa(allE.length)+'</div>';
-    allE.slice(0,50).forEach(([p,u])=>{h+='<div class="row-item"><b>'+esc(u.name||'کاربر')+'</b><br><span style="direction:ltr;font-size:10px">'+esc(p)+'</span><br>'+esc(u.rank||'کاربر')+'<div class="acts"><button style="background:#2a7fb8" data-ued="'+p+'">ویرایش</button><button style="background:#d32f2f" data-uban="'+p+'">بن</button></div></div>'});
+    allE.slice(0,50).forEach(([p,u])=>{h+='<div class="row-item"><b>'+esc(u.name||'کاربر')+'</b> '+tickImgHtml(u.rank,'rank-tick-inline')+'<br><span style="direction:ltr;font-size:10px">'+esc(p)+'</span><br>'+esc(u.rank||'کاربر')+'<div class="acts"><button style="background:#2a7fb8" data-ued="'+p+'">ویرایش</button><button style="background:#d32f2f" data-uban="'+p+'">بن</button></div></div>'});
     body.innerHTML=h;
     body.querySelectorAll('[data-ued]').forEach(b=>b.onclick=()=>openAdminUser(b.dataset.ued));
     body.querySelectorAll('[data-uban]').forEach(b=>b.onclick=()=>openBanModal(b.dataset.uban));
   }
   if(ctab==='lobbies'){
-    const rooms=await getRooms();const au=await getUsersCached();
+    const rooms=await getRooms();
     const act=Object.values(rooms).filter(r=>r.status==='waiting');
     if(!act.length){body.innerHTML='<div class="no-pending">لابی‌ای نیست</div>';return}
     let h='';act.forEach(r=>{h+='<div class="row-item"><b style="color:#7ec3f0">'+esc(r.creatorName)+'</b> → <b>'+esc(r.name)+'</b><div class="acts"><button style="background:#d32f2f" data-ldel="'+r.id+'">حذف</button></div></div>'});
@@ -902,7 +974,7 @@ async function doBan(){
   $('banModal').classList.remove('active');renderCTab();
 }
 
-/* ============ Agora ============ */
+/* ============ Voice ============ */
 async function initVoice(){
   if(agoraClient||!currentRoomId||!me)return;
   if(micInitAttempted)return;
@@ -915,7 +987,7 @@ async function initVoice(){
     agoraClient.on("user-published",async(u,m)=>{try{await agoraClient.subscribe(u,m);if(m==="audio"&&u.audioTrack)u.audioTrack.play()}catch(e){}});
     agoraClient.enableAudioVolumeIndicator();
     agoraClient.on("volume-indicator",vols=>{speakingUids.clear();vols.forEach(v=>{if(v.level>15)speakingUids.add(String(v.uid))});updateSpeakingUI()});
-  }catch(e){console.error(e);micInitAttempted=false}
+  }catch(e){micInitAttempted=false}
 }
 async function toggleMic(){
   try{
@@ -958,7 +1030,6 @@ async function showReactionOnProfile(type){
     setTimeout(()=>ov.remove(),4000);
   }
 }
-
 async function syncLiveState(){
   if(!currentRoomId||overlayShown)return;
   const ld=await getLive(currentRoomId);
@@ -1003,7 +1074,6 @@ function showModal(icon,text){const el=document.createElement('div');el.classNam
 /* ============ Events ============ */
 function bindEvents(){
   $('searchInput').oninput=()=>renderList();
-  $('refreshListBtn').onclick=()=>{playClick();refreshList()};
   $('backBtn').onclick=()=>location.href='TalarDs.html';
   $('openCreateBtn').onclick=()=>{
     selectedName='';$('selectedNameLabel').textContent='انتخاب لابی';$('selectNameBtn').classList.remove('selected');
@@ -1042,7 +1112,6 @@ function bindEvents(){
   $('sendChat').onclick=sendChatMessage;
   $('chatInput').onkeypress=e=>{if(e.key==='Enter')sendChatMessage()};
   $('playerProfileCloseBtn').onclick=()=>$('playerProfileMenu').classList.remove('active');
-  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=function(){const m=$(this.dataset.close);m&&m.classList.remove('active')});
 }
 
 /* ============ Boot ============ */
