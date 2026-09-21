@@ -127,30 +127,31 @@
   .tool-ghost{background:linear-gradient(180deg,#9c27b0,#7b1fa2);}
   .tool-ghost.on{box-shadow:0 0 12px #b040ff;border-color:#ffd700;}
 
-  /* ==== ROOM BODY - NEW CIRCULAR LAYOUT ==== */
-  .room-body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:4px 2px 70px;}
+  /* ==== ROOM BODY - دایره‌ها بین نوار بالا و پایین ==== */
+  .room-body{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:4px 2px 0;min-height:0;}
   .lobby-layout{
     width:100%;height:100%;
     display:flex;flex-direction:column;justify-content:space-evenly;
-    padding:14px 10px 6px;
+    padding:8px 8px 4px;
   }
   .lobby-layout .row{
     direction:ltr;display:flex;justify-content:space-between;align-items:flex-start;width:100%;
   }
-  .lobby-layout .row.observers{justify-content:center;gap:20px;}
+  .lobby-layout .row.observers{justify-content:center;gap:18px;}
 
   .lobby-layout .slot-wrap{
-    width:110px;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:8px;
+    width:34%;max-width:130px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:6px;
   }
 
   .lobby-layout .slot{
     position:relative;
-    width:clamp(56px, 11.5vh, 88px);
-    height:clamp(56px, 11.5vh, 88px);
+    width:100%;
     aspect-ratio:1 / 1;
+    max-width:96px;
     border-radius:50%;
     background:#1d294f;
-    box-shadow: inset 0 6px 9px rgba(0,0,0,.45), 0 3px 8px rgba(0,0,0,.4);
+    box-shadow: inset 0 5px 8px rgba(0,0,0,.45), 0 3px 8px rgba(0,0,0,.4);
     flex-shrink:0;display:flex;align-items:center;justify-content:center;
     overflow:visible;
     cursor:pointer;
@@ -159,8 +160,8 @@
   .lobby-layout .slot.observer{background:#23315c;border:2px dashed rgba(255,215,0,.4);}
   .lobby-layout .slot.observer.filled{border-style:solid;background:linear-gradient(180deg,#4a3a7f,#24375a);}
   .lobby-layout .slot.observer .num{background:#5c4a8a;}
-  .lobby-layout .slot.glow-green{box-shadow:inset 0 6px 9px rgba(0,0,0,.45),0 0 12px rgba(76,175,80,.7),0 0 0 2px #4CAF50;}
-  .lobby-layout .slot.glow-red{box-shadow:inset 0 6px 9px rgba(0,0,0,.45),0 0 12px rgba(244,67,54,.7),0 0 0 2px #f44336;}
+  .lobby-layout .slot.glow-green{box-shadow:inset 0 5px 8px rgba(0,0,0,.45),0 0 12px rgba(76,175,80,.7),0 0 0 2px #4CAF50;}
+  .lobby-layout .slot.glow-red{box-shadow:inset 0 5px 8px rgba(0,0,0,.45),0 0 12px rgba(244,67,54,.7),0 0 0 2px #f44336;}
   .lobby-layout .slot.ghost-self{opacity:.55;border:2px dashed #4CAF50;}
 
   .lobby-layout .slot .avatar-mini{
@@ -170,7 +171,7 @@
   .lobby-layout .slot .avatar-mini-letter{
     width:100%;height:100%;border-radius:50%;
     background:#1a2946;display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:900;font-size:clamp(20px,4vh,30px);
+    color:#fff;font-weight:900;font-size:clamp(20px,4vh,32px);
     position:absolute;inset:0;
   }
   .lobby-layout .slot video.avatar-mini{
@@ -179,10 +180,10 @@
   }
 
   .lobby-layout .num{
-    position:absolute;top:-8px;left:-8px;
-    width:24px;height:24px;
+    position:absolute;top:-6px;left:-6px;
+    width:22px;height:22px;
     background:#304380;border-radius:50%;
-    color:#cddcf5;font-size:12px;font-weight:800;
+    color:#cddcf5;font-size:11px;font-weight:800;
     display:flex;align-items:center;justify-content:center;
     box-shadow: 0 2px 4px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.15);
     z-index:5;
@@ -190,7 +191,7 @@
   }
   .lobby-layout .name{
     direction:rtl;width:100%;
-    font-size:clamp(10px, 1.6vh, 13px);
+    font-size:11px;
     color:#bcd0ee;font-weight:700;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.7);
@@ -199,10 +200,9 @@
   .lobby-layout .name.staff{color:#ce93d8;}
   .lobby-layout .name.manager{color:#ffd700;}
 
-  /* voice indicator for new slot */
   .lobby-layout .slot .voice-indicator{
-    position:absolute;width:30px;height:30px;
-    top:-15px;right:-15px;
+    position:absolute;width:28px;height:28px;
+    top:-12px;right:-12px;
     display:none;align-items:center;justify-content:center;
     z-index:15;background:rgba(0,0,0,0.7);border-radius:50%;
     border:2px solid #4a9eff;overflow:hidden;
@@ -222,7 +222,7 @@
   }
   .lobby-layout .slot .disconnected-overlay.show{display:flex;animation:fadeIn 0.3s;}
   .lobby-layout .slot .disconnected-overlay .disconnected-icon{
-    width:32px;height:32px;
+    width:30px;height:30px;
     background:linear-gradient(180deg,#f44336,#d32f2f);
     border-radius:50%;display:flex;align-items:center;justify-content:center;
     box-shadow:0 0 20px rgba(244,67,54,.9);animation:pulse-red 1.5s infinite;
@@ -235,11 +235,11 @@
 
   .lobby-layout .slot .reaction-overlay{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:60px;height:60px;border-radius:50%;display:none;
+    width:56px;height:56px;border-radius:50%;display:none;
     align-items:center;justify-content:center;z-index:50;pointer-events:none;
   }
   .lobby-layout .slot .reaction-overlay.show{display:flex;animation:reactionFade 5s ease-out forwards;}
-  .lobby-layout .slot .reaction-overlay img,.lobby-layout .slot .reaction-overlay video{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.7));}
+  .lobby-layout .slot .reaction-overlay img,.lobby-layout .slot .reaction-overlay video{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.7));}
   @keyframes reactionFade{
     0%{opacity:0;transform:translate(-50%,-50%) scale(0.3);}
     5%{opacity:1;transform:translate(-50%,-50%) scale(1.15);}
@@ -248,21 +248,35 @@
     100%{opacity:0;transform:translate(-50%,-50%) scale(0.7);}
   }
 
-  /* ===== Bottom bar ===== */
-  .room-bottombar{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-top:2px solid #3f8fd4;display:flex;align-items:center;justify-content:space-between;padding:0 8px;z-index:20;}
+  /* ===== نوار پایین لابی (دکمه‌های دایره‌ای) ===== */
+  .room-bottombar{position:absolute;bottom:0;left:0;right:0;height:68px;background:linear-gradient(180deg,#2a5a8a,#1a3a5f);border-top:2px solid #3f8fd4;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:20;}
   .bottom-left{display:flex;align-items:center;gap:8px;}
-  .bottom-right{display:flex;align-items:center;gap:6px;}
-  .action-btn{width:40px;height:40px;border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.1);padding:0;}
-  .action-btn img{width:100%;height:100%;object-fit:contain;border-radius:10px;}
+  .bottom-right{display:flex;align-items:center;gap:7px;}
+
+  .action-btn{
+    width:48px;height:48px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all 0.2s;
+    background:linear-gradient(180deg,#3a6a9a,#1e4066);
+    padding:0;
+    box-shadow:0 3px 6px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.15);
+    flex-shrink:0;
+  }
+  .action-btn img{width:28px;height:28px;object-fit:contain;border-radius:50%;}
   .action-btn:active{transform:scale(0.9);}
   .action-btn.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none;}
-  .action-btn.small{width:34px;height:34px;}
+  .action-btn.small{width:44px;height:44px;}
+  .action-btn.small img{width:24px;height:24px;}
   .action-btn.mic-on{background:linear-gradient(180deg,#4CAF50,#388e3c);box-shadow:0 0 20px rgba(76,175,80,0.9);border:2px solid #81c784;}
   .action-btn.mic-on img{filter:brightness(0) invert(1);}
+  .action-btn.like-btn-circ{background:linear-gradient(180deg,#55b055,#3f8f3f);border-color:#81c784;}
+  .action-btn.dislike-btn-circ{background:linear-gradient(180deg,#e74c3c,#c0392b);border-color:#ff8a8a;}
 
-  .chat-ico{width:20px;height:20px;background:white;border-radius:5px;position:relative;}
-  .chat-ico::after{content:'';position:absolute;bottom:-4px;left:3px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid white;}
-  .chat-ico::before{content:'';position:absolute;top:5px;left:4px;width:12px;height:2px;background:#2a5a8a;box-shadow:0 3px 0 #2a5a8a,0 6px 0 #2a5a8a;}
+  .chat-ico{width:22px;height:22px;background:white;border-radius:5px;position:relative;}
+  .chat-ico::after{content:'';position:absolute;bottom:-4px;left:4px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid white;}
+  .chat-ico::before{content:'';position:absolute;top:5px;left:4px;width:13px;height:2px;background:#2a5a8a;box-shadow:0 3px 0 #2a5a8a,0 6px 0 #2a5a8a;}
 
   .ready-btn{min-width:100px;padding:10px 8px;border:none;border-radius:10px;font-family:'Vazirmatn';font-size:12px;font-weight:900;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
   .ready-btn.not{background:linear-gradient(180deg,#f44336,#d32f2f);}
@@ -344,7 +358,7 @@
 <body>
 <div class="app">
 
-  <!-- ==== LIST VIEW ==== -->
+  <!-- LIST VIEW -->
   <div class="view active" id="viewList">
     <div class="list-header">
       <div class="list-title">لابی‌های مافیاسان</div>
@@ -360,7 +374,7 @@
     </div>
   </div>
 
-  <!-- ==== ROOM VIEW ==== -->
+  <!-- ROOM VIEW -->
   <div class="view" id="viewRoom">
     <div class="room-topbar">
       <button class="back-btn" id="backRoomBtn">←</button>
@@ -376,34 +390,33 @@
       <div class="lobby-layout" id="lobbyLayout">
         <div class="row observers">
           <div class="slot-wrap" data-super="1">
-            <div class="slot observer" data-slot-type="super" data-slot-idx="1"></div>
-            <div class="name">ناظر ۱</div>
+            <div class="slot observer" data-slot-type="super" data-slot-idx="1"><div class="num">۱</div></div>
+            <div class="name" data-name-type="super" data-name-idx="1">ناظر ۱</div>
           </div>
           <div class="slot-wrap" data-super="2">
-            <div class="slot observer" data-slot-type="super" data-slot-idx="2"></div>
-            <div class="name">ناظر ۲</div>
+            <div class="slot observer" data-slot-type="super" data-slot-idx="2"><div class="num">۲</div></div>
+            <div class="name" data-name-type="super" data-name-idx="2">ناظر ۲</div>
           </div>
         </div>
-
         <div class="row">
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="1"><div class="num">1</div></div><div class="name" data-name="1">خالی</div></div>
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="2"><div class="num">2</div></div><div class="name" data-name="2">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="1"><div class="num">۱</div></div><div class="name" data-name-type="player" data-name-idx="1">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="2"><div class="num">۲</div></div><div class="name" data-name-type="player" data-name-idx="2">خالی</div></div>
         </div>
         <div class="row">
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="3"><div class="num">3</div></div><div class="name" data-name="3">خالی</div></div>
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="4"><div class="num">4</div></div><div class="name" data-name="4">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="3"><div class="num">۳</div></div><div class="name" data-name-type="player" data-name-idx="3">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="4"><div class="num">۴</div></div><div class="name" data-name-type="player" data-name-idx="4">خالی</div></div>
         </div>
         <div class="row">
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="5"><div class="num">5</div></div><div class="name" data-name="5">خالی</div></div>
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="6"><div class="num">6</div></div><div class="name" data-name="6">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="5"><div class="num">۵</div></div><div class="name" data-name-type="player" data-name-idx="5">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="6"><div class="num">۶</div></div><div class="name" data-name-type="player" data-name-idx="6">خالی</div></div>
         </div>
         <div class="row">
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="7"><div class="num">7</div></div><div class="name" data-name="7">خالی</div></div>
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="8"><div class="num">8</div></div><div class="name" data-name="8">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="7"><div class="num">۷</div></div><div class="name" data-name-type="player" data-name-idx="7">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="8"><div class="num">۸</div></div><div class="name" data-name-type="player" data-name-idx="8">خالی</div></div>
         </div>
         <div class="row">
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="9"><div class="num">9</div></div><div class="name" data-name="9">خالی</div></div>
-          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="10"><div class="num">10</div></div><div class="name" data-name="10">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="9"><div class="num">۹</div></div><div class="name" data-name-type="player" data-name-idx="9">خالی</div></div>
+          <div class="slot-wrap"><div class="slot" data-slot-type="player" data-slot-idx="10"><div class="num">۱۰</div></div><div class="name" data-name-type="player" data-name-idx="10">خالی</div></div>
         </div>
       </div>
     </div>
@@ -411,8 +424,8 @@
     <div class="room-bottombar">
       <div class="bottom-left" id="bottomLeftArea"></div>
       <div class="bottom-right">
-        <button class="action-btn small" id="dislikeBtn"><img src="dislike2.png" alt="" onerror="this.style.display='none'"></button>
-        <button class="action-btn small" id="likeBtn"><img src="like2.png" alt="" onerror="this.style.display='none'"></button>
+        <button class="action-btn small dislike-btn-circ" id="dislikeBtn"><img src="dislike2.png" alt="" onerror="this.style.display='none'"></button>
+        <button class="action-btn small like-btn-circ" id="likeBtn"><img src="like2.png" alt="" onerror="this.style.display='none'"></button>
         <button class="action-btn" id="micBtn"><img src="1008.png" alt="" onerror="this.style.display='none'"></button>
         <button class="action-btn" id="emojiBtn"><img src="Imo1.webp" alt="" onerror="this.style.display='none'"></button>
         <button class="action-btn" id="chatBtn"><div class="chat-ico"></div></button>
@@ -438,7 +451,7 @@
     </div>
   </div>
 
-  <!-- ==== MODALS ==== -->
+  <!-- MODALS -->
   <div class="overlay" id="createModal"><div class="modal">
     <div class="close-x" id="closeCreateBtn">×</div>
     <div class="modal-title-y">ایجاد لابی مافیاسان</div>
@@ -532,6 +545,7 @@
 <audio id="clickSound" preload="auto">
   <source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg">
 </audio>
+
 <script>
   document.addEventListener('gesturestart',e=>e.preventDefault());
   document.addEventListener('gesturechange',e=>e.preventDefault());
@@ -706,29 +720,6 @@
     }catch(e){return null;}
   }
 
-  async function buildTagLayer(phone,user,groupInfo){
-    if(!user)return '';
-    const rank=user.rank||'کاربر';
-    const isStaffUser=rank&&rank!=='کاربر';
-    const group=groupInfo?groupInfo.group:null;
-    const role=groupInfo?groupInfo.role:null;
-    if(!group&&!isStaffUser)return '';
-    let html='<div class="seat-tag-layer">';
-    let inner='<span class="seat-tag-badge'+(isStaffUser?' staff-badge':'')+'">';
-    if(isStaffUser) inner+='<span class="rank-text">'+esc(rank)+'</span>';
-    if(group){
-      let label=group.tag;
-      if(role==='owner')label='لیدر '+group.tag;
-      else if(role==='deputy')label='معاون '+group.tag;
-      const colorData=getColorByCode(group.colorCode);
-      if(colorData) inner+='<span class="tag-color-text" style="background:'+colorData.hex+';color:'+colorData.text+';">'+esc(label)+'</span>';
-      else inner+='<span style="font-size:9px; color:#fff;">'+esc(label)+'</span>';
-    }
-    inner+='</span>';
-    html+=inner+'</div>';
-    return html;
-  }
-
   function buildMediaTag(avatarUrl, fallbackHtml) {
     if (!avatarUrl) return fallbackHtml || '';
     const isVideo = avatarUrl.endsWith('.webm') || avatarUrl.endsWith('.mp4') || avatarUrl.endsWith('.mov');
@@ -781,7 +772,6 @@
         volumes.forEach(volume => { if (volume.level > 15) { speakingUids.add(String(volume.uid)); } });
         updateSpeakingUI();
       });
-      console.log('✅ Agora connected');
     } catch (err) {
       console.error("Voice init error:", err);
       micInitAttempted = false;
@@ -1267,7 +1257,7 @@
     renderRoom(room,users);
   }
 
-  // ===== renderRoom با طرح جدید دایره‌ای =====
+  // ===== renderRoom (طرح جدید) =====
   async function renderRoom(room,allUsers){
     $('roomNameTop').textContent=room.name;
     const pendingBanner=$('pendingBanner');
@@ -1291,17 +1281,11 @@
     Object.values(room.supers||{}).forEach(p=>{if(p)allPhones.add(p);});
     for(const ph of allPhones){if(!allUsers[ph]){const u=await getUser(ph);if(u)allUsers[ph]=u;}}
 
-    const groupCache={};
-    const groupPromises=[];
-    for(const ph of allPhones){ if(ph) groupPromises.push((async()=>{groupCache[ph]=await findUserGroup(ph);})()); }
-    await Promise.all(groupPromises);
-
     const videoTimes = saveVideoTimes();
 
-    // تابع ساخت HTML یک اسلات
     async function buildSlotHtml(type, idx, phone){
       const isSuper = type === 'super';
-      const num = isSuper ? (idx===1?'۱':'۲') : toFa(idx);
+      const num = toFa(idx);
       const botAt = !isSuper && room.bots && room.bots[idx];
 
       const isGhostMode = phone && (room.ghost||[]).includes(phone);
@@ -1351,7 +1335,6 @@
       </div>`;
     }
 
-    // ساخت همه اسلات‌ها
     const sup1 = await buildSlotHtml('super', 1, room.supers ? room.supers[1] : null);
     const sup2 = await buildSlotHtml('super', 2, room.supers ? room.supers[2] : null);
     const seats = [];
@@ -1369,7 +1352,6 @@
     `;
     $('lobbyLayout').innerHTML = layoutHtml;
 
-    // اتصال کلیک‌ها
     document.querySelectorAll('.lobby-layout .slot[data-slot-type="player"]').forEach(el=>{
       el.onclick = () => { playClick(); tapSeat(parseInt(el.dataset.slotIdx)); };
     });
@@ -1381,7 +1363,6 @@
 
     restoreVideoTimes(videoTimes);
 
-    // دکمه آماده‌ام
     const bottomLeft = $('bottomLeftArea');
     bottomLeft.innerHTML = '';
 
@@ -1399,7 +1380,6 @@
       }
       bottomLeft.appendChild(rb);
     } else {
-      // مدیر: دکمه شروع بازی
       const humans = Object.values(room.seats||{}).filter(Boolean);
       const bots = Object.keys(room.bots||{}).length;
       const total = humans.length + bots;
