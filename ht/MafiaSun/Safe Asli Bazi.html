@@ -146,8 +146,10 @@
           <div id="historyContent"></div>
         </div>
 
+        <!-- ═══════════ تنظیمات مسابقات کلن‌ها ═══════════ -->
         <div id="tournamentConfig" style="display:none;margin-bottom:15px;">
           <div style="color:#ffd700;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;">🏆 تنظیمات مسابقات کلن‌ها</div>
+
           <div class="edit-field">
             <label class="edit-label">مدت مسابقه:</label>
             <select class="edit-input" id="tournamentDuration">
@@ -157,6 +159,7 @@
               <option value="yearly">سالانه (۳۶۵ روز)</option>
             </select>
           </div>
+
           <div style="background:rgba(255,215,0,.1);border:2px solid #ffd700;border-radius:10px;padding:10px;margin-bottom:10px;">
             <div style="color:#ffd700;font-weight:900;font-size:13px;margin-bottom:8px;">🥇 جایزه رتبه ۱</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;">
@@ -169,6 +172,7 @@
               <input type="text" class="edit-input" id="prize1Note" placeholder="مثلاً: تاج طلایی">
             </div>
           </div>
+
           <div style="background:rgba(192,192,192,.1);border:2px solid #c0c0c0;border-radius:10px;padding:10px;margin-bottom:10px;">
             <div style="color:#c0c0c0;font-weight:900;font-size:13px;margin-bottom:8px;">🥈 جایزه رتبه ۲</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;">
@@ -181,6 +185,7 @@
               <input type="text" class="edit-input" id="prize2Note" placeholder="مثلاً: تاج نقره‌ای">
             </div>
           </div>
+
           <div style="background:rgba(205,127,50,.1);border:2px solid #cd7f32;border-radius:10px;padding:10px;margin-bottom:10px;">
             <div style="color:#cd7f32;font-weight:900;font-size:13px;margin-bottom:8px;">🥉 جایزه رتبه ۳</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;">
@@ -193,6 +198,7 @@
               <input type="text" class="edit-input" id="prize3Note" placeholder="مثلاً: تاج برنزی">
             </div>
           </div>
+
           <div style="background:rgba(74,158,255,.1);border:2px solid #4a9eff;border-radius:10px;padding:10px;margin-bottom:10px;">
             <div style="color:#4a9eff;font-weight:900;font-size:13px;margin-bottom:8px;">🏅 جایزه رتبه ۴ تا ۱۰</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;">
@@ -205,15 +211,19 @@
               <input type="text" class="edit-input" id="prize4Note" placeholder="مثلاً: نشان ویژه">
             </div>
           </div>
+
           <div class="clan-blacklist" style="background:rgba(255,0,0,.1);border:1px solid #f44336;border-radius:8px;padding:10px;margin-top:10px;">
             <h4 style="color:#f44336;font-size:12px;margin-bottom:8px;">لیست سیاه کلن‌ها</h4>
             <div id="blacklistItems"></div>
             <button class="edit-btn ban" onclick="window.addClanToBlacklist && window.addClanToBlacklist()" style="width:100%;margin-top:8px;">افزودن کلن</button>
           </div>
+
           <div style="color:#4fc3f7;font-size:11px;text-align:center;margin-top:10px;" id="tournamentEndTimeInfo"></div>
+
           <button class="edit-btn save" onclick="window.saveAllTournamentConfig && window.saveAllTournamentConfig()" style="width:100%;margin-top:12px;background:linear-gradient(180deg,#4CAF50,#2e7d32);padding:14px;font-size:15px;">💾 ذخیره تنظیمات مسابقات</button>
           <button class="edit-btn warn" onclick="window.distributeClanPrizesNow && window.distributeClanPrizesNow()" style="width:100%;margin-top:6px;background:linear-gradient(180deg,#ff9800,#e65100);">🎁 توزیع جوایز الان</button>
         </div>
+        <!-- ═══════════ پایان تنظیمات مسابقات ═══════════ -->
 
         <div id="userLogsSection" style="display:none;margin-bottom:15px;">
           <div style="color:#4caf50;font-size:14px;font-weight:900;margin-bottom:10px;text-align:center;">📋 لاگ ورود و اطلاعات کاربران</div>
@@ -266,6 +276,7 @@
           <option value="ip">بن IP</option>
         </select>
       </div>
+
       <div class="exclusive-avatar-section" id="fieldExclusive" style="display:none;">
         <div class="exclusive-avatar-title">آواتار اختصاصی</div>
         <div class="exclusive-avatar-preview" id="exclusiveAvatarPreview"><span class="exclusive-avatar-placeholder">👤</span></div>
@@ -274,6 +285,7 @@
           <button class="exclusive-remove-btn" id="removeExclusiveAvatar">حذف آواتار اختصاصی</button>
         </div>
       </div>
+
       <div class="edit-actions">
         <button class="edit-btn ban" id="btnBanUser">بن اکانت</button>
         <button class="edit-btn warn" id="btnBanDevice">بن دستگاه</button>
@@ -431,6 +443,12 @@
   <div class="game-started-overlay" id="gameStartedOverlay">
     <h1>بازی شروع شد!</h1>
     <button class="game-start-btn" id="enterGameBtn">ورود به بازی</button>
+  </div>
+
+  <div class="server-down-overlay" id="serverDownOverlay">
+    <div class="server-down-icon">🔌</div>
+    <div class="server-down-title">سرور قطع است</div>
+    <div class="server-down-text">بازی موقتاً در دسترس نیست.<br>لطفاً بعداً مراجعه کنید.</div>
   </div>
 
   <div class="device-ban-overlay" id="deviceBanOverlay">
