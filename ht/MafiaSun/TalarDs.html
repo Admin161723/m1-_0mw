@@ -5,25 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d2135">
 <title>مافیاسان</title>
-<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;font-family:Tahoma,'Inter',Arial,sans-serif}
   html,body{height:100%;overflow:hidden;position:fixed;inset:0;background:#071525}
   input,textarea,select{-webkit-user-select:text!important;user-select:text!important;font-size:16px!important}
 
-  .phone{width:100%;height:100dvh;display:flex;flex-direction:column;background:#0d1f35;overflow:hidden;position:relative}
-  .view{position:absolute;inset:0;display:none;flex-direction:column;background:#0d1f35}
+  .phone{width:100%;height:100dvh;display:flex;flex-direction:column;background:#0d1f35;overflow:hidden;position:relative;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+  .view{position:absolute;inset:0;display:none;flex-direction:column;background:#0d1f35;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
   .view.active{display:flex}
 
   /* ============ LIST ============ */
-  .list-topbar{flex-shrink:0;padding-top:env(safe-area-inset-top);background:#052a42;z-index:20}
+  .list-topbar{flex-shrink:0;background:#052a42;z-index:20}
   .list-topmain{height:54px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:0 0 14px 14px;display:flex;align-items:center;padding:0 12px;gap:8px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 4px 12px rgba(0,0,0,.35)}
   .top-back{width:40px;height:40px;border:none;border-radius:11px;background:linear-gradient(180deg,#2e516e,#143250);color:#fff;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #050d18,inset 0 1px 2px rgba(255,255,255,.2);flex-shrink:0;padding-bottom:2px}
-  .top-back:active{transform:translateY(2px)}
   .top-title{flex:1;text-align:center;color:#fff;font-size:16px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .top-icon-btn{width:40px;height:40px;border:none;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;padding:0;color:#fff}
-  .admin-fab{background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;box-shadow:0 3px 0 #6b4f00,inset 0 1px 2px rgba(255,255,255,.4);display:none}
-  .admin-fab.show{display:flex}
   .home-fab{background:linear-gradient(180deg,#4aa3e0,#2a7fb8);color:#fff;box-shadow:0 3px 0 #0a2f6b,inset 0 1px 2px rgba(255,255,255,.25)}
 
   .search-wrap{margin:10px 12px;position:relative}
@@ -37,6 +33,9 @@
   .empty-list{text-align:center;color:rgba(255,255,255,.55);padding:60px 20px;font-size:13px;font-weight:700}
 
   .room-card{background:linear-gradient(180deg,rgba(20,50,80,.9),rgba(10,30,55,.9));border:2px solid #3f8fd4;border-radius:16px;padding:13px;margin-bottom:12px;position:relative;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+  .card-rank-top{display:flex;justify-content:center;margin-bottom:8px}
+  .card-rank-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:10px;background:linear-gradient(180deg,#9c27b0,#6a1b9a);border:1px solid #ce93d8;box-shadow:0 0 10px rgba(156,39,176,.55),inset 0 1px 2px rgba(255,255,255,.25);font-size:11px;font-weight:900;color:#fff}
+  .card-rank-badge img{width:14px;height:14px;object-fit:contain}
   .room-top{display:flex;align-items:center;gap:10px;margin-bottom:11px}
   .room-letter{width:50px;height:50px;border-radius:12px;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);border:2px solid #6ac4ff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex-shrink:0;color:#fff}
   .room-name{flex:1;text-align:center;font-size:17px;font-weight:900;color:#fff}
@@ -45,10 +44,11 @@
   .badge-count .dot{width:12px;height:12px;border-radius:50%;background:#4aa3e0}
   .badge-super{background:rgba(255,215,0,.12);border:1px solid #d4b42a;color:#ffd700;border-radius:8px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap}
   .room-bottom{display:flex;align-items:center;gap:10px}
-  .creator-box{flex:1;background:#0e2238;border-radius:12px;padding:7px 10px;text-align:center}
+  .creator-box{flex:1;background:#0e2238;border-radius:12px;padding:7px 10px;text-align:center;position:relative}
   .creator-label{font-size:10px;color:rgba(255,255,255,.6)}
-  .creator-name{font-size:14px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;padding:3px 8px;border-radius:10px;transition:all .2s;flex-wrap:wrap}
-  .creator-name.ranked{background:radial-gradient(circle,rgba(156,39,176,.35),transparent 75%);box-shadow:0 0 10px rgba(156,39,176,.75),0 0 20px rgba(156,39,176,.4);border:1px solid rgba(206,147,216,.5)}
+  .creator-name{font-size:14px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;padding:3px 8px;border-radius:10px;flex-wrap:wrap}
+  .creator-name.ranked{background:radial-gradient(circle,rgba(156,39,176,.35),transparent 75%);box-shadow:0 0 10px rgba(156,39,176,.75);border:1px solid rgba(206,147,216,.5)}
+  .creator-name .rank-txt{font-size:10px;color:#e1bee7;font-weight:900}
   .join-btn{background:linear-gradient(180deg,#55b055,#3f8f3f);border:none;color:white;font-size:15px;font-weight:900;padding:13px 20px;border-radius:12px;cursor:pointer;flex-shrink:0}
   .join-btn:active{transform:scale(.95)}
 
@@ -62,16 +62,19 @@
   .crown i{position:absolute;top:2px;width:4px;height:7px;background:#ffd700;clip-path:polygon(50% 0,0 100%,100% 100%)}
   .crown i.l{left:1px} .crown i.r{right:1px}
 
-  .list-bottombar{position:absolute;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom);background:#052a42;z-index:20}
-  .list-bottommain{height:58px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -3px 10px rgba(0,0,0,.3)}
-  .fab{width:46px;height:46px;border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:white;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2)}
+  .list-bottombar{position:absolute;bottom:0;left:0;right:0;background:#052a42;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+  .list-bottommain{height:64px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:8px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -3px 10px rgba(0,0,0,.3)}
+  .fab{width:48px;height:48px;border-radius:14px;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:white;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2)}
+  .fab-panel{background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;display:none}
+  .fab-panel.show{display:flex}
   .fab-refresh{background:linear-gradient(180deg,#ff9500,#ff6a00)}
   .fab-refresh.spinning span{display:inline-block;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .fab-add{background:linear-gradient(180deg,#4aa3e0,#2a7fb8)}
+  .fab-select{background:linear-gradient(180deg,#4aa3e0,#2a7fb8);flex:1;max-width:200px;font-size:14px;gap:6px}
+  .fab-select span.ic{font-size:20px}
 
   /* ============ ROOM ============ */
-  .room-top-bar{flex-shrink:0;padding-top:env(safe-area-inset-top);background:#052a42;z-index:20}
+  .room-top-bar{flex-shrink:0;background:#052a42;z-index:20}
   .room-top-main{height:54px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:0 0 14px 14px;display:flex;align-items:center;padding:0 10px;gap:6px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 4px 12px rgba(0,0,0,.35)}
   .room-back-btn{width:40px;height:40px;border:none;border-radius:11px;background:linear-gradient(180deg,#2e516e,#143250);color:#fff;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #050d18,0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2);flex-shrink:0;padding-bottom:2px}
   .room-back-btn:active{transform:translateY(2px)}
@@ -79,8 +82,7 @@
   .start-top-btn.show{display:flex}
   .start-top-btn.disabled{opacity:.55;filter:grayscale(.6);pointer-events:none}
   .start-top-btn .play-ico{width:0;height:0;border-left:9px solid #3a2a00;border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:2px}
-  .room-lobby-name{flex:1;text-align:center;color:#fff;font-size:15px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
-  .room-lobby-name .edit-ico{font-size:12px;opacity:.7}
+  .room-lobby-name{flex:1;text-align:center;color:#fff;font-size:15px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
   .room-icon-btn{width:40px;height:40px;border:2px solid #fff;border-radius:11px;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:#fff;font-size:18px}
   .room-icon-btn.show{display:flex}
   .ghost-btn{background:linear-gradient(180deg,#9c27b0,#7b1fa2);box-shadow:0 3px 0 #3d1050}
@@ -93,27 +95,35 @@
   .gear-ico::before{content:'';position:absolute;inset:5px;background:#ffc107;border-radius:50%}
   .gear-ico::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(#5a4500 0 12%,transparent 12% 25%,#5a4500 25% 37%,transparent 37% 50%,#5a4500 50% 62%,transparent 62% 75%,#5a4500 75% 87%,transparent 87%)}
 
-  /* وسط */
-  .middle{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;background:#23356b;overflow:hidden;padding-top:4px}
-  #group{width:100%;max-width:420px;height:100%;display:flex;flex-direction:column;justify-content:flex-start;padding:8px 10px 4px;gap:4px}
+  .middle{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;background:#23356b;overflow:hidden;padding-top:2px}
+  #group{width:100%;max-width:420px;height:100%;display:flex;flex-direction:column;justify-content:space-evenly;padding:6px 10px 4px;gap:2px}
   .row{direction:ltr;display:flex;justify-content:space-between;align-items:flex-start;width:100%}
-  .row.observers{justify-content:center;gap:30px;margin-bottom:4px}
-  .slot-wrap{width:calc(50% - 8px);max-width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:2px}
+  .row.observers{justify-content:center;gap:28px;margin-bottom:2px}
+  .slot-wrap{width:calc(50% - 6px);max-width:145px;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:2px;position:relative}
 
-  /* دایره‌ها بزرگ‌تر و بالاتر */
-  .slot{position:relative;width:clamp(58px,11vh,86px);height:clamp(58px,11vh,86px);aspect-ratio:1/1;border-radius:50%;background:#1d294f;box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 3px 6px rgba(0,0,0,.35);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible;transition:transform .15s}
+  .slot{position:relative;width:clamp(60px,11.5vh,88px);height:clamp(60px,11.5vh,88px);aspect-ratio:1/1;border-radius:50%;background:#1d294f;box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 3px 6px rgba(0,0,0,.35);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible;transition:transform .15s}
   .slot:active{transform:scale(.95)}
   .slot.observer{background:#23315c}
   .slot.filled{background:linear-gradient(180deg,#3a5a8f,#24375a)}
   .slot.glow-green{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 12px rgba(76,175,80,.7),0 0 0 2px #4CAF50}
   .slot.glow-red{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 12px rgba(244,67,54,.7),0 0 0 2px #f44336}
-  .slot.staff-halo::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:radial-gradient(circle,rgba(156,39,176,.55),transparent 72%);z-index:-1;animation:haloP 2s ease-in-out infinite}
+  .slot.staff-halo::before{content:'';position:absolute;inset:-5px;border-radius:50%;background:radial-gradient(circle,rgba(156,39,176,.55),transparent 72%);z-index:-1;animation:haloP 2s ease-in-out infinite}
   @keyframes haloP{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
 
   .slot img.avatar-mini,.slot video.avatar-mini{width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0}
 
   .num{position:absolute;top:-8px;left:-8px;width:22px;height:22px;background:#304380;border-radius:50%;color:#cddcf5;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.15);z-index:5;pointer-events:none}
   .slot.observer .num{background:#5c4a8a}
+
+  /* نشان مقام بنفش روی آواتار */
+  .rank-medal{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);padding:2px 8px;border-radius:8px;background:linear-gradient(180deg,#9c27b0,#6a1b9a);border:1px solid #ce93d8;box-shadow:0 0 8px rgba(156,39,176,.7),0 2px 4px rgba(0,0,0,.6);font-size:9px;font-weight:900;color:#fff;white-space:nowrap;z-index:20;pointer-events:none;display:flex;align-items:center;gap:3px}
+  .rank-medal img{width:11px;height:11px;object-fit:contain}
+
+  /* دایره نقش کلن روی آواتار (بالا-چپ) */
+  .role-dot{position:absolute;top:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:#000;border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;z-index:22;pointer-events:none;box-shadow:0 2px 4px rgba(0,0,0,.85)}
+  .role-dot.leader{border-color:#ffd700;color:#ffd700;text-shadow:0 0 6px #ffd700}
+  .role-dot.deputy{border-color:#42a5f5;color:#42a5f5;text-shadow:0 0 6px #42a5f5}
+  .role-dot.member{border-color:#66bb6a;color:#66bb6a}
 
   .voice-indicator{position:absolute;width:22px;height:22px;top:-8px;right:-8px;display:none;align-items:center;justify-content:center;z-index:15;background:rgba(15,173,7,.9);border-radius:50%;border:2px solid #81c784;box-shadow:0 0 10px rgba(15,173,7,.9);font-size:11px;color:#fff}
   .voice-indicator.speaking{display:flex;animation:voicePulse .8s ease-in-out infinite}
@@ -127,8 +137,8 @@
   .disconnected-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);border-radius:50%;display:none;align-items:center;justify-content:center;z-index:12;color:#f44336;font-weight:900;font-size:22px}
   .disconnected-overlay.show{display:flex}
 
-  /* اسم + تیک + تگ کلن زیر دایره */
-  .name-wrap{direction:rtl;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;max-width:120px;padding:0 2px}
+  /* اسم + تگ کلن زیر دایره */
+  .name-wrap{direction:rtl;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;max-width:135px;padding:0 2px}
   .name{width:100%;font-size:clamp(9px,1.5vh,12px);color:#bcd0ee;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;gap:3px}
   .name.me{color:#ffd94a}
   .name.manager{color:#ffd700}
@@ -136,15 +146,16 @@
   .name .nm-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:75px}
   .name.staff-halo-nm{padding:1px 6px;border-radius:8px;background:radial-gradient(circle,rgba(156,39,176,.35),transparent 78%);box-shadow:0 0 8px rgba(156,39,176,.65);border:1px solid rgba(206,147,216,.5)}
 
-  /* تگ کلن رنگی */
-  .clan-tag-line{display:flex;align-items:center;justify-content:center;gap:2px;flex-wrap:nowrap}
-  .clan-tag{font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;color:#fff;white-space:nowrap;letter-spacing:.3px;box-shadow:0 1px 3px rgba(0,0,0,.5)}
-  .clan-tag.owner{background:linear-gradient(180deg,#ffd700,#b38600);color:#3a2400;box-shadow:0 0 6px rgba(255,215,0,.6),0 1px 3px rgba(0,0,0,.5)}
-  .clan-tag.deputy{background:linear-gradient(180deg,#42a5f5,#1565c0);box-shadow:0 0 6px rgba(66,165,245,.6),0 1px 3px rgba(0,0,0,.5)}
-  .clan-tag.member{background:linear-gradient(180deg,#66bb6a,#2e7d32);box-shadow:0 0 5px rgba(102,187,106,.5),0 1px 3px rgba(0,0,0,.5)}
+  /* تگ کلن لایه مشکی با متن رنگی */
+  .clan-tag-line{display:flex;align-items:center;justify-content:center;gap:2px;flex-wrap:nowrap;max-width:100%}
+  .clan-tag{font-size:9px;font-weight:900;padding:1px 7px;border-radius:6px;background:#000;border:1px solid #333;white-space:nowrap;letter-spacing:.3px;box-shadow:0 1px 3px rgba(0,0,0,.75);overflow:hidden;text-overflow:ellipsis;max-width:110px}
+  .clan-tag.long{font-size:8px;padding:1px 5px;max-width:100px}
+  .clan-tag.owner{color:#ffd700;border-color:rgba(255,215,0,.5)}
+  .clan-tag.deputy{color:#42a5f5;border-color:rgba(66,165,245,.5)}
+  .clan-tag.member{color:#66bb6a;border-color:rgba(102,187,106,.4)}
+  .clan-tag.noColor{color:#000}
 
-  /* نوار پایین */
-  .room-bottom-bar{flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);background:#052a42;z-index:20}
+  .room-bottom-bar{flex-shrink:0;background:#052a42;z-index:20}
   .room-bottom-main{height:58px;background:linear-gradient(179deg,#074461 0%,#296187 100%);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;padding:0 10px;gap:8px;box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -3px 10px rgba(0,0,0,.3)}
   .bottom-left{display:flex;align-items:center;gap:8px;flex-shrink:0}
   .bottom-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -166,7 +177,6 @@
   .ready-btn.yes{background:linear-gradient(180deg,#55b055,#3f8f3f);box-shadow:0 3px 0 #1a4a1a}
   .ready-btn.disabled{background:linear-gradient(180deg,#888,#555);cursor:not-allowed;opacity:.7;box-shadow:0 3px 0 #222}
 
-  /* MODALS */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
   .overlay.active{display:flex}
   .modal{background:linear-gradient(180deg,#1e3a5f,#0d2135);border:2px solid #3f8fd4;border-radius:18px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;padding:22px 18px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.75);color:#fff}
@@ -175,7 +185,6 @@
   .form-label{color:rgba(255,255,255,.8);font-size:12px;font-weight:800;display:block;margin-bottom:6px;margin-top:8px}
   .form-input{width:100%;height:48px;border-radius:12px;border:none;background:rgba(255,255,255,.95);color:#0d1a30;font-size:15px;font-weight:800;padding:0 14px;outline:none;text-align:center;margin-bottom:12px}
   .btn-green{width:100%;height:48px;border:none;border-radius:12px;cursor:pointer;font-size:15px;font-weight:900;color:#fff;background:linear-gradient(180deg,#0fad07,#136b0e 50%,#084001);box-shadow:0 4px 0 #042000}
-  .btn-green:active{transform:translateY(3px)}
   .btn-red{width:100%;height:48px;border:none;border-radius:12px;cursor:pointer;font-size:15px;font-weight:900;color:#fff;background:linear-gradient(180deg,#d32f2f,#7f1a1a);box-shadow:0 4px 0 #4a0a0a;margin-top:8px}
   .btn-select{width:100%;height:52px;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-weight:900;color:#fff;background:linear-gradient(180deg,#4a9eff,#1565c0 50%,#0d47a1);box-shadow:0 4px 0 #0a2f6b;display:flex;align-items:center;justify-content:space-between;padding:0 18px;margin-bottom:12px}
   .btn-select.selected{background:linear-gradient(180deg,#0fad07,#136b0e 50%,#084001);box-shadow:0 4px 0 #042000}
@@ -189,6 +198,7 @@
   .names-list{margin-bottom:14px}
   .name-row{display:flex;align-items:center;gap:9px;background:rgba(0,0,0,.3);border-radius:12px;padding:11px;margin-bottom:8px;border:1px solid rgba(255,255,255,.1);cursor:pointer}
   .name-row .n{flex:1;text-align:center;font-size:14px;font-weight:900;color:#fff}
+  .name-row .edit-name-btn{width:34px;height:34px;border-radius:10px;border:2px solid #fff;background:linear-gradient(180deg,#4aa3e0,#2a7fb8);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;font-size:15px;color:#fff}
   .status-badge{padding:4px 9px;border-radius:8px;font-size:10px;font-weight:900;flex-shrink:0}
   .status-active{background:linear-gradient(180deg,#55b055,#3f8f3f)}
   .status-pending{background:rgba(212,180,42,.85);color:#fff8d0}
@@ -204,7 +214,8 @@
 
   .pf-avatar{width:110px;height:110px;border-radius:50%;border:3px solid #4a9eff;overflow:hidden;margin:0 auto 10px;position:relative}
   .pf-avatar img,.pf-avatar video{width:100%;height:100%;object-fit:cover}
-  .pf-name{text-align:center;font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;color:#fff}
+  .pf-name{text-align:center;font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;color:#fff;flex-wrap:wrap}
+  .pf-rank-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;background:linear-gradient(180deg,#9c27b0,#6a1b9a);border:1px solid #ce93d8;box-shadow:0 0 8px rgba(156,39,176,.6);font-size:11px;font-weight:900;color:#fff}
   .pf-row{background:rgba(0,0,0,.3);border-radius:10px;padding:8px 12px;margin-top:7px;display:flex;justify-content:space-between;font-size:12px;color:#fff}
   .pf-row b{color:#7ec3f0}
   .pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
@@ -238,19 +249,22 @@
   .server-down.show{display:flex}
   .server-down-title{color:#ff6b6b;font-size:28px;font-weight:900}
   .server-down-text{color:rgba(255,255,255,.85);font-size:15px;line-height:2}
+
+  /* حذف بازتاب زرد نوار پایین */
+  .list-bottombar,.room-bottom-bar{box-shadow:none!important;outline:none!important;-webkit-tap-highlight-color:transparent}
+  .list-bottommain,.room-bottom-main{box-shadow:inset 0 2px 4px rgba(255,255,255,.15)}
 </style>
 </head>
 <body>
 
 <div class="phone">
 
-  <!-- LIST VIEW -->
+  <!-- LIST -->
   <div class="view active" id="viewList">
     <div class="list-topbar">
       <div class="list-topmain">
         <button class="top-back" id="backBtn">→</button>
         <div class="top-title">لابی‌های مافیاسان</div>
-        <button class="top-icon-btn admin-fab" id="btnCreatorPanel">⚡</button>
         <button class="top-icon-btn home-fab" id="homeListBtn">🏠</button>
       </div>
     </div>
@@ -261,19 +275,20 @@
     <div class="rooms-scroll"><div id="roomsList"></div></div>
     <div class="list-bottombar">
       <div class="list-bottommain">
+        <button class="fab fab-panel" id="btnCreatorPanel">⚡</button>
         <button class="fab fab-refresh" id="refreshListBtn"><span>⟳</span></button>
-        <button class="fab fab-add" id="openCreateBtn">+</button>
+        <button class="fab fab-select" id="openCreateBtn"><span class="ic">+</span> انتخاب لابی</button>
       </div>
     </div>
   </div>
 
-  <!-- ROOM VIEW -->
+  <!-- ROOM -->
   <div class="view" id="viewRoom">
     <div class="room-top-bar">
       <div class="room-top-main">
         <button class="room-back-btn" id="backRoomBtn">→</button>
         <button class="start-top-btn" id="btnStartTop"><div class="play-ico"></div>شروع</button>
-        <div class="room-lobby-name" id="roomNameTop" title="ویرایش نام لابی">نام لابی <span class="edit-ico">✎</span></div>
+        <div class="room-lobby-name" id="roomNameTop">نام لابی</div>
         <button class="room-icon-btn ghost-btn" id="btnGhost"><div class="ghost-ico"></div></button>
         <button class="room-icon-btn settings-btn" id="btnManagerSettings"><div class="gear-ico"></div></button>
       </div>
@@ -338,18 +353,9 @@
 
   <div class="overlay" id="editModal"><div class="modal">
     <div class="modal-close" id="closeEditBtn">×</div>
-    <div class="modal-title" id="editTitle">نام جدید</div>
+    <div class="modal-title" id="editTitle">ویرایش نام لابی</div>
     <input type="text" id="editInput" class="form-input" placeholder="نام لابی" maxlength="24">
-    <button class="btn-green" id="editSaveBtn">ذخیره (۵۰ سکه)</button>
-  </div></div>
-
-  <!-- ویرایش نام لابی داخل لابی -->
-  <div class="overlay" id="renameLobbyModal"><div class="modal">
-    <div class="modal-close" id="closeRenameLobby">×</div>
-    <div class="modal-title">ویرایش نام لابی</div>
-    <label class="form-label">نام جدید لابی:</label>
-    <input type="text" id="renameLobbyInput" class="form-input" placeholder="نام جدید لابی" maxlength="24">
-    <button class="btn-green" id="renameLobbySave">ذخیره</button>
+    <button class="btn-green" id="editSaveBtn">ذخیره</button>
   </div></div>
 
   <div class="overlay" id="userMenuModal"><div class="modal">
@@ -416,6 +422,10 @@
 <script>
 "use strict";
 
+/* آگورا فقط هنگام ورود به لابی بارگذاری می‌شود */
+let _agoraLoading=null;
+function loadAgora(){if(window.AgoraRTC)return Promise.resolve(true);if(_agoraLoading)return _agoraLoading;_agoraLoading=new Promise(res=>{const s=document.createElement('script');s.src='https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js';s.async=true;s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s)});return _agoraLoading}
+
 const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
 const CREATOR_PHONE='09904844031';
@@ -423,7 +433,7 @@ const MAX_NAMES=4, MAX_ROOMS_PER_USER=4, MAX_PLAYERS=10;
 const ROOMS_KEY='talar_rooms', REQ_KEY='talar_name_requests', REPORT_KEY='talar_reports';
 const namesKey=p=>'talar_names:'+p;
 const liveKey=roomId=>'live:'+roomId;
-const APP_ID = "562fb91f42ae4cfc8490c54e4db1fa46";
+const APP_ID="562fb91f42ae4cfc8490c54e4db1fa46";
 
 let agoraClient=null, localAudioTrack=null, isMicOn=false, speakingUids=new Set(), micInitAttempted=false;
 let lastDislikeTime=0, lastLikeTime=0;
@@ -432,9 +442,9 @@ let chatMessages=[];
 
 function playClick(){try{const a=document.getElementById('clickSound');if(a){a.currentTime=0;a.volume=.4;a.play().catch(()=>{})}}catch(e){}}
 
-async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result)}catch(e){return d.result}}return null}catch(e){return null}}
-async function upstashSet(k,v){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(JSON.stringify(v)),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
-async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),4000);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
+async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result)}catch(e){return d.result}}return null}catch(e){return null}}
+async function upstashSet(k,v){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(JSON.stringify(v)),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
+async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
 
 const getLive=async id=>(await upstashGet(liveKey(id)))||{};
 const setLive=(id,d)=>upstashSet(liveKey(id),d);
@@ -502,12 +512,21 @@ async function findUserGroup(phone){
 function clanTagHtml(gi){
   if(!gi)return '';
   const role=gi.role;const tag=gi.group.tag||gi.group.name||'';
-  if(role==='owner')return '<span class="clan-tag owner">👑 '+esc(tag)+'</span>';
-  if(role==='deputy')return '<span class="clan-tag deputy">⭐ '+esc(tag)+'</span>';
-  return '<span class="clan-tag member">'+esc(tag)+'</span>';
+  const longCls=tag.length>8?' long':'';
+  if(role==='owner')return '<span class="clan-tag owner'+longCls+'">'+esc(tag)+'</span>';
+  if(role==='deputy')return '<span class="clan-tag deputy'+longCls+'">'+esc(tag)+'</span>';
+  return '<span class="clan-tag member'+longCls+'">'+esc(tag)+'</span>';
+}
+function roleDotHtml(gi){
+  if(!gi)return '';
+  if(gi.role==='owner')return '<div class="role-dot leader">👑</div>';
+  if(gi.role==='deputy')return '<div class="role-dot deputy">⭐</div>';
+  return '<div class="role-dot member">•</div>';
 }
 
 async function boot(){
+  /* صفحه فوری نمایش داده می‌شود */
+  startListView();
   try{
     const m=await getMaintenance();
     const lg=localStorage.getItem('currentLoggedInUser');
@@ -525,7 +544,6 @@ async function boot(){
   if(!au[phone]){au[phone]=u;saveAllUsers(au)}
   me={phone,name:u.name||'کاربر',avatar:u.avatar||'Mafia2.png',rank:u.rank||'کاربر',coins:u.coins||0};
   if(canAccessPanel(me.rank))$('btnCreatorPanel').classList.add('show');
-  startListView();
   speakTimer=setInterval(updateSpeakingUI,400);
 }
 function startListView(){
@@ -538,17 +556,17 @@ function startListView(){
 async function refreshList(){
   $('refreshListBtn').classList.add('spinning');
   allRoomsCache=await getRooms();
-  setTimeout(()=>$('refreshListBtn').classList.remove('spinning'),500);
+  setTimeout(()=>$('refreshListBtn').classList.remove('spinning'),400);
   renderList();
 }
 function renderList(){
   const q=($('searchInput').value||'').trim().toLowerCase();
   const rooms=Object.values(allRoomsCache).filter(r=>r.status==='waiting').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).filter(r=>!q||(r.name||'').toLowerCase().includes(q));
   const list=$('roomsList');
-  if(!rooms.length){list.innerHTML='<div class="empty-list">هنوز لابی‌ای نیست. روی + بزن</div>';return}
+  if(!rooms.length){list.innerHTML='<div class="empty-list">هنوز لابی‌ای نیست. روی «انتخاب لابی» بزن</div>';return}
   let h='';
-  const isCreator=me.phone===CREATOR_PHONE;
-  const myLvl=RANK_LEVEL[me.rank]||0;
+  const isCreator=me&&me.phone===CREATOR_PHONE;
+  const myLvl=me?RANK_LEVEL[me.rank]||0:0;
   const canDel=isCreator||myLvl>=RANK_LEVEL['گرداننده'];
   rooms.forEach(r=>{
     const pc=Object.keys(r.seats||{}).length+Object.keys(r.bots||{}).length;
@@ -556,11 +574,12 @@ function renderList(){
     const tk=getRoleTick(r.creatorRank);
     const ranked=r.creatorRank&&r.creatorRank!=='کاربر';
     const delBtn=canDel?'<button class="delete-room-btn show" data-delete="'+r.id+'">✕</button>':'';
-    h+='<div class="room-card">'+delBtn+
+    const rankTop=ranked?'<div class="card-rank-top"><span class="card-rank-badge">'+crownHtml()+' '+esc(r.creatorRank)+' '+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'">':'')+'</span></div>':'';
+    h+='<div class="room-card">'+delBtn+rankTop+
       '<div class="room-top"><div class="room-letter">M</div>'+
       '<div class="room-name">'+esc(r.name)+'</div>'+
       '<div class="room-badges"><div class="badge-count"><span>'+toFa(pc)+'/۱۰</span><span class="dot"></span></div><div class="badge-super">ناظر '+toFa(sc)+'/۲</div></div></div>'+
-      '<div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name'+(ranked?' ranked':'')+'">'+crownHtml()+' '+esc(r.creatorName||'مالک')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'">':'')+'</div></div>'+
+      '<div class="room-bottom"><div class="creator-box"><div class="creator-label">سازنده:</div><div class="creator-name'+(ranked?' ranked':'')+'">'+crownHtml()+' '+esc(r.creatorName||'مالک')+(ranked?'<span class="rank-txt">'+esc(r.creatorRank)+'</span>':'')+(tk?'<img class="tick-img" data-tick="'+tk.join(',')+'">':'')+'</div></div>'+
       '<button class="join-btn" data-join="'+r.id+'">پیوستن</button></div></div>';
   });
   list.innerHTML=h;
@@ -589,41 +608,36 @@ async function joinRoom(id){
   const rs=await getRooms();const r=rs[id];
   if(!r||r.status!=='waiting')return;
   if((r.blocked||[]).includes(me.phone))return;
-  const au=await getAllUsers();const cur=au[me.phone]||{};
-  if((cur.coins||0)<50){alert('سکه کم');return}
   const al=myRoom(rs);if(al&&al.id!==id)return;
   if(r.password&&r.managerPhone!==me.phone){const p=prompt('رمز لابی:');if(p===null||p!==r.password)return}
   let seat=null;
   if(!mySeat(r)){for(let i=1;i<=MAX_PLAYERS;i++){if(!r.seats[i]&&!r.bots[i]){seat=i;break}}if(!seat){showModal('⚠️','لابی پره');return}r.seats[seat]=me.phone}
   if(r.kicked&&r.kicked[me.phone])delete r.kicked[me.phone];
   await saveRooms(rs);
-  const ld=await getLive(id);if(!ld.seats)ld.seats={};if(seat)ld.seats[seat]=me.phone;await setLive(id,ld);
   openRoom(id,r);
+  const ld=await getLive(id);if(!ld.seats)ld.seats={};if(seat)ld.seats[seat]=me.phone;await setLive(id,ld);
 }
+
+/* ساخت لابی سریع */
 async function createRoom(){
-  if(isProcessingAction)return;isProcessingAction=true;
+  if(isProcessingAction)return;
+  isProcessingAction=true;
   try{
     const rs=await getRooms();
-    if(myRoom(rs)){isProcessingAction=false;return}
-    if(myRoomsCount(rs)>=MAX_ROOMS_PER_USER){isProcessingAction=false;return}
-    if(!selectedName){isProcessingAction=false;return}
-    const au=await getAllUsers();const cur=au[me.phone]||{};
-    if((cur.coins||0)<50){alert('سکه کم');isProcessingAction=false;return}
+    if(myRoom(rs)){showModal('⚠️','شما داخل یک لابی هستید');isProcessingAction=false;return}
+    if(myRoomsCount(rs)>=MAX_ROOMS_PER_USER){showModal('⚠️','حداکثر لابی');isProcessingAction=false;return}
+    if(!selectedName){showModal('⚠️','اول نام لابی رو انتخاب کن');isProcessingAction=false;return}
     const pass=passOn?$('lobbyPassInput').value.trim():null;
-    if(passOn&&!pass){isProcessingAction=false;return}
+    if(passOn&&!pass){showModal('⚠️','رمز حداقل ۲ کاراکتر');isProcessingAction=false;return}
     const id='R'+Date.now();
-    const names=await getNames(me.phone)||[];
-    const sn=names.find(n=>n.name===selectedName);
-    const isApp=sn&&sn.status==='active';
-    const isSt=RANK_LEVEL[me.rank]>=RANK_LEVEL['پشتیبانی']||me.phone===CREATOR_PHONE;
-    await saveUser(me.phone,cur);await saveAllUsers(au);usersCache={ts:0,data:{}};
-    rs[id]={id,name:selectedName,managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{},ghost:[],blocked:[],kicked:{},status:(isSt||isApp)?'waiting':'pending',approvalRequired:!(isSt||isApp),createdAt:Date.now()};
-    await saveRooms(rs);
-    await setLive(id,{seats:{1:me.phone},supers:{},ready:{},reactions:{},chat:[]});
+    rs[id]={id,name:selectedName,managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{},ghost:[],blocked:[],kicked:{},status:'waiting',createdAt:Date.now()};
+    saveRooms(rs);
+    setLive(id,{seats:{1:me.phone},supers:{},ready:{},reactions:{},chat:[]});
     $('createModal').classList.remove('active');
     openRoom(id,rs[id]);
-  }finally{setTimeout(()=>{isProcessingAction=false},1000)}
+  }finally{setTimeout(()=>{isProcessingAction=false},300)}
 }
+
 function openRoom(id,rd){
   currentRoomId=id;overlayShown=false;
   $('viewList').classList.remove('active');
@@ -634,8 +648,8 @@ function openRoom(id,rd){
   if(listTimer){clearInterval(listTimer);listTimer=null}
   if(rd)renderRoom(rd,usersCache.data||{});
   if(!roomTimer)roomTimer=setInterval(refreshRoom,10000);
-  if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1000);
-  initVoice();
+  if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1200);
+  loadAgora().then(()=>initVoice());
 }
 async function refreshRoom(){
   if(!currentRoomId||overlayShown)return;
@@ -647,13 +661,12 @@ async function refreshRoom(){
   if(r.status==='playing'){localStorage.setItem('current_game_room',currentRoomId);$('startOverlay').classList.add('show');return}
   const ld=await getLive(currentRoomId);
   if(ld.seats)r.seats=ld.seats;if(ld.supers)r.supers=ld.supers;if(ld.ready)r.ready=ld.ready;
-  const u=await getUsersCached(true);
+  const u=await getUsersCached(false);
   renderRoom(r,u);
 }
 
-/* ============ RENDER ROOM ============ */
 async function renderRoom(room,allUsers){
-  $('roomNameTop').innerHTML=esc(room.name)+' <span class="edit-ico">✎</span>';
+  $('roomNameTop').textContent=room.name;
   const pb=$('pendingBanner');pb.innerHTML=room.status==='pending'?'<div class="pending-banner">در انتظار تأیید مقام‌دارها</div>':'';
 
   const isMgr=room.managerPhone===me.phone;
@@ -696,6 +709,8 @@ async function renderRoom(room,allUsers){
     let nameCls='';
     let haloSlot='';
     let tickHtml='';
+    let rankMedal='';
+    let roleDot='';
     let clanLine='';
 
     if(phone){
@@ -712,7 +727,13 @@ async function renderRoom(room,allUsers){
       const tk=getRoleTick(u.rank);
       if(tk)tickHtml='<img class="tick-img" data-tick="'+tk.join(',')+'">';
       const gi=groupCache[phone];
-      if(gi)clanLine='<div class="clan-tag-line">'+clanTagHtml(gi)+'</div>';
+      if(gi){
+        roleDot=roleDotHtml(gi);
+        clanLine='<div class="clan-tag-line">'+clanTagHtml(gi)+'</div>';
+      }
+      if(isStaffUser){
+        rankMedal='<div class="rank-medal">'+esc(u.rank)+(tk?' <img class="tick-img" data-tick="'+tk.join(',')+'">':'')+'</div>';
+      }
       nameText='<span class="nm-text">'+esc(u.name||'کاربر')+(phone===me.phone?' (شما)':'')+'</span>'+tickHtml;
       if(u.avatar){
         const av=u.avatar;
@@ -730,6 +751,8 @@ async function renderRoom(room,allUsers){
     return '<div class="slot-wrap"><div class="'+cls+haloSlot+'" data-slot-type="'+type+'" data-slot-idx="'+idx+'"'+dp+'>'+
       '<div class="num">'+num+'</div>'+
       inner+
+      roleDot+
+      rankMedal+
       '<div class="voice-indicator">🎤</div>'+
       '<div class="disconnected-overlay">!</div>'+
       '</div>'+
@@ -810,36 +833,6 @@ async function leaveRoom(toMain){
   startListView();
 }
 
-/* ============ ویرایش نام لابی داخل لابی ============ */
-function openRenameLobby(){
-  if(!currentRoomId)return;
-  const rs=allRoomsCache||{};
-  // از سرور می‌گیریم که مطمئن باشه
-  (async()=>{
-    const rooms=await getRooms();const r=rooms[currentRoomId];if(!r)return;
-    const isMgr=r.managerPhone===me.phone;
-    const myLvl=RANK_LEVEL[me.rank]||0;
-    const canEdit=isMgr||myLvl>=RANK_LEVEL['گرداننده']||me.phone===CREATOR_PHONE;
-    if(!canEdit){showModal('⛔','فقط مالک یا مقام‌دار می‌تونه تغییر بده');return}
-    $('renameLobbyInput').value=r.name||'';
-    $('renameLobbyModal').classList.add('active');
-    setTimeout(()=>$('renameLobbyInput').focus(),300);
-  })();
-}
-async function saveRenameLobby(){
-  const newName=$('renameLobbyInput').value.trim();
-  if(newName.length<2){showModal('⚠️','نام حداقل ۲ حرف');return}
-  if(newName.length>24){showModal('⚠️','نام حداکثر ۲۴ حرف');return}
-  if(!currentRoomId)return;
-  const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  r.name=newName;
-  await saveRooms(rs);
-  $('renameLobbyModal').classList.remove('active');
-  $('roomNameTop').innerHTML=esc(newName)+' <span class="edit-ico">✎</span>';
-  showModal('✅','نام لابی تغییر کرد');
-}
-
-/* ============ User Menu ============ */
 async function openUserMenu(t){
   if(!currentRoomId)return;
   const au=await getUsersCached();
@@ -890,7 +883,9 @@ async function openProfile(t){
   const tk=getRoleTick(u.rank);
   const tick=tk?'<img class="tick-img" data-tick="'+tk.join(',')+'">':'';
   const av=u.avatar?'<img src="'+esc(u.avatar)+'" onerror="this.style.display=\'none\'">':'';
-  $('profileBody').innerHTML='<div class="pf-avatar">'+av+'</div><div class="pf-name">'+esc(u.name||'کاربر')+tick+'</div><div class="pf-row"><b>کد:</b><span>'+esc(u.userCode||'----')+'</span></div><div class="pf-row"><b>مقام:</b><span>'+esc(u.rank||'کاربر')+'</span></div><div class="pf-row"><b>کلن:</b><span>'+clanTxt+'</span></div><div class="pf-stats"><div class="pf-stat"><div class="v">'+toFa(u.score||0)+'</div><div class="l">امتیاز</div></div><div class="pf-stat"><div class="v">'+toFa(u.level||1)+'</div><div class="l">سطح</div></div><div class="pf-stat"><div class="v">'+toFa(u.compWins||0)+'</div><div class="l">برد</div></div></div>';
+  const ranked=u.rank&&u.rank!=='کاربر';
+  const rankBadge=ranked?'<span class="pf-rank-badge">'+crownHtml()+' '+esc(u.rank)+' '+tick+'</span>':'';
+  $('profileBody').innerHTML='<div class="pf-avatar">'+av+'</div><div class="pf-name">'+esc(u.name||'کاربر')+(ranked?'':' '+tick)+'</div>'+(ranked?'<div style="text-align:center;margin-bottom:8px">'+rankBadge+'</div>':'')+'<div class="pf-row"><b>کد:</b><span>'+esc(u.userCode||'----')+'</span></div><div class="pf-row"><b>مقام:</b><span>'+esc(u.rank||'کاربر')+'</span></div><div class="pf-row"><b>کلن:</b><span>'+clanTxt+'</span></div><div class="pf-stats"><div class="pf-stat"><div class="v">'+toFa(u.score||0)+'</div><div class="l">امتیاز</div></div><div class="pf-stat"><div class="v">'+toFa(u.level||1)+'</div><div class="l">سطح</div></div><div class="pf-stat"><div class="v">'+toFa(u.compWins||0)+'</div><div class="l">برد</div></div></div>';
   $('profileModal').classList.add('active');
   const im=$('profileBody').querySelector('img.tick-img');if(im)applyTick(im,im.dataset.tick.split(','));
 }
@@ -902,7 +897,6 @@ async function sendReport(){
   await saveReports(reps.slice(-100));$('reportModal').classList.remove('active');
 }
 
-/* ============ Manager ============ */
 async function openManager(){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
@@ -912,46 +906,57 @@ async function openManager(){
   const hum=Object.values(r.seats||{}).filter(Boolean);const bots=Object.keys(r.bots||{}).length;
   if((isMgr||isC)&&hum.length+bots<MAX_PLAYERS)h+='<button class="btn-select" id="mgAddBot" style="background:linear-gradient(180deg,#9c27b0,#7b1fa2);box-shadow:0 4px 0 #3d1050">➕ افزودن بات</button>';
   if(bots>0&&(isMgr||isC))h+='<button class="btn-red" id="mgRemoveBot">➖ حذف بات</button>';
-  if(isMgr||isC)h+='<button class="btn-select" id="mgRename" style="background:linear-gradient(180deg,#4aa3e0,#2a7fb8)">✎ ویرایش نام لابی</button>';
   if(isC||myLvl>=RANK_LEVEL['گرداننده'])h+='<button class="btn-red" id="mgDelete">🗑 حذف لابی</button>';
   $('managerBody').innerHTML=h||'<div class="no-pending">گزینه‌ای نیست</div>';
   $('managerModal').classList.add('active');
   const ab=$('mgAddBot');if(ab)ab.onclick=async()=>{await updateRoom(rr=>{let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&!rr.bots[x]){f=x;break}}if(!f)return;rr.bots[f]={name:'بات'}});$('managerModal').classList.remove('active');refreshRoom()};
   const rbm=$('mgRemoveBot');if(rbm)rbm.onclick=async()=>{await updateRoom(rr=>{const keys=Object.keys(rr.bots||{});if(!keys.length)return;delete rr.bots[keys[keys.length-1]]});$('managerModal').classList.remove('active');refreshRoom()};
-  const rn=$('mgRename');if(rn)rn.onclick=()=>{$('managerModal').classList.remove('active');openRenameLobby()};
   const db=$('mgDelete');if(db)db.onclick=async()=>{const reason=prompt('دلیل حذف:');if(reason===null)return;await updateRoom(rr=>{rr.status='deleted';rr.deleteReason=reason});await deleteLive(currentRoomId);currentRoomId=null;stopTimers();disconnectVoice();$('managerModal').classList.remove('active');startListView()};
 }
 
-/* ============ Names ============ */
 function openNamesModal(){$('namesModal').classList.add('active');renderNames()}
 async function renderNames(){
   const names=(await getNames(me.phone))||[];const list=$('namesList');let h='';
   for(let i=0;i<MAX_NAMES;i++){
     const n=names[i];
-    if(n){const st=n.status==='active'?'فعال':'در انتظار';const cls=n.status==='active'?'status-active':'status-pending';h+='<div class="name-row" data-pick="'+i+'"><div class="n">'+esc(n.name)+'</div><div class="status-badge '+cls+'">'+st+'</div></div>'}
-    else{h+='<div class="name-row" data-pick="'+i+'"><div class="n" style="color:rgba(255,255,255,.4)">خالی</div></div>'}
+    if(n){
+      const st=n.status==='active'?'فعال':'در انتظار';
+      const cls=n.status==='active'?'status-active':'status-pending';
+      h+='<div class="name-row" data-pick="'+i+'"><div class="n">'+esc(n.name)+'</div><div class="status-badge '+cls+'">'+st+'</div><button class="edit-name-btn" data-edit="'+i+'">✎</button></div>';
+    }else{
+      h+='<div class="name-row" data-pick="'+i+'"><div class="n" style="color:rgba(255,255,255,.4)">خالی (برای ساخت بزن)</div></div>';
+    }
   }
   list.innerHTML=h;
   $('addNameBtn').style.display=names.length>=MAX_NAMES?'none':'block';
-  list.querySelectorAll('[data-pick]').forEach(row=>{
+  list.querySelectorAll('.name-row').forEach(row=>{
     row.onclick=()=>{
       const i=+row.dataset.pick;const n=names[i];
       if(n){if(n.status==='active'){selectedName=n.name;$('selectedNameLabel').textContent=n.name;$('selectNameBtn').classList.add('selected');$('namesModal').classList.remove('active')}}
       else openEditModal('add',i);
     };
   });
+  list.querySelectorAll('.edit-name-btn').forEach(b=>{
+    b.onclick=e=>{e.stopPropagation();const i=+b.dataset.edit;const n=names[i];if(n)openEditModal('edit',i,n.name)};
+  });
 }
-function openEditModal(mode,ix){editMode=mode;editIndex=ix;$('editInput').value='';$('editModal').classList.add('active')}
+function openEditModal(mode,ix,val){
+  editMode=mode;editIndex=ix;
+  $('editTitle').textContent=mode==='edit'?'ویرایش نام لابی':'نام جدید';
+  $('editInput').value=val||'';
+  $('editModal').classList.add('active');
+}
 async function saveEdit(){
-  const val=$('editInput').value.trim();if(!val)return;
+  const val=$('editInput').value.trim();if(!val){showModal('⚠️','نام را وارد کن');return}
+  if(val.length<2){showModal('⚠️','حداقل ۲ حرف');return}
   const names=(await getNames(me.phone))||[];
   if(editMode==='add'&&names.length>=MAX_NAMES)return;
-  if(editMode==='add')names.push({name:val,status:'active'});else names[editIndex]={name:val,status:'active'};
+  if(editMode==='add')names.push({name:val,status:'active'});
+  else names[editIndex]={name:val,status:names[editIndex]&&names[editIndex].status||'active'};
   await saveNames(me.phone,names);
   $('editModal').classList.remove('active');renderNames();
 }
 
-/* ============ Panel ============ */
 async function openCreatorPanel(){
   if(!canAccessPanel(me.rank))return;
   $('creatorPanelModal').classList.add('active');
@@ -1033,7 +1038,7 @@ async function doBan(){
   $('banModal').classList.remove('active');renderCTab();
 }
 
-/* ============ Agora ============ */
+/* Agora */
 async function initVoice(){
   if(agoraClient||!window.AgoraRTC||!currentRoomId||!me)return;
   if(micInitAttempted)return;
@@ -1048,7 +1053,7 @@ async function initVoice(){
 }
 async function toggleMic(){
   try{
-    if(!agoraClient){await initVoice();if(!agoraClient){alert('خطا در اتصال');return}}
+    if(!agoraClient){await loadAgora();await initVoice();if(!agoraClient){alert('خطا در اتصال');return}}
     if(!localAudioTrack){localAudioTrack=await AgoraRTC.createMicrophoneAudioTrack();await agoraClient.publish(localAudioTrack);isMicOn=true;updateMicUI();return}
     isMicOn=!isMicOn;await localAudioTrack.setMuted(!isMicOn);updateMicUI();
   }catch(e){alert('خطا: '+e.message);isMicOn=false;if(localAudioTrack){try{localAudioTrack.close()}catch(x){}localAudioTrack=null}updateMicUI()}
@@ -1113,7 +1118,6 @@ async function syncLiveState(){
   }
 }
 
-/* ============ Chat ============ */
 function openChat(){$('chatMenu').classList.add('show');renderChatMessages()}
 function closeChat(){$('chatMenu').classList.remove('show')}
 function renderChatMessages(){
@@ -1134,14 +1138,13 @@ function sendChatMessage(){
 function stopTimers(){if(roomTimer){clearInterval(roomTimer);roomTimer=null}if(liveSyncTimer){clearInterval(liveSyncTimer);liveSyncTimer=null}}
 function showModal(icon,text){const el=document.createElement('div');el.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#296187,#074461);color:#fff;padding:12px 24px;border-radius:14px;font-size:13px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.6);text-align:center;max-width:85%';el.textContent=icon+' '+text;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 
-/* ============ EVENTS ============ */
 document.addEventListener('DOMContentLoaded',()=>{
   boot();
   $('searchInput').oninput=renderList;
   $('refreshListBtn').onclick=()=>{playClick();refreshList()};
   $('backBtn').onclick=()=>location.href='TalarDs.html';
   $('homeListBtn').onclick=()=>location.href='TalarDs.html';
-  $('openCreateBtn').onclick=async()=>{
+  $('openCreateBtn').onclick=()=>{
     selectedName='';$('selectedNameLabel').textContent='انتخاب لابی';$('selectNameBtn').classList.remove('selected');
     passOn=false;$('lockToggle').classList.remove('on');$('passwordField').classList.remove('show');$('lobbyPassInput').value='';
     $('createModal').classList.add('active');
@@ -1151,15 +1154,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('selectNameBtn').onclick=openNamesModal;
   $('doCreateBtn').onclick=createRoom;
   $('closeNamesBtn').onclick=()=>$('namesModal').classList.remove('active');
-  $('addNameBtn').onclick=()=>openEditModal('add',-1);
+  $('addNameBtn').onclick=()=>openEditModal('add',-1,'');
   $('closeEditBtn').onclick=()=>$('editModal').classList.remove('active');
   $('editSaveBtn').onclick=saveEdit;
-
-  // ویرایش نام لابی داخل لابی
-  $('roomNameTop').onclick=openRenameLobby;
-  $('closeRenameLobby').onclick=()=>$('renameLobbyModal').classList.remove('active');
-  $('renameLobbySave').onclick=saveRenameLobby;
-
   $('backRoomBtn').onclick=()=>{playClick();leaveRoom(false)};
   $('btnManagerSettings').onclick=openManager;
   $('closeManager').onclick=()=>$('managerModal').classList.remove('active');
