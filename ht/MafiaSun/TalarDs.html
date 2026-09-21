@@ -16,45 +16,45 @@
   /* ==== TOP BAR - نازک ==== */
   .list-topbar,.room-top-bar{flex-shrink:0;z-index:20}
   .list-topmain,.room-top-main{
-    height:calc(42px + env(safe-area-inset-top,0px));
-    padding:env(safe-area-inset-top,0px) 8px 0;
+    height:calc(34px + env(safe-area-inset-top,0px));
+    padding:env(safe-area-inset-top,0px) 6px 0;
     background:linear-gradient(179deg,#074461 0%,#296187 100%);
-    border-radius:0 0 12px 12px;
+    border-radius:0 0 10px 10px;
     display:flex;
     align-items:center;
-    gap:5px;
-    box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 3px 8px rgba(0,0,0,.3);
+    gap:4px;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 2px 6px rgba(0,0,0,.3);
   }
-  .top-title,.room-lobby-name{flex:1;text-align:center;color:#fff;font-size:14px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
-  .top-icon-btn,.back-fab{width:34px;height:34px;border:none;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:900;padding:0;color:#fff;transition:transform .15s}
+  .top-title,.room-lobby-name{flex:1;text-align:center;color:#fff;font-size:13px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px}
+  .top-icon-btn,.back-fab{width:30px;height:30px;border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:900;padding:0;color:#fff;transition:transform .15s}
   .top-icon-btn:active,.back-fab:active{transform:translateY(2px) scale(.96)}
   .panel-btn{background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;box-shadow:0 3px 0 #6b4f00,inset 0 1px 2px rgba(255,255,255,.4);display:none}
   .panel-btn.show{display:flex}
   .back-fab{background:linear-gradient(180deg,#f44336,#d32f2f);color:#fff;box-shadow:0 3px 0 #4a0a0a,inset 0 1px 2px rgba(255,255,255,.3)}
-  .start-top-btn{width:48px;height:34px;border:2px solid #ffd700;border-radius:9px;background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;font-size:9px;font-weight:900;cursor:pointer;flex-shrink:0;padding:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 2px 0 #6b4f00,0 0 8px rgba(255,193,7,.4);line-height:1}
+  .start-top-btn{width:44px;height:30px;border:2px solid #ffd700;border-radius:8px;background:linear-gradient(180deg,#ffc107,#ff9800);color:#3a2a00;font-size:8px;font-weight:900;cursor:pointer;flex-shrink:0;padding:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 2px 0 #6b4f00,0 0 8px rgba(255,193,7,.4);line-height:1}
   .start-top-btn.show{display:flex}
   .start-top-btn.disabled{opacity:.55;filter:grayscale(.6);pointer-events:none}
-  .start-top-btn .play-ico{width:0;height:0;border-left:7px solid #3a2a00;border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px}
-  .room-icon-btn{width:34px;height:34px;border:2px solid #fff;border-radius:9px;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:#fff;font-size:16px;transition:transform .15s}
+  .start-top-btn .play-ico{width:0;height:0;border-left:6px solid #3a2a00;border-top:3.5px solid transparent;border-bottom:3.5px solid transparent;margin-left:2px}
+  .room-icon-btn{width:30px;height:30px;border:2px solid #fff;border-radius:8px;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:#fff;font-size:14px;transition:transform .15s}
   .room-icon-btn.show{display:flex}
   .room-icon-btn:active{transform:scale(.92)}
   .ghost-btn{background:linear-gradient(180deg,#9c27b0,#7b1fa2);box-shadow:0 3px 0 #3d1050}
   .ghost-btn.on{box-shadow:0 0 12px #b040ff,0 3px 0 #3d1050}
   .settings-btn{background:linear-gradient(180deg,#ffc107,#ff9800);box-shadow:0 3px 0 #6b4f00}
-  .ghost-ico{width:15px;height:17px;background:#fff;border-radius:8px 8px 3px 3px;position:relative}
-  .ghost-ico::before,.ghost-ico::after{content:'';position:absolute;top:5px;width:3px;height:3px;background:#333;border-radius:50%}
-  .ghost-ico::before{left:3px} .ghost-ico::after{right:3px}
-  .gear-ico{width:17px;height:17px;background:#5a4500;border-radius:50%;position:relative}
-  .gear-ico::before{content:'';position:absolute;inset:4px;background:#ffc107;border-radius:50%}
-  .gear-ico::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(#5a4500 0 12%,transparent 12% 25%,#5a4500 25% 37%,transparent 37% 50%,#5a4500 50% 62%,transparent 62% 75%,#5a4500 75% 87%,transparent 87%)}
+  .ghost-ico{width:13px;height:15px;background:#fff;border-radius:7px 7px 2px 2px;position:relative}
+  .ghost-ico::before,.ghost-ico::after{content:'';position:absolute;top:4px;width:2.5px;height:2.5px;background:#333;border-radius:50%}
+  .ghost-ico::before{left:2.5px} .ghost-ico::after{right:2.5px}
+  .gear-ico{width:15px;height:15px;background:#5a4500;border-radius:50%;position:relative}
+  .gear-ico::before{content:'';position:absolute;inset:3.5px;background:#ffc107;border-radius:50%}
+  .gear-ico::after{content:'';position:absolute;inset:-2.5px;border-radius:50%;background:conic-gradient(#5a4500 0 12%,transparent 12% 25%,#5a4500 25% 37%,transparent 37% 50%,#5a4500 50% 62%,transparent 62% 75%,#5a4500 75% 87%,transparent 87%)}
 
-  .search-wrap{margin:10px 12px;position:relative}
-  .search-wrap input{width:100%;height:42px;padding:0 40px 0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(180deg,rgba(167,186,196,.35),rgba(2,88,163,.4));color:#fff;font-size:14px;font-weight:800;outline:none;text-align:right}
+  .search-wrap{margin:6px 10px;position:relative}
+  .search-wrap input{width:100%;height:38px;padding:0 36px 0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(180deg,rgba(167,186,196,.35),rgba(2,88,163,.4));color:#fff;font-size:13px;font-weight:800;outline:none;text-align:right}
   .search-wrap input::placeholder{color:rgba(255,255,255,.65)}
   .s-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:3px solid #7ec3f0;border-radius:50%;pointer-events:none}
   .s-icon::after{content:'';position:absolute;width:8px;height:3px;background:#7ec3f0;bottom:-5px;right:-6px;transform:rotate(45deg);border-radius:2px}
 
-  .rooms-scroll{flex:1;overflow-y:auto;padding:8px 12px 90px;scrollbar-width:none}
+  .rooms-scroll{flex:1;overflow-y:auto;padding:6px 10px 80px;scrollbar-width:none}
   .rooms-scroll::-webkit-scrollbar{display:none}
   .empty-list{text-align:center;color:rgba(255,255,255,.55);padding:60px 20px;font-size:13px;font-weight:700}
 
@@ -87,29 +87,29 @@
   /* ==== BOTTOM BAR - نازک ==== */
   .list-bottombar{position:absolute;bottom:0;left:0;right:0;background:#052a42;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
   .list-bottommain{
-    height:52px;
+    height:46px;
     background:linear-gradient(179deg,#074461 0%,#296187 100%);
-    border-radius:12px 12px 0 0;
+    border-radius:10px 10px 0 0;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 16px;
+    padding:0 14px;
     gap:8px;
-    box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -3px 10px rgba(0,0,0,.3);
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -2px 8px rgba(0,0,0,.3);
   }
-  .fab{width:40px;height:40px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:white;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2);pointer-events:auto}
+  .fab{width:36px;height:36px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2);pointer-events:auto}
   .fab:active{transform:translateY(2px)}
   .fab-refresh{background:linear-gradient(180deg,#ff9500,#ff6a00)}
   .fab-refresh.spinning span{display:inline-block;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .fab-add{background:linear-gradient(180deg,#4aa3e0,#2a7fb8);font-size:26px;padding-bottom:5px}
+  .fab-add{background:linear-gradient(180deg,#4aa3e0,#2a7fb8);font-size:24px;padding-bottom:4px}
 
-  .middle{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;background:#23356b;overflow:hidden;padding-top:10px}
-  #group{width:100%;max-width:420px;height:100%;display:flex;flex-direction:column;justify-content:space-evenly;padding:6px 10px 4px;gap:3px}
+  .middle{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;background:#23356b;overflow:hidden;padding-top:4px;padding-bottom:2px}
+  #group{width:100%;max-width:420px;height:100%;display:flex;flex-direction:column;justify-content:space-evenly;padding:2px 8px 2px;gap:1px}
   .row{direction:ltr;display:flex;justify-content:space-between;align-items:flex-start;width:100%}
-  .row.observers{justify-content:center;gap:28px;margin-bottom:2px}
-  .slot-wrap{width:calc(50% - 6px);max-width:145px;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:12px;position:relative}
-  .slot{position:relative;width:clamp(60px,11.5vh,86px);height:clamp(60px,11.5vh,86px);aspect-ratio:1/1;border-radius:50%;background:#1d294f;box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 3px 6px rgba(0,0,0,.35);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible;transition:transform .15s}
+  .row.observers{justify-content:center;gap:24px;margin-bottom:0}
+  .slot-wrap{width:calc(50% - 5px);max-width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:10px;position:relative}
+  .slot{position:relative;width:clamp(52px,10vh,78px);height:clamp(52px,10vh,78px);aspect-ratio:1/1;border-radius:50%;background:#1d294f;box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 3px 6px rgba(0,0,0,.35);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible;transition:transform .15s}
   .slot:active{transform:scale(.95)}
   .slot.observer{background:#23315c}
   .slot.filled{background:linear-gradient(180deg,#3a5a8f,#24375a)}
@@ -119,13 +119,13 @@
   @keyframes readyR{0%,100%{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 0 2px #f44336,0 0 22px 6px rgba(244,67,54,.55),0 0 45px 14px rgba(244,67,54,.22)}50%{box-shadow:inset 0 5px 7px rgba(0,0,0,.35),0 0 0 2px #ef5350,0 0 32px 10px rgba(244,67,54,.95),0 0 65px 20px rgba(244,67,54,.45)}}
   .slot .avatar-wrap{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;pointer-events:none}
   .slot img.avatar-mini,.slot video.avatar-mini{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
-  .num{position:absolute;top:-7px;left:-7px;width:22px;height:22px;background:#304380;border-radius:50%;color:#cddcf5;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.15);z-index:5;pointer-events:none}
+  .num{position:absolute;top:-6px;left:-6px;width:20px;height:20px;background:#304380;border-radius:50%;color:#cddcf5;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.15);z-index:5;pointer-events:none}
   .slot.observer .num{background:#5c4a8a}
-  .top-badges{position:absolute;top:-13px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:3px;z-index:22;pointer-events:none;max-width:140%;white-space:nowrap}
-  .rank-medal{padding:1px 6px;border-radius:6px;background:linear-gradient(180deg,#9c27b0,#6a1b9a);border:1px solid #ce93d8;box-shadow:0 0 6px rgba(156,39,176,.8);font-size:7px;font-weight:900;color:#fff;white-space:nowrap;line-height:1.35}
-  .rank-medal .rm-rank{font-size:7px;color:#fff;font-weight:900}
-  .top-badges .clan-tag{font-size:7px;padding:1px 5px;border-radius:6px;background:#000;border:1px solid #333;display:inline-flex;align-items:center;gap:2px;box-shadow:0 1px 3px rgba(0,0,0,.75);line-height:1.35}
-  .top-badges .clan-tag .role-lbl{font-size:6px;color:#fff;opacity:.9;font-weight:900}
+  .top-badges{position:absolute;top:-11px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:2px;z-index:22;pointer-events:none;max-width:160%;white-space:nowrap;flex-wrap:nowrap}
+  .rank-medal{padding:1px 5px;border-radius:5px;background:linear-gradient(180deg,#9c27b0,#6a1b9a);border:1px solid #ce93d8;box-shadow:0 0 5px rgba(156,39,176,.8);font-size:6.5px;font-weight:900;color:#fff;white-space:nowrap;line-height:1.3}
+  .rank-medal .rm-rank{font-size:6.5px;color:#fff;font-weight:900}
+  .top-badges .clan-tag{font-size:6.5px;padding:1px 4px;border-radius:5px;background:#000;border:1px solid #333;display:inline-flex;align-items:center;gap:2px;box-shadow:0 1px 3px rgba(0,0,0,.75);line-height:1.3;flex-shrink:0}
+  .top-badges .clan-tag .role-lbl{font-size:5.5px;color:#fff;opacity:.95;font-weight:900}
   .top-badges .clan-tag.owner .tag-txt{color:#ffd700}
   .top-badges .clan-tag.deputy .tag-txt{color:#42a5f5}
   .top-badges .clan-tag.member .tag-txt{color:#66bb6a}
@@ -140,7 +140,7 @@
   .disconnected-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);border-radius:50%;display:none;align-items:center;justify-content:center;z-index:12;color:#f44336;font-weight:900;font-size:22px}
   .disconnected-overlay.show{display:flex}
   .name-wrap{direction:rtl;display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;max-width:135px;padding:0 2px}
-  .name{width:100%;font-size:clamp(9px,1.5vh,12px);color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;gap:3px}
+  .name{width:100%;font-size:clamp(8px,1.3vh,11px);color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;gap:2px}
   .name.me{color:#ffd94a;font-weight:900}
   .name.manager{color:#ffd700;font-weight:900}
   .name .nm-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
@@ -148,31 +148,31 @@
   /* ==== ROOM BOTTOM BAR - نازک ==== */
   .room-bottom-bar{flex-shrink:0;background:#052a42;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
   .room-bottom-main{
-    height:52px;
+    height:46px;
     background:linear-gradient(179deg,#074461 0%,#296187 100%);
-    border-radius:12px 12px 0 0;
+    border-radius:10px 10px 0 0;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 10px;
-    gap:8px;
-    box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -3px 10px rgba(0,0,0,.3);
+    padding:0 8px;
+    gap:6px;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.15),0 -2px 8px rgba(0,0,0,.3);
     position:relative;
     z-index:2;
   }
-  .bottom-left{display:flex;align-items:center;gap:8px;flex-shrink:0}
-  .bottom-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
-  .action-btn{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,255,255,.1);padding:0;flex-shrink:0;transition:transform .15s,opacity .2s;pointer-events:auto;position:relative;z-index:5}
+  .bottom-left{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .bottom-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+  .action-btn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,255,255,.1);padding:0;flex-shrink:0;transition:transform .15s,opacity .2s;pointer-events:auto;position:relative;z-index:5}
   .action-btn img{width:100%;height:100%;object-fit:contain;border-radius:50%;pointer-events:none}
   .action-btn:active{transform:scale(.9)}
-  .action-btn.small{width:36px;height:36px}
+  .action-btn.small{width:32px;height:32px}
   .action-btn.mic-on{background:linear-gradient(180deg,#4CAF50,#388e3c);border-color:#81c784;box-shadow:0 0 20px rgba(76,175,80,.9)}
   .action-btn.mic-on img{filter:brightness(0) invert(1)}
   .action-btn.cooling{opacity:.35;pointer-events:none}
-  .chat-ico{width:20px;height:20px;background:white;border-radius:5px;position:relative;pointer-events:none}
-  .chat-ico::after{content:'';position:absolute;bottom:-4px;left:3px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid white}
-  .chat-ico::before{content:'';position:absolute;top:5px;left:4px;width:12px;height:2px;background:#2a5a8a;box-shadow:0 3px 0 #2a5a8a,0 6px 0 #2a5a8a}
-  .ready-btn{min-width:100px;padding:10px 10px;border:none;border-radius:10px;font-size:12px;font-weight:900;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;pointer-events:auto;position:relative;z-index:5}
+  .chat-ico{width:18px;height:18px;background:white;border-radius:4px;position:relative;pointer-events:none}
+  .chat-ico::after{content:'';position:absolute;bottom:-3px;left:2px;border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid white}
+  .chat-ico::before{content:'';position:absolute;top:4px;left:3px;width:11px;height:2px;background:#2a5a8a;box-shadow:0 3px 0 #2a5a8a,0 6px 0 #2a5a8a}
+  .ready-btn{min-width:90px;padding:8px 8px;border:none;border-radius:9px;font-size:11px;font-weight:900;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;flex-shrink:0;pointer-events:auto;position:relative;z-index:5}
   .ready-btn.not{background:linear-gradient(180deg,#f44336,#d32f2f);box-shadow:0 3px 0 #4a0a0a}
   .ready-btn.yes{background:linear-gradient(180deg,#55b055,#3f8f3f);box-shadow:0 3px 0 #1a4a1a}
   .ready-btn.disabled{background:linear-gradient(180deg,#888,#555);cursor:not-allowed;opacity:.7;box-shadow:0 3px 0 #222}
@@ -479,8 +479,8 @@ const $=id=>document.getElementById(id);
 const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-async function getUsersCached(f){const n=Date.now();if(f||n-usersCache.ts>2000){usersCache={ts:n,data:await getAllUsers()}}return usersCache.data}
-async function getGroupsCached(f){const n=Date.now();if(f||n-groupsCache.ts>5000){groupsCache={ts:n,data:await getGroups()}}return groupsCache.data}
+async function getUsersCached(f){const n=Date.now();if(f||n-usersCache.ts>8000){usersCache={ts:n,data:await getAllUsers()}}return usersCache.data}
+async function getGroupsCached(f){const n=Date.now();if(f||n-groupsCache.ts>15000){groupsCache={ts:n,data:await getGroups()}}return groupsCache.data}
 async function findUserGroup(phone){
   if(clanRoleCache[phone]!==undefined)return clanRoleCache[phone];
   try{
@@ -488,13 +488,29 @@ async function findUserGroup(phone){
     for(const g of gs){
       if(!g)continue;
       if(g.owner===phone){clanRoleCache[phone]={group:g,role:'owner'};return clanRoleCache[phone]}
-      if(g.members&&g.members.includes(phone)){
-        const role=(g.deputies&&g.deputies.includes(phone))?'deputy':'member';
+      if(g.members&&Array.isArray(g.members)&&g.members.includes(phone)){
+        const role=(g.deputies&&Array.isArray(g.deputies)&&g.deputies.includes(phone))?'deputy':'member';
         clanRoleCache[phone]={group:g,role};return clanRoleCache[phone]
       }
     }
     clanRoleCache[phone]=null;return null
-  }catch(e){return null}
+  }catch(e){clanRoleCache[phone]=null;return null}
+}
+function warmClanCacheForPhones(phones,gs){
+  if(!gs||!phones)return;
+  for(const phone of phones){
+    if(clanRoleCache[phone]!==undefined)continue;
+    let found=false;
+    for(const g of gs){
+      if(!g)continue;
+      if(g.owner===phone){clanRoleCache[phone]={group:g,role:'owner'};found=true;break}
+      if(g.members&&Array.isArray(g.members)&&g.members.includes(phone)){
+        const role=(g.deputies&&Array.isArray(g.deputies)&&g.deputies.includes(phone))?'deputy':'member';
+        clanRoleCache[phone]={group:g,role};found=true;break
+      }
+    }
+    if(!found)clanRoleCache[phone]=null;
+  }
 }
 function roleLabel(role){if(role==='owner')return 'مالک';if(role==='deputy')return 'معاون';return 'عضو'}
 function clanTagTopHtml(gi){
@@ -508,36 +524,37 @@ function clanTagTopHtml(gi){
 async function boot(){
   startListView();
   try{
-    const m=await getMaintenance();
-    const lg=localStorage.getItem('currentLoggedInUser');
-    const ph=lg?JSON.parse(lg).phone:null;
+    const [m, lgRaw] = await Promise.all([getMaintenance(), Promise.resolve(localStorage.getItem('currentLoggedInUser'))]);
+    const ph=lgRaw?JSON.parse(lgRaw).phone:null;
     if(m&&m.on&&ph!==CREATOR_PHONE){$('serverDownOverlay').classList.add('show');return}
   }catch(e){}
   const lg=localStorage.getItem('currentLoggedInUser');
   if(!lg){location.href='TalarDs.html';return}
   const phone=JSON.parse(lg).phone;
-  const ban=await getBan(phone);
+  const [ban, u, au, gs] = await Promise.all([getBan(phone), getUser(phone), getAllUsers(), getGroups()]);
   if(ban){location.href='Ban.html';return}
-  const u=await getUser(phone);
   if(!u){location.href='TalarDs.html';return}
-  const au=await getAllUsers();
   if(!au[phone]){au[phone]=u;saveAllUsers(au)}
+  usersCache={ts:Date.now(),data:au};
+  groupsCache={ts:Date.now(),data:gs||[]};
   me={phone,name:u.name||'کاربر',avatar:u.avatar||'Mafia2.png',rank:u.rank||'کاربر',coins:u.coins||0};
   if(canAccessPanel(me.rank))$('btnCreatorPanel').classList.add('show');
   speakTimer=setInterval(updateSpeakingUI,400);
+  refreshList();
 }
 function startListView(){
   currentRoomId=null;overlayShown=false;disconnectVoice();stopTimers();
   window._lastRoomHash=null;
   $('viewRoom').classList.remove('active');
   $('viewList').classList.add('active');
-  refreshList();
-  if(!listTimer)listTimer=setInterval(refreshList,5000);
+  if(allRoomsCache && Object.keys(allRoomsCache).length)renderList();
+  else refreshList();
+  if(!listTimer)listTimer=setInterval(refreshList,4000);
 }
 async function refreshList(){
   $('refreshListBtn').classList.add('spinning');
-  allRoomsCache=await getRooms();
-  setTimeout(()=>$('refreshListBtn').classList.remove('spinning'),400);
+  try{allRoomsCache=await getRooms()}catch(e){}
+  setTimeout(()=>$('refreshListBtn').classList.remove('spinning'),300);
   renderList();
 }
 function renderList(){
@@ -635,16 +652,36 @@ function openRoom(id,rd){
   $('kickOverlay').classList.remove('show');
   $('deletedOverlay').classList.remove('show');
   if(listTimer){clearInterval(listTimer);listTimer=null}
-  if(rd)renderRoom(rd,usersCache.data||{});
-  if(!roomTimer)roomTimer=setInterval(refreshRoom,10000);
-  if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1500);
+  if(rd){
+    const cachedUsers=usersCache.data||{};
+    renderRoom(rd,cachedUsers);
+  }
+  // فوری رندر کامل با کاربران + کلن‌ها
+  (async()=>{
+    try{
+      const [u,gs]=await Promise.all([getUsersCached(true),getGroupsCached(true)]);
+      const phones=new Set();
+      if(rd){
+        Object.values(rd.seats||{}).forEach(p=>{if(p)phones.add(p)});
+        Object.values(rd.supers||{}).forEach(p=>{if(p)phones.add(p)});
+      }
+      warmClanCacheForPhones([...phones],gs);
+      if(currentRoomId===id){
+        const rs=await getRooms();
+        const r=rs[id]||rd;
+        if(r)renderRoom(r,u);
+      }
+    }catch(e){}
+  })();
+  if(!roomTimer)roomTimer=setInterval(refreshRoom,8000);
+  if(!liveSyncTimer)liveSyncTimer=setInterval(syncLiveState,1200);
   loadAgora().then(()=>initVoice());
 }
 async function refreshRoom(){
   if(!currentRoomId||overlayShown)return;
   const rs=await getRooms();const r=rs[currentRoomId];
   if(!r){
-    if(localStorage.getItem('current_in_lobby')===currentRoomId){setTimeout(refreshRoom,2000);return;}
+    if(localStorage.getItem('current_in_lobby')===currentRoomId){setTimeout(refreshRoom,1500);return;}
     startListView();return;
   }
   if(r.status==='deleted'){overlayShown=true;stopTimers();disconnectVoice();$('deletedReason').textContent='دلیل: '+(r.deleteReason||'نامشخص');$('deletedOverlay').classList.add('show');return}
@@ -665,7 +702,9 @@ async function refreshRoom(){
   renderRoom(r,u);
 }
 async function renderRoom(room,allUsers){
-  $('roomNameTop').textContent=room.name;
+  if(!room||!me)return;
+  allUsers=allUsers||usersCache.data||{};
+  $('roomNameTop').textContent=room.name||'';
   const pb=$('pendingBanner');pb.innerHTML=room.status==='pending'?'<div class="pending-banner">در انتظار تأیید</div>':'';
   const isMgr=room.managerPhone===me.phone;
   const myLvl=RANK_LEVEL[me.rank]||0;
@@ -687,11 +726,17 @@ async function renderRoom(room,allUsers){
   const allP=new Set();
   Object.values(room.seats||{}).forEach(p=>{if(p)allP.add(p)});
   Object.values(room.supers||{}).forEach(p=>{if(p)allP.add(p)});
-  for(const ph of allP){if(!allUsers[ph]){const u=await getUser(ph);if(u)allUsers[ph]=u}}
+  // پر کردن کاربران گم‌شده به صورت موازی
+  const missing=[];
+  for(const ph of allP){if(ph&&!allUsers[ph])missing.push(ph)}
+  if(missing.length){
+    await Promise.all(missing.map(async ph=>{try{const u=await getUser(ph);if(u)allUsers[ph]=u}catch(e){}}));
+  }
+  // کلن‌ها: از کش گرم استفاده کن، اگر نبود سریع بساز
+  const gs=groupsCache.data||[];
+  warmClanCacheForPhones([...allP],gs);
   const groupCache={};
-  const gps=[];
-  for(const ph of allP){if(ph)gps.push((async()=>{groupCache[ph]=await findUserGroup(ph)})())}
-  await Promise.all(gps);
+  for(const ph of allP){groupCache[ph]=clanRoleCache[ph]||null}
   function buildSlot(type,idx,phone){
     const isSup=type==='super';
     const num=toFa(idx);
@@ -718,7 +763,7 @@ async function renderRoom(room,allUsers){
       let rankBadge='';
       if(isStaffUser)rankBadge='<span class="rank-medal"><span class="rm-rank">'+esc(u.rank)+'</span></span>';
       let clanBadge='';
-      if(gi)clanBadge=clanTagTopHtml(gi);
+      if(gi&&gi.group)clanBadge=clanTagTopHtml(gi);
       if(rankBadge||clanBadge)topBadges='<div class="top-badges">'+rankBadge+clanBadge+'</div>';
       if(u.avatar){
         const av=u.avatar;
