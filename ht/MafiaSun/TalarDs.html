@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0d2135">
-<title>مافیاسان</title>
+<title>مافیاسان - لابی مافیا</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;font-family:Tahoma,'Inter',Arial,sans-serif}
   html,body{height:100%;overflow:hidden;position:fixed;inset:0;background:#071525}
@@ -13,7 +13,7 @@
   .view{position:absolute;inset:0;display:none;flex-direction:column;background:#0d1f35}
   .view.active{display:flex}
 
-  /* ==== TOP BAR - نازک ==== */
+  /* TOP BAR */
   .list-topbar,.room-top-bar{flex-shrink:0;z-index:20}
   .list-topmain,.room-top-main{
     height:calc(34px + env(safe-area-inset-top,0px));
@@ -84,7 +84,7 @@
   .tick-img{width:13px;height:13px;object-fit:contain;vertical-align:middle}
   .crown{display:inline-block;width:15px;height:12px;position:relative;vertical-align:middle;flex-shrink:0;background:linear-gradient(180deg,#FFE066 0%,#FFC107 45%,#B8860B 100%);-webkit-clip-path:polygon(0% 100%,0% 35%,14% 60%,28% 15%,50% 55%,72% 15%,86% 60%,100% 35%,100% 100%);clip-path:polygon(0% 100%,0% 35%,14% 60%,28% 15%,50% 55%,72% 15%,86% 60%,100% 35%,100% 100%);filter:drop-shadow(0 1px 2px rgba(0,0,0,.85))}
 
-  /* ==== BOTTOM BAR - نازک ==== */
+  /* BOTTOM BAR */
   .list-bottombar{position:absolute;bottom:0;left:0;right:0;background:#052a42;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
   .list-bottommain{
     height:46px;
@@ -145,7 +145,7 @@
   .name.manager{color:#ffd700;font-weight:900}
   .name .nm-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
 
-  /* ==== ROOM BOTTOM BAR - نازک ==== */
+  /* ROOM BOTTOM BAR */
   .room-bottom-bar{flex-shrink:0;background:#052a42;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
   .room-bottom-main{
     height:46px;
@@ -250,7 +250,6 @@
 <body>
 
 <div class="phone">
-
   <div class="view active" id="viewList">
     <div class="list-topbar">
       <div class="list-topmain">
@@ -406,7 +405,6 @@
 
 <audio id="clickSound" preload="none"><source src="denielcz-immersivecontrol-button-click-sound-463065.mp3" type="audio/mpeg"></audio>
 
-<!-- Firebase SDK (compat) برای Realtime Database -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
@@ -415,9 +413,6 @@
 let _agoraLoading=null;
 function loadAgora(){if(window.AgoraRTC)return Promise.resolve(true);if(_agoraLoading)return _agoraLoading;_agoraLoading=new Promise(res=>{const s=document.createElement('script');s.src='https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js';s.async=true;s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s)});return _agoraLoading}
 
-/* ============================================================ */
-/*  Firebase Live - سیستم زنده برای لابی مافیا                 */
-/* ============================================================ */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCP75sEM4FFCZ2fB5N36Xu-b2Th9nnrLd8",
   authDomain: "mafiasu-681c7.firebaseapp.com",
@@ -428,176 +423,23 @@ const FIREBASE_CONFIG = {
   appId: "1:180192927804:web:e0c501a0d20af3b6892339"
 };
 
-let _fbDb = null, _fbReady = false, _myPhoneFB = null;
-let _liveUnsub = null;          // unsubscribe برای لابی فعلی
-let _lastLiveHash = null;
+let _fbDb=null,_fbReady=false,_myPhoneFB='unknown';
+let _roomLiveUnsub=null,_chatUnsub=null,_roomsListUnsub=null;
+let _voiceUidToPhone={};
 
-function initFirebaseLive(myPhone) {
-  _myPhoneFB = myPhone || 'unknown';
-  try {
-    if (typeof firebase === 'undefined') {
-      console.warn('⚠️ Firebase SDK not loaded');
-      return false;
-    }
-    if (!firebase.apps.length) {
-      firebase.initializeApp(FIREBASE_CONFIG);
-    }
-    _fbDb = firebase.database();
-    _fbReady = true;
-    console.log('✅ Firebase Live ready for', _myPhoneFB);
+function initFirebaseLive(myPhone){
+  _myPhoneFB=myPhone||'unknown';
+  try{
+    if(typeof firebase==='undefined')return false;
+    if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+    _fbDb=firebase.database();_fbReady=true;
     return true;
-  } catch(e) {
-    console.error('❌ Firebase init error:', e);
-    return false;
-  }
+  }catch(e){return false}
 }
-
-async function fbSet(path, value) {
-  if (!_fbReady || !_fbDb) return false;
-  try {
-    await _fbDb.ref(path).set(value);
-    return true;
-  } catch(e) { console.warn('fbSet', path, e); return false; }
-}
-
-async function fbUpdate(path, value) {
-  if (!_fbReady || !_fbDb) return false;
-  try {
-    await _fbDb.ref(path).update(value);
-    return true;
-  } catch(e) { console.warn('fbUpdate', path, e); return false; }
-}
-
-async function fbGet(path) {
-  if (!_fbReady || !_fbDb) return null;
-  try {
-    const snap = await _fbDb.ref(path).once('value');
-    return snap.val();
-  } catch(e) { return null; }
-}
-
-async function fbRemove(path) {
-  if (!_fbReady || !_fbDb) return false;
-  try {
-    await _fbDb.ref(path).remove();
-    return true;
-  } catch(e) { return false; }
-}
-
-function fbSubscribe(path, callback) {
-  if (!_fbReady || !_fbDb) return function(){};
-  try {
-    const ref = _fbDb.ref(path);
-    const handler = ref.on('value', function(snapshot) {
-      try { callback(snapshot.val()); } catch(e) {}
-    });
-    return function() {
-      try { ref.off('value', handler); } catch(e) {}
-    };
-  } catch(e) {
-    return function(){};
-  }
-}
-
-/* مسیر زنده هر لابی */
-const livePath = id => 'live/' + id;
-
-/* جایگزین کامل getLive / setLive / deleteLive با Firebase */
-async function getLive(id) {
-  if (!id) return {};
-  // اول Firebase
-  if (_fbReady) {
-    const v = await fbGet(livePath(id));
-    if (v) return v;
-  }
-  // fallback Upstash (اگر هنوز داده قدیمی باشه)
-  try {
-    const old = await upstashGet('live:' + id);
-    return old || {};
-  } catch(e) { return {}; }
-}
-
-async function setLive(id, d) {
-  if (!id) return false;
-  // همیشه به Firebase بنویس (منبع حقیقت زنده)
-  if (_fbReady) {
-    return await fbSet(livePath(id), d);
-  }
-  // fallback
-  return upstashSet('live:' + id, d);
-}
-
-async function deleteLive(id) {
-  if (!id) return false;
-  if (_fbReady) await fbRemove(livePath(id));
-  try { await upstashDel('live:' + id); } catch(e) {}
-  return true;
-}
-
-/* شروع لیسنر زنده برای لابی فعلی */
-function startLiveListener(roomId) {
-  stopLiveListener();
-  if (!_fbReady || !roomId) return;
-  _lastLiveHash = null;
-  _liveUnsub = fbSubscribe(livePath(roomId), function(ld) {
-    if (!ld || !currentRoomId || currentRoomId !== roomId || overlayShown) return;
-    // فقط وقتی واقعاً تغییر کرده باشه
-    const hash = JSON.stringify({s: ld.seats, ss: ld.supers, rd: ld.ready, r: ld.reactions, c: (ld.chat||[]).length});
-    if (hash === _lastLiveHash) return;
-    _lastLiveHash = hash;
-
-    // اعمال تغییرات روی UI
-    (async () => {
-      try {
-        const rs = await getRooms();
-        const r = rs[currentRoomId];
-        if (!r) return;
-        if (ld.seats) r.seats = ld.seats;
-        if (ld.supers) r.supers = ld.supers;
-        if (ld.ready) r.ready = ld.ready;
-        window._lastRoomHash = null;
-
-        // چت
-        if (ld.chat && Array.isArray(ld.chat)) {
-          const newMsgs = ld.chat.filter(m => !chatMessages.some(c => c.time === m.time && c.phone === m.phone && c.text === m.text));
-          if (newMsgs.length) {
-            chatMessages.push(...newMsgs);
-            if ($('chatMenu').classList.contains('show')) renderChatMessages();
-          }
-        }
-
-        // ری‌اکشن
-        if (ld.reactions) {
-          const now = Date.now();
-          document.querySelectorAll('.slot[data-phone]').forEach(el => {
-            const p = el.getAttribute('data-phone');
-            const rct = ld.reactions[p];
-            if (rct && now - rct.time < 3500 && !el.querySelector('.reaction-overlay')) {
-              const ov = document.createElement('div');
-              ov.className = 'reaction-overlay show';
-              const im = document.createElement('img');
-              im.src = rct.type === 'dislike' ? 'like3.gif' : 'like1.gif';
-              ov.appendChild(im);
-              el.appendChild(ov);
-              setTimeout(() => ov.remove(), 3500);
-            }
-          });
-        }
-
-        const u = await getUsersCached(false);
-        renderRoom(r, u);
-      } catch(e) {}
-    })();
-  });
-}
-
-function stopLiveListener() {
-  if (_liveUnsub) {
-    try { _liveUnsub(); } catch(e) {}
-    _liveUnsub = null;
-  }
-  _lastLiveHash = null;
-}
+async function fbSet(path,val){if(!_fbReady||!_fbDb)return false;try{await _fbDb.ref(path).set(val);return true}catch(e){return false}}
+async function fbGet(path){if(!_fbReady||!_fbDb)return null;try{const s=await _fbDb.ref(path).once('value');return s.val()}catch(e){return null}}
+async function fbRemove(path){if(!_fbReady||!_fbDb)return false;try{await _fbDb.ref(path).remove();return true}catch(e){return false}}
+function fbSubscribe(path,cb){if(!_fbReady||!_fbDb)return()=>{};try{const r=_fbDb.ref(path);const h=r.on('value',s=>{try{cb(s.val())}catch(e){}});return()=>{try{r.off('value',h)}catch(e){}}}catch(e){return()=>{}}}
 
 const UPSTASH_URL = "https://smooth-werewolf-200782.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAAAxBOAAIgcDFjN2NiMjYxOWNlNjE0NzgyOTExM2JjMjA5ZTc0MjVjMA";
@@ -615,20 +457,13 @@ let chatMessages=[];
 function playClick(){try{const a=document.getElementById('clickSound');if(a){a.currentTime=0;a.volume=.4;a.play().catch(()=>{})}}catch(e){}}
 async function upstashGet(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/get/'+encodeURIComponent(k),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);if(!r.ok)return null;const d=await r.json();if(d&&d.result){try{return JSON.parse(d.result)}catch(e){return d.result}}return null}catch(e){return null}}
 async function upstashSet(k,v){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/set/'+encodeURIComponent(k)+'/'+encodeURIComponent(JSON.stringify(v)),{headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
-async function upstashDel(k){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(UPSTASH_URL+'/del/'+encodeURIComponent(k),{method:'POST',headers:{'Authorization':'Bearer '+UPSTASH_TOKEN},signal:c.signal});clearTimeout(t);return r.ok}catch(e){return false}}
 const getAllUsers=async()=>(await upstashGet('all_users'))||{};
 const saveAllUsers=u=>upstashSet('all_users',u);
 const getUser=p=>upstashGet('user:'+p);
 const saveUser=(p,u)=>upstashSet('user:'+p,u);
-const getRooms=async()=>(await upstashGet(ROOMS_KEY))||{};
-const saveRooms=r=>upstashSet(ROOMS_KEY,r);
-async function getNamesSlots(p){
-  let arr=(await upstashGet(namesKey(p)))||[];
-  if(!Array.isArray(arr))arr=[];
-  while(arr.length<MAX_NAMES)arr.push(null);
-  arr=arr.slice(0,MAX_NAMES);
-  return arr.map(x=>x&&x.name?x:null);
-}
+async function getRooms(){if(_fbReady){const fbRooms=await fbGet('rooms');if(fbRooms&&typeof fbRooms==='object')return fbRooms}const uRooms=await upstashGet(ROOMS_KEY);return uRooms||{}}
+async function saveRooms(r){if(_fbReady)fbSet('rooms',r);upstashSet(ROOMS_KEY,r);return true}
+async function getNamesSlots(p){let arr=(await upstashGet(namesKey(p)))||[];if(!Array.isArray(arr))arr=[];while(arr.length<MAX_NAMES)arr.push(null);arr=arr.slice(0,MAX_NAMES);return arr.map(x=>x&&x.name?x:null)}
 const saveNames=(p,n)=>upstashSet(namesKey(p),n||[]);
 const getReqs=async()=>(await upstashGet(REQ_KEY))||[];
 const saveReqs=r=>upstashSet(REQ_KEY,r);
@@ -637,7 +472,6 @@ const saveReports=r=>upstashSet(REPORT_KEY,r);
 const getMaintenance=()=>upstashGet('server_maintenance');
 const getGroups=async()=>(await upstashGet('police_groups'))||[];
 async function getBan(p){const b=await upstashGet('ban:'+p);if(b&&b.isBanned){if(b.expiresAt&&b.duration!=='permanent'&&new Date(b.expiresAt).getTime()<Date.now())return null;return b}return null}
-async function redisSet(k,v){return await upstashSet(k,v)}
 
 const RANK_LEVEL={'کاربر':0,'ناظر':1,'ناظر ارشد':2,'ادمین':3,'ادمین ارشد':4,'گرداننده':5,'پشتیبانی':6,'سازنده':7};
 const STAFF_RANKS=['ناظر','ناظر ارشد','ادمین','ادمین ارشد','گرداننده','کاربر'];
@@ -648,15 +482,15 @@ function canAccessPanel(r){return r&&r!=='کاربر'}
 function getPanelTabs(r){if(r==='ناظر'||r==='ناظر ارشد')return[{id:'users',label:'کاربران'},{id:'reports',label:'گزارش‌ها'},{id:'lobby_approvals',label:'تأیید لابی'}];return[{id:'names',label:'تأیید نام'},{id:'users',label:'کاربران'},{id:'lobbies',label:'لابی‌ها'},{id:'lobby_approvals',label:'تأیید لابی'},{id:'reports',label:'گزارش‌ها'}];}
 function allowedDurations(r){const mx=BAN_LIMIT[r]||'1d';const ix=DURATIONS.findIndex(d=>d.v===mx);return DURATIONS.slice(0,ix+1)}
 function getRoleTick(rank){if(!rank)return null;const r=String(rank).trim();if(r==='سازنده'||r==='پشتیبانی')return['Tik1.png'];if(r==='ادمین ارشد')return['Tik1000.png'];if(r==='ادمین')return['Tik2.png'];if(r==='گرداننده')return['Tik3.png'];if(r==='ناظر'||r==='ناظر ارشد')return['TIK4.png','Tik4.png'];return null}
-function applyTick(img,c){if(!img||!c)return;let i=0;(function nx(){if(i>=c.length){img.remove();return}const s=c[i++];const t=new Image();t.onload=function(){img.src=s};t.onerror=nx;t.src=s})()}
+function applyTick(img,c){if(!img||!c||!c.length)return;let i=0;(function nx(){if(i>=c.length){img.remove();return}const s=c[i++];const t=new Image();t.onload=function(){img.src=s};t.onerror=nx;t.src=s})()}
 function crownHtml(){return '<span class="crown"></span>'}
 const isStaff=r=>r&&r!=='کاربر';
 
-let me=null, allRoomsCache={}, currentRoomId=null, listTimer=null, roomTimer=null, liveSyncTimer=null, speakTimer=null;
+let me=null, allRoomsCache={}, currentRoomId=null, listTimer=null, roomTimer=null, speakTimer=null;
 let selectedName='', passOn=false, editMode='add', editIndex=-1;
 let banTarget=null, reportTarget=null, ctab='names', overlayShown=false;
 let usersCache={ts:0,data:{}}, groupsCache={ts:0,data:[]}, clanRoleCache={};
-let disconnectCheckTimer=null, isProcessingAction=false;
+let isProcessingAction=false;
 
 const $=id=>document.getElementById(id);
 const toFa=n=>String(n).replace(/[0-9]/g,w=>'۰۱۲۳۴۵۶۷۸۹'[+w]);
@@ -697,54 +531,122 @@ function warmClanCacheForPhones(phones,gs){
 }
 function roleLabel(role){if(role==='owner')return 'مالک';if(role==='deputy')return 'معاون';return 'عضو'}
 function clanTagTopHtml(gi){
-  if(!gi)return '';
+  if(!gi||!gi.group)return '';
   const role=gi.role;const tag=gi.group.tag||gi.group.name||'';
   const shortTag=tag.length>6?tag.substring(0,6)+'…':tag;
   const cls=role==='owner'?'owner':(role==='deputy'?'deputy':'member');
   return '<span class="clan-tag '+cls+'"><span class="role-lbl">'+roleLabel(role)+'</span><span class="tag-txt">'+esc(shortTag)+'</span></span>';
 }
 
+function phoneToAgoraUid(phone){
+  if(!phone)return Math.floor(Math.random()*1000000)+1;
+  let hash=0;const s=String(phone).replace(/\D/g,'');
+  for(let i=0;i<s.length;i++){hash=((hash<<5)-hash)+s.charCodeAt(i);hash|=0}
+  return(Math.abs(hash)%4000000000)+1;
+}
+
+async function initVoice(){
+  if(agoraClient||!window.AgoraRTC||!currentRoomId||!me)return;
+  if(micInitAttempted)return;
+  try{
+    micInitAttempted=true;
+    agoraClient=AgoraRTC.createClient({mode:"rtc",codec:"vp8"});
+    const myUid=phoneToAgoraUid(me.phone);
+    _voiceUidToPhone[myUid]=me.phone;
+    await agoraClient.join(APP_ID,"mafia_room_"+currentRoomId,null,myUid);
+    fbSet('rooms/'+currentRoomId+'/voiceUids/'+myUid,me.phone);
+    agoraClient.on("user-published",async(u,m)=>{try{await agoraClient.subscribe(u,m);if(m==="audio"&&u.audioTrack)u.audioTrack.play()}catch(e){}});
+    agoraClient.enableAudioVolumeIndicator();
+    agoraClient.on("volume-indicator",vols=>{
+      speakingUids.clear();
+      vols.forEach(v=>{
+        if(v.level>15){
+          const ph=_voiceUidToPhone[v.uid]||(v.uid===myUid?me.phone:null);
+          if(ph)speakingUids.add(String(ph));
+        }
+      });
+      updateSpeakingUI();
+    });
+  }catch(e){micInitAttempted=false}
+}
+
+async function toggleMic(){
+  try{
+    if(!agoraClient){await loadAgora();await initVoice()}
+    if(!agoraClient){showModal('⚠️','خطا در ارتباط صوتی');return}
+    if(!localAudioTrack){
+      localAudioTrack=await AgoraRTC.createMicrophoneAudioTrack({AEC:true,ANS:true,AGC:true});
+      await agoraClient.publish(localAudioTrack);
+      isMicOn=true;updateMicUI();return;
+    }
+    isMicOn=!isMicOn;await localAudioTrack.setMuted(!isMicOn);updateMicUI();
+  }catch(e){
+    showModal('⚠️','میکروفون در دسترس نیست');
+    isMicOn=false;
+    if(localAudioTrack){try{localAudioTrack.close()}catch(x){}localAudioTrack=null}
+    updateMicUI();
+  }
+}
+function updateMicUI(){const b=$('micBtn');if(b)b.classList.toggle('mic-on',isMicOn)}
+function updateSpeakingUI(){
+  document.querySelectorAll('.slot[data-phone]').forEach(el=>{
+    const ph=el.getAttribute('data-phone');if(!ph)return;
+    const spk=(String(ph)===String(me&&me.phone)&&isMicOn)||speakingUids.has(String(ph));
+    const ind=el.querySelector('.voice-indicator');
+    if(ind)ind.classList.toggle('speaking',spk);
+  });
+}
+async function disconnectVoice(){
+  if(localAudioTrack){try{localAudioTrack.close()}catch(e){}localAudioTrack=null}
+  if(agoraClient){try{await agoraClient.leave()}catch(e){}agoraClient=null}
+  speakingUids.clear();isMicOn=false;micInitAttempted=false;updateMicUI();
+}
+
 async function boot(){
   startListView();
-  try{
-    const [m, lgRaw] = await Promise.all([getMaintenance(), Promise.resolve(localStorage.getItem('currentLoggedInUser'))]);
-    const ph=lgRaw?JSON.parse(lgRaw).phone:null;
-    if(m&&m.on&&ph!==CREATOR_PHONE){$('serverDownOverlay').classList.add('show');return}
-  }catch(e){}
-  const lg=localStorage.getItem('currentLoggedInUser');
-  if(!lg){location.href='TalarDs.html';return}
-  const phone=JSON.parse(lg).phone;
-  const [ban, u, au, gs] = await Promise.all([getBan(phone), getUser(phone), getAllUsers(), getGroups()]);
-  if(ban){location.href='Ban.html';return}
-  if(!u){location.href='TalarDs.html';return}
-  if(!au[phone]){au[phone]=u;saveAllUsers(au)}
-  usersCache={ts:Date.now(),data:au};
-  groupsCache={ts:Date.now(),data:gs||[]};
-  me={phone,name:u.name||'کاربر',avatar:u.avatar||'Mafia2.png',rank:u.rank||'کاربر',coins:u.coins||0};
-  // راه‌اندازی Firebase Live
+  let lg=localStorage.getItem('currentLoggedInUser');
+  let phone=lg?JSON.parse(lg).phone:CREATOR_PHONE;
+  if(!lg)localStorage.setItem('currentLoggedInUser',JSON.stringify({phone}));
+
+  const [ban,u,au,gs]=await Promise.all([getBan(phone),getUser(phone),getAllUsers(),getGroups()]);
+  if(ban){showModal('🚫','حساب شما مسدود است');return}
+
+  const userData=u||{name:phone===CREATOR_PHONE?'سازنده':'کاربر',avatar:'Mafia2.png',rank:phone===CREATOR_PHONE?'سازنده':'کاربر',coins:5000};
+  if(!au[phone]){au[phone]=userData;saveAllUsers(au)}
+  usersCache={ts:Date.now(),data:au};groupsCache={ts:Date.now(),data:gs||[]};
+  me={phone,name:userData.name||'کاربر',avatar:userData.avatar||'Mafia2.png',rank:userData.rank||'کاربر',coins:userData.coins||0};
+
   initFirebaseLive(me.phone);
   if(canAccessPanel(me.rank))$('btnCreatorPanel').classList.add('show');
   speakTimer=setInterval(updateSpeakingUI,400);
+
+  if(_fbReady&&_fbDb){
+    _roomsListUnsub=fbSubscribe('rooms',rooms=>{
+      if(rooms&&typeof rooms==='object'){allRoomsCache=rooms;if($('viewList').classList.contains('active'))renderList()}
+    });
+  }
   refreshList();
 }
+
 function startListView(){
   currentRoomId=null;overlayShown=false;disconnectVoice();stopTimers();stopLiveListener();
   window._lastRoomHash=null;
   $('viewRoom').classList.remove('active');
   $('viewList').classList.add('active');
-  if(allRoomsCache && Object.keys(allRoomsCache).length)renderList();
-  else refreshList();
+  if(allRoomsCache&&Object.keys(allRoomsCache).length)renderList();else refreshList();
   if(!listTimer)listTimer=setInterval(refreshList,4000);
 }
+
 async function refreshList(){
   $('refreshListBtn').classList.add('spinning');
   try{allRoomsCache=await getRooms()}catch(e){}
   setTimeout(()=>$('refreshListBtn').classList.remove('spinning'),300);
   renderList();
 }
+
 function renderList(){
   const q=($('searchInput').value||'').trim().toLowerCase();
-  const rooms=Object.values(allRoomsCache).filter(r=>r.status==='waiting').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).filter(r=>!q||(r.name||'').toLowerCase().includes(q));
+  const rooms=Object.values(allRoomsCache||{}).filter(r=>r&&r.status==='waiting').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).filter(r=>!q||(r.name||'').toLowerCase().includes(q));
   const list=$('roomsList');
   if(!rooms.length){list.innerHTML='<div class="empty-list">هنوز لابی‌ای نیست</div>';return}
   let h='';
@@ -752,25 +654,16 @@ function renderList(){
   const myLvl=me?RANK_LEVEL[me.rank]||0:0;
   const canDel=isCreator||myLvl>=RANK_LEVEL['گرداننده'];
   rooms.forEach(r=>{
-    const pc=Object.values(r.seats||{}).filter(Boolean).length + Object.keys(r.bots||{}).length;
+    const pc=Object.values(r.seats||{}).filter(Boolean).length+Object.keys(r.bots||{}).length;
     const sc=Object.values(r.supers||{}).filter(Boolean).length;
     const ranked=r.creatorRank&&r.creatorRank!=='کاربر';
     const delBtn=canDel?'<button type="button" class="delete-room-btn show" data-delete="'+r.id+'">✕</button>':'';
     const lockCls=r.password?'locked':'';
-    const ownerRank = ranked ? '<span class="lc-owner-rank">'+esc(r.creatorRank)+'</span>' : '';
+    const ownerRank=ranked?'<span class="lc-owner-rank">'+esc(r.creatorRank)+'</span>':'';
     h+='<div class="room-card" data-card="'+r.id+'">'+delBtn+
-      '<div class="lc-right">'+
-        '<div class="lc-name-row"><span class="lc-name-tag">لابی</span><span class="lc-name">'+esc(r.name)+'</span></div>'+
-        '<div class="lc-code">کد: '+esc(r.code||'---')+'</div>'+
-      '</div>'+
+      '<div class="lc-right"><div class="lc-name-row"><span class="lc-name-tag">لابی</span><span class="lc-name">'+esc(r.name)+'</span></div><div class="lc-code">کد: '+esc(r.code||'---')+'</div></div>'+
       '<div class="lc-divider"></div>'+
-      '<div class="lc-left">'+
-        '<div class="lc-top-row">'+
-          '<span class="lc-counter"><span class="cnt-dot"></span>'+toFa(pc)+'/۱۰</span>'+
-          '<span class="lc-super">👁 '+toFa(sc)+'/۲</span>'+
-        '</div>'+
-        '<button type="button" class="lc-join '+lockCls+'" data-join="'+r.id+'">'+(r.password?'🔒 ورود':'پیوستن')+'</button>'+
-      '</div>'+
+      '<div class="lc-left"><div class="lc-top-row"><span class="lc-counter"><span class="cnt-dot"></span>'+toFa(pc)+'/۱۰</span><span class="lc-super">👁 '+toFa(sc)+'/۲</span></div><button type="button" class="lc-join '+lockCls+'" data-join="'+r.id+'">'+(r.password?'🔒 ورود':'پیوستن')+'</button></div>'+
       '<div class="lc-owner-badge"><span class="lc-owner-crown">'+crownHtml()+'</span>'+ownerRank+'<span class="lc-owner-name">'+esc(r.creatorName||'مالک')+'</span></div>'+
     '</div>';
   });
@@ -778,164 +671,174 @@ function renderList(){
   list.querySelectorAll('[data-join]').forEach(b=>b.onclick=e=>{e.stopPropagation();playClick();joinRoom(b.dataset.join)});
   list.querySelectorAll('[data-delete]').forEach(b=>b.onclick=e=>{e.stopPropagation();playClick();deleteRoomFromList(b.dataset.delete)});
 }
+
 async function deleteRoomFromList(id){
   const rs=await getRooms();const r=rs[id];if(!r)return;
   const reason=prompt('دلیل حذف؟');if(reason===null)return;
   r.status='deleted';r.deleteReason=reason||'حذف توسط مدیریت';
-  await saveRooms(rs);await deleteLive(id);
-  setTimeout(async()=>{const r2=await getRooms();delete r2[id];await saveRooms(r2)},5000);
+  await saveRooms(rs);
+  if(_fbReady)await fbSet('rooms/'+id+'/status','deleted');
   allRoomsCache=rs;renderList();
 }
+
 function mySeat(room){
-  if(!room)return null;
+  if(!room||!me)return null;
   for(const[i,p]of Object.entries(room.seats||{}))if(p===me.phone)return{type:'player',idx:+i};
   for(const[i,p]of Object.entries(room.supers||{}))if(p===me.phone)return{type:'super',idx:+i};
   return null;
 }
-function myRoom(rs){for(const r of Object.values(rs)){if((r.status==='waiting'||r.status==='pending')&&mySeat(r))return r}return null}
-function myRoomsCount(rs){return Object.values(rs).filter(r=>r.managerPhone===me.phone&&(r.status==='waiting'||r.status==='pending')).length}
+function myRoom(rs){for(const r of Object.values(rs||{}))if((r.status==='waiting'||r.status==='pending')&&mySeat(r))return r;return null}
+function myRoomsCount(rs){return Object.values(rs||{}).filter(r=>r.managerPhone===me?.phone&&(r.status==='waiting'||r.status==='pending')).length}
 
 async function joinRoom(id){
   const rs=await getRooms();const r=rs[id];
   if(!r||r.status!=='waiting')return;
-  if((r.blocked||[]).includes(me.phone))return;
-  const al=myRoom(rs);if(al&&al.id!==id)return;
-  if(r.password&&r.managerPhone!==me.phone){const p=prompt('رمز:');if(p===null||p!==r.password)return}
+  if((r.blocked||[]).includes(me.phone)){showModal('⚠️','شما در این لابی مسدود شده‌اید');return}
+  const al=myRoom(rs);if(al&&al.id!==id){showModal('⚠️','شما در یک لابی دیگر هستید');return}
+  if(r.password&&r.managerPhone!==me.phone){const p=prompt('رمز:');if(p===null||p!==r.password){showModal('⚠️','رمز اشتباه است');return}}
   let seat=null;
-  if(!mySeat(r)){for(let i=1;i<=MAX_PLAYERS;i++){if(!r.seats[i]&&!r.bots[i]){seat=i;break}}if(!seat){showModal('⚠️','پره');return}r.seats[seat]=me.phone}
+  if(!mySeat(r)){
+    for(let i=1;i<=MAX_PLAYERS;i++){if(!r.seats[i]&&(!r.bots||!r.bots[i])){seat=i;break}}
+    if(!seat){showModal('⚠️','لابی پر است');return}
+    r.seats[seat]=me.phone;
+  }
   if(r.kicked&&r.kicked[me.phone])delete r.kicked[me.phone];
   await saveRooms(rs);
+  if(_fbReady)await fbSet('rooms/'+id,r);
   localStorage.setItem('current_in_lobby',id);
   openRoom(id,r);
-  const ld=await getLive(id);if(!ld.seats)ld.seats={};if(seat)ld.seats[seat]=me.phone;await setLive(id,ld);
 }
+
 async function createRoom(){
   if(isProcessingAction)return;isProcessingAction=true;
   try{
     const rs=await getRooms();
-    if(myRoom(rs)){showModal('⚠️','شما در لابی هستید');isProcessingAction=false;return}
-    if(myRoomsCount(rs)>=MAX_ROOMS_PER_USER){showModal('⚠️','حداکثر');isProcessingAction=false;return}
-    if(!selectedName){showModal('⚠️','اول نام انتخاب کن');isProcessingAction=false;return}
+    if(myRoom(rs)){showModal('⚠️','شما در لابی هستید');return}
+    if(myRoomsCount(rs)>=MAX_ROOMS_PER_USER){showModal('⚠️','حداکثر لابی فعال');return}
+    if(!selectedName){showModal('⚠️','اول نام لابی را انتخاب کنید');return}
     const pass=passOn?$('lobbyPassInput').value.trim():null;
-    if(passOn&&!pass){showModal('⚠️','رمز حداقل ۲');isProcessingAction=false;return}
+    if(passOn&&(!pass||pass.length<2)){showModal('⚠️','رمز حداقل ۲ حرف');return}
     const id='R'+Date.now();
     const code=String(Math.floor(1000+Math.random()*9000));
-    rs[id]={id,name:selectedName,code:code,managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{},ghost:[],blocked:[],kicked:{},status:'waiting',createdAt:Date.now()};
-    await saveRooms(rs);
-    await setLive(id,{seats:{1:me.phone},supers:{},ready:{},reactions:{},chat:[]});
+    const newRoom={id,name:selectedName,code,managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{[me.phone]:true},ghost:[],blocked:[],kicked:{},status:'waiting',createdAt:Date.now()};
+    rs[id]=newRoom;await saveRooms(rs);
+    if(_fbReady)await fbSet('rooms/'+id,newRoom);
     localStorage.setItem('current_in_lobby',id);
     $('createModal').classList.remove('active');
-    openRoom(id,rs[id]);
+    openRoom(id,newRoom);
   }finally{setTimeout(()=>{isProcessingAction=false},300)}
 }
+
 function openRoom(id,rd){
   currentRoomId=id;overlayShown=false;window._lastRoomHash=null;
   localStorage.setItem('current_in_lobby',id);
-  $('viewList').classList.remove('active');
-  $('viewRoom').classList.add('active');
-  $('startOverlay').classList.remove('show');
-  $('kickOverlay').classList.remove('show');
-  $('deletedOverlay').classList.remove('show');
+  $('viewList').classList.remove('active');$('viewRoom').classList.add('active');
+  $('startOverlay').classList.remove('show');$('kickOverlay').classList.remove('show');$('deletedOverlay').classList.remove('show');
   if(listTimer){clearInterval(listTimer);listTimer=null}
   chatMessages=[];
-  if(rd){
-    const cachedUsers=usersCache.data||{};
-    renderRoom(rd,cachedUsers);
-  }
-  // فوری رندر کامل با کاربران + کلن‌ها + شروع لیسنر زنده Firebase
+  if(rd)renderRoom(rd,usersCache.data||{});
   (async()=>{
     try{
       const [u,gs]=await Promise.all([getUsersCached(true),getGroupsCached(true)]);
       const phones=new Set();
-      if(rd){
-        Object.values(rd.seats||{}).forEach(p=>{if(p)phones.add(p)});
-        Object.values(rd.supers||{}).forEach(p=>{if(p)phones.add(p)});
-      }
+      if(rd){Object.values(rd.seats||{}).forEach(p=>{if(p)phones.add(p)});Object.values(rd.supers||{}).forEach(p=>{if(p)phones.add(p)})}
       warmClanCacheForPhones([...phones],gs);
-      if(currentRoomId===id){
-        const rs=await getRooms();
-        const r=rs[id]||rd;
-        if(r)renderRoom(r,u);
-      }
+      if(currentRoomId===id){const rs=await getRooms();const r=rs[id]||rd;if(r)renderRoom(r,u)}
     }catch(e){}
   })();
-  // لیسنر زنده Firebase (به جای پولینگ)
   startLiveListener(id);
-  // فقط چک وضعیت کلی لابی (حذف/اخراج/شروع بازی) هر ۸ ثانیه
-  if(!roomTimer)roomTimer=setInterval(refreshRoom,8000);
+  if(!roomTimer)roomTimer=setInterval(refreshRoom,6000);
   loadAgora().then(()=>initVoice());
 }
+
+function startLiveListener(roomId){
+  stopLiveListener();
+  if(!_fbReady||!roomId||!_fbDb)return;
+  const roomRef=_fbDb.ref('rooms/'+roomId);
+  const handler=roomRef.on('value',snap=>{
+    const r=snap.val();
+    if(!r||!currentRoomId||currentRoomId!==roomId||overlayShown)return;
+    if(r.status==='deleted'){overlayShown=true;stopTimers();disconnectVoice();$('deletedReason').textContent='دلیل: '+(r.deleteReason||'نامشخص');$('deletedOverlay').classList.add('show');return}
+    if(r.kicked&&r.kicked[me?.phone]&&!mySeat(r)){overlayShown=true;stopTimers();disconnectVoice();$('kickOverlay').classList.add('show');return}
+    if(r.status==='playing'){localStorage.setItem('current_game_room',currentRoomId);$('startOverlay').classList.add('show');return}
+    if(r.voiceUids)_voiceUidToPhone=Object.assign(_voiceUidToPhone||{},r.voiceUids);
+    if(r.reactions){
+      const now=Date.now();
+      document.querySelectorAll('.slot[data-phone]').forEach(el=>{
+        const p=el.getAttribute('data-phone');const rct=p?r.reactions[p]:null;
+        if(rct&&now-rct.time<3500&&!el.querySelector('.reaction-overlay')){
+          const ov=document.createElement('div');ov.className='reaction-overlay show';
+          const im=document.createElement('img');im.src=rct.type==='dislike'?'like3.gif':'like1.gif';
+          ov.appendChild(im);el.appendChild(ov);setTimeout(()=>ov.remove(),3500);
+        }
+      });
+    }
+    renderRoom(r,usersCache.data||{});
+  });
+  _roomLiveUnsub=()=>{try{roomRef.off('value',handler)}catch(e){}};
+  startChatListener(roomId);
+}
+
+function stopLiveListener(){if(_roomLiveUnsub){try{_roomLiveUnsub()}catch(e){}_roomLiveUnsub=null}stopChatListener()}
+function startChatListener(roomId){
+  stopChatListener();
+  if(!_fbReady||!_fbDb||!roomId)return;
+  const chatRef=_fbDb.ref('chat/'+roomId).limitToLast(40);
+  const handler=chatRef.on('child_added',snap=>{
+    const m=snap.val();if(!m)return;
+    if(!chatMessages.some(c=>c.id===snap.key||(c.time===m.time&&c.phone===m.phone&&c.text===m.text))){
+      m.id=snap.key;chatMessages.push(m);
+      if($('chatMenu').classList.contains('show'))renderChatMessages();
+    }
+  });
+  _chatUnsub=()=>{try{chatRef.off('child_added',handler)}catch(e){}};
+}
+function stopChatListener(){if(_chatUnsub){try{_chatUnsub()}catch(e){}_chatUnsub=null}}
+
 async function refreshRoom(){
   if(!currentRoomId||overlayShown)return;
   const rs=await getRooms();const r=rs[currentRoomId];
-  if(!r){
-    if(localStorage.getItem('current_in_lobby')===currentRoomId){setTimeout(refreshRoom,1500);return;}
-    startListView();return;
-  }
+  if(!r){if(localStorage.getItem('current_in_lobby')===currentRoomId){setTimeout(refreshRoom,1500);return}startListView();return}
   if(r.status==='deleted'){overlayShown=true;stopTimers();disconnectVoice();$('deletedReason').textContent='دلیل: '+(r.deleteReason||'نامشخص');$('deletedOverlay').classList.add('show');return}
   if(r.kicked&&r.kicked[me.phone]&&!mySeat(r)){overlayShown=true;stopTimers();disconnectVoice();$('kickOverlay').classList.add('show');return}
-  if(!mySeat(r)){
-    let seat=null;
-    for(let i=1;i<=MAX_PLAYERS;i++){if(!r.seats[i]&&!r.bots[i]){seat=i;break}}
-    if(seat){r.seats[seat]=me.phone;await saveRooms(rs)}
-    else if(r.managerPhone!==me.phone){stopTimers();disconnectVoice();startListView();return}
-  }
   if(r.status==='playing'){localStorage.setItem('current_game_room',currentRoomId);$('startOverlay').classList.add('show');return}
-  const ld=await getLive(currentRoomId);
-  if(ld.seats)r.seats=ld.seats;if(ld.supers)r.supers=ld.supers;if(ld.ready)r.ready=ld.ready;
   const hash=JSON.stringify({s:r.seats,ss:r.supers,rd:r.ready,g:r.ghost,n:r.name,st:r.status});
   if(hash===window._lastRoomHash)return;
   window._lastRoomHash=hash;
   const u=await getUsersCached(false);
   renderRoom(r,u);
 }
+
 async function renderRoom(room,allUsers){
   if(!room||!me)return;
   allUsers=allUsers||usersCache.data||{};
   $('roomNameTop').textContent=room.name||'';
-  const pb=$('pendingBanner');pb.innerHTML=room.status==='pending'?'<div class="pending-banner">در انتظار تأیید</div>':'';
+  $('pendingBanner').innerHTML=room.status==='pending'?'<div class="pending-banner">در انتظار تأیید</div>':'';
   const isMgr=room.managerPhone===me.phone;
   const myLvl=RANK_LEVEL[me.rank]||0;
-  const canSettings=isMgr||myLvl>=RANK_LEVEL['گرداننده'];
-  $('btnManagerSettings').classList.toggle('show',canSettings);
-  const canGhost=myLvl>=RANK_LEVEL['ناظر'];
-  $('btnGhost').classList.toggle('show',canGhost);
+  $('btnManagerSettings').classList.toggle('show',isMgr||myLvl>=RANK_LEVEL['گرداننده']);
+  $('btnGhost').classList.toggle('show',myLvl>=RANK_LEVEL['ناظر']);
   $('btnGhost').classList.toggle('on',(room.ghost||[]).includes(me.phone));
   const stb=$('btnStartTop');
   if(isMgr){
-    const hum=Object.values(room.seats||{}).filter(Boolean);
-    const bots=Object.keys(room.bots||{}).length;
-    const tot=hum.length+bots;
+    const hum=Object.values(room.seats||{}).filter(Boolean);const bots=Object.keys(room.bots||{}).length;
     const allRdy=hum.every(p=>p===room.managerPhone||((room.ready||{})[p]===true));
     stb.classList.add('show');
-    if(tot>=MAX_PLAYERS&&allRdy){stb.classList.remove('disabled');stb.onclick=()=>{playClick();startGame()}}
+    if(hum.length+bots>=MAX_PLAYERS&&allRdy){stb.classList.remove('disabled');stb.onclick=()=>{playClick();startGame()}}
     else{stb.classList.add('disabled');stb.onclick=null}
   }else stb.classList.remove('show');
+
   const allP=new Set();
   Object.values(room.seats||{}).forEach(p=>{if(p)allP.add(p)});
   Object.values(room.supers||{}).forEach(p=>{if(p)allP.add(p)});
-  // پر کردن کاربران گم‌شده به صورت موازی
-  const missing=[];
-  for(const ph of allP){if(ph&&!allUsers[ph])missing.push(ph)}
-  if(missing.length){
-    await Promise.all(missing.map(async ph=>{try{const u=await getUser(ph);if(u)allUsers[ph]=u}catch(e){}}));
-  }
-  // کلن‌ها: از کش گرم استفاده کن، اگر نبود سریع بساز
-  const gs=groupsCache.data||[];
-  warmClanCacheForPhones([...allP],gs);
-  const groupCache={};
-  for(const ph of allP){groupCache[ph]=clanRoleCache[ph]||null}
+  warmClanCacheForPhones([...allP],groupsCache.data||[]);
+
   function buildSlot(type,idx,phone){
     const isSup=type==='super';
     const num=toFa(idx);
     const botAt=!isSup&&room.bots&&room.bots[idx];
     let cls='slot'+(isSup?' observer':'');
-    let dp='';
-    let inner='';
-    let nameText='خالی';
-    let nameCls='';
-    let tickHtml='';
-    let topBadges='';
+    let dp='',inner='',nameText='خالی',nameCls='',tickHtml='',topBadges='';
     if(phone){
       dp=' data-phone="'+phone+'"';
       const u=allUsers[phone]||{name:'کاربر',avatar:'Mafia2.png',rank:'کاربر'};
@@ -943,36 +846,25 @@ async function renderRoom(room,allUsers){
       const isStaffUser=isStaff(u.rank);
       const ready=isMgrUser?true:((room.ready||{})[phone]===true);
       cls+=' filled '+(ready?'ready-green':'ready-red');
-      if(isMgrUser)nameCls='manager';
-      else if(phone===me.phone)nameCls='me';
+      if(isMgrUser)nameCls='manager';else if(phone===me.phone)nameCls='me';
       nameText='<span class="nm-text">'+esc(u.name||'کاربر')+'</span>';
       if(isStaffUser){const tk=getRoleTick(u.rank);if(tk)tickHtml='<img class="tick-img" data-tick="'+tk.join(',')+'" alt="">'}
-      const gi=groupCache[phone];
-      let rankBadge='';
-      if(isStaffUser)rankBadge='<span class="rank-medal"><span class="rm-rank">'+esc(u.rank)+'</span></span>';
-      let clanBadge='';
-      if(gi&&gi.group)clanBadge=clanTagTopHtml(gi);
+      const gi=clanRoleCache[phone];
+      let rankBadge=isStaffUser?'<span class="rank-medal"><span class="rm-rank">'+esc(u.rank)+'</span></span>':'';
+      let clanBadge=gi&&gi.group?clanTagTopHtml(gi):'';
       if(rankBadge||clanBadge)topBadges='<div class="top-badges">'+rankBadge+clanBadge+'</div>';
       if(u.avatar){
         const av=u.avatar;
         if(av.endsWith('.webm')||av.endsWith('.mp4'))inner='<div class="avatar-wrap"><video class="avatar-mini" src="'+esc(av)+'" autoplay muted loop playsinline></video></div>';
         else inner='<div class="avatar-wrap"><img class="avatar-mini" src="'+esc(av)+'" onerror="this.style.display=\'none\'"></div>';
       }
-    }else if(botAt){
-      cls+=' filled ready-green';nameText='بات';nameCls='staff';
-    }
-    const isMgrOwner = phone && phone===room.managerPhone;
-    const crownBeside = isMgrOwner ? crownHtml() : '';
-    const nameRow = '<div class="name '+nameCls+'">'+nameText+tickHtml+crownBeside+'</div>';
-    return '<div class="slot-wrap"><div class="'+cls+'" data-slot-type="'+type+'" data-slot-idx="'+idx+'"'+dp+'>'+
-      topBadges+
-      '<div class="num">'+num+'</div>'+
-      inner+
-      '<div class="voice-indicator">🎤</div>'+
-      '<div class="disconnected-overlay">!</div>'+
-      '</div>'+
-      '<div class="name-wrap">'+nameRow+'</div></div>';
+    }else if(botAt){cls+=' filled ready-green';nameText='بات';nameCls='staff'}
+    const isMgrOwner=phone&&phone===room.managerPhone;
+    const crownBeside=isMgrOwner?crownHtml():'';
+    const nameRow='<div class="name '+nameCls+'">'+nameText+tickHtml+crownBeside+'</div>';
+    return '<div class="slot-wrap"><div class="'+cls+'" data-slot-type="'+type+'" data-slot-idx="'+idx+'"'+dp+'>'+topBadges+'<div class="num">'+num+'</div>'+inner+'<div class="voice-indicator">🎤</div><div class="disconnected-overlay">!</div></div><div class="name-wrap">'+nameRow+'</div></div>';
   }
+
   $('supersRow').innerHTML=buildSlot('super',1,room.supers&&room.supers[1])+buildSlot('super',2,room.supers&&room.supers[2]);
   for(let r=1;r<=5;r++){
     const a=(r-1)*2+1;const b=a+1;
@@ -981,6 +873,7 @@ async function renderRoom(room,allUsers){
   document.querySelectorAll('.slot[data-slot-type="player"]').forEach(el=>{el.onclick=()=>{playClick();tapSeat(parseInt(el.dataset.slotIdx))}});
   document.querySelectorAll('.slot[data-slot-type="super"]').forEach(el=>{el.onclick=()=>{playClick();tapSuper(parseInt(el.dataset.slotIdx))}});
   document.querySelectorAll('img.tick-img').forEach(i=>applyTick(i,i.dataset.tick.split(',')));
+
   const bl=$('bottomLeftArea');bl.innerHTML='';
   if(!isMgr){
     const rdy=(room.ready||{})[me.phone]===true;
@@ -990,133 +883,128 @@ async function renderRoom(room,allUsers){
     bl.appendChild(rb);
   }
 }
-async function pushLiveFromRoom(r){
-  if(!r||!r.id)return;
-  const ld = await getLive(r.id) || {};
-  ld.seats = r.seats || {};
-  ld.supers = r.supers || {};
-  ld.ready = r.ready || {};
-  // bots و ghost را هم نگه دار اگر لازم
-  if(r.bots) ld.bots = r.bots;
-  await setLive(r.id, ld);
-}
-async function updateRoom(fn){
+
+async function syncRoomMutation(fn){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  fn(r);await saveRooms(rs);window._lastRoomHash=null;
-  // همزمان به Firebase هم بفرست
-  await pushLiveFromRoom(r);
+  fn(r);window._lastRoomHash=null;await saveRooms(rs);
+  if(_fbReady)await fbSet('rooms/'+currentRoomId,r);
 }
+
 async function tapSeat(i){
-  if(!currentRoomId)return;
-  const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  const ph=r.seats[i],bot=r.bots[i],my=mySeat(r);
-  const isMgr=r.managerPhone===me.phone;
-  if(bot){if(isMgr){if(confirm('بات حذف شود؟')){delete r.bots[i];await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom()}}return}
-  if(my){if(ph)openUserMenu({phone:ph});return}
-  if(ph){openUserMenu({phone:ph});return}
-  r.seats[i]=me.phone;await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();
+  if(!currentRoomId||isProcessingAction)return;isProcessingAction=true;
+  try{
+    const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
+    const ph=r.seats&&r.seats[i],bot=r.bots&&r.bots[i],my=mySeat(r),isMgr=r.managerPhone===me.phone;
+    if(bot){if(isMgr&&confirm('بات حذف شود؟')){delete r.bots[i];await syncRoomMutation(rr=>delete rr.bots[i]);refreshRoom()}return}
+    if(ph){openUserMenu({phone:ph});return}
+    await syncRoomMutation(rr=>{
+      if(!rr.seats)rr.seats={};
+      if(my){if(my.type==='player')delete rr.seats[my.idx];else if(my.type==='super'&&rr.supers)delete rr.supers[my.idx]}
+      rr.seats[i]=me.phone;
+    });
+    refreshRoom();
+  }finally{setTimeout(()=>{isProcessingAction=false},250)}
 }
+
 async function tapSuper(i){
-  if(!currentRoomId)return;
-  const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  const ph=r.supers[i],my=mySeat(r);
-  const isMgr=r.managerPhone===me.phone;
-  if(my){if(ph){if(isMgr&&ph===me.phone){delete r.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){f=x;break}}if(f)r.seats[f]=me.phone;await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();return}openUserMenu({phone:ph})}return}
-  if(ph){openUserMenu({phone:ph});return}
-  if(!isMgr)return;
-  r.supers[i]=me.phone;await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();
+  if(!currentRoomId||isProcessingAction)return;isProcessingAction=true;
+  try{
+    const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
+    const ph=r.supers&&r.supers[i],my=mySeat(r),isMgr=r.managerPhone===me.phone;
+    if(ph){
+      if(isMgr&&ph===me.phone){
+        await syncRoomMutation(rr=>{
+          delete rr.supers[i];let f=null;
+          for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&(!rr.bots||!rr.bots[x])){f=x;break}}
+          if(f)rr.seats[f]=me.phone;
+        });
+        refreshRoom();return;
+      }
+      openUserMenu({phone:ph});return;
+    }
+    await syncRoomMutation(rr=>{
+      if(!rr.supers)rr.supers={};
+      if(my){if(my.type==='player'&&rr.seats)delete rr.seats[my.idx];else if(my.type==='super')delete rr.supers[my.idx]}
+      rr.supers[i]=me.phone;
+    });
+    refreshRoom();
+  }finally{setTimeout(()=>{isProcessingAction=false},250)}
 }
+
 async function toggleReady(){
   if(!currentRoomId)return;
-  const rs=await getRooms();const r=rs[currentRoomId];
-  if(!r)return;
-  r.ready=r.ready||{};r.ready[me.phone]=!(r.ready[me.phone]===true);
-  await saveRooms(rs);await pushLiveFromRoom(r);window._lastRoomHash=null;refreshRoom();
+  await syncRoomMutation(r=>{r.ready=r.ready||{};r.ready[me.phone]=!(r.ready[me.phone]===true)});
+  refreshRoom();
 }
+
 async function startGame(){
-  await updateRoom(r=>{
-    const hum=Object.values(r.seats||{}).filter(Boolean);
-    const bots=Object.keys(r.bots||{}).length;
+  await syncRoomMutation(r=>{
+    const hum=Object.values(r.seats||{}).filter(Boolean);const bots=Object.keys(r.bots||{}).length;
     if(hum.length+bots<MAX_PLAYERS)return;
     for(const p of hum){if(p!==r.managerPhone&&!((r.ready||{})[p]===true))return}
     r.status='playing';
   });
   refreshRoom();
 }
+
 async function leaveRoom(toMain){
   if(!currentRoomId)return;
-  const rid=currentRoomId;
-  stopTimers();stopLiveListener();disconnectVoice();overlayShown=true;
+  const rid=currentRoomId;stopTimers();stopLiveListener();disconnectVoice();overlayShown=true;
   const rs=await getRooms();const r=rs[rid];
   if(r&&r.status!=='deleted'){
     const my=mySeat(r);
-    if(my){if(my.type==='player')delete r.seats[my.idx];else if(my.type==='super')delete r.supers[my.idx]}
-    // همزمان وضعیت زنده Firebase رو آپدیت کن
-    const ld=await getLive(rid);
-    if(ld){
-      if(my&&my.type==='player'&&ld.seats)delete ld.seats[my.idx];
-      if(my&&my.type==='super'&&ld.supers)delete ld.supers[my.idx];
-      if(ld.ready)delete ld.ready[me.phone];
-      await setLive(rid,ld);
-    }
+    if(my){if(my.type==='player'&&r.seats)delete r.seats[my.idx];else if(my.type==='super'&&r.supers)delete r.supers[my.idx]}
+    if(r.ready)delete r.ready[me.phone];
     const left=Object.keys(r.seats||{}).length+Object.values(r.supers||{}).filter(Boolean).length;
-    if(left===0){r.status='deleted';r.deleteReason='لابی خالی شد';await saveRooms(rs);await deleteLive(rid)}
-    else await saveRooms(rs);
+    if(left===0){r.status='deleted';r.deleteReason='لابی خالی شد';delete rs[rid];if(_fbReady)await fbRemove('rooms/'+rid)}
+    else{if(_fbReady)await fbSet('rooms/'+rid,r)}
+    await saveRooms(rs);
   }
   currentRoomId=null;localStorage.removeItem('current_in_lobby');
-  if(toMain){location.href='TalarDs.html';return}
+  if(toMain)showModal('ℹ️','خروج از لابی');
   startListView();
 }
+
 async function openUserMenu(t){
   if(!currentRoomId)return;
-  const au=await getUsersCached();
-  const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
+  const au=await getUsersCached();const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
   const u=au[t.phone]||{name:'کاربر',rank:'کاربر'};
   $('userMenuTitle').textContent=esc(u.name);
-  const isMgr=r.managerPhone===me.phone;
-  const myLvl=RANK_LEVEL[me.rank]||0;
-  const tl=RANK_LEVEL[u.rank||'کاربر']||0;
-  const ts=isStaff(u.rank);
-  let h='<button type="button" class="btn-select" id="umProfile">👤 پروفایل</button>';
-  h+='<button type="button" class="btn-select" id="umReport" style="background:linear-gradient(180deg,#ffb300,#b36b00);box-shadow:0 4px 0 #4a2c00">⚠️ گزارش</button>';
-  const canBan=myLvl>=RANK_LEVEL['ناظر']&&t.phone!==me.phone&&tl<myLvl;
-  if(canBan)h+='<button type="button" class="btn-red" id="umBan">🚫 بن</button>';
+  const isMgr=r.managerPhone===me.phone;const myLvl=RANK_LEVEL[me.rank]||0;const tl=RANK_LEVEL[u.rank||'کاربر']||0;const ts=isStaff(u.rank);
+  let h='<button type="button" class="btn-select" id="umProfile">👤 پروفایل</button><button type="button" class="btn-select" id="umReport" style="background:linear-gradient(180deg,#ffb300,#b36b00);box-shadow:0 4px 0 #4a2c00">⚠️ گزارش</button>';
+  if(myLvl>=RANK_LEVEL['ناظر']&&t.phone!==me.phone&&tl<myLvl)h+='<button type="button" class="btn-red" id="umBan">🚫 بن</button>';
   if(isMgr&&t.phone!==me.phone){
-    if(!ts){h+='<button type="button" class="btn-red" id="umKick">اخراج</button>';h+='<button type="button" class="btn-red" id="umBlock">مسدود</button>'}
-    h+='<button type="button" class="btn-select" id="umSuper1">ناظر ۱</button>';
-    h+='<button type="button" class="btn-select" id="umSuper2">ناظر ۲</button>';
+    if(!ts)h+='<button type="button" class="btn-red" id="umKick">اخراج</button><button type="button" class="btn-red" id="umBlock">مسدود</button>';
+    h+='<button type="button" class="btn-select" id="umSuper1">ناظر ۱</button><button type="button" class="btn-select" id="umSuper2">ناظر ۲</button>';
     let inSup=false;for(const p of Object.values(r.supers||{}))if(p===t.phone)inSup=true;
     if(inSup)h+='<button type="button" class="btn-red" id="umUnsuper">حذف ناظری</button>';
   }
-  $('userMenuBody').innerHTML=h;
-  $('userMenuModal').classList.add('active');
+  $('userMenuBody').innerHTML=h;$('userMenuModal').classList.add('active');
   $('umProfile').onclick=()=>{closeUm();openProfile(t)};
   $('umReport').onclick=()=>{closeUm();reportTarget=t;$('reportDesc').value='';$('reportModal').classList.add('active')};
   const bb=$('umBan');if(bb)bb.onclick=()=>{closeUm();openBanModal(t.phone)};
-  const k=$('umKick');if(k)k.onclick=async()=>{closeUm();await updateRoom(rr=>{rr.kicked=rr.kicked||{};rr.kicked[t.phone]=Date.now();for(const[i,p]of Object.entries(rr.seats||{}))if(p===t.phone)delete rr.seats[i];for(const[i,p]of Object.entries(rr.supers||{}))if(p===t.phone)delete rr.supers[i]});refreshRoom()};
-  const b=$('umBlock');if(b)b.onclick=async()=>{closeUm();await updateRoom(rr=>{rr.blocked=rr.blocked||[];if(!rr.blocked.includes(t.phone))rr.blocked.push(t.phone);for(const[i,p]of Object.entries(rr.seats||{}))if(p===t.phone)delete rr.seats[i];for(const[i,p]of Object.entries(rr.supers||{}))if(p===t.phone)delete rr.supers[i]})};
+  const k=$('umKick');if(k)k.onclick=async()=>{closeUm();await syncRoomMutation(rr=>{rr.kicked=rr.kicked||{};rr.kicked[t.phone]=Date.now();for(const[i,p]of Object.entries(rr.seats||{}))if(p===t.phone)delete rr.seats[i];for(const[i,p]of Object.entries(rr.supers||{}))if(p===t.phone)delete rr.supers[i]});refreshRoom()};
+  const b=$('umBlock');if(b)b.onclick=async()=>{closeUm();await syncRoomMutation(rr=>{rr.blocked=rr.blocked||[];if(!rr.blocked.includes(t.phone))rr.blocked.push(t.phone);for(const[i,p]of Object.entries(rr.seats||{}))if(p===t.phone)delete rr.seats[i];for(const[i,p]of Object.entries(rr.supers||{}))if(p===t.phone)delete rr.supers[i]})};
   const s1=$('umSuper1');if(s1)s1.onclick=async()=>{closeUm();await setSuper(t,1)};
   const s2=$('umSuper2');if(s2)s2.onclick=async()=>{closeUm();await setSuper(t,2)};
-  const us=$('umUnsuper');if(us)us.onclick=async()=>{closeUm();await updateRoom(rr=>{for(const[i,p]of Object.entries(rr.supers)){if(p===t.phone){delete rr.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&!rr.bots[x]){f=x;break}}if(f)rr.seats[f]=t.phone}}});refreshRoom()};
+  const us=$('umUnsuper');if(us)us.onclick=async()=>{closeUm();await syncRoomMutation(rr=>{for(const[i,p]of Object.entries(rr.supers||{})){if(p===t.phone){delete rr.supers[i];let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&(!rr.bots||!rr.bots[x])){f=x;break}}if(f)rr.seats[f]=t.phone}}});refreshRoom()};
 }
 function closeUm(){$('userMenuModal').classList.remove('active')}
 async function setSuper(t,n){
-  await updateRoom(r=>{
+  await syncRoomMutation(r=>{
     for(const[i,p]of Object.entries(r.seats||{}))if(p===t.phone)delete r.seats[i];
     for(const[i,p]of Object.entries(r.supers||{}))if(p===t.phone)delete r.supers[i];
     const o=r.supers[n];r.supers[n]=t.phone;
-    if(o&&o!==t.phone){let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&!r.bots[x]){f=x;break}}if(f)r.seats[f]=o}
+    if(o&&o!==t.phone){let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!r.seats[x]&&(!r.bots||!r.bots[x])){f=x;break}}if(f)r.seats[f]=o}
   });
   refreshRoom();
 }
 async function openProfile(t){
   const au=await getUsersCached();const u=au[t.phone]||{};
   const gi=await findUserGroup(t.phone);
-  let clanTxt='-';
-  if(gi){clanTxt=roleLabel(gi.role)+' '+esc(gi.group.name||'')}
-  const tk=getRoleTick(u.rank);
-  const tick=tk?'<img class="tick-img" data-tick="'+tk.join(',')+'">':'';
+  let clanTxt='-';if(gi&&gi.group)clanTxt=roleLabel(gi.role)+' '+esc(gi.group.name||'');
+  const tk=getRoleTick(u.rank);const tick=tk?'<img class="tick-img" data-tick="'+tk.join(',')+'">':'';
   const av=u.avatar?'<img src="'+esc(u.avatar)+'" onerror="this.style.display=\'none\'">':'';
   const ranked=u.rank&&u.rank!=='کاربر';
   const rankBadge=ranked?'<span class="pf-rank-badge">'+crownHtml()+' '+esc(u.rank)+' '+tick+'</span>':'';
@@ -1126,10 +1014,9 @@ async function openProfile(t){
 }
 async function sendReport(){
   if(!reportTarget)return;
-  const au=await getUsersCached(true);
-  const reps=await getReports();
+  const au=await getUsersCached(true);const reps=await getReports();
   reps.push({id:Date.now(),fromPhone:me.phone,fromName:me.name,toPhone:reportTarget.phone,toName:(au[reportTarget.phone]||{}).name||'کاربر',subject:$('reportSubject').value,desc:$('reportDesc').value.trim(),ts:Date.now()});
-  await saveReports(reps.slice(-100));$('reportModal').classList.remove('active');
+  await saveReports(reps.slice(-100));$('reportModal').classList.remove('active');showModal('✅','گزارش ثبت شد');
 }
 async function openManager(){
   if(!currentRoomId)return;
@@ -1143,72 +1030,51 @@ async function openManager(){
   if(isC||myLvl>=RANK_LEVEL['گرداننده'])h+='<button type="button" class="btn-red" id="mgDelete">🗑 حذف لابی</button>';
   $('managerBody').innerHTML=h||'<div class="no-pending">گزینه‌ای نیست</div>';
   $('managerModal').classList.add('active');
-  const ab=$('mgAddBot');if(ab)ab.onclick=async()=>{await updateRoom(rr=>{let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&!rr.bots[x]){f=x;break}}if(!f)return;rr.bots[f]={name:'بات'}});$('managerModal').classList.remove('active');refreshRoom()};
-  const rbm=$('mgRemoveBot');if(rbm)rbm.onclick=async()=>{await updateRoom(rr=>{const keys=Object.keys(rr.bots||{});if(!keys.length)return;delete rr.bots[keys[keys.length-1]]});$('managerModal').classList.remove('active');refreshRoom()};
-  const db=$('mgDelete');if(db)db.onclick=async()=>{const reason=prompt('دلیل:');if(reason===null)return;await updateRoom(rr=>{rr.status='deleted';rr.deleteReason=reason});await deleteLive(currentRoomId);currentRoomId=null;localStorage.removeItem('current_in_lobby');stopTimers();disconnectVoice();$('managerModal').classList.remove('active');startListView()};
+  const ab=$('mgAddBot');if(ab)ab.onclick=async()=>{await syncRoomMutation(rr=>{let f=null;for(let x=1;x<=MAX_PLAYERS;x++){if(!rr.seats[x]&&(!rr.bots||!rr.bots[x])){f=x;break}}if(!f)return;rr.bots[f]={name:'بات'}});$('managerModal').classList.remove('active');refreshRoom()};
+  const rbm=$('mgRemoveBot');if(rbm)rbm.onclick=async()=>{await syncRoomMutation(rr=>{const keys=Object.keys(rr.bots||{});if(!keys.length)return;delete rr.bots[keys[keys.length-1]]});$('managerModal').classList.remove('active');refreshRoom()};
+  const db=$('mgDelete');if(db)db.onclick=async()=>{const reason=prompt('دلیل:');if(reason===null)return;await syncRoomMutation(rr=>{rr.status='deleted';rr.deleteReason=reason});await leaveRoom(false)};
 }
 function openNamesModal(){$('namesModal').classList.add('active');renderNames()}
 function closeNamesModal(){$('namesModal').classList.remove('active')}
 async function renderNames(){
   const names=await getNamesSlots(me.phone);
-  const list=$('namesList');
   let h='';
   for(let i=0;i<MAX_NAMES;i++){
     const n=names[i];
-    if(n && n.name){
-      h+='<div class="name-row" data-pick="'+i+'"><div class="n">'+esc(n.name)+'</div><button type="button" class="edit-name-btn" data-edit="'+i+'">✎</button></div>';
-    }else{
-      h+='<div class="name-row empty" data-pick="'+i+'"><div class="n">+</div></div>';
-    }
+    if(n&&n.name)h+='<div class="name-row" data-pick="'+i+'"><div class="n">'+esc(n.name)+'</div><button type="button" class="edit-name-btn" data-edit="'+i+'">✎</button></div>';
+    else h+='<div class="name-row empty" data-pick="'+i+'"><div class="n">+</div></div>';
   }
-  list.innerHTML=h;
-  list.querySelectorAll('.name-row').forEach(row=>{
-    row.addEventListener('click',function(e){
+  $('namesList').innerHTML=h;
+  $('namesList').querySelectorAll('.name-row').forEach(row=>{
+    row.onclick=e=>{
       if(e.target.closest('.edit-name-btn'))return;
-      e.preventDefault();e.stopPropagation();
-      const i=parseInt(this.getAttribute('data-pick'),10);
-      const namesNow=names[i];
-      if(namesNow && namesNow.name){
-        selectedName=namesNow.name;
-        $('selectedNameLabel').textContent=namesNow.name;
-        $('selectNameBtn').classList.add('selected');
-        closeNamesModal();
-      }else{
-        openEditModal('add',i,'');
-      }
-    });
+      const i=parseInt(row.getAttribute('data-pick'),10);
+      const cur=names[i];
+      if(cur&&cur.name){selectedName=cur.name;$('selectedNameLabel').textContent=cur.name;$('selectNameBtn').classList.add('selected');closeNamesModal()}
+      else openEditModal('add',i,'');
+    };
   });
-  list.querySelectorAll('.edit-name-btn').forEach(b=>{
-    b.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();
-      const i=parseInt(this.getAttribute('data-edit'),10);
-      const n=names[i];
-      if(n&&n.name)openEditModal('edit',i,n.name);
-    });
+  $('namesList').querySelectorAll('.edit-name-btn').forEach(b=>{
+    b.onclick=e=>{e.stopPropagation();const i=parseInt(b.getAttribute('data-edit'),10);const n=names[i];if(n&&n.name)openEditModal('edit',i,n.name)};
   });
 }
 function openEditModal(mode,ix,val){
   editMode=mode;editIndex=ix;
   $('editTitle').textContent=mode==='edit'?'ویرایش نام':'نام جدید';
-  $('editInput').value=val||'';
-  $('editModal').classList.add('active');
+  $('editInput').value=val||'';$('editModal').classList.add('active');
   setTimeout(()=>{const inp=$('editInput');if(inp)inp.focus()},250);
 }
 async function saveEdit(){
   const val=$('editInput').value.trim();
-  if(!val){showModal('⚠️','نام وارد کن');return}
-  if(val.length<2){showModal('⚠️','حداقل ۲ حرف');return}
+  if(!val||val.length<2){showModal('⚠️','حداقل ۲ حرف');return}
   const names=await getNamesSlots(me.phone);
-  if(editIndex>=0 && editIndex<MAX_NAMES){
-    names[editIndex]={name:val,status:(names[editIndex]&&names[editIndex].status)||'active'};
-  }else{
+  if(editIndex>=0&&editIndex<MAX_NAMES)names[editIndex]={name:val,status:(names[editIndex]&&names[editIndex].status)||'active'};
+  else{
     let placed=false;
     for(let i=0;i<MAX_NAMES;i++){if(!names[i]){names[i]={name:val,status:'active'};placed=true;break}}
     if(!placed){showModal('⚠️','جای خالی نیست');return}
   }
-  await saveNames(me.phone,names);
-  $('editModal').classList.remove('active');
-  await renderNames();
+  await saveNames(me.phone,names);$('editModal').classList.remove('active');await renderNames();
 }
 async function openCreatorPanel(){
   if(!canAccessPanel(me.rank))return;
@@ -1242,16 +1108,14 @@ async function renderCTab(){
     body.querySelectorAll('[data-uban]').forEach(b=>b.onclick=()=>openBanModal(b.dataset.uban));
   }
   if(ctab==='lobbies'){
-    const rs=await getRooms();
-    const act=Object.values(rs).filter(r=>r.status==='waiting');
+    const rs=await getRooms();const act=Object.values(rs).filter(r=>r&&r.status==='waiting');
     if(!act.length){body.innerHTML='<div class="no-pending">لابی‌ای نیست</div>';return}
     let h='';act.forEach(r=>{h+='<div class="row-item"><b style="color:#7ec3f0">'+esc(r.creatorName)+'</b> → <b>'+esc(r.name)+'</b><div class="acts"><button type="button" style="background:#d32f2f" data-ldel="'+r.id+'">حذف</button></div></div>'});
     body.innerHTML=h;
-    body.querySelectorAll('[data-ldel]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.ldel]){rs[b.dataset.ldel].status='deleted';await saveRooms(rs);await deleteLive(b.dataset.ldel)}renderCTab()});
+    body.querySelectorAll('[data-ldel]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.ldel]){rs[b.dataset.ldel].status='deleted';await saveRooms(rs)}renderCTab()});
   }
   if(ctab==='lobby_approvals'){
-    const rs=await getRooms();
-    const pend=Object.values(rs).filter(r=>r.status==='pending');
+    const rs=await getRooms();const pend=Object.values(rs).filter(r=>r&&r.status==='pending');
     if(!pend.length){body.innerHTML='<div class="no-pending">درخواستی نیست</div>';return}
     let h='';pend.forEach(r=>{h+='<div class="row-item"><b>'+esc(r.creatorName)+'</b> → <b style="color:#ffd700">'+esc(r.name)+'</b><div class="acts"><button type="button" style="background:#3f8f3f" data-apl="'+r.id+'">تأیید</button><button type="button" style="background:#d32f2f" data-rjl="'+r.id+'">رد</button></div></div>'});
     body.innerHTML=h;
@@ -1272,70 +1136,32 @@ async function openAdminUser(phone){
   let h='<label class="edit-label">نام:</label><input class="edit-input" id="auName" value="'+esc(u.name||'')+'"><label class="edit-label">سکه:</label><input class="edit-input" type="number" id="auCoins" value="'+(u.coins||0)+'"><label class="edit-label">مقام:</label><select class="edit-input" id="auRank">';
   STAFF_RANKS.forEach(r=>{h+='<option value="'+r+'">'+r+'</option>'});
   h+='</select><button type="button" class="btn-green" id="auSave" style="margin-top:14px">ذخیره</button><button type="button" class="btn-red" id="auBan">بن</button>';
-  $('adminUserBody').innerHTML=h;
-  $('auRank').value=u.rank||'کاربر';
+  $('adminUserBody').innerHTML=h;$('auRank').value=u.rank||'کاربر';
   $('adminUserModal').classList.add('active');
   $('auSave').onclick=async()=>{u.name=$('auName').value.trim()||u.name;u.coins=parseInt($('auCoins').value)||0;u.rank=$('auRank').value;await saveUser(phone,u);const au=await getAllUsers();au[phone]=u;await saveAllUsers(au);usersCache={ts:0,data:{}};$('adminUserModal').classList.remove('active');renderCTab()};
   $('auBan').onclick=()=>{$('adminUserModal').classList.remove('active');openBanModal(phone)};
 }
 function openBanModal(phone){
-  banTarget=phone;
-  let h='';allowedDurations(me.rank).forEach(d=>{h+='<option value="'+d.v+'">'+d.l+'</option>'});
+  banTarget=phone;let h='';allowedDurations(me.rank).forEach(d=>{h+='<option value="'+d.v+'">'+d.l+'</option>'});
   $('banDuration').innerHTML=h;$('banReason').value='';$('banModal').classList.add('active');
 }
 async function doBan(){
   if(!banTarget)return;
   const d=DURATIONS.find(x=>x.v===$('banDuration').value)||DURATIONS[0];
   const reason=$('banReason').value.trim()||'تخلف';
-  await redisSet('ban:'+banTarget,{isBanned:true,phone:banTarget,bannedBy:me.name,reason,duration:d.v,bannedAt:new Date().toISOString(),expiresAt:d.ms?new Date(Date.now()+d.ms).toISOString():null});
-  $('banModal').classList.remove('active');renderCTab();
+  await upstashSet('ban:'+banTarget,{isBanned:true,phone:banTarget,bannedBy:me.name,reason,duration:d.v,bannedAt:new Date().toISOString(),expiresAt:d.ms?new Date(Date.now()+d.ms).toISOString():null});
+  $('banModal').classList.remove('active');renderCTab();showModal('✅','کاربر بن شد');
 }
-async function initVoice(){
-  if(agoraClient||!window.AgoraRTC||!currentRoomId||!me)return;
-  if(micInitAttempted)return;
-  try{
-    micInitAttempted=true;
-    agoraClient=AgoraRTC.createClient({mode:"rtc",codec:"vp8"});
-    await agoraClient.join(APP_ID,"mafia_room_"+currentRoomId,null,String(me.phone));
-    agoraClient.on("user-published",async(u,m)=>{try{await agoraClient.subscribe(u,m);if(m==="audio"&&u.audioTrack)u.audioTrack.play()}catch(e){}});
-    agoraClient.enableAudioVolumeIndicator();
-    agoraClient.on("volume-indicator",vols=>{speakingUids.clear();vols.forEach(v=>{if(v.level>15)speakingUids.add(String(v.uid))});updateSpeakingUI()});
-  }catch(e){micInitAttempted=false}
-}
-async function toggleMic(){
-  try{
-    if(!agoraClient){await loadAgora();await initVoice();if(!agoraClient){alert('خطا');return}}
-    if(!localAudioTrack){localAudioTrack=await AgoraRTC.createMicrophoneAudioTrack();await agoraClient.publish(localAudioTrack);isMicOn=true;updateMicUI();return}
-    isMicOn=!isMicOn;await localAudioTrack.setMuted(!isMicOn);updateMicUI();
-  }catch(e){alert('خطا: '+e.message);isMicOn=false;if(localAudioTrack){try{localAudioTrack.close()}catch(x){}localAudioTrack=null}updateMicUI()}
-}
-function updateMicUI(){const b=$('micBtn');if(b)b.classList.toggle('mic-on',isMicOn)}
-function updateSpeakingUI(){
-  document.querySelectorAll('.slot[data-phone]').forEach(el=>{
-    const ph=el.getAttribute('data-phone');if(!ph)return;
-    const spk=(String(ph)===String(me.phone)&&isMicOn)||speakingUids.has(String(ph));
-    const ind=el.querySelector('.voice-indicator');
-    if(ind)ind.classList.toggle('speaking',spk);
-  });
-}
-async function disconnectVoice(){
-  if(localAudioTrack){try{localAudioTrack.close()}catch(e){}localAudioTrack=null}
-  if(agoraClient){try{await agoraClient.leave()}catch(e){}agoraClient=null}
-  speakingUids.clear();isMicOn=false;micInitAttempted=false;updateMicUI();
-}
+
 async function showReactionOnProfile(type){
   if(!currentRoomId)return;
   const now=Date.now();
-  const btnId=type==='dislike'?'dislikeBtn':'likeBtn';
-  const btn=$(btnId);
-  if(type==='dislike'&&now-lastDislikeTime<REACTION_COOLDOWN){if(btn)btn.classList.add('cooling');return}
-  if(type==='like'&&now-lastLikeTime<REACTION_COOLDOWN){if(btn)btn.classList.add('cooling');return}
-  const ld=await getLive(currentRoomId);
-  if(!ld.reactions)ld.reactions={};
-  ld.reactions[me.phone]={type,time:now};
-  await setLive(currentRoomId,ld);
+  const btnId=type==='dislike'?'dislikeBtn':'likeBtn';const btn=$(btnId);
+  if(type==='dislike'&&now-lastDislikeTime<REACTION_COOLDOWN)return;
+  if(type==='like'&&now-lastLikeTime<REACTION_COOLDOWN)return;
   if(type==='dislike')lastDislikeTime=now;else lastLikeTime=now;
   if(btn){btn.classList.add('cooling');setTimeout(()=>btn.classList.remove('cooling'),REACTION_COOLDOWN)}
+  if(_fbReady)await fbSet('rooms/'+currentRoomId+'/reactions/'+me.phone,{type,time:now});
   const el=document.querySelector('.slot[data-phone="'+me.phone+'"]');
   if(el){
     const ex=el.querySelector('.reaction-overlay');if(ex)ex.remove();
@@ -1344,40 +1170,13 @@ async function showReactionOnProfile(type){
     ov.appendChild(img);el.appendChild(ov);setTimeout(()=>ov.remove(),3500);
   }
 }
-async function syncLiveState(){
-  if(!currentRoomId||overlayShown)return;
-  const ld=await getLive(currentRoomId);if(!ld)return;
-  if(ld.reactions){
-    const now=Date.now();
-    document.querySelectorAll('.slot[data-phone]').forEach(el=>{
-      const p=el.getAttribute('data-phone');const r=ld.reactions[p];
-      if(r&&now-r.time<3500&&!el.querySelector('.reaction-overlay')){
-        const ov=document.createElement('div');ov.className='reaction-overlay show';
-        const im=document.createElement('img');im.src=r.type==='dislike'?'like3.gif':'like1.gif';
-        ov.appendChild(im);el.appendChild(ov);setTimeout(()=>ov.remove(),3500);
-      }
-    });
-  }
-  if(ld.chat){
-    const nm=ld.chat.filter(m=>!chatMessages.some(c=>c.time===m.time&&c.phone===m.phone&&c.text===m.text));
-    if(nm.length){chatMessages.push(...nm);if($('chatMenu').classList.contains('show'))renderChatMessages()}
-  }
-  if(ld.seats||ld.supers||ld.ready){
-    if(!window._lastL)window._lastL={};
-    const ch=(ld.seats&&JSON.stringify(ld.seats)!==JSON.stringify(window._lastL.seats))||(ld.supers&&JSON.stringify(ld.supers)!==JSON.stringify(window._lastL.supers))||(ld.ready&&JSON.stringify(ld.ready)!==JSON.stringify(window._lastL.ready));
-    if(ch){
-      const rs=await getRooms();const r=rs[currentRoomId];
-      if(r){if(ld.seats)r.seats=ld.seats;if(ld.supers)r.supers=ld.supers;if(ld.ready)r.ready=ld.ready;window._lastRoomHash=null;const u=await getUsersCached(false);renderRoom(r,u)}
-    }
-    window._lastL=ld;
-  }
-}
+
 function openChat(){$('chatMenu').classList.add('show');renderChatMessages()}
 function closeChat(){$('chatMenu').classList.remove('show')}
 function renderChatMessages(){
   const c=$('chatMessages');
   if(!chatMessages.length){c.innerHTML='<div class="no-pending">پیامی نیست</div>';return}
-  let h='';chatMessages.forEach(m=>{const self=m.phone===me.phone;h+='<div class="chat-message '+(self?'self':'')+'"><div class="sender">'+esc(m.name)+'</div><div class="text">'+esc(m.text)+'</div></div>'});
+  let h='';chatMessages.forEach(m=>{const self=m.phone===me?.phone;h+='<div class="chat-message '+(self?'self':'')+'"><div class="sender">'+esc(m.name)+'</div><div class="text">'+esc(m.text)+'</div></div>'});
   c.innerHTML=h;c.scrollTop=c.scrollHeight;
 }
 function sendChatMessage(){
@@ -1385,66 +1184,62 @@ function sendChatMessage(){
   const i=$('chatInput');const t=i.value.trim();if(!t)return;
   const m={phone:me.phone,name:me.name,text:t,time:Date.now()};
   chatMessages.push(m);
-  (async()=>{const ld=await getLive(currentRoomId);if(!ld.chat)ld.chat=[];ld.chat.push(m);await setLive(currentRoomId,ld)})();
+  if(_fbReady&&_fbDb)_fbDb.ref('chat/'+currentRoomId).push(m);
   i.value='';renderChatMessages();
 }
-function stopTimers(){if(roomTimer){clearInterval(roomTimer);roomTimer=null}if(liveSyncTimer){clearInterval(liveSyncTimer);liveSyncTimer=null}stopLiveListener()}
+
+function stopTimers(){if(roomTimer){clearInterval(roomTimer);roomTimer=null}if(listTimer){clearInterval(listTimer);listTimer=null}}
 function showModal(icon,text){const el=document.createElement('div');el.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#296187,#074461);color:#fff;padding:12px 24px;border-radius:14px;font-size:13px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.6);text-align:center;max-width:85%';el.textContent=icon+' '+text;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}
 
 document.addEventListener('DOMContentLoaded',()=>{
   boot();
   $('searchInput').oninput=renderList;
-  $('refreshListBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playClick();refreshList()});
-  $('backBtn').addEventListener('click',function(e){e.preventDefault();location.href='TalarDs.html'});
-  $('openCreateBtn').addEventListener('click',function(e){
-    e.preventDefault();e.stopPropagation();
-    selectedName='';
-    $('selectedNameLabel').textContent='انتخاب لابی';
-    $('selectNameBtn').classList.remove('selected');
+  $('refreshListBtn').onclick=()=>{playClick();refreshList()};
+  $('backBtn').onclick=()=>{showModal('ℹ️','بازگشت به منو')};
+  $('openCreateBtn').onclick=()=>{
+    selectedName='';$('selectedNameLabel').textContent='انتخاب لابی';$('selectNameBtn').classList.remove('selected');
     passOn=false;$('lockToggle').classList.remove('on');$('passwordField').classList.remove('show');$('lobbyPassInput').value='';
     $('createModal').classList.add('active');
-  });
-  $('closeCreateBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('createModal').classList.remove('active')});
-  $('lockToggle').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();passOn=!passOn;this.classList.toggle('on',passOn);$('passwordField').classList.toggle('show',passOn)});
-  $('selectNameBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openNamesModal();return false});
-  $('doCreateBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();createRoom()});
-  $('closeNamesBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();closeNamesModal()});
-  $('closeEditBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('editModal').classList.remove('active')});
-  $('editSaveBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveEdit()});
-  $('backRoomBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playClick();leaveRoom(false)});
-  $('btnManagerSettings').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openManager()});
-  $('closeManager').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('managerModal').classList.remove('active')});
-  $('btnGhost').addEventListener('click',async function(e){
-    e.preventDefault();e.stopPropagation();
-    const myLvl=RANK_LEVEL[me.rank]||0;
-    if(myLvl<RANK_LEVEL['ناظر'])return;
-    await updateRoom(r=>{
+  };
+  $('closeCreateBtn').onclick=()=>$('createModal').classList.remove('active');
+  $('lockToggle').onclick=function(){passOn=!passOn;this.classList.toggle('on',passOn);$('passwordField').classList.toggle('show',passOn)};
+  $('selectNameBtn').onclick=()=>{openNamesModal()};
+  $('doCreateBtn').onclick=createRoom;
+  $('closeNamesBtn').onclick=closeNamesModal;
+  $('closeEditBtn').onclick=()=>$('editModal').classList.remove('active');
+  $('editSaveBtn').onclick=saveEdit;
+  $('backRoomBtn').onclick=()=>{playClick();leaveRoom(false)};
+  $('btnManagerSettings').onclick=openManager;
+  $('closeManager').onclick=()=>$('managerModal').classList.remove('active');
+  $('btnGhost').onclick=async()=>{
+    const myLvl=RANK_LEVEL[me.rank]||0;if(myLvl<RANK_LEVEL['ناظر'])return;
+    await syncRoomMutation(r=>{
       r.ghost=r.ghost||[];
       if(r.ghost.includes(me.phone))r.ghost=r.ghost.filter(x=>x!==me.phone);
       else r.ghost.push(me.phone);
     });
     refreshRoom();
-  });
-  $('micBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();toggleMic()});
-  $('closeUserMenu').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();closeUm()});
-  $('closeProfile').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('profileModal').classList.remove('active')});
-  $('closeReport').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('reportModal').classList.remove('active')});
-  $('sendReportBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();sendReport()});
-  $('btnCreatorPanel').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openCreatorPanel()});
-  $('closeCreatorPanel').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('creatorPanelModal').classList.remove('active')});
-  $('closeAdminUser').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('adminUserModal').classList.remove('active')});
-  $('closeBan').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();$('banModal').classList.remove('active')});
-  $('doBanBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();doBan()});
-  $('kickGoMain').addEventListener('click',function(e){e.preventDefault();location.href='TalarDs.html'});
-  $('deletedGoMain').addEventListener('click',function(e){e.preventDefault();location.href='TalarDs.html'});
-  $('enterGameBtn').addEventListener('click',function(e){e.preventDefault();localStorage.setItem('current_game_room',currentRoomId);location.href='Safe Game.html'});
-  $('dislikeBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playClick();showReactionOnProfile('dislike')});
-  $('likeBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playClick();showReactionOnProfile('like')});
-  $('chatBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playClick();openChat()});
-  $('closeChat').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();closeChat()});
-  $('sendChat').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();sendChatMessage()});
-  $('chatInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendChatMessage()});
-  $('emojiBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation()});
+  };
+  $('micBtn').onclick=toggleMic;
+  $('closeUserMenu').onclick=closeUm;
+  $('closeProfile').onclick=()=>$('profileModal').classList.remove('active');
+  $('closeReport').onclick=()=>$('reportModal').classList.remove('active');
+  $('sendReportBtn').onclick=sendReport;
+  $('btnCreatorPanel').onclick=openCreatorPanel;
+  $('closeCreatorPanel').onclick=()=>$('creatorPanelModal').classList.remove('active');
+  $('closeAdminUser').onclick=()=>$('adminUserModal').classList.remove('active');
+  $('closeBan').onclick=()=>$('banModal').classList.remove('active');
+  $('doBanBtn').onclick=doBan;
+  $('kickGoMain').onclick=()=>startListView();
+  $('deletedGoMain').onclick=()=>startListView();
+  $('enterGameBtn').onclick=()=>{showModal('🎮','شروع بازی!')};
+  $('dislikeBtn').onclick=()=>{playClick();showReactionOnProfile('dislike')};
+  $('likeBtn').onclick=()=>{playClick();showReactionOnProfile('like')};
+  $('chatBtn').onclick=()=>{playClick();openChat()};
+  $('closeChat').onclick=closeChat;
+  $('sendChat').onclick=sendChatMessage;
+  $('chatInput').onkeypress=e=>{if(e.key==='Enter')sendChatMessage()};
+  $('emojiBtn').onclick=()=>{showModal('😊','ایموجی')};
 });
 document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
