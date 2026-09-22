@@ -461,8 +461,57 @@ const getAllUsers=async()=>(await upstashGet('all_users'))||{};
 const saveAllUsers=u=>upstashSet('all_users',u);
 const getUser=p=>upstashGet('user:'+p);
 const saveUser=(p,u)=>upstashSet('user:'+p,u);
-async function getRooms(){if(_fbReady){const fbRooms=await fbGet('rooms');if(fbRooms&&typeof fbRooms==='object')return fbRooms}const uRooms=await upstashGet(ROOMS_KEY);return uRooms||{}}
-async function saveRooms(r){if(_fbReady)fbSet('rooms',r);upstashSet(ROOMS_KEY,r);return true}
+async function getRooms(){
+  // اول Firebase (منبع اصلی لابی‌ها)
+  if(_fbReady){
+    try{
+      const fbRooms=await fbGet('rooms');
+      if(fbRooms && typeof fbRooms==='object'){
+        // فیلتر کردن نودهای نامعتبر
+        const clean={};
+        for(const[k,v] of Object.entries(fbRooms)){
+          if(v && typeof v==='object' && v.id && v.status)clean[k]=v;
+        }
+        return clean;
+      }
+    }catch(e){console.warn('getRooms FB error',e)}
+  }
+  // fallback Upstash
+  try{
+    const uRooms=await upstashGet(ROOMS_KEY);
+    return (uRooms && typeof uRooms==='object') ? uRooms : {};
+  }catch(e){return {}}
+}
+async function saveRooms(rs){
+  // فقط Upstash را به‌عنوان بک‌آپ کامل نگه می‌داریم
+  // Firebase را room-by-room می‌نویسیم تا کل درخت overwrite نشود
+  try{ await upstashSet(ROOMS_KEY, rs||{}); }catch(e){}
+  return true;
+}
+async function saveOneRoom(room){
+  if(!room || !room.id) return false;
+  let ok=false;
+  if(_fbReady){
+    ok = await fbSet('rooms/'+room.id, room);
+    if(!ok) console.warn('Firebase write failed for room', room.id);
+  }
+  // بک‌آپ در Upstash
+  try{
+    const rs = await getRooms();
+    rs[room.id] = room;
+    await upstashSet(ROOMS_KEY, rs);
+  }catch(e){}
+  return ok || true;
+}
+async function deleteOneRoom(id){
+  if(!id) return;
+  if(_fbReady) await fbRemove('rooms/'+id);
+  try{
+    const rs = await getRooms();
+    delete rs[id];
+    await upstashSet(ROOMS_KEY, rs);
+  }catch(e){}
+}
 async function getNamesSlots(p){let arr=(await upstashGet(namesKey(p)))||[];if(!Array.isArray(arr))arr=[];while(arr.length<MAX_NAMES)arr.push(null);arr=arr.slice(0,MAX_NAMES);return arr.map(x=>x&&x.name?x:null)}
 const saveNames=(p,n)=>upstashSet(namesKey(p),n||[]);
 const getReqs=async()=>(await upstashGet(REQ_KEY))||[];
@@ -676,9 +725,11 @@ async function deleteRoomFromList(id){
   const rs=await getRooms();const r=rs[id];if(!r)return;
   const reason=prompt('دلیل حذف؟');if(reason===null)return;
   r.status='deleted';r.deleteReason=reason||'حذف توسط مدیریت';
-  await saveRooms(rs);
-  if(_fbReady)await fbSet('rooms/'+id+'/status','deleted');
-  allRoomsCache=rs;renderList();
+  await saveOneRoom(r);
+  // بعد از چند ثانیه کامل حذف شود
+  setTimeout(()=>deleteOneRoom(id), 5000);
+  if(allRoomsCache) { allRoomsCache[id]=r; }
+  renderList();
 }
 
 function mySeat(room){
@@ -692,19 +743,19 @@ function myRoomsCount(rs){return Object.values(rs||{}).filter(r=>r.managerPhone=
 
 async function joinRoom(id){
   const rs=await getRooms();const r=rs[id];
-  if(!r||r.status!=='waiting')return;
+  if(!r||r.status!=='waiting'){showModal('⚠️','لابی موجود نیست');return}
   if((r.blocked||[]).includes(me.phone)){showModal('⚠️','شما در این لابی مسدود شده‌اید');return}
   const al=myRoom(rs);if(al&&al.id!==id){showModal('⚠️','شما در یک لابی دیگر هستید');return}
   if(r.password&&r.managerPhone!==me.phone){const p=prompt('رمز:');if(p===null||p!==r.password){showModal('⚠️','رمز اشتباه است');return}}
-  let seat=null;
   if(!mySeat(r)){
+    let seat=null;
+    if(!r.seats)r.seats={};
     for(let i=1;i<=MAX_PLAYERS;i++){if(!r.seats[i]&&(!r.bots||!r.bots[i])){seat=i;break}}
     if(!seat){showModal('⚠️','لابی پر است');return}
     r.seats[seat]=me.phone;
   }
   if(r.kicked&&r.kicked[me.phone])delete r.kicked[me.phone];
-  await saveRooms(rs);
-  if(_fbReady)await fbSet('rooms/'+id,r);
+  await saveOneRoom(r);
   localStorage.setItem('current_in_lobby',id);
   openRoom(id,r);
 }
@@ -712,6 +763,8 @@ async function joinRoom(id){
 async function createRoom(){
   if(isProcessingAction)return;isProcessingAction=true;
   try{
+    if(!me || !me.phone){showModal('⚠️','لطفاً دوباره وارد شوید');return}
+    if(!_fbReady){showModal('⚠️','اتصال زنده برقرار نیست، چند ثانیه صبر کنید');initFirebaseLive(me.phone)}
     const rs=await getRooms();
     if(myRoom(rs)){showModal('⚠️','شما در لابی هستید');return}
     if(myRoomsCount(rs)>=MAX_ROOMS_PER_USER){showModal('⚠️','حداکثر لابی فعال');return}
@@ -720,12 +773,29 @@ async function createRoom(){
     if(passOn&&(!pass||pass.length<2)){showModal('⚠️','رمز حداقل ۲ حرف');return}
     const id='R'+Date.now();
     const code=String(Math.floor(1000+Math.random()*9000));
-    const newRoom={id,name:selectedName,code,managerPhone:me.phone,creatorName:me.name,creatorRank:me.rank,password:pass,seats:{1:me.phone},bots:{},supers:{},ready:{[me.phone]:true},ghost:[],blocked:[],kicked:{},status:'waiting',createdAt:Date.now()};
-    rs[id]=newRoom;await saveRooms(rs);
-    if(_fbReady)await fbSet('rooms/'+id,newRoom);
+    const newRoom={
+      id, name:selectedName, code,
+      managerPhone:me.phone, creatorName:me.name, creatorRank:me.rank||'کاربر',
+      password:pass||null,
+      seats:{1:me.phone}, bots:{}, supers:{},
+      ready:{[me.phone]:true},
+      ghost:[], blocked:[], kicked:{},
+      status:'waiting', createdAt:Date.now()
+    };
+    // نوشتن مستقیم روی Firebase (مسیر تکی) + بک‌آپ
+    const ok = await saveOneRoom(newRoom);
+    if(!ok && _fbReady){
+      showModal('⚠️','خطا در ذخیره لابی - Rules فایربیس را چک کنید');
+      return;
+    }
+    allRoomsCache = allRoomsCache || {};
+    allRoomsCache[id] = newRoom;
     localStorage.setItem('current_in_lobby',id);
     $('createModal').classList.remove('active');
-    openRoom(id,newRoom);
+    openRoom(id, newRoom);
+  }catch(e){
+    console.error('createRoom error', e);
+    showModal('⚠️','خطا در ایجاد لابی');
   }finally{setTimeout(()=>{isProcessingAction=false},300)}
 }
 
@@ -887,8 +957,10 @@ async function renderRoom(room,allUsers){
 async function syncRoomMutation(fn){
   if(!currentRoomId)return;
   const rs=await getRooms();const r=rs[currentRoomId];if(!r)return;
-  fn(r);window._lastRoomHash=null;await saveRooms(rs);
-  if(_fbReady)await fbSet('rooms/'+currentRoomId,r);
+  fn(r);window._lastRoomHash=null;
+  await saveOneRoom(r);
+  allRoomsCache = allRoomsCache || {};
+  allRoomsCache[currentRoomId] = r;
 }
 
 async function tapSeat(i){
@@ -956,10 +1028,12 @@ async function leaveRoom(toMain){
     const my=mySeat(r);
     if(my){if(my.type==='player'&&r.seats)delete r.seats[my.idx];else if(my.type==='super'&&r.supers)delete r.supers[my.idx]}
     if(r.ready)delete r.ready[me.phone];
-    const left=Object.keys(r.seats||{}).length+Object.values(r.supers||{}).filter(Boolean).length;
-    if(left===0){r.status='deleted';r.deleteReason='لابی خالی شد';delete rs[rid];if(_fbReady)await fbRemove('rooms/'+rid)}
-    else{if(_fbReady)await fbSet('rooms/'+rid,r)}
-    await saveRooms(rs);
+    const left=Object.keys(r.seats||{}).filter(k=>r.seats[k]).length+Object.values(r.supers||{}).filter(Boolean).length;
+    if(left===0){
+      await deleteOneRoom(rid);
+    } else {
+      await saveOneRoom(r);
+    }
   }
   currentRoomId=null;localStorage.removeItem('current_in_lobby');
   if(toMain)showModal('ℹ️','خروج از لابی');
@@ -1112,15 +1186,15 @@ async function renderCTab(){
     if(!act.length){body.innerHTML='<div class="no-pending">لابی‌ای نیست</div>';return}
     let h='';act.forEach(r=>{h+='<div class="row-item"><b style="color:#7ec3f0">'+esc(r.creatorName)+'</b> → <b>'+esc(r.name)+'</b><div class="acts"><button type="button" style="background:#d32f2f" data-ldel="'+r.id+'">حذف</button></div></div>'});
     body.innerHTML=h;
-    body.querySelectorAll('[data-ldel]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.ldel]){rs[b.dataset.ldel].status='deleted';await saveRooms(rs)}renderCTab()});
+    body.querySelectorAll('[data-ldel]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.ldel]){rs[b.dataset.ldel].status='deleted';await saveOneRoom(rs[b.dataset.ldel]);setTimeout(()=>deleteOneRoom(b.dataset.ldel),3000)}renderCTab()});
   }
   if(ctab==='lobby_approvals'){
     const rs=await getRooms();const pend=Object.values(rs).filter(r=>r&&r.status==='pending');
     if(!pend.length){body.innerHTML='<div class="no-pending">درخواستی نیست</div>';return}
     let h='';pend.forEach(r=>{h+='<div class="row-item"><b>'+esc(r.creatorName)+'</b> → <b style="color:#ffd700">'+esc(r.name)+'</b><div class="acts"><button type="button" style="background:#3f8f3f" data-apl="'+r.id+'">تأیید</button><button type="button" style="background:#d32f2f" data-rjl="'+r.id+'">رد</button></div></div>'});
     body.innerHTML=h;
-    body.querySelectorAll('[data-apl]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.apl]){rs[b.dataset.apl].status='waiting';await saveRooms(rs)}renderCTab()});
-    body.querySelectorAll('[data-rjl]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.rjl]){rs[b.dataset.rjl].status='deleted';await saveRooms(rs)}renderCTab()});
+    body.querySelectorAll('[data-apl]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.apl]){rs[b.dataset.apl].status='waiting';await saveOneRoom(rs[b.dataset.apl])}renderCTab()});
+    body.querySelectorAll('[data-rjl]').forEach(b=>b.onclick=async()=>{const rs=await getRooms();if(rs[b.dataset.rjl]){await deleteOneRoom(b.dataset.rjl)}renderCTab()});
   }
   if(ctab==='reports'){
     const reps=await getReports();
