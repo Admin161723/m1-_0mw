@@ -183,8 +183,8 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 @keyframes glowGreen{0%,100%{opacity:.8}50%{opacity:1}}
 @keyframes glowRed{0%,100%{opacity:.8}50%{opacity:1}}
 
-/* ✅ قالب بزرگ‌تر شد (140%) - آواتار 72% داخل قالب - از بالا و پایین نمیزنه */
-.slot-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:140%;height:140%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+/* ✅ قالب بزرگ‌تر شد (160%) - آواتار 72% داخل قالب - از بالا و پایین نمیزنه */
+.slot-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:160%;height:160%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
 .slot-content .frame-wrap{position:relative;width:100%;height:100%}
 .slot-content .frame-wrap .avatar{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;height:72%;object-fit:cover;border-radius:18% !important;z-index:1;box-shadow:0 3px 8px rgba(0,0,0,.55)}
 .slot-content .frame-wrap .frame{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:2;pointer-events:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
