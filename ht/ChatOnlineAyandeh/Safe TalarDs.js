@@ -41,6 +41,14 @@ function getUserCode(e){if(!e)return"---";if(ADMIN_FIXED_CODES[e])return ADMIN_F
 function getStatsForPhone(e){try{var t=localStorage.getItem("sag_stats_"+e);if(t){var o=JSON.parse(t);return{games:o.games||0,wins:o.wins||0,score:o.score||0}}}catch(e){}return{games:0,wins:0,score:0}}
 function getMinutesForPhone(e){try{return parseInt(localStorage.getItem("sag_minutes_"+e)||"0",10)}catch(e){return 0}}
 function getRoleForPhone(e){if(!e)return"user";if(ADMIN_PHONES.indexOf(e)>-1){if(e==="09908823688")return"creator";if(e==="09904844031")return"developer";return"admin"}try{var t=localStorage.getItem("sag_roles_"+e);if(t)return t}catch(e){}return"user"}
+
+/* NEW: قالب اختصاصی برای سازنده و برنامه‌نویس */
+function getFrameForPhone(phone){
+  if(!phone)return"Ga.webp";
+  if(phone==="09908823688"||phone==="09904844031")return"Ch1.webp";
+  return"Ga.webp";
+}
+
 async function loadUserDataFromCloud(e){if(e)try{var t=await getCloud("stats:"+e);t&&localStorage.setItem("sag_stats_"+e,t);var o=await getCloud("mins:"+e);o&&localStorage.setItem("sag_minutes_"+e,o);var n=await getCloud("role:"+e);n&&localStorage.setItem("sag_roles_"+e,n);var s=await getCloud("usercode:"+e);s&&localStorage.setItem("sag_usercode_"+e,s)}catch(e){}}
 function getReports(){try{var e=localStorage.getItem("sag_reports");if(!e)return[];var t=JSON.parse(e);return Array.isArray(t)?t:[]}catch(e){return[]}}
 function saveReports(e){try{localStorage.setItem("sag_reports",JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("sag_reports",JSON.stringify(e))}catch(e){}},100)}
@@ -57,16 +65,55 @@ function saveMyNames(e){var t=getCurrentPhone();if(!t)return;var o=getAllNames()
 function getPendingRequests(){try{var e=localStorage.getItem("sag_lobby_name_requests");if(!e)return[];var t=JSON.parse(e);return Array.isArray(t)?t:[]}catch(e){return[]}}
 function savePendingRequests(e){try{localStorage.setItem("sag_lobby_name_requests",JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("sag_lobby_name_requests",JSON.stringify(e))}catch(e){}},100)}
 
-/* ====== NEW: توابع بلاک و لیست مسدودی ====== */
+/* ===== توابع بلاک و لیست مسدودی ===== */
 function getBlockedList(){var e=safeGetUser();if(!e||!e.phone)return[];try{var t=localStorage.getItem("sag_blocked_"+e.phone);if(!t)return[];var o=JSON.parse(t);return Array.isArray(o)?o:[]}catch(e){return[]}}
 function saveBlockedList(e){var t=safeGetUser();if(!t||!t.phone)return;try{localStorage.setItem("sag_blocked_"+t.phone,JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("blocked:"+t.phone,JSON.stringify(e||[]))}catch(e){}},100)}
 function isBlocked(e){var t=getBlockedList();for(var o=0;o<t.length;o++)if(t[o]&&t[o].phone===e)return!0;return!1}
 function toggleBlock(e,t){var o=getBlockedList(),n=-1;for(var i=0;i<o.length;i++)if(o[i]&&o[i].phone===e){n=i;break}if(n>-1){o.splice(n,1);toast("رفع مسدودی شد")}else{o.push({phone:e,name:t||"کاربر",at:(new Date).toISOString()});toast("کاربر مسدود شد")}saveBlockedList(o)}
 function renderBlockList(){var e=$("blockListContent");if(!e)return;e.innerHTML="";var t=getBlockedList();if(t.length===0){e.innerHTML='<div class="no-pending"><div class="no-pending-icon">✓</div>لیست مسدودی خالی است</div>';return}for(var o=document.createDocumentFragment(),i=0;i<t.length;i++){var n=t[i];if(!n||!n.phone)continue;var s=document.createElement("div");s.className="block-item";s.innerHTML='<div class="bi-name">'+escapeHtml(n.name||"کاربر")+'</div><button class="bi-unblock" data-phone="'+escapeHtml(n.phone)+'">رفع مسدودی</button>';o.appendChild(s)}e.appendChild(o);e.onclick=function(e){var t=e.target.closest(".bi-unblock");if(!t)return;toggleBlock(t.getAttribute("data-phone"))}}
 
-/* ====== NEW: پارس کد رنگی لابی ====== */
-function parseColorCode(e){if(!e)return{color:"",clean:""};var t=String(e).match(/^<#?([0-9a-fA-F]{3})#?>/);if(!t)return{color:"",clean:String(e)};var o=t[1],n="#" + o[0]+o[0] + o[1]+o[1] + o[2]+o[2];return{color:n,clean:String(e).slice(t[0].length)}}
-function formatLobbyName(e){var t=parseColorCode(e),o=escapeHtml(t.clean||e||"بی‌نام");if(t.color)return'<span style="color:'+t.color+';text-shadow:0 2px 5px rgba(0,0,0,.95)">'+o+"</span>";return o}
+/* ===== NEW: پارس چندگانه کد رنگی لابی — حداکثر ۴ رنگ ===== */
+function parseColorCodes(input){
+  if(!input)return{segments:[{text:"",color:""}],plain:""};
+  var str=String(input);
+  var regex=/<#?([0-9a-fA-F]{3})#?>/g;
+  var segments=[];
+  var lastIndex=0;
+  var match;
+  var currentColor="";
+  var colorCount=0;
+  var maxColors=4;
+  while((match=regex.exec(str))!==null){
+    if(colorCount>=maxColors)break;
+    var txt=str.slice(lastIndex,match.index);
+    if(txt)segments.push({text:txt,color:currentColor});
+    var code=match[1];
+    currentColor="#" + code[0]+code[0] + code[1]+code[1] + code[2]+code[2];
+    lastIndex=regex.lastIndex;
+    colorCount++;
+  }
+  var remainder=str.slice(lastIndex);
+  if(remainder||segments.length===0){
+    segments.push({text:remainder,color:currentColor});
+  }
+  var plain=str.replace(/<#?([0-9a-fA-F]{3})#?>/g,"").trim();
+  return{segments:segments,plain:plain};
+}
+
+function formatLobbyName(name){
+  var parsed=parseColorCodes(name||"بی‌نام");
+  var html="";
+  for(var i=0;i<parsed.segments.length;i++){
+    var s=parsed.segments[i];
+    if(!s.text)continue;
+    if(s.color){
+      html+='<span style="color:'+s.color+';text-shadow:0 2px 5px rgba(0,0,0,.95)">'+escapeHtml(s.text)+"</span>";
+    }else{
+      html+=escapeHtml(s.text);
+    }
+  }
+  return html||escapeHtml(name||"بی‌نام");
+}
 
 var currentRoomId=null;
 var currentView="list";
@@ -76,7 +123,37 @@ var actionLockUntil=0;
 
 function showListView(){try{currentRoomId=null;currentView="list";lastRoomSnap="";if(reactionCheckTimer){clearTimeout(reactionCheckTimer);reactionCheckTimer=null}var e=$("roomView");e&&e.classList.remove("active");var t=$("listView");t&&t.classList.add("active");var o=$("bgList");o&&o.classList.remove("hidden");var n=$("bgRoom");n&&n.classList.remove("active");renderLobbies()}catch(e){}}
 function showRoomView(e){try{var t=getLobbyById(e);if(!t){toast("لابی پیدا نشد");showListView();return}currentRoomId=e;currentView="room";lastRoomSnap=JSON.stringify(t);var o=$("listView");o&&o.classList.remove("active");var n=$("roomView");n&&n.classList.add("active");var s=$("bgList");s&&s.classList.add("hidden");var a=$("bgRoom");a&&a.classList.add("active");renderRoom(t)}catch(e){showListView()}}
-function renderRoom(e){try{var t=$("roomLobbyName");t&&(t.innerHTML=formatLobbyName(e.name||"بی‌نام"));var o=$("roomGridArea");if(!o)return;var n=o.querySelectorAll(".player-slot");var s=Array.isArray(e.players)?e.players.slice():[];for(;s.length<MAX_SLOTS;)s.push(null);var a=getCurrentPhone(),r=Date.now();for(var i=0;i<n.length&&i<MAX_SLOTS;i++){var l=n[i],c=s[i];l.innerHTML="";l.classList.remove("has-player","ready-green","ready-red");l.onclick=null;if(c&&c.phone){var d=c.phone===e.creatorPhone,u=d?CROWN_SVG:"",p=c.phone===a;l.classList.add("has-player");if(d||c.ready)l.classList.add("ready-green");else l.classList.add("ready-red");var m="";c.micOn&&(m='<img src="Po1.webp" class="mic-indicator" alt="صحبت" onerror="this.style.display=\'none\'">');var g="";if(c.likeVoteExpiry&&r<c.likeVoteExpiry){if(c.likeVote===1)g='<img src="Po2.webp" class="slot-reaction" alt="لایک" onerror="this.style.display=\'none\'">';else if(c.likeVote===-1)g='<img src="Po3.webp" class="slot-reaction" alt="دیس" onerror="this.style.display=\'none\'">'}l.innerHTML=m+g+'<div class="slot-content"><div class="frame-wrap"><img class="avatar" src="'+escapeHtml(c.avatar||"Av.jpg")+'" alt="" onerror="this.src=\'Av.jpg\'"><img class="frame" src="Ga.webp" alt="" onerror="this.style.display=\'none\'"></div></div><div class="player-name-row">'+u+'<span class="pname">'+escapeHtml(c.name||"کاربر")+"</span></div>";(function(e,t,o){l.onclick=function(){o?openOwnProfile():openMiniMenu(e,t)}})(c,d,p)}}renderBottomActions(e);updateMyButtonsState(e);scheduleNextReactionCheck(e)}catch(e){console.error("renderRoom:",e)}}
+function renderRoom(e){
+  try{
+    var t=$("roomLobbyName");t&&(t.innerHTML=formatLobbyName(e.name||"بی‌نام"));
+    var o=$("roomGridArea");if(!o)return;
+    var n=o.querySelectorAll(".player-slot");
+    var s=Array.isArray(e.players)?e.players.slice():[];
+    for(;s.length<MAX_SLOTS;)s.push(null);
+    var a=getCurrentPhone(),r=Date.now();
+    for(var i=0;i<n.length&&i<MAX_SLOTS;i++){
+      var l=n[i],c=s[i];
+      l.innerHTML="";l.classList.remove("has-player","ready-green","ready-red");l.onclick=null;
+      if(c&&c.phone){
+        var d=c.phone===e.creatorPhone,u=d?CROWN_SVG:"",p=c.phone===a;
+        l.classList.add("has-player");
+        if(d||c.ready)l.classList.add("ready-green");else l.classList.add("ready-red");
+        var m="";c.micOn&&(m='<img src="Po1.webp" class="mic-indicator" alt="صحبت" onerror="this.style.display=\'none\'">');
+        var g="";
+        if(c.likeVoteExpiry&&r<c.likeVoteExpiry){
+          if(c.likeVote===1)g='<img src="Po2.webp" class="slot-reaction" alt="لایک" onerror="this.style.display=\'none\'">';
+          else if(c.likeVote===-1)g='<img src="Po3.webp" class="slot-reaction" alt="دیس" onerror="this.style.display=\'none\'">';
+        }
+        var frameSrc=getFrameForPhone(c.phone);
+        l.innerHTML=m+g+'<div class="slot-content"><div class="frame-wrap"><img class="avatar" src="'+escapeHtml(c.avatar||"Av.jpg")+'" alt="" onerror="this.src=\'Av.jpg\'"><img class="frame" src="'+frameSrc+'" alt="" onerror="this.style.display=\'none\'"></div></div><div class="player-name-row">'+u+'<span class="pname">'+escapeHtml(c.name||"کاربر")+"</span></div>";
+        (function(e,t,o){l.onclick=function(){o?openOwnProfile():openMiniMenu(e,t)}})(c,d,p)
+      }
+    }
+    renderBottomActions(e);
+    updateMyButtonsState(e);
+    scheduleNextReactionCheck(e)
+  }catch(e){console.error("renderRoom:",e)}
+}
 function scheduleNextReactionCheck(e){if(reactionCheckTimer){clearTimeout(reactionCheckTimer);reactionCheckTimer=null}var t=Date.now(),o=Infinity,n=Array.isArray(e.players)?e.players:[];for(var i=0;i<n.length;i++){if(n[i]&&n[i].likeVoteExpiry&&n[i].likeVoteExpiry>t&&n[i].likeVoteExpiry<o)o=n[i].likeVoteExpiry}if(o!==Infinity){var s=o-t+120;reactionCheckTimer=setTimeout(function(){if(currentRoomId){var e=getLobbyById(currentRoomId);e&&renderRoom(e)}},s)}}
 function renderBottomActions(e){try{var t=$("leftActions");if(!t)return;t.innerHTML="";var o=safeGetUser();if(!o||!o.phone)return;var n=o.phone===e.creatorPhone;if(n){var s=Array.isArray(e.players)?e.players:[];var a=s.length===MAX_SLOTS&&s.every(function(e){return e&&e.ready});var r=document.createElement("button");r.className="action-btn start-btn"+(a?"":" disabled");r.innerHTML='<span class="ab-label">شروع بازی</span>';r.onclick=function(){if(!a){s.length<MAX_SLOTS?toast("باید ۴ نفر پر شود"):toast("همه باید آماده باشند");return}toast("بازی شروع شد!")};t.appendChild(r)}else{var l=null,c=Array.isArray(e.players)?e.players:[];for(var i=0;i<c.length;i++)if(c[i]&&c[i].phone===o.phone){l=c[i];break}var d=!!(l&&l.ready);var u=document.createElement("button");u.className="action-btn ready-btn"+(d?"":" not-ready");u.innerHTML='<span class="ab-label">'+(d?"آماده‌ام":"نیستم")+"</span>";u.onclick=toggleReady;t.appendChild(u)}}catch(e){}}
 function updateMyButtonsState(e){try{var t=safeGetUser();if(!t||!t.phone)return;var o=null,n=Array.isArray(e.players)?e.players:[];for(var i=0;i<n.length;i++)if(n[i]&&n[i].phone===t.phone){o=n[i];break}var s=!!(o&&o.micOn);var a=$("micImg");a&&(a.src=s?"Po5.webp":"Po4.webp");var r=$("micBtn");r&&(s?r.classList.add("on"):r.classList.remove("on"));var l=o&&o.likeVote||0,c=$("likeBtn"),d=$("dislikeBtn");c&&(l===1?c.classList.add("active"):c.classList.remove("active"));d&&(l===-1?d.classList.add("active"):d.classList.remove("active"))}catch(e){}}
@@ -86,8 +163,6 @@ var reactionLockUntil=0;
 var reactionTimerInterval=null;
 function toggleLike(e){try{if(!currentRoomId)return;var t=Date.now();if(t<reactionLockUntil)return;reactionLockUntil=t+REACTION_COOLDOWN;if(Date.now()<actionLockUntil)return;actionLockUntil=Date.now()+ACTION_LOCK;var o=getLobbyById(currentRoomId);if(!o)return;var n=safeGetUser();if(!n||!n.phone)return;var s=Array.isArray(o.players)?o.players:[],a=null;for(var i=0;i<s.length;i++)if(s[i]&&s[i].phone===n.phone){a=s[i];break}if(!a)return;typeof a.likeVote!="number"&&(a.likeVote=0);if(e==="like")a.likeVote===1?a.likeVote=0:a.likeVote=1;else a.likeVote===-1?a.likeVote=0:a.likeVote=-1;a.likeVote===0?a.likeVoteExpiry=0:a.likeVoteExpiry=Date.now()+REACTION_VISIBLE;var r=getLobbies();for(var j=0;j<r.length;j++)if(r[j].id===currentRoomId){r[j].players=s;break}saveLobbies(r,!0);renderRoom(o);updateMyButtonsState(o);startReactionButtonTimer()}catch(e){}}
 function startReactionButtonTimer(){var e=$("likeBtn"),t=$("dislikeBtn");if(!e||!t)return;reactionTimerInterval&&clearInterval(reactionTimerInterval);e.classList.add("cooldown");t.classList.add("cooldown");var o=function(){var n=Math.max(0,Math.ceil((reactionLockUntil-Date.now())/1e3));var s=e.querySelector(".timer-overlay");s||(s=document.createElement("div"),s.className="timer-overlay",e.appendChild(s));var a=t.querySelector(".timer-overlay");a||(a=document.createElement("div"),a.className="timer-overlay",t.appendChild(a));if(n>0){s.textContent=n;a.textContent=n;s.style.display="flex";a.style.display="flex"}else{s.style.display="none";a.style.display="none";clearInterval(reactionTimerInterval);reactionTimerInterval=null;e.classList.remove("cooldown");t.classList.remove("cooldown")}};o();reactionTimerInterval=setInterval(o,150)}
-
-/* ====== MODIFIED: تغییر برچسب‌های پروفایل (تغییر ۸) ====== */
 function renderProfileStatsRow(e){
   var t=document.querySelector("#playerProfileMenu .pm-stats-row");
   if(!t)return;
@@ -98,12 +173,26 @@ function renderProfileStatsRow(e){
     '<div class="pm-stat-square"><img src="Pa4.webp" class="pm-stat-icon" alt=""><div class="pm-stat-value">'+toFa(wins)+'</div><div class="pm-stat-label">تعداد برد</div></div>'+
     '<div class="pm-stat-square"><img src="Pa6.webp" class="pm-stat-icon" alt=""><div class="pm-stat-value">'+toFa(o.score||0)+'</div><div class="pm-stat-label">امتیاز</div></div>';
 }
-
-function openOwnProfile(){try{var e=safeGetUser();if(!e)return;var t=$("ppTitle");t&&(t.textContent="مشخصات کاربری");var o=$("ppAvatar");o&&(o.src=e.avatar||"Av.jpg");var n=$("ppNameWrap");if(n){var s=ADMIN_PHONES.indexOf(e.phone)>-1?CROWN_SVG:"";n.innerHTML=s+'<span id="ppNameText">'+escapeHtml(e.name||"کاربر")+"</span>"}var a=$("ppUserCode");a&&(a.textContent=getUserCode(e.phone));var r=getRoleForPhone(e.phone);var l=$("ppRoleText");l&&(l.textContent=ADMIN_ROLE_LABEL[e.phone]||ROLE_LABELS[r]||"کاربر عادی");var c=$("ppCheck");c&&(r==="creator"||r==="developer"?c.classList.add("show"):c.classList.remove("show"));renderProfileStatsRow(e.phone);var d=$("ppActionsRow");d&&(d.style.display="none");var u=$("playerProfileMenu");u&&u.classList.add("active")}catch(e){}}
+function openOwnProfile(){
+  try{
+    var e=safeGetUser();if(!e)return;
+    var t=$("ppTitle");t&&(t.textContent="مشخصات کاربری");
+    var o=$("ppAvatar");o&&(o.src=e.avatar||"Av.jpg");
+    var frameEl=$("ppFrameImg");
+    if(frameEl){frameEl.src=getFrameForPhone(e.phone);frameEl.style.display=""}
+    var n=$("ppNameWrap");
+    if(n){var s=ADMIN_PHONES.indexOf(e.phone)>-1?CROWN_SVG:"";n.innerHTML=s+'<span id="ppNameText">'+escapeHtml(e.name||"کاربر")+"</span>"}
+    var a=$("ppUserCode");a&&(a.textContent=getUserCode(e.phone));
+    var r=getRoleForPhone(e.phone);
+    var l=$("ppRoleText");l&&(l.textContent=ADMIN_ROLE_LABEL[e.phone]||ROLE_LABELS[r]||"کاربر عادی");
+    var c=$("ppCheck");c&&(r==="creator"||r==="developer"?c.classList.add("show"):c.classList.remove("show"));
+    renderProfileStatsRow(e.phone);
+    var d=$("ppActionsRow");d&&(d.style.display="none");
+    var u=$("playerProfileMenu");u&&u.classList.add("active")
+  }catch(e){}
+}
 var miniMenuPlayer=null;
 var miniMenuOwner=!1;
-
-/* ====== MODIFIED: openMiniMenu با دکمه بلاک ====== */
 function openMiniMenu(e,t){
   try{
     miniMenuPlayer=e;miniMenuOwner=t;
@@ -122,7 +211,6 @@ function openMiniMenu(e,t){
       var p=document.createElement("button");p.className="mini-menu-btn mm-transfer";p.id="miniTransferBtn";p.innerHTML='<span class="mm-icon">👑</span><span>انتقال مالکیت</span>';p.onclick=function(){var e=miniMenuPlayer;closeMiniMenu();setTimeout(function(){transferOwnership(e.phone,e.name)},150)};
       if(m){d.insertBefore(u,m);d.insertBefore(p,m)}else{d.appendChild(u);d.appendChild(p)}
     }
-    /* NEW: دکمه بلاک/رفع بلاک */
     if(d&&!c){
       var alreadyBlocked=isBlocked(e.phone);
       var bk=document.createElement("button");
@@ -135,8 +223,6 @@ function openMiniMenu(e,t){
     var g=$("miniMenu");g&&g.classList.add("active")
   }catch(e){}
 }
-
-/* ====== MODIFIED: closeMiniMenu با حذف دکمه بلاک ====== */
 function closeMiniMenu(){
   var e=$("miniMenu");e&&e.classList.remove("active");
   miniMenuPlayer=null;miniMenuOwner=!1;
@@ -144,10 +230,30 @@ function closeMiniMenu(){
   var o=$("miniTransferBtn");o&&o.parentNode&&o.parentNode.removeChild(o);
   var bk=$("miniBlockBtn");bk&&bk.parentNode&&bk.parentNode.removeChild(bk);
 }
-
 function kickPlayer(e,t){try{if(!currentRoomId)return;var o=getLobbyById(currentRoomId);if(!o)return;var n=safeGetUser();if(!n||n.phone!==o.creatorPhone){toast("فقط مالک لابی می‌تواند اخراج کند");return}if(e===n.phone){toast("نمی‌توانی خودت را اخراج کنی");return}var s=getLobbies();for(var i=0;i<s.length;i++)if(s[i].id===currentRoomId){s[i].players=s[i].players.filter(function(t){return t&&t.phone!==e});break}saveLobbies(s,!0);var a=getLobbyById(currentRoomId);a&&renderRoom(a);toast("کاربر "+(t||"")+" اخراج شد")}catch(e){toast("خطا در اخراج")}}
 function transferOwnership(e,t){try{if(!currentRoomId)return;var o=getLobbyById(currentRoomId);if(!o)return;var n=safeGetUser();if(!n||n.phone!==o.creatorPhone){toast("فقط مالک لابی می‌تواند مالکیت را منتقل کند");return}if(e===n.phone){toast("خودت مالک هستی");return}var s=getLobbies();for(var i=0;i<s.length;i++)if(s[i].id===currentRoomId){var a=s[i].players,r=-1,l=-1;for(var j=0;j<a.length;j++){a[j]&&a[j].phone===n.phone&&(r=j);a[j]&&a[j].phone===e&&(l=j)}if(r<0||l<0){toast("کاربر پیدا نشد");return}var c=a[r];a[r]=a[l];a[l]=c;s[i].creatorPhone=e;s[i].creatorName=a[r].name||t||"کاربر";break}saveLobbies(s,!0);var d=getLobbyById(currentRoomId);d&&renderRoom(d);toast("مالکیت به "+(t||"")+" منتقل شد")}catch(e){toast("خطا در انتقال مالکیت")}}
-async function openOtherProfile(e,t){try{if(!e||!e.phone)return;var o=$("ppTitle");o&&(o.textContent="مشخصات کاربری");var n=$("ppAvatar");n&&(n.src=e.avatar||"Av.jpg",n.onerror=function(){this.src="Av.jpg"});var s=$("ppNameWrap");if(s){var a=t?CROWN_SVG:"";s.innerHTML=a+'<span id="ppNameText">'+escapeHtml(e.name||"کاربر")+"</span>"}var r=$("ppUserCode");if(r){var l=getUserCode(e.phone);if(l==="---")try{var c=await getCloud("usercode:"+e.phone);c&&(l=c,localStorage.setItem("sag_usercode_"+e.phone,c))}catch(e){}r.textContent=l}var d=getRoleForPhone(e.phone);try{var u=await getCloud("role:"+e.phone);u&&(d=u,localStorage.setItem("sag_roles_"+e.phone,u))}catch(e){}var p=$("ppRoleText");p&&(p.textContent=ADMIN_ROLE_LABEL[e.phone]||ROLE_LABELS[d]||"کاربر عادی");var m=$("ppCheck");m&&(d==="creator"||d==="developer"?m.classList.add("show"):m.classList.remove("show"));try{var g=await getCloud("stats:"+e.phone);g&&localStorage.setItem("sag_stats_"+e.phone,g)}catch(e){}try{var h=await getCloud("mins:"+e.phone);h&&localStorage.setItem("sag_minutes_"+e.phone,h)}catch(e){}renderProfileStatsRow(e.phone);var f=$("ppActionsRow");f&&(f.style.display="none");var v=$("playerProfileMenu");v&&v.classList.add("active")}catch(e){}}
+async function openOtherProfile(e,t){
+  try{
+    if(!e||!e.phone)return;
+    var o=$("ppTitle");o&&(o.textContent="مشخصات کاربری");
+    var n=$("ppAvatar");n&&(n.src=e.avatar||"Av.jpg",n.onerror=function(){this.src="Av.jpg"});
+    var frameEl=$("ppFrameImg");
+    if(frameEl){frameEl.src=getFrameForPhone(e.phone);frameEl.style.display=""}
+    var s=$("ppNameWrap");
+    if(s){var a=t?CROWN_SVG:"";s.innerHTML=a+'<span id="ppNameText">'+escapeHtml(e.name||"کاربر")+"</span>"}
+    var r=$("ppUserCode");
+    if(r){var l=getUserCode(e.phone);if(l==="---")try{var c=await getCloud("usercode:"+e.phone);c&&(l=c,localStorage.setItem("sag_usercode_"+e.phone,c))}catch(e){}r.textContent=l}
+    var d=getRoleForPhone(e.phone);
+    try{var u=await getCloud("role:"+e.phone);u&&(d=u,localStorage.setItem("sag_roles_"+e.phone,u))}catch(e){}
+    var p=$("ppRoleText");p&&(p.textContent=ADMIN_ROLE_LABEL[e.phone]||ROLE_LABELS[d]||"کاربر عادی");
+    var m=$("ppCheck");m&&(d==="creator"||d==="developer"?m.classList.add("show"):m.classList.remove("show"));
+    try{var g=await getCloud("stats:"+e.phone);g&&localStorage.setItem("sag_stats_"+e.phone,g)}catch(e){}
+    try{var h=await getCloud("mins:"+e.phone);h&&localStorage.setItem("sag_minutes_"+e.phone,h)}catch(e){}
+    renderProfileStatsRow(e.phone);
+    var f=$("ppActionsRow");f&&(f.style.display="none");
+    var v=$("playerProfileMenu");v&&v.classList.add("active")
+  }catch(e){}
+}
 function closePlayerProfile(){var e=$("playerProfileMenu");e&&e.classList.remove("active")}
 var reportTarget=null;
 var selectedReportReason="";
@@ -156,22 +262,38 @@ function openReportModal(e){try{if(!e||!e.phone)return;reportTarget=e;selectedRe
 function closeReportModal(){var e=$("reportModal");e&&e.classList.remove("active");reportTarget=null;selectedReportReason=""}
 function sendReport(){try{if(!reportTarget)return;if(!selectedReportReason){toast("لطفاً دلیل گزارش را انتخاب کن");return}var e=safeGetUser();if(!e)return;var t=getReports();t.push({id:genId(),reporterPhone:e.phone,reporterName:e.name||"کاربر",targetPhone:reportTarget.phone,targetName:reportTarget.name||"کاربر",reason:selectedReportReason,createdAt:new Date().toISOString(),status:"pending"});saveReports(t);closeReportModal();updateAdminBadge();updateAdminTabsBadges();toast("گزارش ارسال شد")}catch(e){toast("خطا در ارسال گزارش")}}
 var currentFilter="";
-function renderLobbies(){try{var e=$("lobbiesList");if(!e)return;e.innerHTML="";var t=getLobbies(),o=t.slice();if(currentFilter){var n=currentFilter.toLowerCase();o=o.filter(function(e){return e.name&&e.name.toLowerCase().indexOf(n)>-1||e.code&&String(e.code).indexOf(n)>-1})}if(o.length===0){var s=document.createElement("div");s.className="empty-state";s.innerHTML='<div class="empty-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke="#4a7ba8" stroke-width="2" fill="none"/><path d="M8 3v4M16 3v4" stroke="#4a7ba8" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="13" r="1.5" fill="#4a7ba8"/><circle cx="15" cy="13" r="1.5" fill="#4a7ba8"/></svg></div><div class="empty-text">'+(currentFilter?"لابی پیدا نشد":"هنوز لابی‌ای نیست")+'</div><div class="empty-sub">'+(currentFilter?"با نام دیگری امتحان کن":"با دکمه + پایین لابی بساز")+"</div>";e.appendChild(s);return}var a=document.createElement("div");a.className="section-title";a.textContent=(currentFilter?"نتایج جستجو":"لابی‌های فعال")+" ("+o.length+")";e.appendChild(a);var r=document.createDocumentFragment();for(var i=0;i<o.length;i++)try{var l=buildLobbyCard(o[i]);l&&r.appendChild(l)}catch(e){}e.appendChild(r)}catch(e){}}
-
-/* ====== MODIFIED: buildLobbyCard با کد رنگی ====== */
+function renderLobbies(){
+  try{
+    var e=$("lobbiesList");if(!e)return;e.innerHTML="";
+    var t=getLobbies(),o=t.slice();
+    if(currentFilter){
+      var n=currentFilter.toLowerCase();
+      o=o.filter(function(e){var pn=parseColorCodes(e.name||"");return(pn.plain&&pn.plain.toLowerCase().indexOf(n)>-1)||(e.name&&e.name.toLowerCase().indexOf(n)>-1)||(e.code&&String(e.code).indexOf(n)>-1)})
+    }
+    if(o.length===0){var s=document.createElement("div");s.className="empty-state";s.innerHTML='<div class="empty-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke="#4a7ba8" stroke-width="2" fill="none"/><path d="M8 3v4M16 3v4" stroke="#4a7ba8" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="13" r="1.5" fill="#4a7ba8"/><circle cx="15" cy="13" r="1.5" fill="#4a7ba8"/></svg></div><div class="empty-text">'+(currentFilter?"لابی پیدا نشد":"هنوز لابی‌ای نیست")+'</div><div class="empty-sub">'+(currentFilter?"با نام دیگری امتحان کن":"با دکمه + پایین لابی بساز")+"</div>";e.appendChild(s);return}
+    var a=document.createElement("div");a.className="section-title";a.textContent=(currentFilter?"نتایج جستجو":"لابی‌های فعال")+" ("+o.length+")";e.appendChild(a);
+    var r=document.createDocumentFragment();for(var i=0;i<o.length;i++)try{var l=buildLobbyCard(o[i]);l&&r.appendChild(l)}catch(e){}
+    e.appendChild(r)
+  }catch(e){}
+}
 function buildLobbyCard(e){
   var t=document.createElement("div");t.className="lobby-card";
   var o=Array.isArray(e.players)?e.players:[],n=o.length,s=n>=MAX_SLOTS,a=s?"locked":"",r=s?"پر":"پیوستن",l=n+"/"+MAX_SLOTS,c="";
   e.isPrivate&&lockImgReady&&(c='<img src="Go1.webp" class="lc-lock" alt="قفل">');
   var d="";for(var i=0;i<o.length;i++)if(o[i]&&o[i].phone===e.creatorPhone){d=o[i].name||"";break}if(!d)d=e.creatorName||"---";
-  var parsedName=parseColorCode(e.name||"");
-  var nameClean=escapeHtml(parsedName.clean||e.name||"بی‌نام");
-  var nameStyle=parsedName.color?' style="color:'+parsedName.color+';text-shadow:0 2px 6px rgba(0,0,0,.95)"':'';
-  t.innerHTML='<div class="lc-left"><div class="lc-name-row"><span class="lc-name-tag">لابی</span><span class="lc-name"'+nameStyle+'>'+nameClean+'</span></div><div class="lc-code">'+escapeHtml(e.code||"")+'</div></div><div class="lc-divider"></div><div class="lc-right"><div class="lc-top-row">'+c+'<div class="lc-counter">'+l+'</div></div><button class="lc-join '+a+'">'+r+'</button></div><div class="lc-owner-badge"><span class="lc-owner-crown">👑</span><span class="lc-owner-name">'+escapeHtml(d)+"</span></div>";
+  var parsedName=parseColorCodes(e.name||"");
+  var nameHtml="";
+  for(var k=0;k<parsedName.segments.length;k++){
+    var sg=parsedName.segments[k];
+    if(!sg.text)continue;
+    if(sg.color){nameHtml+='<span style="color:'+sg.color+';text-shadow:0 2px 6px rgba(0,0,0,.95)">'+escapeHtml(sg.text)+"</span>";}
+    else{nameHtml+=escapeHtml(sg.text);}
+  }
+  if(!nameHtml)nameHtml=escapeHtml(e.name||"بی‌نام");
+  t.innerHTML='<div class="lc-left"><div class="lc-name-row"><span class="lc-name-tag">لابی</span><span class="lc-name">'+nameHtml+'</span></div><div class="lc-code">'+escapeHtml(e.code||"")+'</div></div><div class="lc-divider"></div><div class="lc-right"><div class="lc-top-row">'+c+'<div class="lc-counter">'+l+'</div></div><button class="lc-join '+a+'">'+r+'</button></div><div class="lc-owner-badge"><span class="lc-owner-crown">👑</span><span class="lc-owner-name">'+escapeHtml(d)+"</span></div>";
   var u=t.querySelector(".lc-join");
   return u&&u.addEventListener("click",function(t){t.stopPropagation();if(s){toast("لابی پر است");return}e.isPrivate&&e.password?openPasswordModal(e):joinLobby(e)}),t
 }
-
 var passwordLobby=null;
 function openPasswordModal(e){passwordLobby=e;var t=$("passwordInput");t&&(t.value="");var o=$("pwError");o&&(o.textContent="");var n=$("passwordModal");n&&n.classList.add("active");setTimeout(function(){try{t&&t.focus()}catch(e){}},300)}
 function closePasswordModal(){var e=$("passwordModal");e&&e.classList.remove("active");passwordLobby=null}
@@ -189,12 +311,29 @@ function updateLockToggleIcon(){var e=$("lockToggle");if(!e)return;e.innerHTML="
 function openCreateModal(){selectedNameIndex=-1;var e=$("selectedNameLabel");e&&(e.textContent="انتخاب لابی");var t=$("selectNameBtn");t&&t.classList.remove("selected");var o=$("lobbyPassword");o&&(o.value="");isLockOn=!1;updateLockToggleIcon();var n=$("passwordField");n&&n.classList.remove("show");openModal("createModal")}
 function toggleLock(){isLockOn=!isLockOn;updateLockToggleIcon();var e=$("passwordField");if(isLockOn){e&&e.classList.add("show");setTimeout(function(){var e=$("lobbyPassword");e&&e.focus()},200)}else{if(e&&e.classList.remove("show"),$("lobbyPassword"))$("lobbyPassword").value=""}}
 function openMyNamesModal(){renderMyNames();openModal("myNamesModal")}
-function renderMyNames(){var e=$("myNamesList");if(!e)return;e.innerHTML="";var t=getMyNames();for(var i=0;i<MAX_SLOTS;i++){var o=t[i]||{name:"",status:"empty"},n=document.createElement("div");n.className="name-slot"+(i===selectedNameIndex&&o.status==="active"?" selected":"");n.setAttribute("data-idx",i);var parsedN=parseColorCode(o.name||"");
-  var dispName=parsedN.color?'<span style="color:'+parsedN.color+'">'+escapeHtml(parsedN.clean||o.name)+"</span>":escapeHtml(o.name||"");
-  var s=o.name?'<div class="ns-name">'+dispName+"</div>":'<div class="ns-name empty">خالی</div>',a="";
-  o.status==="active"?a='<div class="ns-status active">فعال</div>':o.status==="pending"?a='<div class="ns-status pending">درحال انتظار</div>':o.status==="rejected"&&(a='<div class="ns-status rejected">رد شده</div>');
-  n.innerHTML='<div class="ns-num">'+(i+1)+'</div><div class="ns-info">'+s+a+'</div><button class="ns-edit" data-idx="'+i+'">✎</button>';e.appendChild(n)}
-  e.onclick=function(e){var t=e.target.closest(".ns-edit");if(t){e.stopPropagation();openNamePicker(parseInt(t.getAttribute("data-idx"),10));return}var o=e.target.closest(".name-slot");if(!o)return;var n=parseInt(o.getAttribute("data-idx"),10),s=getMyNames()[n];if(!s||!s.name){toast("این اسلات خالیه");return}if(s.status!=="active"){toast("این اسم هنوز تایید نشده");return}selectedNameIndex=n;var a=$("selectedNameLabel");a&&(a.textContent=s.name);var r=$("selectNameBtn");r&&r.classList.add("selected");closeModal("myNamesModal")}}
+function renderMyNames(){
+  var e=$("myNamesList");if(!e)return;e.innerHTML="";
+  var t=getMyNames();
+  for(var i=0;i<MAX_SLOTS;i++){
+    var o=t[i]||{name:"",status:"empty"},n=document.createElement("div");
+    n.className="name-slot"+(i===selectedNameIndex&&o.status==="active"?" selected":"");
+    n.setAttribute("data-idx",i);
+    var parsedN=parseColorCodes(o.name||"");
+    var dispName="";
+    for(var m=0;m<parsedN.segments.length;m++){
+      var sg2=parsedN.segments[m];
+      if(!sg2.text)continue;
+      if(sg2.color){dispName+='<span style="color:'+sg2.color+'">'+escapeHtml(sg2.text)+"</span>";}
+      else{dispName+=escapeHtml(sg2.text);}
+    }
+    if(!dispName)dispName=escapeHtml(o.name||"");
+    var s=o.name?'<div class="ns-name">'+dispName+"</div>":'<div class="ns-name empty">خالی</div>',a="";
+    o.status==="active"?a='<div class="ns-status active">فعال</div>':o.status==="pending"?a='<div class="ns-status pending">درحال انتظار</div>':o.status==="rejected"&&(a='<div class="ns-status rejected">رد شده</div>');
+    n.innerHTML='<div class="ns-num">'+(i+1)+'</div><div class="ns-info">'+s+a+'</div><button class="ns-edit" data-idx="'+i+'">✎</button>';
+    e.appendChild(n)
+  }
+  e.onclick=function(e){var t=e.target.closest(".ns-edit");if(t){e.stopPropagation();openNamePicker(parseInt(t.getAttribute("data-idx"),10));return}var o=e.target.closest(".name-slot");if(!o)return;var n=parseInt(o.getAttribute("data-idx"),10),s=getMyNames()[n];if(!s||!s.name){toast("این اسلات خالیه");return}if(s.status!=="active"){toast("این اسم هنوز تایید نشده");return}selectedNameIndex=n;var a=$("selectedNameLabel");a&&(a.textContent=s.name);var r=$("selectNameBtn");r&&r.classList.add("selected");closeModal("myNamesModal")}
+}
 function openNamePicker(e){editingSlotIndex=e;var t=getMyNames(),o=t[e]||{name:""},n=$("namePickerInput");n&&(n.value=o.name||"");var s=$("namePicker");s&&s.classList.add("active");setTimeout(function(){n&&n.focus()},300)}
 function confirmNamePick(){var e=$("namePickerInput");if(!e)return;var t=e.value.trim();if(t.length<2){toast("اسم لابی حداقل ۲ حرف باشد");return}if(t.length>25){toast("اسم لابی حداکثر ۲۵ حرف باشد");return}var o=getMyNames(),n=(o[editingSlotIndex]||{}).name||"";if(n!==t){var s=getUserCoins();if(s<NAME_COST){toast("سکه کافی نداری");return}setUserCoins(s-NAME_COST);toast("۱۰۰ سکه کم شد")}o[editingSlotIndex]={name:t,status:"pending"};saveMyNames(o);var a=getPendingRequests(),r=safeGetUser();r&&(a=a.filter(function(e){return!(e&&e.phone===r.phone&&e.slotIndex===editingSlotIndex)}),a.push({id:genId(),phone:r.phone,creatorName:r.name||"کاربر",slotIndex:editingSlotIndex,name:t,createdAt:new Date().toISOString()}),savePendingRequests(a));var l=$("namePicker");l&&l.classList.remove("active");renderMyNames();updateAdminBadge();updateAdminTabsBadges();toast("اسم برای تایید مدیر ارسال شد")}
 var createLockUntil=0;
@@ -231,7 +370,6 @@ async function init(){
 
   var a=$("addBtn");a&&a.addEventListener("click",openCreateModal);
 
-  /* NEW: دکمه رفلش */
   var rb=$("refreshBtn");
   rb&&rb.addEventListener("click",async function(){
     var btn=this;
@@ -244,7 +382,6 @@ async function init(){
     setTimeout(function(){btn.classList.remove("spinning")},900)
   });
 
-  /* NEW: دکمه لیست مسدودی */
   var rbb=$("roomBlockBtn");
   rbb&&rbb.addEventListener("click",function(){renderBlockList();openModal("blockListModal")});
 
