@@ -24,7 +24,6 @@
         </svg>
         <input type="text" id="searchInput" placeholder="جستجوی لابی..." autocomplete="off">
       </div>
-      <!-- NEW: دکمه رفلش بخش دوستانه -->
       <button class="refresh-btn" id="refreshBtn" aria-label="بروزرسانی">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M4 12C4 7.58 7.58 4 12 4C14.9 4 17.45 5.55 18.83 7.87" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
@@ -52,7 +51,6 @@
     <div class="room-top-main">
       <button class="room-back-btn" id="roomBackBtn">→</button>
       <div class="room-lobby-name" id="roomLobbyName">نام لابی</div>
-      <!-- NEW: دکمه لیست مسدودی (جای room-top-spacer) -->
       <button class="room-block-btn" id="roomBlockBtn" aria-label="لیست مسدودی">
         <svg viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke="#ffffff" stroke-width="2.2" fill="none"/>
@@ -79,8 +77,6 @@
     </div>
   </div>
 </div>
-
-<!-- ... بقیه مودال‌ها بدون تغییر ... -->
 
 <div class="modal" id="createModal">
   <div class="modal-box">
@@ -144,7 +140,6 @@
   </div>
 </div>
 
-<!-- NEW: مودال لیست مسدودی -->
 <div class="modal" id="blockListModal">
   <div class="modal-box">
     <button class="modal-close" data-close="blockListModal">×</button>
@@ -181,7 +176,7 @@
     <div class="pm-dark-box">
       <div class="pm-avatar-wrap">
         <img src="Av.jpg" alt="آواتار" class="pm-avatar-img" id="ppAvatar" onerror="this.src='Av.jpg'">
-        <img src="Ga.webp" alt="قالب" class="pm-frame-img" onerror="this.style.display='none'">
+        <img src="Ga.webp" alt="قالب" class="pm-frame-img" id="ppFrameImg" onerror="this.style.display='none'">
       </div>
       <div class="pm-name-wrap"><span class="pm-name-text" id="ppNameWrap"><span id="ppNameText">کاربر</span></span></div>
     </div>
