@@ -113,7 +113,12 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .name-picker.active .name-picker-box{transform:scale(1)}
 .name-picker-title{color:#fff;font-size:17px;font-weight:900;text-align:center;padding-bottom:8px}
 .name-picker-hint{color:#ffd94a;font-size:11px;font-weight:800;text-align:center;padding-bottom:12px}
-.name-input{width:100%;height:50px;border-radius:12px;border:2px solid rgba(74,158,255,.4);background:rgba(255,255,255,.95);color:#0d1a30;font-size:16px;font-weight:800;padding:0 14px;outline:none;text-align:center;margin-bottom:14px}
+.name-input{width:100%;height:50px;border-radius:12px;border:2px solid rgba(74,158,255,.4);background:rgba(255,255,255,.95);color:#0d1a30;font-size:16px;font-weight:800;padding:0 14px;outline:none;text-align:center;margin-bottom:10px}
+/* NEW: پیش‌نمایش نام */
+.name-preview{min-height:36px;background:rgba(0,0,0,.4);border-radius:10px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.name-preview:empty{display:none}
+.name-preview .np-preview-label{color:rgba(255,255,255,.55);font-size:10px;font-weight:800}
+.name-preview .np-preview-name{color:#fff;font-size:14px;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .name-picker-actions{display:flex;gap:8px}
 .name-picker-actions button{flex:1;height:44px;border:none;border-radius:11px;cursor:pointer;font-size:13px;font-weight:900;color:#fff}
 .np-cancel{background:linear-gradient(180deg,#6a6a6a 0%,#3a3a3a 100%);box-shadow:0 3px 0 #1a1a1a}
@@ -156,11 +161,8 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .no-pending{text-align:center;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;padding:50px 20px}
 .no-pending-icon{font-size:44px;margin-bottom:12px;opacity:.4}
 
-/* ===== Toast / Notifications ===== */
+/* ===== Toast ===== */
 .toast-msg{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#296187,#074461);color:#fff;padding:12px 24px;border-radius:14px;font-size:13px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.6);text-align:center;max-width:85%}
-.join-notification{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#0fad07 0%,#084001 100%);color:#fff;padding:10px 20px;border-radius:14px;font-size:13px;font-weight:900;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 2px 4px rgba(255,255,255,.25);display:flex;align-items:center;gap:8px;animation:joinSlideIn .3s ease;text-shadow:0 1px 3px rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2)}
-@keyframes joinSlideIn{0%{opacity:0;transform:translateX(-50%) translateY(-20px)}100%{opacity:1;transform:translateX(-50%) translateY(0)}}
-.join-notification .jn-icon{font-size:18px;line-height:1}
 .kick-notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,#d32f2f 0%,#7f1a1a 100%);color:#fff;padding:22px 30px;border-radius:18px;font-size:15px;font-weight:900;z-index:99999;box-shadow:0 15px 50px rgba(0,0,0,.85),inset 0 2px 5px rgba(255,255,255,.25);display:flex;align-items:center;gap:12px;animation:kickPop .4s ease;text-shadow:0 2px 5px rgba(0,0,0,.8);border:2px solid rgba(255,255,255,.3);text-align:center;max-width:85vw}
 .kick-notification .kn-icon{font-size:32px;line-height:1}
 @keyframes kickPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}60%{transform:translate(-50%,-50%) scale(1.08)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
@@ -191,19 +193,25 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .player-slot.ready-red::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:170%;height:170%;border-radius:50%;background:radial-gradient(circle,rgba(211,47,47,.7) 0%,transparent 68%);z-index:0;pointer-events:none;animation:glowRed 1.5s ease-in-out infinite}
 @keyframes glowGreen{0%,100%{opacity:.8}50%{opacity:1}}
 @keyframes glowRed{0%,100%{opacity:.8}50%{opacity:1}}
+
+/* ===== FIXED: slot-content برابر با square ===== */
 .slot-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:130%;height:130%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
 .slot-content .frame-wrap{position:relative;width:100%;height:100%}
-
-/* ===== NEW: آواتار کامل مربع رو پر میکنه ===== */
+/* FIXED: آواتار و قالب هم‌اندازه (هر دو 100% از frame-wrap) */
 .slot-content .frame-wrap .avatar{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover;border-radius:18% !important;z-index:1;box-shadow:0 3px 8px rgba(0,0,0,.55)}
-
 .slot-content .frame-wrap .frame{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:2;pointer-events:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
+
+/* ===== FIXED: مایک برای چپ‌ها برعکس ===== */
 .mic-indicator{position:absolute;width:38px;height:38px;object-fit:contain;z-index:9;pointer-events:none;top:-14px;left:-22px;filter:drop-shadow(0 0 8px rgba(76,175,80,1)) drop-shadow(0 0 16px rgba(76,175,80,.9));animation:micPulseAnim 1.2s ease-in-out infinite}
 .player-slot.tl .mic-indicator,
-.player-slot.bl .mic-indicator{left:auto;right:-22px}
+.player-slot.bl .mic-indicator{left:auto;right:-22px;animation:micPulseAnimFlip 1.2s ease-in-out infinite}
 @keyframes micPulseAnim{
   0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(76,175,80,1)) drop-shadow(0 0 16px rgba(76,175,80,.9))}
   50%{transform:scale(1.2);filter:drop-shadow(0 0 12px rgba(76,175,80,1)) drop-shadow(0 0 24px rgba(76,175,80,1))}
+}
+@keyframes micPulseAnimFlip{
+  0%,100%{transform:scaleX(-1) scale(1);filter:drop-shadow(0 0 8px rgba(76,175,80,1)) drop-shadow(0 0 16px rgba(76,175,80,.9))}
+  50%{transform:scaleX(-1) scale(1.2);filter:drop-shadow(0 0 12px rgba(76,175,80,1)) drop-shadow(0 0 24px rgba(76,175,80,1))}
 }
 
 .slot-reaction{position:absolute;top:-12px;right:-12px;width:44px;height:44px;object-fit:contain;z-index:10;pointer-events:none;filter:drop-shadow(0 0 10px rgba(255,217,74,.95)) drop-shadow(0 2px 5px rgba(0,0,0,.95));animation:reactPop .35s ease}
@@ -238,7 +246,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .timer-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);border-radius:inherit;font-size:22px;font-weight:900;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.9);z-index:5;font-family:'Vazirmatn',Tahoma,sans-serif;animation:timerPulse .4s ease}
 @keyframes timerPulse{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 
-/* ===== Profile Menu Overlay ===== */
+/* ===== Profile Menu ===== */
 .profile-menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1500;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease;padding:14px}
 .profile-menu-overlay.active{opacity:1;visibility:visible}
 .profile-menu-box{position:relative;width:100%;max-width:360px;background:linear-gradient(180deg,#3278a8 0%,#1e5580 40%,#0f3d5e 100%);border-radius:24px;box-shadow:inset 0 2px 4px rgba(255,255,255,.2),inset 0 -2px 4px rgba(0,0,0,.3),0 20px 60px rgba(0,0,0,.7),0 0 0 2px rgba(255,255,255,.1);padding:14px 14px 16px;overflow:visible;touch-action:none;overscroll-behavior:contain;user-select:none}
@@ -246,7 +254,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .pm-title{text-align:center;color:#fff;font-size:19px;font-weight:900;padding:2px 0 12px;text-shadow:0 2px 5px rgba(0,0,0,.7)}
 .pm-dark-box{background:#172c3b;border-radius:14px;padding:14px 12px;margin-bottom:10px;box-shadow:inset 0 2px 4px rgba(0,0,0,.4),inset 0 -1px 2px rgba(255,255,255,.05),0 2px 6px rgba(0,0,0,.3)}
 .pm-avatar-wrap{position:relative;width:118px;height:118px;margin:0 auto}
-.pm-avatar-wrap .pm-avatar-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;object-fit:cover;border-radius:14% !important;z-index:1;box-shadow:0 3px 8px rgba(0,0,0,.5);background:#1a2946}
+.pm-avatar-wrap .pm-avatar-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover;border-radius:14% !important;z-index:1;box-shadow:0 3px 8px rgba(0,0,0,.5);background:#1a2946}
 .pm-avatar-wrap .pm-frame-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:2;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));pointer-events:none}
 .pm-name-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
 .pm-name-text{font-size:22px;font-weight:900;color:#fff;text-shadow:0 3px 6px rgba(0,0,0,.85);letter-spacing:.5px;line-height:1.2;display:flex;align-items:center;gap:6px}
@@ -312,19 +320,6 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .conf-cancel{background:linear-gradient(180deg,#6a6a6a 0%,#3a3a3a 100%);box-shadow:0 3px 0 #1a1a1a}
 .conf-exit{background:linear-gradient(180deg,#d32f2f 0%,#7f1a1a 100%);box-shadow:0 3px 0 #4a0a0a}
 
-/* ===== Edit Modal ===== */
-.edit-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .25s ease;z-index:1400;padding:20px}
-.edit-modal.active{opacity:1;visibility:visible}
-.edit-modal-box{background:linear-gradient(180deg,#296187,#074461);padding:24px 22px;border-radius:20px;text-align:center;width:100%;max-width:300px;box-shadow:inset 0 2px 6px rgba(255,255,255,.2),0 15px 40px rgba(0,0,0,.6);transform:scale(.7);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-.edit-modal.active .edit-modal-box{transform:scale(1)}
-.edit-modal-box h3{color:#fff;font-size:17px;font-weight:900;margin-bottom:8px}
-.edit-modal-box .edit-price{color:#ffd94a;font-size:13px;font-weight:900;margin-bottom:12px}
-.edit-modal-box input{width:100%;padding:12px;border:none;border-radius:12px;font-family:'Vazirmatn',Tahoma,sans-serif;font-size:15px;font-weight:800;text-align:center;background:rgba(255,255,255,.95);color:#052a42;outline:none;margin-bottom:14px}
-.edit-modal-actions{display:flex;gap:8px}
-.edit-modal-actions button{flex:1;padding:11px;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-weight:900;color:#fff}
-.edit-save{background:linear-gradient(180deg,#0fad07 0%,#084001 100%);box-shadow:0 3px 0 #042000}
-.edit-cancel{background:linear-gradient(180deg,#6a6a6a 0%,#3a3a3a 100%);box-shadow:0 3px 0 #1a1a1a}
-
 /* ===== لیست مسدودی ===== */
 .block-list-content{max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
 .block-list-content::-webkit-scrollbar{display:none}
@@ -333,7 +328,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .block-item .bi-unblock{padding:8px 14px;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(180deg,#0fad07 0%,#084001 100%);color:#fff;font-size:12px;font-weight:900;box-shadow:0 3px 0 #042000;font-family:'Vazirmatn',Tahoma,sans-serif;flex-shrink:0}
 .block-item .bi-unblock:active{transform:translateY(2px)}
 
-/* ===== Media Query ===== */
+/* ===== Media ===== */
 @media (max-height:720px){
   .room-top-bar{height:58px}
   .room-top-main{height:56px}
@@ -348,7 +343,6 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
   .mic-btn{width:54px;height:54px}
   .action-btn{height:52px;padding:0 10px;min-width:62px}
   .pm-avatar-wrap{width:100px;height:100px}
-  .pm-avatar-wrap .pm-avatar-img{width:64px;height:64px}
   .pm-title{font-size:16px;padding:2px 0 8px}
   .pm-name-text{font-size:18px}
   .pm-dark-box{padding:10px;margin-bottom:8px}
