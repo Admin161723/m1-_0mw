@@ -59,28 +59,22 @@ function saveMyNames(e){var t=getCurrentPhone();if(!t)return;var o=getAllNames()
 function getPendingRequests(){try{var e=localStorage.getItem("sag_lobby_name_requests");if(!e)return[];var t=JSON.parse(e);return Array.isArray(t)?t:[]}catch(e){return[]}}
 function savePendingRequests(e){try{localStorage.setItem("sag_lobby_name_requests",JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("sag_lobby_name_requests",JSON.stringify(e))}catch(e){}},100)}
 
-/* ===== نرمال‌سازی ورودی ===== */
 function normalizeInput(str){
   if(str===undefined||str===null)return"";
   var s=String(str);
-  /* تبدیل اعداد فارسی */
   s=s.replace(/[۰-۹]/g,function(d){return String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))});
   s=s.replace(/[٠-٩]/g,function(d){return String("٠١٢٣٤٥٦٧٨٩".indexOf(d))});
-  /* حذف کاراکترهای نامرئی */
   s=s.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF\u00AD]/g,"");
-  /* تبدیل براکت‌های جایگزین (بدون « » که در فارسی رایجه) */
   s=s.replace(/[〈《「『【〔〖〘〚＜‹❮]/g,"<");
   s=s.replace(/[〉》」』】〕〗〙〛＞›❯]/g,">");
   return s;
 }
 
-/* ===== توابع بلاک ===== */
 function getBlockedList(){var e=safeGetUser();if(!e||!e.phone)return[];try{var t=localStorage.getItem("sag_blocked_"+e.phone);if(!t)return[];var o=JSON.parse(t);return Array.isArray(o)?o:[]}catch(e){return[]}}
 function saveBlockedList(e){var t=safeGetUser();if(!t||!t.phone)return;try{localStorage.setItem("sag_blocked_"+t.phone,JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("blocked:"+t.phone,JSON.stringify(e||[]))}catch(e){}},100)}
 function isBlocked(e){var t=getBlockedList();for(var o=0;o<t.length;o++)if(t[o]&&t[o].phone===e)return!0;return!1}
 function renderBlockList(){var e=$("blockListContent");if(!e)return;e.innerHTML="";var t=getBlockedList();if(t.length===0){e.innerHTML='<div class="no-pending"><div class="no-pending-icon">✓</div>لیست مسدودی خالی است</div>';return}for(var o=document.createDocumentFragment(),i=0;i<t.length;i++){var n=t[i];if(!n||!n.phone)continue;var s=document.createElement("div");s.className="block-item";s.innerHTML='<div class="bi-name">'+escapeHtml(n.name||"کاربر")+'</div><button class="bi-unblock" data-phone="'+escapeHtml(n.phone)+'">رفع مسدودی</button>';o.appendChild(s)}e.appendChild(o);e.onclick=function(e){var t=e.target.closest(".bi-unblock");if(!t)return;toggleBlock(t.getAttribute("data-phone"))}}
 
-/* ===== بلاک مطمئن با اخراج فوری از لابی ===== */
 function toggleBlock(phone, name){
   var list = getBlockedList();
   var idx = -1;
@@ -123,7 +117,6 @@ function toggleBlock(phone, name){
   }
 }
 
-/* ===== پارس کد رنگی — رجکس ساده‌تر و مطمئن‌تر ===== */
 function parseColorCodes(input){
   if(!input)return{segments:[],plain:""};
   var str = normalizeInput(input);
@@ -256,6 +249,8 @@ function openOwnProfile(){
 }
 var miniMenuPlayer=null;
 var miniMenuOwner=!1;
+
+/* ===== openMiniMenu — بلاک فقط برای ادمین ===== */
 function openMiniMenu(e,t){
   try{
     miniMenuPlayer=e;miniMenuOwner=t;
@@ -274,7 +269,8 @@ function openMiniMenu(e,t){
       var p=document.createElement("button");p.className="mini-menu-btn mm-transfer";p.id="miniTransferBtn";p.innerHTML='<span class="mm-icon">👑</span><span>انتقال مالکیت</span>';p.onclick=function(){var e=miniMenuPlayer;closeMiniMenu();setTimeout(function(){transferOwnership(e.phone,e.name)},150)};
       if(m){d.insertBefore(u,m);d.insertBefore(p,m)}else{d.appendChild(u);d.appendChild(p)}
     }
-    if(d&&!c){
+    /* NEW: فقط سازنده و برنامه‌نویس می‌توانند بلاک کنند */
+    if(d&&!c&&isAdmin()){
       var alreadyBlocked=isBlocked(e.phone);
       var bk=document.createElement("button");
       bk.className="mini-menu-btn "+(alreadyBlocked?"mm-unblock":"mm-block");
