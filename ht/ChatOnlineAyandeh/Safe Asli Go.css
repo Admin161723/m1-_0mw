@@ -30,7 +30,7 @@ body{display:flex;flex-direction:column;background:#052a42;font-family:'Vazirmat
 @keyframes shineMove{0%{left:-120%}50%{left:130%}100%{left:130%}}
 .profile-name{margin-top:-18px;font-size:15px;font-weight:900;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.9);padding:3px 14px;background:rgba(5,42,66,.85);border-radius:10px;border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(4px);z-index:4}
 
-/* Side Buttons (اصلاح شده و بزرگتر) */
+/* Side Buttons */
 .side-buttons{position:absolute;top:55px;right:10px;display:flex;flex-direction:column;gap:12px;z-index:30}
 .side-btn{position:relative;width:68px;height:78px;border:none;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;transition:transform .15s ease;background:linear-gradient(180deg,#296187 0%,#074461 100%);box-shadow:0 3px 0 #052a42,0 4px 8px rgba(0,0,0,.45),inset 0 2px 3px rgba(255,255,255,.15),inset 0 -2px 3px rgba(0,0,0,.25)}
 .side-btn:active{transform:translateY(3px)}
@@ -47,16 +47,16 @@ body{display:flex;flex-direction:column;background:#052a42;font-family:'Vazirmat
 .friends-btn .friend-icon{width:40px;height:40px;flex-shrink:0;z-index:2;object-fit:contain}
 .friends-btn .friend-text{font-size:16px;font-weight:900;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.7);z-index:2}
 
-/* Bottom Menu (اصلاح شده - همه آیکون‌ها هم‌اندازه) */
+/* Bottom Menu — آیکون‌ها کوچیک‌تر شدند */
 .bottom-menu{position:fixed;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:flex-end;justify-content:center;z-index:50;pointer-events:none}
-.menu-panel{pointer-events:auto;position:relative;width:calc(100% - 20px);max-width:500px;height:96px;border-radius:22px 22px 0 0;background:linear-gradient(180deg,#296187 0%,#0d3550 60%,#052a42 100%);box-shadow:0 -3px 0 rgba(255,255,255,.08) inset,0 3px 0 #021a2a,0 8px 20px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,.08);border-bottom:none}
+.menu-panel{pointer-events:auto;position:relative;width:calc(100% - 20px);max-width:500px;height:78px;border-radius:22px 22px 0 0;background:linear-gradient(180deg,#296187 0%,#0d3550 60%,#052a42 100%);box-shadow:0 -3px 0 rgba(255,255,255,.08) inset,0 3px 0 #021a2a,0 8px 20px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,.08);border-bottom:none}
 .menu-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;border-radius:22px 22px 0 0;background:linear-gradient(180deg,rgba(255,255,255,.15) 0%,transparent 100%);pointer-events:none}
-.menu-btn{position:relative;flex:1;height:84px;margin:0 4px;border:none;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;overflow:hidden;transition:transform .15s ease,background .15s ease;background:linear-gradient(180deg,#296187 0%,#074461 100%);box-shadow:0 3px 0 #052a42,0 4px 8px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.15),inset 0 -2px 3px rgba(0,0,0,.25);z-index:1}
+.menu-btn{position:relative;flex:1;height:66px;margin:0 4px;border:none;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;overflow:hidden;transition:transform .15s ease,background .15s ease;background:linear-gradient(180deg,#296187 0%,#074461 100%);box-shadow:0 3px 0 #052a42,0 4px 8px rgba(0,0,0,.4),inset 0 2px 3px rgba(255,255,255,.15),inset 0 -2px 3px rgba(0,0,0,.25);z-index:1}
 .menu-btn:active{transform:translateY(3px)}
 .menu-btn.active{background:linear-gradient(180deg,#0fad07 0%,#084001 100%);box-shadow:0 3px 0 #042000,0 4px 10px rgba(15,173,7,.4),inset 0 2px 3px rgba(255,255,255,.25),inset 0 -2px 3px rgba(0,0,0,.3)}
-.menu-btn .menu-icon{width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));flex-shrink:0;transition:transform .2s ease;margin:-6px 0 -12px}
-.menu-btn.active .menu-icon{transform:scale(1.08)}
-.menu-btn .label{font-family:'Vazirmatn',Tahoma,sans-serif;font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);line-height:1;margin-top:0}
+.menu-btn .menu-icon{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));flex-shrink:0;transition:transform .2s ease;margin:0 0 -2px}
+.menu-btn.active .menu-icon{transform:scale(1.06)}
+.menu-btn .label{font-family:'Vazirmatn',Tahoma,sans-serif;font-size:10.5px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);line-height:1;margin-top:0}
 .menu-btn.active .label{color:#d6ffd0;text-shadow:0 1px 4px rgba(0,0,0,.9)}
 .menu-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:45%;background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,transparent 100%);border-radius:16px 16px 0 0}
 
@@ -134,8 +134,9 @@ body{display:flex;flex-direction:column;background:#052a42;font-family:'Vazirmat
   .pm-stat-icon{width:20px;height:20px}
   .pm-stat-square .pm-stat-value{font-size:15px}
   .pm-stat-square .pm-stat-label{font-size:7.5px}
-  .menu-panel{height:88px}
-  .menu-btn{height:76px}
-  .menu-btn .menu-icon{width:68px;height:68px;margin:-4px 0 -10px}
+  .menu-panel{height:72px}
+  .menu-btn{height:60px}
+  .menu-btn .menu-icon{width:38px;height:38px;margin:0 0 -2px}
+  .menu-btn .label{font-size:10px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
