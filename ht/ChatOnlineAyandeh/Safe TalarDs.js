@@ -74,7 +74,7 @@ function getBlockedList(){var e=safeGetUser();if(!e||!e.phone)return[];try{var t
 function saveBlockedList(e){var t=safeGetUser();if(!t||!t.phone)return;try{localStorage.setItem("sag_blocked_"+t.phone,JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("blocked:"+t.phone,JSON.stringify(e||[]))}catch(e){}},100)}
 function isBlocked(e){var t=getBlockedList();for(var o=0;o<t.length;o++)if(t[o]&&t[o].phone===e)return!0;return!1}
 
-/* ✅ تغییر ۱: renderBlockList - فقط مالک لابی */
+/* ===== renderBlockList — فقط مالک لابی ===== */
 function renderBlockList(){
   var e=$("blockListContent");if(!e)return;
   e.innerHTML="";
@@ -191,15 +191,18 @@ var actionLockUntil=0;
 function showListView(){try{currentRoomId=null;currentView="list";lastRoomSnap="";if(reactionCheckTimer){clearTimeout(reactionCheckTimer);reactionCheckTimer=null}var e=$("roomView");e&&e.classList.remove("active");var t=$("listView");t&&t.classList.add("active");var o=$("bgList");o&&o.classList.remove("hidden");var n=$("bgRoom");n&&n.classList.remove("active");renderLobbies()}catch(e){}}
 function showRoomView(e){try{var t=getLobbyById(e);if(!t){toast("لابی پیدا نشد");showListView();return}currentRoomId=e;currentView="room";lastRoomSnap=JSON.stringify(t);var o=$("listView");o&&o.classList.remove("active");var n=$("roomView");n&&n.classList.add("active");var s=$("bgList");s&&s.classList.add("hidden");var a=$("bgRoom");a&&a.classList.add("active");renderRoom(t)}catch(e){showListView()}}
 
-/* ✅ تغییر ۲: renderRoom - مخفی کردن دکمه لیست مسدودی برای غیر مالک */
+/* ===== renderRoom — با مخفی کردن دکمه لیست مسدودی برای غیر مالک ===== */
 function renderRoom(e){
   try{
     var t=$("roomLobbyName");t&&(t.innerHTML=formatLobbyName(e.name||"بی‌نام"));
     var me=safeGetUser();
     var blockBtn=$("roomBlockBtn");
     if(blockBtn){
-      if(me&&me.phone===e.creatorPhone){blockBtn.style.display="";}
-      else{blockBtn.style.display="none";}
+      var amIOwner = false;
+      if(me && me.phone && e && e.creatorPhone){
+        amIOwner = (me.phone === e.creatorPhone);
+      }
+      blockBtn.style.display = amIOwner ? "" : "none";
     }
     var o=$("roomGridArea");if(!o)return;
     var n=o.querySelectorAll(".player-slot");
@@ -227,7 +230,7 @@ function renderRoom(e){
     renderBottomActions(e);
     updateMyButtonsState(e);
     scheduleNextReactionCheck(e)
-  }catch(e){console.error("renderRoom:",e)}
+  }catch(err){console.error("renderRoom:",err)}
 }
 function scheduleNextReactionCheck(e){if(reactionCheckTimer){clearTimeout(reactionCheckTimer);reactionCheckTimer=null}var t=Date.now(),o=Infinity,n=Array.isArray(e.players)?e.players:[];for(var i=0;i<n.length;i++){if(n[i]&&n[i].likeVoteExpiry&&n[i].likeVoteExpiry>t&&n[i].likeVoteExpiry<o)o=n[i].likeVoteExpiry}if(o!==Infinity){var s=o-t+120;reactionCheckTimer=setTimeout(function(){if(currentRoomId){var e=getLobbyById(currentRoomId);e&&renderRoom(e)}},s)}}
 function renderBottomActions(e){try{var t=$("leftActions");if(!t)return;t.innerHTML="";var o=safeGetUser();if(!o||!o.phone)return;var n=o.phone===e.creatorPhone;if(n){var s=Array.isArray(e.players)?e.players:[];var a=s.length===MAX_SLOTS&&s.every(function(e){return e&&e.ready});var r=document.createElement("button");r.className="action-btn start-btn"+(a?"":" disabled");r.innerHTML='<span class="ab-label">شروع بازی</span>';r.onclick=function(){if(!a){s.length<MAX_SLOTS?toast("باید ۴ نفر پر شود"):toast("همه باید آماده باشند");return}toast("بازی شروع شد!")};t.appendChild(r)}else{var l=null,c=Array.isArray(e.players)?e.players:[];for(var i=0;i<c.length;i++)if(c[i]&&c[i].phone===o.phone){l=c[i];break}var d=!!(l&&l.ready);var u=document.createElement("button");u.className="action-btn ready-btn"+(d?"":" not-ready");u.innerHTML='<span class="ab-label">'+(d?"آماده‌ام":"نیستم")+"</span>";u.onclick=toggleReady;t.appendChild(u)}}catch(e){}}
@@ -282,7 +285,7 @@ function openOwnProfile(){
 var miniMenuPlayer=null;
 var miniMenuOwner=!1;
 
-/* ✅ تغییر ۳: openMiniMenu - دکمه بلاک فقط برای مالک لابی */
+/* ===== openMiniMenu — دکمه بلاک فقط برای مالک لابی ===== */
 function openMiniMenu(e,t){
   try{
     miniMenuPlayer=e;miniMenuOwner=t;
@@ -292,17 +295,19 @@ function openMiniMenu(e,t){
     var bkBtns=$("miniBlockBtn");bkBtns&&bkBtns.parentNode&&bkBtns.parentNode.removeChild(bkBtns);
     var a=safeGetUser();
     var r=currentRoomId?getLobbyById(currentRoomId):null;
-    var l=r&&a&&a.phone===r.creatorPhone;
+    var isOwnerOfThisLobby = false;
+    if(r && a && a.phone){
+      isOwnerOfThisLobby = (a.phone === r.creatorPhone);
+    }
     var c=a&&e.phone===a.phone;
     var d=document.querySelector(".mini-menu-box");
     var m=$("miniCancelBtn");
-    if(d&&l&&!c){
+    if(d&&isOwnerOfThisLobby&&!c){
       var u=document.createElement("button");u.className="mini-menu-btn mm-kick";u.id="miniKickBtn";u.innerHTML='<span class="mm-icon">🚫</span><span>اخراج از لابی</span>';u.onclick=function(){var e=miniMenuPlayer;closeMiniMenu();setTimeout(function(){kickPlayer(e.phone,e.name)},150)};
       var p=document.createElement("button");p.className="mini-menu-btn mm-transfer";p.id="miniTransferBtn";p.innerHTML='<span class="mm-icon">👑</span><span>انتقال مالکیت</span>';p.onclick=function(){var e=miniMenuPlayer;closeMiniMenu();setTimeout(function(){transferOwnership(e.phone,e.name)},150)};
       if(m){d.insertBefore(u,m);d.insertBefore(p,m)}else{d.appendChild(u);d.appendChild(p)}
     }
-    /* ✅ دکمه بلاک فقط برای مالک لابی (l) — نه ادمین */
-    if(d&&!c&&l){
+    if(d&&!c&&isOwnerOfThisLobby){
       var alreadyBlocked=isBlocked(e.phone);
       var bk=document.createElement("button");
       bk.className="mini-menu-btn "+(alreadyBlocked?"mm-unblock":"mm-block");
@@ -312,7 +317,7 @@ function openMiniMenu(e,t){
       if(m){d.insertBefore(bk,m)}else{d.appendChild(bk)}
     }
     var g=$("miniMenu");g&&g.classList.add("active")
-  }catch(e){}
+  }catch(err){console.warn("openMiniMenu err:",err)}
 }
 function closeMiniMenu(){
   var e=$("miniMenu");e&&e.classList.remove("active");
