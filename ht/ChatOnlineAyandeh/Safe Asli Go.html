@@ -31,6 +31,7 @@
     <div class="profile-name" id="profileName">کاربر</div>
   </div>
 
+  <!-- دکمه‌های کناری با سایز و کلاس‌های جدید -->
   <div class="side-buttons">
     <button class="side-btn" onclick="event.stopPropagation(); sideClick('notifications')">
       <img src="1.webp" alt="اطلاعیه"><span class="side-label">اطلاعیه</span>
@@ -57,6 +58,7 @@
   <span class="friend-text">دوستانه</span>
 </button>
 
+<!-- منوی پایین (تمام آیکون‌ها هم‌اندازه شده‌اند) -->
 <div class="bottom-menu">
   <div class="menu-panel">
     <button class="menu-btn" onclick="navClick(this, 'group')">
@@ -71,6 +73,7 @@
   </div>
 </div>
 
+<!-- منوی پروفایل معکوس شده بر اساس اصلاحات خواسته شده -->
 <div class="profile-menu-overlay" id="profileMenu" onclick="closeProfileMenu(event)">
   <div class="profile-menu-box" onclick="event.stopPropagation()">
 
@@ -93,18 +96,22 @@
     <div class="pm-dark-box">
       <div class="pm-stats-row">
         <div class="pm-stat-square">
+          <img src="Pa3.webp" class="pm-stat-icon" alt="">
           <div class="pm-stat-value" id="pmGames">0</div>
           <div class="pm-stat-label">تعداد بازی</div>
         </div>
         <div class="pm-stat-square">
+          <img src="Pa4.webp" class="pm-stat-icon" alt="">
           <div class="pm-stat-value" id="pmWins">0</div>
           <div class="pm-stat-label">تعداد برد</div>
         </div>
         <div class="pm-stat-square">
+          <img src="Pa5.webp" class="pm-stat-icon" alt="">
           <div class="pm-stat-value" id="pmMinutes">0</div>
           <div class="pm-stat-label">دقایق بازی</div>
         </div>
         <div class="pm-stat-square">
+          <img src="Pa6.webp" class="pm-stat-icon" alt="">
           <div class="pm-stat-value" id="pmScore">0</div>
           <div class="pm-stat-label">تعداد امتیاز</div>
         </div>
