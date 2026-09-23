@@ -73,7 +73,31 @@ function normalizeInput(str){
 function getBlockedList(){var e=safeGetUser();if(!e||!e.phone)return[];try{var t=localStorage.getItem("sag_blocked_"+e.phone);if(!t)return[];var o=JSON.parse(t);return Array.isArray(o)?o:[]}catch(e){return[]}}
 function saveBlockedList(e){var t=safeGetUser();if(!t||!t.phone)return;try{localStorage.setItem("sag_blocked_"+t.phone,JSON.stringify(e||[]))}catch(e){}setTimeout(function(){try{setCloud("blocked:"+t.phone,JSON.stringify(e||[]))}catch(e){}},100)}
 function isBlocked(e){var t=getBlockedList();for(var o=0;o<t.length;o++)if(t[o]&&t[o].phone===e)return!0;return!1}
-function renderBlockList(){var e=$("blockListContent");if(!e)return;e.innerHTML="";var t=getBlockedList();if(t.length===0){e.innerHTML='<div class="no-pending"><div class="no-pending-icon">✓</div>لیست مسدودی خالی است</div>';return}for(var o=document.createDocumentFragment(),i=0;i<t.length;i++){var n=t[i];if(!n||!n.phone)continue;var s=document.createElement("div");s.className="block-item";s.innerHTML='<div class="bi-name">'+escapeHtml(n.name||"کاربر")+'</div><button class="bi-unblock" data-phone="'+escapeHtml(n.phone)+'">رفع مسدودی</button>';o.appendChild(s)}e.appendChild(o);e.onclick=function(e){var t=e.target.closest(".bi-unblock");if(!t)return;toggleBlock(t.getAttribute("data-phone"))}}
+
+/* ✅ تغییر ۱: renderBlockList - فقط مالک لابی */
+function renderBlockList(){
+  var e=$("blockListContent");if(!e)return;
+  e.innerHTML="";
+  var me=safeGetUser();
+  var curLobby=currentRoomId?getLobbyById(currentRoomId):null;
+  if(!me||!curLobby||me.phone!==curLobby.creatorPhone){
+    e.innerHTML='<div class="no-pending"><div class="no-pending-icon">🚫</div>فقط مالک لابی به این بخش دسترسی دارد</div>';
+    return;
+  }
+  var t=getBlockedList();
+  if(t.length===0){
+    e.innerHTML='<div class="no-pending"><div class="no-pending-icon">✓</div>لیست مسدودی خالی است</div>';
+    return;
+  }
+  for(var o=document.createDocumentFragment(),i=0;i<t.length;i++){
+    var n=t[i];if(!n||!n.phone)continue;
+    var s=document.createElement("div");s.className="block-item";
+    s.innerHTML='<div class="bi-name">'+escapeHtml(n.name||"کاربر")+'</div><button class="bi-unblock" data-phone="'+escapeHtml(n.phone)+'">رفع مسدودی</button>';
+    o.appendChild(s)
+  }
+  e.appendChild(o);
+  e.onclick=function(e){var t=e.target.closest(".bi-unblock");if(!t)return;toggleBlock(t.getAttribute("data-phone"))}
+}
 
 function toggleBlock(phone, name){
   var list = getBlockedList();
@@ -166,9 +190,17 @@ var actionLockUntil=0;
 
 function showListView(){try{currentRoomId=null;currentView="list";lastRoomSnap="";if(reactionCheckTimer){clearTimeout(reactionCheckTimer);reactionCheckTimer=null}var e=$("roomView");e&&e.classList.remove("active");var t=$("listView");t&&t.classList.add("active");var o=$("bgList");o&&o.classList.remove("hidden");var n=$("bgRoom");n&&n.classList.remove("active");renderLobbies()}catch(e){}}
 function showRoomView(e){try{var t=getLobbyById(e);if(!t){toast("لابی پیدا نشد");showListView();return}currentRoomId=e;currentView="room";lastRoomSnap=JSON.stringify(t);var o=$("listView");o&&o.classList.remove("active");var n=$("roomView");n&&n.classList.add("active");var s=$("bgList");s&&s.classList.add("hidden");var a=$("bgRoom");a&&a.classList.add("active");renderRoom(t)}catch(e){showListView()}}
+
+/* ✅ تغییر ۲: renderRoom - مخفی کردن دکمه لیست مسدودی برای غیر مالک */
 function renderRoom(e){
   try{
     var t=$("roomLobbyName");t&&(t.innerHTML=formatLobbyName(e.name||"بی‌نام"));
+    var me=safeGetUser();
+    var blockBtn=$("roomBlockBtn");
+    if(blockBtn){
+      if(me&&me.phone===e.creatorPhone){blockBtn.style.display="";}
+      else{blockBtn.style.display="none";}
+    }
     var o=$("roomGridArea");if(!o)return;
     var n=o.querySelectorAll(".player-slot");
     var s=Array.isArray(e.players)?e.players.slice():[];
@@ -250,7 +282,7 @@ function openOwnProfile(){
 var miniMenuPlayer=null;
 var miniMenuOwner=!1;
 
-/* ===== openMiniMenu — بلاک فقط برای ادمین ===== */
+/* ✅ تغییر ۳: openMiniMenu - دکمه بلاک فقط برای مالک لابی */
 function openMiniMenu(e,t){
   try{
     miniMenuPlayer=e;miniMenuOwner=t;
@@ -269,8 +301,8 @@ function openMiniMenu(e,t){
       var p=document.createElement("button");p.className="mini-menu-btn mm-transfer";p.id="miniTransferBtn";p.innerHTML='<span class="mm-icon">👑</span><span>انتقال مالکیت</span>';p.onclick=function(){var e=miniMenuPlayer;closeMiniMenu();setTimeout(function(){transferOwnership(e.phone,e.name)},150)};
       if(m){d.insertBefore(u,m);d.insertBefore(p,m)}else{d.appendChild(u);d.appendChild(p)}
     }
-    /* NEW: فقط سازنده و برنامه‌نویس می‌توانند بلاک کنند */
-    if(d&&!c&&isAdmin()){
+    /* ✅ دکمه بلاک فقط برای مالک لابی (l) — نه ادمین */
+    if(d&&!c&&l){
       var alreadyBlocked=isBlocked(e.phone);
       var bk=document.createElement("button");
       bk.className="mini-menu-btn "+(alreadyBlocked?"mm-unblock":"mm-block");
