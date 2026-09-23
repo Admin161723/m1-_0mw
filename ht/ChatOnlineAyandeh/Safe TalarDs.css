@@ -22,7 +22,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .search-box input{flex:1;height:100%;border:none;background:transparent;color:#fff;font-size:14px;font-weight:800;outline:none;text-align:right;padding:0}
 .search-box input::placeholder{color:rgba(255,255,255,.65);font-weight:700;font-size:13px}
 
-/* NEW: دکمه رفلش */
+/* ===== دکمه رفلش ===== */
 .refresh-btn{position:relative;z-index:3;width:44px;height:44px;border:none;border-radius:12px;background:linear-gradient(180deg,#2e516e 0%,#143250 100%);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #050d18,0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2);padding:0;flex-shrink:0;transition:transform .15s ease}
 .refresh-btn svg{width:22px;height:22px}
 .refresh-btn:active{transform:translateY(2px)}
@@ -178,14 +178,14 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .room-lobby-name{flex:1;text-align:center;color:#fff;font-size:18px;font-weight:900;text-shadow:0 2px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px;letter-spacing:.3px}
 .room-top-spacer{width:44px;flex-shrink:0}
 
-/* NEW: دکمه لیست مسدودی */
+/* ===== دکمه لیست مسدودی در لابی ===== */
 .room-block-btn{width:44px;height:44px;border:none;border-radius:11px;background:linear-gradient(180deg,#2e516e 0%,#143250 100%);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #050d18,0 4px 8px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.2);flex-shrink:0;padding:0;transition:transform .15s ease}
 .room-block-btn svg{width:22px;height:22px}
 .room-block-btn:active{transform:translateY(2px)}
 
 .room-grid-area{flex:1;position:relative;min-height:0}
 
-/* CHANGED: تیره‌تر + پایین‌تر */
+/* ===== مربع‌ها: تیره‌تر + br/bl پایین‌تر ===== */
 .player-slot{position:absolute;width:24%;aspect-ratio:1 / 1;border-radius:18%;background:#17224a;box-shadow:inset 10px 10px 20px rgba(5,12,25,.9),inset -8px -8px 18px rgba(40,55,95,.3),0 0 0 1px rgba(10,15,30,.5);display:flex;align-items:center;justify-content:center;overflow:visible;transition:box-shadow .3s ease}
 .player-slot.has-player{cursor:pointer}
 .player-slot.tr{top:14%;right:11%}
@@ -201,7 +201,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .slot-content .frame-wrap .avatar{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:68%;height:68%;object-fit:cover;border-radius:14% !important;z-index:1;box-shadow:0 3px 8px rgba(0,0,0,.55)}
 .slot-content .frame-wrap .frame{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:2;pointer-events:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
 
-/* CHANGED: بلندگو کوچیک‌تر + برای چپ‌ها سمت راست */
+/* ===== بلندگو: کوچیک‌تر + برای چپ‌ها سمت راست ===== */
 .mic-indicator{position:absolute;width:38px;height:38px;object-fit:contain;z-index:9;pointer-events:none;top:-14px;left:-22px;filter:drop-shadow(0 0 8px rgba(76,175,80,1)) drop-shadow(0 0 16px rgba(76,175,80,.9));animation:micPulseAnim 1.2s ease-in-out infinite}
 .player-slot.tl .mic-indicator,
 .player-slot.bl .mic-indicator{left:auto;right:-22px}
@@ -245,10 +245,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 /* ===== Profile Menu Overlay ===== */
 .profile-menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1500;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease;padding:14px}
 .profile-menu-overlay.active{opacity:1;visibility:visible}
-
-/* CHANGED: رفع کشیدگی و مشکل دکمه بستن */
 .profile-menu-box{position:relative;width:100%;max-width:360px;background:linear-gradient(180deg,#3278a8 0%,#1e5580 40%,#0f3d5e 100%);border-radius:24px;box-shadow:inset 0 2px 4px rgba(255,255,255,.2),inset 0 -2px 4px rgba(0,0,0,.3),0 20px 60px rgba(0,0,0,.7),0 0 0 2px rgba(255,255,255,.1);padding:14px 14px 16px;overflow:visible;touch-action:none;overscroll-behavior:contain;user-select:none}
-
 .pm-close{position:absolute;top:-12px;left:-12px;width:38px;height:38px;border-radius:50%;background:linear-gradient(180deg,#d32f2f 0%,#7f1a1a 100%);border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900;z-index:10;box-shadow:0 3px 8px rgba(0,0,0,.6);line-height:1;padding-bottom:3px;font-family:Arial,sans-serif}
 .pm-title{text-align:center;color:#fff;font-size:19px;font-weight:900;padding:2px 0 12px;text-shadow:0 2px 5px rgba(0,0,0,.7)}
 .pm-dark-box{background:#172c3b;border-radius:14px;padding:14px 12px;margin-bottom:10px;box-shadow:inset 0 2px 4px rgba(0,0,0,.4),inset 0 -1px 2px rgba(255,255,255,.05),0 2px 6px rgba(0,0,0,.3)}
@@ -287,13 +284,9 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .mm-report{background:linear-gradient(180deg,#ffb300 0%,#b36b00 100%);box-shadow:0 4px 0 #4a2c00,0 5px 12px rgba(255,179,0,.4)}
 .mini-menu-btn.mm-kick{background:linear-gradient(180deg,#d32f2f 0%,#7f1a1a 100%);box-shadow:0 4px 0 #4a0a0a,0 5px 12px rgba(211,47,47,.45);margin-bottom:8px}
 .mini-menu-btn.mm-transfer{background:linear-gradient(180deg,#ffd94a 0%,#b38600 100%);box-shadow:0 4px 0 #6b4f00,0 5px 12px rgba(255,217,74,.5);color:#3d2400;text-shadow:0 1px 2px rgba(255,255,255,.3);margin-bottom:8px}
-.mini-menu-btn.mm-kick:active,.mini-menu-btn.mm-transfer:active{transform:translateY(3px)}
-
-/* NEW: دکمه بلاک / رفع بلاک */
 .mini-menu-btn.mm-block{background:linear-gradient(180deg,#d32f2f 0%,#7f1a1a 100%);box-shadow:0 4px 0 #4a0a0a,0 5px 12px rgba(211,47,47,.45);margin-bottom:8px}
 .mini-menu-btn.mm-unblock{background:linear-gradient(180deg,#4a9eff 0%,#1565c0 100%);box-shadow:0 4px 0 #0a2f6b,0 5px 12px rgba(74,158,255,.4);margin-bottom:8px}
-.mini-menu-btn.mm-block:active,.mini-menu-btn.mm-unblock:active{transform:translateY(3px)}
-
+.mini-menu-btn.mm-kick:active,.mini-menu-btn.mm-transfer:active,.mini-menu-btn.mm-block:active,.mini-menu-btn.mm-unblock:active{transform:translateY(3px)}
 .mm-cancel{background:linear-gradient(180deg,#6a6a6a 0%,#3a3a3a 100%);box-shadow:0 4px 0 #1a1a1a}
 
 /* ===== Report Modal ===== */
@@ -336,7 +329,7 @@ html,body{width:100%;height:100%;overflow:hidden;position:fixed;background:#1a29
 .edit-save{background:linear-gradient(180deg,#0fad07 0%,#084001 100%);box-shadow:0 3px 0 #042000}
 .edit-cancel{background:linear-gradient(180deg,#6a6a6a 0%,#3a3a3a 100%);box-shadow:0 3px 0 #1a1a1a}
 
-/* ===== NEW: لیست مسدودی ===== */
+/* ===== لیست مسدودی ===== */
 .block-list-content{max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
 .block-list-content::-webkit-scrollbar{display:none}
 .block-item{background:rgba(211,47,47,.12);border:1px solid rgba(211,47,47,.4);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
