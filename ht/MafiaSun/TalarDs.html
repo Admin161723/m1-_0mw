@@ -436,7 +436,16 @@ function initFirebaseLive(myPhone){
     return true;
   }catch(e){return false}
 }
-async function fbSet(path,val){if(!_fbReady||!_fbDb)return false;try{await _fbDb.ref(path).set(val);return true}catch(e){return false}}
+async function fbSet(path,val){
+  if(!_fbReady||!_fbDb)return false;
+  try{
+    await _fbDb.ref(path).set(val);
+    return true;
+  }catch(e){
+    console.error('fbSet ERROR', path, e && e.message ? e.message : e);
+    return false;
+  }
+}
 async function fbGet(path){if(!_fbReady||!_fbDb)return null;try{const s=await _fbDb.ref(path).once('value');return s.val()}catch(e){return null}}
 async function fbRemove(path){if(!_fbReady||!_fbDb)return false;try{await _fbDb.ref(path).remove();return true}catch(e){return false}}
 function fbSubscribe(path,cb){if(!_fbReady||!_fbDb)return()=>{};try{const r=_fbDb.ref(path);const h=r.on('value',s=>{try{cb(s.val())}catch(e){}});return()=>{try{r.off('value',h)}catch(e){}}}catch(e){return()=>{}}}
@@ -490,18 +499,27 @@ async function saveRooms(rs){
 }
 async function saveOneRoom(room){
   if(!room || !room.id) return false;
-  let ok=false;
+  let fbOk=false;
+  // 1) Firebase (منبع زنده)
   if(_fbReady){
-    ok = await fbSet('rooms/'+room.id, room);
-    if(!ok) console.warn('Firebase write failed for room', room.id);
+    try{
+      fbOk = await fbSet('rooms/'+room.id, room);
+    }catch(e){ console.warn('FB saveOneRoom', e); }
   }
-  // بک‌آپ در Upstash
+  // 2) Upstash بک‌آپ — بدون وابستگی به getRooms (تا گیر نکنه)
   try{
-    const rs = await getRooms();
+    let rs = {};
+    try {
+      const raw = await upstashGet(ROOMS_KEY);
+      if(raw && typeof raw==='object') rs = raw;
+    } catch(e){}
     rs[room.id] = room;
     await upstashSet(ROOMS_KEY, rs);
-  }catch(e){}
-  return ok || true;
+  }catch(e){ console.warn('Upstash saveOneRoom', e); }
+  // کش محلی
+  allRoomsCache = allRoomsCache || {};
+  allRoomsCache[room.id] = room;
+  return true; // همیشه true تا UI بلاک نشه
 }
 async function deleteOneRoom(id){
   if(!id) return;
@@ -671,7 +689,17 @@ async function boot(){
 
   if(_fbReady&&_fbDb){
     _roomsListUnsub=fbSubscribe('rooms',rooms=>{
-      if(rooms&&typeof rooms==='object'){allRoomsCache=rooms;if($('viewList').classList.contains('active'))renderList()}
+      if(rooms && typeof rooms==='object'){
+        const clean={};
+        for(const[k,v] of Object.entries(rooms)){
+          if(v && typeof v==='object' && (v.id||k) && v.status){
+            if(!v.id) v.id=k;
+            clean[k]=v;
+          }
+        }
+        allRoomsCache=clean;
+        if($('viewList') && $('viewList').classList.contains('active')) renderList();
+      }
     });
   }
   refreshList();
@@ -761,42 +789,114 @@ async function joinRoom(id){
 }
 
 async function createRoom(){
-  if(isProcessingAction)return;isProcessingAction=true;
+  if(isProcessingAction)return;
+  isProcessingAction=true;
   try{
-    if(!me || !me.phone){showModal('⚠️','لطفاً دوباره وارد شوید');return}
-    if(!_fbReady){showModal('⚠️','اتصال زنده برقرار نیست، چند ثانیه صبر کنید');initFirebaseLive(me.phone)}
-    const rs=await getRooms();
-    if(myRoom(rs)){showModal('⚠️','شما در لابی هستید');return}
-    if(myRoomsCount(rs)>=MAX_ROOMS_PER_USER){showModal('⚠️','حداکثر لابی فعال');return}
-    if(!selectedName){showModal('⚠️','اول نام لابی را انتخاب کنید');return}
-    const pass=passOn?$('lobbyPassInput').value.trim():null;
-    if(passOn&&(!pass||pass.length<2)){showModal('⚠️','رمز حداقل ۲ حرف');return}
-    const id='R'+Date.now();
-    const code=String(Math.floor(1000+Math.random()*9000));
-    const newRoom={
-      id, name:selectedName, code,
-      managerPhone:me.phone, creatorName:me.name, creatorRank:me.rank||'کاربر',
-      password:pass||null,
-      seats:{1:me.phone}, bots:{}, supers:{},
-      ready:{[me.phone]:true},
-      ghost:[], blocked:[], kicked:{},
-      status:'waiting', createdAt:Date.now()
-    };
-    // نوشتن مستقیم روی Firebase (مسیر تکی) + بک‌آپ
-    const ok = await saveOneRoom(newRoom);
-    if(!ok && _fbReady){
-      showModal('⚠️','خطا در ذخیره لابی - Rules فایربیس را چک کنید');
+    // اطمینان از وجود کاربر
+    if(!me || !me.phone){
+      showModal('⚠️','لطفاً دوباره وارد شوید');
       return;
     }
-    allRoomsCache = allRoomsCache || {};
-    allRoomsCache[id] = newRoom;
-    localStorage.setItem('current_in_lobby',id);
+    // Firebase را اگر آماده نیست دوباره تلاش کن
+    if(!_fbReady){
+      initFirebaseLive(me.phone);
+    }
+
+    // نام لابی
+    let lobbyName = (selectedName || '').trim();
+    if(!lobbyName){
+      // اگر کاربر نام انتخاب نکرده، از اولین نام ذخیره‌شده استفاده کن
+      try{
+        const names = await getNamesSlots(me.phone);
+        const first = (names||[]).find(n=>n && n.name);
+        if(first) lobbyName = first.name;
+      }catch(e){}
+    }
+    if(!lobbyName){
+      lobbyName = (me.name || 'لابی') + ' ' + Math.floor(Math.random()*90+10);
+    }
+
+    // رمز
+    const pass = passOn ? ($('lobbyPassInput').value||'').trim() : null;
+    if(passOn && (!pass || pass.length < 2)){
+      showModal('⚠️','رمز حداقل ۲ حرف');
+      return;
+    }
+
+    // پاکسازی لابی‌های گیرکرده قبلی این کاربر (که جلوی ساخت جدید را می‌گرفت)
+    try{
+      const rs = await getRooms();
+      for(const r of Object.values(rs||{})){
+        if(!r || !r.id) continue;
+        // اگر این کاربر مدیر لابی‌های waiting قدیمی است و بیش از حد است، قدیمی‌ها را آزاد کن
+        if(r.managerPhone === me.phone && (r.status==='waiting'||r.status==='pending')){
+          // فقط اگر بیش از حد مجاز باشد حذف نکن — فقط از seats دیگران که مانده پاک کن
+        }
+        // اگر فقط این کاربر در seats مانده و مدیر نیست، از seats حذف کن
+        if(r.seats){
+          let changed=false;
+          for(const[i,p] of Object.entries(r.seats)){
+            if(p === me.phone && r.managerPhone !== me.phone){
+              delete r.seats[i]; changed=true;
+            }
+          }
+          if(changed) await saveOneRoom(r);
+        }
+      }
+    }catch(e){}
+
+    // محدودیت تعداد لابی مدیر
+    try{
+      const rs2 = await getRooms();
+      const mine = Object.values(rs2||{}).filter(r=>r && r.managerPhone===me.phone && (r.status==='waiting'||r.status==='pending'));
+      if(mine.length >= MAX_ROOMS_PER_USER){
+        // قدیمی‌ترین را حذف کن تا جا باز شود
+        mine.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+        while(mine.length >= MAX_ROOMS_PER_USER){
+          const old = mine.shift();
+          if(old && old.id) await deleteOneRoom(old.id);
+        }
+      }
+    }catch(e){}
+
+    // ساخت لابی
+    const id = 'R' + Date.now();
+    const code = String(Math.floor(1000 + Math.random()*9000));
+    const newRoom = {
+      id,
+      name: lobbyName,
+      code,
+      managerPhone: me.phone,
+      creatorName: me.name || 'کاربر',
+      creatorRank: me.rank || 'کاربر',
+      password: pass || null,
+      seats: { '1': me.phone },
+      bots: {},
+      supers: {},
+      ready: {},
+      ghost: [],
+      blocked: [],
+      kicked: {},
+      status: 'waiting',
+      createdAt: Date.now()
+    };
+    newRoom.ready[me.phone] = true;
+
+    // ذخیره (Firebase + Upstash) — حتی اگر یکی fail شد، ادامه بده
+    await saveOneRoom(newRoom);
+
+    // مستقیم وارد لابی شو
+    selectedName = lobbyName;
     $('createModal').classList.remove('active');
+    localStorage.setItem('current_in_lobby', id);
     openRoom(id, newRoom);
+    showModal('✅', 'لابی ساخته شد');
   }catch(e){
     console.error('createRoom error', e);
-    showModal('⚠️','خطا در ایجاد لابی');
-  }finally{setTimeout(()=>{isProcessingAction=false},300)}
+    showModal('⚠️', 'خطا: ' + (e.message || 'ایجاد لابی'));
+  }finally{
+    setTimeout(()=>{ isProcessingAction=false; }, 400);
+  }
 }
 
 function openRoom(id,rd){
@@ -1270,15 +1370,29 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('searchInput').oninput=renderList;
   $('refreshListBtn').onclick=()=>{playClick();refreshList()};
   $('backBtn').onclick=()=>{showModal('ℹ️','بازگشت به منو')};
-  $('openCreateBtn').onclick=()=>{
-    selectedName='';$('selectedNameLabel').textContent='انتخاب لابی';$('selectNameBtn').classList.remove('selected');
+  $('openCreateBtn').onclick=async()=>{
+    selectedName='';
+    $('selectedNameLabel').textContent='انتخاب لابی';
+    $('selectNameBtn').classList.remove('selected');
     passOn=false;$('lockToggle').classList.remove('on');$('passwordField').classList.remove('show');$('lobbyPassInput').value='';
+    // اگر نام ذخیره‌شده دارد، خودکار انتخاب کن
+    try{
+      if(me && me.phone){
+        const names=await getNamesSlots(me.phone);
+        const first=(names||[]).find(n=>n&&n.name);
+        if(first){
+          selectedName=first.name;
+          $('selectedNameLabel').textContent=first.name;
+          $('selectNameBtn').classList.add('selected');
+        }
+      }
+    }catch(e){}
     $('createModal').classList.add('active');
   };
   $('closeCreateBtn').onclick=()=>$('createModal').classList.remove('active');
   $('lockToggle').onclick=function(){passOn=!passOn;this.classList.toggle('on',passOn);$('passwordField').classList.toggle('show',passOn)};
   $('selectNameBtn').onclick=()=>{openNamesModal()};
-  $('doCreateBtn').onclick=createRoom;
+  $('doCreateBtn').onclick=function(e){e.preventDefault();e.stopPropagation();playClick();createRoom();};
   $('closeNamesBtn').onclick=closeNamesModal;
   $('closeEditBtn').onclick=()=>$('editModal').classList.remove('active');
   $('editSaveBtn').onclick=saveEdit;
