@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DARKWAM ACCESS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Courier New', Courier, monospace;
+  background: #000 url('La.gif') center center / cover no-repeat fixed;
+  color: #00ff6a;
+}
+
+#auth {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .9s ease, visibility .9s ease;
+}
+
+#auth.show { opacity: 1; visibility: visible; }
+
+.auth-card {
+  position: relative;
+  width: min(100%, 400px);
+  padding: 30px 24px 26px;
+  background: rgba(0, 8, 4, .28);
+  border: 1px solid rgba(0, 255, 106, .45);
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 255, 106, .25),
+              0 0 80px rgba(0, 255, 106, .08) inset;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: cardIn .8s ease both;
+}
+
+@keyframes cardIn {
+  from { transform: translateY(25px) scale(.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp .45s ease both; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-logo {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: #00ff6a;
+  text-shadow: 0 0 12px #00ff6a, 0 0 30px rgba(0, 255, 106, .7);
+}
+
+.auth-sub {
+  text-align: center;
+  font-size: 12px;
+  color: #b6ffd1;
+  margin: 8px 0 22px;
+  direction: rtl;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .95), 0 0 4px rgba(0, 0, 0, .9);
+}
+
+.field { margin-bottom: 13px; }
+
+.field input {
+  width: 100%;
+  padding: 13px 15px;
+  background: rgba(0, 255, 106, .12);
+  border: 1px solid rgba(0, 255, 106, .4);
+  border-radius: 9px;
+  color: #eaffef;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: .25s;
+  direction: rtl;
+  text-shadow: 0 0 4px rgba(0, 0, 0, .6);
+}
+
+.field input::placeholder { color: #9fe6b9; }
+
+.field input:focus {
+  border-color: #00ff6a;
+  background: rgba(0, 255, 106, .2);
+  box-shadow: 0 0 18px rgba(0, 255, 106, .5);
+}
+
+.field input.ltr { direction: ltr; text-align: right; }
+
+.btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  background: linear-gradient(90deg, #00913f, #00ff6a);
+  border: none;
+  border-radius: 9px;
+  color: #001a0c;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: .25s;
+  box-shadow: 0 0 22px rgba(0, 255, 106, .5);
+}
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 0 34px rgba(0, 255, 106, .85); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.btn-link {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: #b6ffd1;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: .25s;
+  text-decoration: underline dotted;
+  text-shadow: 0 0 6px rgba(0, 0, 0, .9);
+}
+
+.btn-link:hover { color: #00ff6a; }
+
+.avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px dashed rgba(0, 255, 106, .6);
+  background: rgba(0, 255, 106, .1) center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: .3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar:hover {
+  border-color: #00ff6a;
+  box-shadow: 0 0 24px rgba(0, 255, 106, .6);
+  transform: scale(1.04);
+}
+
+.avatar svg { width: 34px; height: 34px; color: #9fe6b9; transition: .3s; }
+.avatar:hover svg { color: #00ff6a; }
+
+.avatar.has-image {
+  border-style: solid;
+  border-color: #00ff6a;
+  box-shadow: 0 0 22px rgba(0, 255, 106, .5);
+}
+.avatar.has-image svg { display: none; }
+
+.avatar-label {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #b6ffd1;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(0, 0, 0, .9);
+}
+
+.error-msg {
+  color: #ff3b5c;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 10px;
+  min-height: 16px;
+  line-height: 1.6;
+  text-shadow: 0 0 8px rgba(255, 59, 92, .6), 0 0 4px rgba(0, 0, 0, .9);
+}
+
+.status-msg {
+  text-align: center;
+  font-size: 11px;
+  color: #ffdd57;
+  margin-top: 6px;
+  min-height: 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="auth">
+  <div class="auth-card">
+
+    <!-- مرحله ۱ -->
+    <div class="screen active" id="screen-phone">
+      <div class="auth-logo">DARKWAM</div>
+      <div class="auth-sub">شماره موبایل خود را وارد کنید</div>
+      <form id="phoneForm" autocomplete="off">
+        <div class="field">
+          <input type="tel" id="phoneInput" class="ltr"
+                 placeholder="09xxxxxxxxx" maxlength="11"
+                 inputmode="numeric" required>
+        </div>
+        <button type="submit" class="btn" id="phoneBtn">ادامه</button>
+        <div class="error-msg" id="phoneError"></div>
+        <div class="status-msg" id="connStatus"></div>
+      </form>
+    </div>
+
+    <!-- مرحله ۲ -->
+    <div class="screen" id="screen-login">
+      <div class="auth-logo">LOGIN</div>
+      <div class="auth-sub" id="loginSub">رمز عبور خود را وارد کنید</div>
+      <form id="loginForm" autocomplete="off">
+        <div class="field">
+          <input type="password" id="loginPassword" placeholder="رمز عبور" required>
+        </div>
+        <button type="submit" class="btn" id="loginBtn">ورود به حساب</button>
+        <button type="button" class="btn-link" id="backToPhone1">← تغییر شماره موبایل</button>
+        <div class="error-msg" id="loginError"></div>
+      </form>
+    </div>
+
+    <!-- مرحله ۳ -->
+    <div class="screen" id="screen-register">
+      <div class="auth-logo">SIGN UP</div>
+      <div class="auth-sub">حساب کاربری جدید بسازید</div>
+
+      <div class="avatar-wrapper">
+        <input type="file" id="avatarInput" accept="image/*" hidden>
+        <div class="avatar" id="avatarPreview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <div class="avatar-label">برای انتخاب تصویر کلیک کنید</div>
+      </div>
+
+      <form id="registerForm" autocomplete="off">
+        <div class="field">
+          <input type="text" id="regName" placeholder="نام اکانت" value="DARKWAM" required>
+        </div>
+        <div class="field">
+          <input type="text" id="regMessenger" class="ltr" placeholder="آیدی پیام رسان" required>
+        </div>
+        <div class="field">
+          <input type="password" id="regPassword" placeholder="رمز عبور" required minlength="4">
+        </div>
+        <div class="field">
+          <input type="password" id="regMessengerPassword"
+                 placeholder="رمز عبور پیام رسان (اجباری)" required minlength="4">
+        </div>
+        <button type="submit" class="btn" id="registerBtn">ساخت حساب</button>
+        <button type="button" class="btn-link" id="backToPhone2">← تغییر شماره موبایل</button>
+        <div class="error-msg" id="registerError"></div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+/* ============================================================
+   ⚙️ اتصال به دیتابیس Upstash Redis (REST API)
+   ============================================================ */
+const REDIS_URL   = 'https://related-griffon-319857.upstash.io';
+const REDIS_TOKEN = 'gQAAAAAABOFxAAIgcDIyZTNlNzRhOGY5Y2E0ODYxOGYwNTI4OTdiZGJhOTZkNQ';
+
+async function redis(...args) {
+  const res = await fetch(REDIS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${REDIS_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(args)
+  });
+  if (!res.ok) throw new Error('Redis HTTP ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.result;
+}
+
+/* ============================================================
+   🔑 کلیدهای دیتابیس
+   ------------------------------------------------------------
+   darkwam:user:<phone>          → JSON اطلاعات کاربر
+   darkwam:device:<fingerprint>  → phone صاحب دستگاه
+   darkwam:ip:<ip>               → phone صاحب IP
+   darkwam:config:messenger_password → رمز اجباری پیام‌رسان (ادمین ست می‌کند)
+   ============================================================ */
+const K = {
+  user:   phone => `darkwam:user:${phone}`,
+  device: fp    => `darkwam:device:${fp}`,
+  ip:     ip    => `darkwam:ip:${ip}`,
+  cfgMsgPass: 'darkwam:config:messenger_password'
+};
+
+/* رمز اجباری پیام‌رسان — از دیتابیس خوانده می‌شود */
+const FALLBACK_MSG_PASSWORD = 'DARKWAM2024'; // فقط اگر تو دیتابیس ست نشده باشد
+
+let REQUIRED_MSG_PASSWORD = null;
+
+async function loadRequiredPassword() {
+  try {
+    const v = await redis('GET', K.cfgMsgPass);
+    REQUIRED_MSG_PASSWORD = (v && typeof v === 'string') ? v : FALLBACK_MSG_PASSWORD;
+  } catch (e) {
+    console.warn('[DARKWAM] config load failed, using fallback', e);
+    REQUIRED_MSG_PASSWORD = FALLBACK_MSG_PASSWORD;
+  }
+  return REQUIRED_MSG_PASSWORD;
+}
+
+/* کمکی‌ها */
+async function getUser(phone) {
+  try {
+    const raw = await redis('GET', K.user(phone));
+    if (!raw) return null;
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch (e) { return null; }
+}
+
+async function setUser(phone, data) {
+  await redis('SET', K.user(phone), JSON.stringify(data));
+}
+
+async function getDeviceOwner(fp) {
+  try {
+    const v = await redis('GET', K.device(fp));
+    return v || null;
+  } catch (e) { return null; }
+}
+
+async function setDeviceOwner(fp, phone) {
+  await redis('SET', K.device(fp), phone);
+}
+
+async function getIpOwner(ip) {
+  try {
+    const v = await redis('GET', K.ip(ip));
+    return v || null;
+  } catch (e) { return null; }
+}
+
+async function setIpOwner(ip, phone) {
+  if (ip && ip !== 'unknown') await redis('SET', K.ip(ip), phone);
+}
+
+/* ============================================================
+   اطلاعات دستگاه و IP
+   ============================================================ */
+let userIP = 'unknown';
+
+async function fetchIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+    const data = await res.json();
+    if (data && data.ip) { userIP = data.ip; return; }
+  } catch (e) {}
+  try {
+    const res2 = await fetch('https://api.ipify.org');
+    const txt = await res2.text();
+    if (txt && /^\d+\.\d+\.\d+\.\d+$/.test(txt.trim())) userIP = txt.trim();
+  } catch (e) {}
+}
+fetchIP();
+
+function canvasFingerprint() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 200; c.height = 60;
+    const ctx = c.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(10, 10, 80, 25);
+    ctx.fillStyle = '#069';
+    ctx.fillText('DARKWAM-FP', 12, 15);
+    ctx.fillStyle = 'rgba(102,204,0,0.7)';
+    ctx.fillText('DARKWAM-FP', 14, 17);
+    return c.toDataURL().slice(-80);
+  } catch (e) { return 'no-canvas'; }
+}
+
+function getDeviceFingerprint() {
+  const parts = [
+    navigator.userAgent || '',
+    navigator.language || '',
+    (navigator.languages || []).join(','),
+    navigator.platform || '',
+    navigator.hardwareConcurrency || 0,
+    navigator.deviceMemory || 0,
+    screen.width + 'x' + screen.height,
+    screen.colorDepth || 0,
+    new Date().getTimezoneOffset(),
+    (Intl.DateTimeFormat().resolvedOptions().timeZone || ''),
+    canvasFingerprint()
+  ].join('|');
+
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < parts.length; i++) {
+    const ch = parts.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 3266489909);
+  return 'FP_' + (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+}
+
+function getDeviceInfo() {
+  return {
+    userAgent: navigator.userAgent || '',
+    platform: navigator.platform || '',
+    language: navigator.language || '',
+    languages: (navigator.languages || []).join(','),
+    screen: screen.width + 'x' + screen.height,
+    colorDepth: screen.colorDepth || 0,
+    pixelRatio: window.devicePixelRatio || 1,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    cores: navigator.hardwareConcurrency || 0,
+    memory: navigator.deviceMemory || 0,
+    touch: 'ontouchstart' in window,
+    ip: userIP
+  };
+}
+
+/* ============================================================
+   🎵 صدای هکری-ترسناک سینمایی
+   ============================================================ */
+let audioCtx = null, masterGain = null, audioStarted = false;
+
+function startHackerMusic() {
+  if (audioStarted) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  try { audioCtx = new AC(); } catch (e) { return; }
+  audioStarted = true;
+
+  const now = audioCtx.currentTime;
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+  masterGain.gain.exponentialRampToValueAtTime(0.7, audioCtx.currentTime + 4);
+  masterGain.connect(audioCtx.destination);
+
+  const reverb = audioCtx.createConvolver();
+  const rlen = audioCtx.sampleRate * 5;
+  const rbuf = audioCtx.createBuffer(2, rlen, audioCtx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = rbuf.getChannelData(ch);
+    for (let i = 0; i < rlen; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / rlen, 2.4);
+    }
+  }
+  reverb.buffer = rbuf;
+
+  const wetGain = audioCtx.createGain(); wetGain.gain.value = 0.55;
+  const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.75;
+  const reverbSend = audioCtx.createGain(); reverbSend.gain.value = 1;
+
+  masterGain.connect(dryGain); dryGain.connect(audioCtx.destination);
+  masterGain.connect(reverbSend); reverbSend.connect(reverb);
+  reverb.connect(wetGain); wetGain.connect(audioCtx.destination);
+
+  /* ساب‌بیس */
+  const sub = audioCtx.createOscillator();
+  sub.type = 'sine'; sub.frequency.value = 25;
+  const subGain = audioCtx.createGain(); subGain.gain.value = 0.65;
+  sub.connect(subGain); subGain.connect(masterGain);
+  sub.start(now);
+
+  const subLFO = audioCtx.createOscillator();
+  subLFO.type = 'sine'; subLFO.frequency.value = 0.11;
+  const subLFOGain = audioCtx.createGain(); subLFOGain.gain.value = 4;
+  subLFO.connect(subLFOGain); subLFOGain.connect(sub.frequency);
+  subLFO.start(now);
+
+  /* پد دیسونانت */
+  const padGain = audioCtx.createGain(); padGain.gain.value = 0.16;
+  const padFilter = audioCtx.createBiquadFilter();
+  padFilter.type = 'lowpass';
+  padFilter.frequency.value = 520;
+  padFilter.Q.value = 12;
+  padGain.connect(padFilter); padFilter.connect(masterGain);
+
+  [41.20, 43.65, 46.25, 61.74, 65.41, 82.41].forEach((f, i) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = i % 2 === 0 ? 'sawtooth' : 'triangle';
+    osc.frequency.value = f;
+    const g = audioCtx.createGain(); g.gain.value = 0.09;
+    osc.connect(g); g.connect(padGain);
+    osc.start(now);
+  });
+
+  const padLFO = audioCtx.createOscillator();
+  padLFO.type = 'sine'; padLFO.frequency.value = 0.07;
+  const padLFOGain = audioCtx.createGain(); padLFOGain.gain.value = 260;
+  padLFO.connect(padLFOGain); padLFOGain.connect(padFilter.frequency);
+  padLFO.start(now);
+
+  /* نویز هکری */
+  const noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 4, audioCtx.sampleRate);
+  const nd = noiseBuf.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource(); noise.buffer = noiseBuf; noise.loop = true;
+  const nBp = audioCtx.createBiquadFilter();
+  nBp.type = 'bandpass'; nBp.frequency.value = 1300; nBp.Q.value = 0.7;
+  const nGain = audioCtx.createGain(); nGain.gain.value = 0.05;
+  noise.connect(nBp); nBp.connect(nGain); nGain.connect(masterGain);
+  noise.start(now);
+
+  const noise2 = audioCtx.createBufferSource(); noise2.buffer = noiseBuf; noise2.loop = true;
+  const hp = audioCtx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 4200;
+  const n2Gain = audioCtx.createGain(); n2Gain.gain.value = 0.02;
+  noise2.connect(hp); hp.connect(n2Gain); n2Gain.connect(masterGain);
+  noise2.start(now);
+
+  setInterval(heartbeat, 1400);
+  setInterval(hackerTyping, 90);
+  setInterval(() => { if (Math.random() > 0.45) glitchBlip(); }, 320);
+  setInterval(bassDrop, 4500);
+  setInterval(() => { if (Math.random() > 0.55) metalScreech(); }, 5500);
+  setInterval(tensionRiser, 8000);
+  setInterval(() => { if (Math.random() > 0.5) whisper(); }, 4000);
+  setInterval(() => { if (Math.random() > 0.7) alarm(); }, 9000);
+}
+
+function heartbeat() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  [0, 0.22].forEach((offset, i) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, t + offset);
+    osc.frequency.exponentialRampToValueAtTime(30, t + offset + 0.2);
+    const g = audioCtx.createGain();
+    const vol = i === 0 ? 0.6 : 0.42;
+    g.gain.setValueAtTime(0.0001, t + offset);
+    g.gain.exponentialRampToValueAtTime(vol, t + offset + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + offset + 0.32);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(t + offset); osc.stop(t + offset + 0.36);
+  });
+}
+
+function hackerTyping() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  if (Math.random() > 0.35) return;
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'square';
+  osc.frequency.value = 2000 + Math.random() * 3500;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.045, t + 0.001);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
+  const hp = audioCtx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 1800;
+  osc.connect(hp); hp.connect(g); g.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.03);
+}
+
+function glitchBlip() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(500 + Math.random() * 3000, t);
+  osc.frequency.exponentialRampToValueAtTime(90, t + 0.09);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.07, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+  osc.connect(g); g.connect(masterGain);
+  osc.start(t); osc.stop(t + 0.12);
+}
+
+function bassDrop() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(110, t);
+  osc.frequency.exponentialRampToValueAtTime(15, t + 1.2);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.85, t + 0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+  osc.connect(g); g.connect(masterGain);
+  osc.start(t); osc.stop(t + 1.5);
+}
+
+function metalScreech() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  const dur = 0.5 + Math.random() * 0.7;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sawtooth';
+  const base = 900 + Math.random() * 900;
+  osc.frequency.setValueAtTime(base, t);
+  osc.frequency.linearRampToValueAtTime(base * 0.35, t + dur);
+  const bp = audioCtx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = base; bp.Q.value = 22;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.09, t + 0.08);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(bp); bp.connect(g); g.connect(masterGain);
+  osc.start(t); osc.stop(t + dur + 0.1);
+}
+
+function tensionRiser() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  const dur = 2.5;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(180, t);
+  osc.frequency.exponentialRampToValueAtTime(1800, t + dur);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.06, t + dur * 0.7);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(g); g.connect(masterGain);
+  osc.start(t); osc.stop(t + dur + 0.05);
+}
+
+function whisper() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  const dur = 0.8 + Math.random() * 1.2;
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+  const d = buffer.getChannelData(0);
+  for (let i = 0; i < d.length; i++) {
+    const env = Math.sin(Math.PI * i / d.length);
+    d[i] = (Math.random() * 2 - 1) * env;
+  }
+  const src = audioCtx.createBufferSource(); src.buffer = buffer;
+  const bp = audioCtx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(2000 + Math.random() * 2000, t);
+  bp.frequency.linearRampToValueAtTime(500 + Math.random() * 700, t + dur);
+  bp.Q.value = 11;
+  const g = audioCtx.createGain(); g.gain.value = 0.18;
+  src.connect(bp); bp.connect(g); g.connect(masterGain);
+  src.start(t);
+}
+
+function alarm() {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
+  [0, 0.35, 0.7].forEach(offset => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1200, t + offset);
+    osc.frequency.setValueAtTime(900, t + offset + 0.18);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, t + offset);
+    g.gain.exponentialRampToValueAtTime(0.07, t + offset + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + offset + 0.32);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(t + offset); osc.stop(t + offset + 0.35);
+  });
+}
+
+['click', 'touchstart', 'keydown', 'mousemove'].forEach(ev => {
+  document.addEventListener(ev, () => {
+    if (!audioStarted) startHackerMusic();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }, { passive: true });
+});
+
+/* ============================================================
+   بعد از ۳ ثانیه برو به صفحه ثبت نام/ورود
+   ============================================================ */
+const auth = document.getElementById('auth');
+setTimeout(() => auth.classList.add('show'), 3000);
+
+/* پیش‌بارگذاری رمز اجباری از دیتابیس */
+loadRequiredPassword().then(p => {
+  console.log('%c[DARKWAM] رمز اجباری پیام‌رسان از دیتابیس بارگذاری شد', 'color:#00ff6a');
+});
+
+/* ============================================================
+   ناوبری
+   ============================================================ */
+let currentPhone = '';
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('.error-msg').forEach(e => {
+    e.textContent = '';
+    e.style.color = '#ff3b5c';
+  });
+}
+
+/* ============================================================
+   مرحله ۱: شماره موبایل
+   ============================================================ */
+const phoneForm  = document.getElementById('phoneForm');
+const phoneInput = document.getElementById('phoneInput');
+const phoneError = document.getElementById('phoneError');
+const phoneBtn   = document.getElementById('phoneBtn');
+const connStatus = document.getElementById('connStatus');
+
+phoneInput.addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+phoneForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const phone = phoneInput.value.trim();
+
+  if (!/^09\d{9}$/.test(phone)) {
+    phoneError.style.color = '#ff3b5c';
+    phoneError.textContent = 'شماره موبایل معتبر نیست (مثال: 09123456789)';
+    return;
+  }
+
+  currentPhone = phone;
+  phoneBtn.disabled = true;
+  phoneBtn.textContent = 'در حال بررسی...';
+  connStatus.textContent = '';
+
+  try {
+    /* 1) کاربر قبلاً ثبت‌نام کرده؟ */
+    const existingUser = await getUser(phone);
+    if (existingUser) {
+      document.getElementById('loginSub').textContent = 'ورود به حساب ' + phone;
+      showScreen('login');
+      setTimeout(() => document.getElementById('loginPassword').focus(), 100);
+      return;
+    }
+
+    /* 2) این دستگاه / IP قبلاً با شماره دیگه‌ای ثبت شده؟ */
+    const fp = getDeviceFingerprint();
+    const deviceOwner = await getDeviceOwner(fp);
+    if (deviceOwner && deviceOwner !== phone) {
+      phoneError.style.color = '#ff3b5c';
+      phoneError.innerHTML =
+        '⛔ شما قبلاً با این شماره موبایل حساب ساختید<br>' +
+        '<span style="font-size:11px;color:#ff8b9d">شماره: ' + deviceOwner + '</span>';
+      return;
+    }
+
+    if (userIP && userIP !== 'unknown') {
+      const ipOwner = await getIpOwner(userIP);
+      if (ipOwner && ipOwner !== phone) {
+        phoneError.style.color = '#ff3b5c';
+        phoneError.innerHTML =
+          '⛔ شما قبلاً با این شماره موبایل حساب ساختید<br>' +
+          '<span style="font-size:11px;color:#ff8b9d">شماره: ' + ipOwner + '</span>';
+        return;
+      }
+    }
+
+    /* 3) برو به ثبت‌نام */
+    await loadRequiredPassword(); // تازه‌سازی رمز اجباری
+    showScreen('register');
+    setTimeout(() => document.getElementById('regMessenger').focus(), 100);
+
+  } catch (err) {
+    console.error(err);
+    phoneError.style.color = '#ff3b5c';
+    phoneError.textContent = 'خطا در اتصال به دیتابیس. دوباره تلاش کنید.';
+  } finally {
+    phoneBtn.disabled = false;
+    phoneBtn.textContent = 'ادامه';
+  }
+});
+
+/* ============================================================
+   مرحله ۲: ورود
+   ============================================================ */
+const loginForm = document.getElementById('loginForm');
+const loginPassword = document.getElementById('loginPassword');
+const loginError = document.getElementById('loginError');
+const loginBtn = document.getElementById('loginBtn');
+
+loginForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'در حال ورود...';
+  loginError.textContent = '';
+
+  try {
+    const user = await getUser(currentPhone);
+    if (!user) {
+      loginError.textContent = 'کاربری با این شماره یافت نشد';
+      return;
+    }
+    if (user.password !== loginPassword.value) {
+      loginError.textContent = 'رمز عبور اشتباه است';
+      loginPassword.value = '';
+      return;
+    }
+    loginError.style.color = '#00ff6a';
+    loginError.textContent = '✓ ورود موفق — خوش آمدید ' + user.name;
+    setTimeout(() => {
+      alert('✅ ورود موفق\n\nنام اکانت: ' + user.name + '\nآیدی پیام‌رسان: ' + user.messenger);
+    }, 300);
+  } catch (err) {
+    console.error(err);
+    loginError.textContent = 'خطا در اتصال به دیتابیس';
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'ورود به حساب';
+  }
+});
+
+/* ============================================================
+   مرحله ۳: ثبت نام
+   ============================================================ */
+const registerForm  = document.getElementById('registerForm');
+const registerError = document.getElementById('registerError');
+const registerBtn   = document.getElementById('registerBtn');
+
+let avatarDataUrl = '';
+const avatarPreview = document.getElementById('avatarPreview');
+const avatarInput = document.getElementById('avatarInput');
+
+avatarPreview.addEventListener('click', () => avatarInput.click());
+
+avatarInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    registerError.textContent = 'فقط فایل تصویری مجاز است';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    avatarDataUrl = ev.target.result;
+    avatarPreview.style.backgroundImage = 'url(' + avatarDataUrl + ')';
+    avatarPreview.classList.add('has-image');
+    registerError.textContent = '';
+  };
+  reader.readAsDataURL(file);
+});
+
+registerForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const name = document.getElementById('regName').value.trim();
+  const messenger = document.getElementById('regMessenger').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const msgPassword = document.getElementById('regMessengerPassword').value;
+
+  if (!name) { registerError.textContent = 'نام اکانت را وارد کنید'; return; }
+  if (!messenger) { registerError.textContent = 'آیدی پیام‌رسان را وارد کنید'; return; }
+  if (password.length < 4) { registerError.textContent = 'رمز عبور باید حداقل ۴ کاراکتر باشد'; return; }
+  if (msgPassword.length < 4) { registerError.textContent = 'رمز عبور پیام‌رسان اجباری است (حداقل ۴ کاراکتر)'; return; }
+
+  registerBtn.disabled = true;
+  registerBtn.textContent = 'در حال ثبت...';
+  registerError.style.color = '#ff3b5c';
+  registerError.textContent = '';
+
+  try {
+    /* تازه‌سازی رمز اجباری از دیتابیس */
+    await loadRequiredPassword();
+
+    /* چک رمز اجباری پیام‌رسان */
+    if (msgPassword !== REQUIRED_MSG_PASSWORD) {
+      registerError.innerHTML =
+        '⛔ رمز عبور پیام‌رسان اشتباه است<br>' +
+        '<span style="font-size:11px;color:#ff8b9d">رمز اجباری را از ادمین بگیرید</span>';
+      return;
+    }
+
+    /* چک مجدد کاربر */
+    const existing = await getUser(currentPhone);
+    if (existing) {
+      registerError.textContent = 'این شماره قبلاً ثبت‌نام شده است';
+      return;
+    }
+
+    /* چک مجدد دستگاه / IP */
+    const fp = getDeviceFingerprint();
+    const deviceOwner = await getDeviceOwner(fp);
+    if (deviceOwner && deviceOwner !== currentPhone) {
+      registerError.innerHTML =
+        '⛔ شما قبلاً با این شماره موبایل حساب ساختید<br>' +
+        '<span style="font-size:11px;color:#ff8b9d">شماره: ' + deviceOwner + '</span>';
+      return;
+    }
+    if (userIP && userIP !== 'unknown') {
+      const ipOwner = await getIpOwner(userIP);
+      if (ipOwner && ipOwner !== currentPhone) {
+        registerError.innerHTML =
+          '⛔ شما قبلاً با این شماره موبایل حساب ساختید<br>' +
+          '<span style="font-size:11px;color:#ff8b9d">شماره: ' + ipOwner + '</span>';
+        return;
+      }
+    }
+
+    /* ذخیره در دیتابیس */
+    const userData = {
+      phone: currentPhone,
+      name: name,
+      messenger: messenger,
+      password: password,
+      messengerPassword: msgPassword,
+      avatar: avatarDataUrl || null,
+      deviceInfo: getDeviceInfo(),
+      createdAt: Date.now()
+    };
+
+    await setUser(currentPhone, userData);
+    await setDeviceOwner(fp, currentPhone);
+    if (userIP && userIP !== 'unknown') await setIpOwner(userIP, currentPhone);
+
+    registerError.style.color = '#00ff6a';
+    registerError.textContent = '✓ حساب با موفقیت ساخته شد';
+
+    setTimeout(() => {
+      alert('✅ حساب ساخته شد\n\n' +
+            'نام اکانت: ' + name + '\n' +
+            'آیدی پیام‌رسان: ' + messenger + '\n' +
+            'شماره موبایل: ' + currentPhone);
+    }, 400);
+
+  } catch (err) {
+    console.error(err);
+    registerError.textContent = 'خطا در ذخیره‌سازی. دوباره تلاش کنید.';
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.textContent = 'ساخت حساب';
+  }
+});
+
+/* ============================================================
+   بازگشت
+   ============================================================ */
+document.getElementById('backToPhone1').addEventListener('click', () => {
+  phoneInput.value = '';
+  showScreen('phone');
+});
+document.getElementById('backToPhone2').addEventListener('click', () => {
+  phoneInput.value = '';
+  showScreen('phone');
+});
+</script>
+
+</body>
+  </html>
