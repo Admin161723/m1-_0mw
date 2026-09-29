@@ -15,19 +15,12 @@ body {
 }
 
 #auth {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow-y: auto;
-  opacity: 0;
-  visibility: hidden;
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; overflow-y: auto;
+  opacity: 0; visibility: hidden;
   transition: opacity .9s ease, visibility .9s ease;
 }
-
 #auth.show { opacity: 1; visibility: visible; }
 
 .auth-card {
@@ -43,7 +36,6 @@ body {
   -webkit-backdrop-filter: blur(2px);
   animation: cardIn .8s ease both;
 }
-
 @keyframes cardIn {
   from { transform: translateY(25px) scale(.97); opacity: 0; }
   to   { transform: translateY(0) scale(1); opacity: 1; }
@@ -51,158 +43,81 @@ body {
 
 .screen { display: none; }
 .screen.active { display: block; animation: fadeUp .45s ease both; }
-
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .auth-logo {
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  color: #00ff6a;
+  text-align: center; font-size: 22px; font-weight: bold;
+  letter-spacing: 4px; color: #00ff6a;
   text-shadow: 0 0 12px #00ff6a, 0 0 30px rgba(0, 255, 106, .7);
 }
-
 .auth-sub {
-  text-align: center;
-  font-size: 12px;
-  color: #b6ffd1;
-  margin: 8px 0 22px;
-  direction: rtl;
-  text-shadow: 0 0 8px rgba(0, 0, 0, .95), 0 0 4px rgba(0, 0, 0, .9);
+  text-align: center; font-size: 12px; color: #b6ffd1;
+  margin: 8px 0 22px; direction: rtl;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .95);
 }
 
 .field { margin-bottom: 13px; }
-
 .field input {
-  width: 100%;
-  padding: 13px 15px;
+  width: 100%; padding: 13px 15px;
   background: rgba(0, 255, 106, .12);
   border: 1px solid rgba(0, 255, 106, .4);
-  border-radius: 9px;
-  color: #eaffef;
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-  transition: .25s;
-  direction: rtl;
+  border-radius: 9px; color: #eaffef;
+  font-family: inherit; font-size: 14px;
+  outline: none; transition: .25s; direction: rtl;
   text-shadow: 0 0 4px rgba(0, 0, 0, .6);
 }
-
 .field input::placeholder { color: #9fe6b9; }
-
 .field input:focus {
-  border-color: #00ff6a;
-  background: rgba(0, 255, 106, .2);
+  border-color: #00ff6a; background: rgba(0, 255, 106, .2);
   box-shadow: 0 0 18px rgba(0, 255, 106, .5);
 }
-
 .field input.ltr { direction: ltr; text-align: right; }
 
 .btn {
-  width: 100%;
-  margin-top: 8px;
-  padding: 14px;
+  width: 100%; margin-top: 8px; padding: 14px;
   background: linear-gradient(90deg, #00913f, #00ff6a);
-  border: none;
-  border-radius: 9px;
-  color: #001a0c;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: .25s;
-  box-shadow: 0 0 22px rgba(0, 255, 106, .5);
+  border: none; border-radius: 9px;
+  color: #001a0c; font-family: inherit; font-size: 15px;
+  font-weight: bold; letter-spacing: 1px; cursor: pointer;
+  transition: .25s; box-shadow: 0 0 22px rgba(0, 255, 106, .5);
 }
-
 .btn:hover { transform: translateY(-2px); box-shadow: 0 0 34px rgba(0, 255, 106, .85); }
 .btn:active { transform: translateY(0); }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
 .btn-link {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  color: #b6ffd1;
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  transition: .25s;
+  width: 100%; margin-top: 10px; padding: 10px;
+  background: transparent; border: none; color: #b6ffd1;
+  font-family: inherit; font-size: 13px; cursor: pointer;
   text-decoration: underline dotted;
   text-shadow: 0 0 6px rgba(0, 0, 0, .9);
 }
-
 .btn-link:hover { color: #00ff6a; }
 
-.avatar-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
+.avatar-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
 .avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
+  width: 100px; height: 100px; border-radius: 50%;
   border: 2px dashed rgba(0, 255, 106, .6);
   background: rgba(0, 255, 106, .1) center/cover no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: .3s;
-  position: relative;
-  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .3s; position: relative; overflow: hidden;
 }
-
-.avatar:hover {
-  border-color: #00ff6a;
-  box-shadow: 0 0 24px rgba(0, 255, 106, .6);
-  transform: scale(1.04);
-}
-
+.avatar:hover { border-color: #00ff6a; box-shadow: 0 0 24px rgba(0, 255, 106, .6); transform: scale(1.04); }
 .avatar svg { width: 34px; height: 34px; color: #9fe6b9; transition: .3s; }
 .avatar:hover svg { color: #00ff6a; }
-
-.avatar.has-image {
-  border-style: solid;
-  border-color: #00ff6a;
-  box-shadow: 0 0 22px rgba(0, 255, 106, .5);
-}
+.avatar.has-image { border-style: solid; border-color: #00ff6a; box-shadow: 0 0 22px rgba(0, 255, 106, .5); }
 .avatar.has-image svg { display: none; }
-
-.avatar-label {
-  margin-top: 10px;
-  font-size: 11px;
-  color: #b6ffd1;
-  letter-spacing: 1px;
-  text-shadow: 0 0 6px rgba(0, 0, 0, .9);
-}
+.avatar-label { margin-top: 10px; font-size: 11px; color: #b6ffd1; letter-spacing: 1px; text-shadow: 0 0 6px rgba(0, 0, 0, .9); }
 
 .error-msg {
-  color: #ff3b5c;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 10px;
-  min-height: 16px;
-  line-height: 1.6;
+  color: #ff3b5c; font-size: 12px; text-align: center;
+  margin-top: 10px; min-height: 16px; line-height: 1.6;
   text-shadow: 0 0 8px rgba(255, 59, 92, .6), 0 0 4px rgba(0, 0, 0, .9);
 }
-
-.status-msg {
-  text-align: center;
-  font-size: 11px;
-  color: #ffdd57;
-  margin-top: 6px;
-  min-height: 14px;
-}
+.status-msg { text-align: center; font-size: 11px; color: #ffdd57; margin-top: 6px; min-height: 14px; }
 </style>
 </head>
 <body>
@@ -210,7 +125,6 @@ body {
 <div id="auth">
   <div class="auth-card">
 
-    <!-- مرحله ۱ -->
     <div class="screen active" id="screen-phone">
       <div class="auth-logo">DARKWAM</div>
       <div class="auth-sub">شماره موبایل خود را وارد کنید</div>
@@ -226,7 +140,6 @@ body {
       </form>
     </div>
 
-    <!-- مرحله ۲ -->
     <div class="screen" id="screen-login">
       <div class="auth-logo">LOGIN</div>
       <div class="auth-sub" id="loginSub">رمز عبور خود را وارد کنید</div>
@@ -240,7 +153,6 @@ body {
       </form>
     </div>
 
-    <!-- مرحله ۳ -->
     <div class="screen" id="screen-register">
       <div class="auth-logo">SIGN UP</div>
       <div class="auth-sub">حساب کاربری جدید بسازید</div>
@@ -282,19 +194,20 @@ body {
 
 <script type="module">
 /* ============================================================
-   ⚙️ اتصال به دیتابیس Upstash Redis (REST API)
+   ⚙️ اتصال به Upstash Redis
    ============================================================ */
 const REDIS_URL   = 'https://related-griffon-319857.upstash.io';
 const REDIS_TOKEN = 'gQAAAAAABOFxAAIgcDIyZTNlNzRhOGY5Y2E0ODYxOGYwNTI4OTdiZGJhOTZkNQ';
 
-async function redis(...args) {
+/* درخواست به Redis — همیشه آرایه فرمان می‌فرستیم */
+async function redisCmd(command, ...args) {
   const res = await fetch(REDIS_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${REDIS_TOKEN}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(args)
+    body: JSON.stringify([command, ...args])
   });
   if (!res.ok) throw new Error('Redis HTTP ' + res.status);
   const data = await res.json();
@@ -302,77 +215,75 @@ async function redis(...args) {
   return data.result;
 }
 
-/* ============================================================
-   🔑 کلیدهای دیتابیس
-   ------------------------------------------------------------
-   darkwam:user:<phone>          → JSON اطلاعات کاربر
-   darkwam:device:<fingerprint>  → phone صاحب دستگاه
-   darkwam:ip:<ip>               → phone صاحب IP
-   darkwam:config:messenger_password → رمز اجباری پیام‌رسان (ادمین ست می‌کند)
-   ============================================================ */
 const K = {
-  user:   phone => `darkwam:user:${phone}`,
-  device: fp    => `darkwam:device:${fp}`,
-  ip:     ip    => `darkwam:ip:${ip}`,
+  user:       phone => `darkwam:user:${phone}`,
+  device:     fp    => `darkwam:device:${fp}`,
+  ip:         ip    => `darkwam:ip:${ip}`,
   cfgMsgPass: 'darkwam:config:messenger_password'
 };
 
-/* رمز اجباری پیام‌رسان — از دیتابیس خوانده می‌شود */
-const FALLBACK_MSG_PASSWORD = 'DARKWAM2024'; // فقط اگر تو دیتابیس ست نشده باشد
-
+/* ============================================================
+   🔐 رمز اجباری پیام‌رسان — فقط از دیتابیس خونده می‌شه
+   ============================================================ */
 let REQUIRED_MSG_PASSWORD = null;
 
 async function loadRequiredPassword() {
   try {
-    const v = await redis('GET', K.cfgMsgPass);
-    REQUIRED_MSG_PASSWORD = (v && typeof v === 'string') ? v : FALLBACK_MSG_PASSWORD;
+    const raw = await redisCmd('GET', K.cfgMsgPass);
+    console.log('%c[DARKWAM] مقدار خام از دیتابیس:', 'color:#00ff6a', raw);
+
+    let v = raw;
+
+    /* اگه رشته با کوتیشن ذخیره شده باشه، پاکش کن */
+    if (typeof v === 'string') {
+      v = v.trim();
+      if (v.startsWith('"') && v.endsWith('"')) {
+        try { v = JSON.parse(v); } catch (e) {}
+      }
+    }
+
+    if (typeof v === 'string' && v.length > 0) {
+      REQUIRED_MSG_PASSWORD = v;
+      console.log('%c✅ رمز اجباری از دیتابیس بارگذاری شد: ' + v, 'color:#00ff6a;font-weight:bold');
+    } else {
+      REQUIRED_MSG_PASSWORD = null;
+      console.warn('⚠️ کلید darkwam:config:messenger_password تو دیتابیس نیست یا خالیه');
+    }
   } catch (e) {
-    console.warn('[DARKWAM] config load failed, using fallback', e);
-    REQUIRED_MSG_PASSWORD = FALLBACK_MSG_PASSWORD;
+    console.warn('[DARKWAM] خطا در خواندن از دیتابیس:', e);
+    REQUIRED_MSG_PASSWORD = null;
   }
   return REQUIRED_MSG_PASSWORD;
 }
 
-/* کمکی‌ها */
+/* توابع کاربر/دستگاه/IP */
 async function getUser(phone) {
   try {
-    const raw = await redis('GET', K.user(phone));
+    const raw = await redisCmd('GET', K.user(phone));
     if (!raw) return null;
     return typeof raw === 'string' ? JSON.parse(raw) : raw;
   } catch (e) { return null; }
 }
-
 async function setUser(phone, data) {
-  await redis('SET', K.user(phone), JSON.stringify(data));
+  await redisCmd('SET', K.user(phone), JSON.stringify(data));
 }
-
 async function getDeviceOwner(fp) {
-  try {
-    const v = await redis('GET', K.device(fp));
-    return v || null;
-  } catch (e) { return null; }
+  try { return (await redisCmd('GET', K.device(fp))) || null; } catch (e) { return null; }
 }
-
 async function setDeviceOwner(fp, phone) {
-  await redis('SET', K.device(fp), phone);
+  await redisCmd('SET', K.device(fp), phone);
 }
-
 async function getIpOwner(ip) {
-  try {
-    const v = await redis('GET', K.ip(ip));
-    return v || null;
-  } catch (e) { return null; }
+  try { return (await redisCmd('GET', K.ip(ip))) || null; } catch (e) { return null; }
 }
-
 async function setIpOwner(ip, phone) {
-  if (ip && ip !== 'unknown') await redis('SET', K.ip(ip), phone);
+  if (ip && ip !== 'unknown') await redisCmd('SET', K.ip(ip), phone);
 }
 
 /* ============================================================
    اطلاعات دستگاه و IP
    ============================================================ */
 let userIP = 'unknown';
-
 async function fetchIP() {
   try {
     const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
@@ -448,7 +359,7 @@ function getDeviceInfo() {
 }
 
 /* ============================================================
-   🎵 صدای هکری-ترسناک سینمایی
+   🎵 صدای هکری-ترسناک
    ============================================================ */
 let audioCtx = null, masterGain = null, audioStarted = false;
 
@@ -460,7 +371,6 @@ function startHackerMusic() {
   audioStarted = true;
 
   const now = audioCtx.currentTime;
-
   masterGain = audioCtx.createGain();
   masterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
   masterGain.gain.exponentialRampToValueAtTime(0.7, audioCtx.currentTime + 4);
@@ -471,21 +381,14 @@ function startHackerMusic() {
   const rbuf = audioCtx.createBuffer(2, rlen, audioCtx.sampleRate);
   for (let ch = 0; ch < 2; ch++) {
     const d = rbuf.getChannelData(ch);
-    for (let i = 0; i < rlen; i++) {
-      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / rlen, 2.4);
-    }
+    for (let i = 0; i < rlen; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / rlen, 2.4);
   }
   reverb.buffer = rbuf;
-
   const wetGain = audioCtx.createGain(); wetGain.gain.value = 0.55;
   const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.75;
-  const reverbSend = audioCtx.createGain(); reverbSend.gain.value = 1;
-
   masterGain.connect(dryGain); dryGain.connect(audioCtx.destination);
-  masterGain.connect(reverbSend); reverbSend.connect(reverb);
-  reverb.connect(wetGain); wetGain.connect(audioCtx.destination);
+  masterGain.connect(reverb); reverb.connect(wetGain); wetGain.connect(audioCtx.destination);
 
-  /* ساب‌بیس */
   const sub = audioCtx.createOscillator();
   sub.type = 'sine'; sub.frequency.value = 25;
   const subGain = audioCtx.createGain(); subGain.gain.value = 0.65;
@@ -498,14 +401,10 @@ function startHackerMusic() {
   subLFO.connect(subLFOGain); subLFOGain.connect(sub.frequency);
   subLFO.start(now);
 
-  /* پد دیسونانت */
   const padGain = audioCtx.createGain(); padGain.gain.value = 0.16;
   const padFilter = audioCtx.createBiquadFilter();
-  padFilter.type = 'lowpass';
-  padFilter.frequency.value = 520;
-  padFilter.Q.value = 12;
+  padFilter.type = 'lowpass'; padFilter.frequency.value = 520; padFilter.Q.value = 12;
   padGain.connect(padFilter); padFilter.connect(masterGain);
-
   [41.20, 43.65, 46.25, 61.74, 65.41, 82.41].forEach((f, i) => {
     const osc = audioCtx.createOscillator();
     osc.type = i % 2 === 0 ? 'sawtooth' : 'triangle';
@@ -515,13 +414,6 @@ function startHackerMusic() {
     osc.start(now);
   });
 
-  const padLFO = audioCtx.createOscillator();
-  padLFO.type = 'sine'; padLFO.frequency.value = 0.07;
-  const padLFOGain = audioCtx.createGain(); padLFOGain.gain.value = 260;
-  padLFO.connect(padLFOGain); padLFOGain.connect(padFilter.frequency);
-  padLFO.start(now);
-
-  /* نویز هکری */
   const noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 4, audioCtx.sampleRate);
   const nd = noiseBuf.getChannelData(0);
   for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
@@ -532,21 +424,10 @@ function startHackerMusic() {
   noise.connect(nBp); nBp.connect(nGain); nGain.connect(masterGain);
   noise.start(now);
 
-  const noise2 = audioCtx.createBufferSource(); noise2.buffer = noiseBuf; noise2.loop = true;
-  const hp = audioCtx.createBiquadFilter();
-  hp.type = 'highpass'; hp.frequency.value = 4200;
-  const n2Gain = audioCtx.createGain(); n2Gain.gain.value = 0.02;
-  noise2.connect(hp); hp.connect(n2Gain); n2Gain.connect(masterGain);
-  noise2.start(now);
-
   setInterval(heartbeat, 1400);
-  setInterval(hackerTyping, 90);
   setInterval(() => { if (Math.random() > 0.45) glitchBlip(); }, 320);
   setInterval(bassDrop, 4500);
   setInterval(() => { if (Math.random() > 0.55) metalScreech(); }, 5500);
-  setInterval(tensionRiser, 8000);
-  setInterval(() => { if (Math.random() > 0.5) whisper(); }, 4000);
-  setInterval(() => { if (Math.random() > 0.7) alarm(); }, 9000);
 }
 
 function heartbeat() {
@@ -566,24 +447,6 @@ function heartbeat() {
     osc.start(t + offset); osc.stop(t + offset + 0.36);
   });
 }
-
-function hackerTyping() {
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  if (Math.random() > 0.35) return;
-  const t = audioCtx.currentTime;
-  const osc = audioCtx.createOscillator();
-  osc.type = 'square';
-  osc.frequency.value = 2000 + Math.random() * 3500;
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.045, t + 0.001);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
-  const hp = audioCtx.createBiquadFilter();
-  hp.type = 'highpass'; hp.frequency.value = 1800;
-  osc.connect(hp); hp.connect(g); g.connect(masterGain);
-  osc.start(t); osc.stop(t + 0.03);
-}
-
 function glitchBlip() {
   if (!audioCtx || audioCtx.state !== 'running') return;
   const t = audioCtx.currentTime;
@@ -597,7 +460,6 @@ function glitchBlip() {
   osc.connect(g); g.connect(masterGain);
   osc.start(t); osc.stop(t + 0.12);
 }
-
 function bassDrop() {
   if (!audioCtx || audioCtx.state !== 'running') return;
   const t = audioCtx.currentTime;
@@ -612,7 +474,6 @@ function bassDrop() {
   osc.connect(g); g.connect(masterGain);
   osc.start(t); osc.stop(t + 1.5);
 }
-
 function metalScreech() {
   if (!audioCtx || audioCtx.state !== 'running') return;
   const t = audioCtx.currentTime;
@@ -632,60 +493,6 @@ function metalScreech() {
   osc.start(t); osc.stop(t + dur + 0.1);
 }
 
-function tensionRiser() {
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  const t = audioCtx.currentTime;
-  const dur = 2.5;
-  const osc = audioCtx.createOscillator();
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(180, t);
-  osc.frequency.exponentialRampToValueAtTime(1800, t + dur);
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.06, t + dur * 0.7);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  osc.connect(g); g.connect(masterGain);
-  osc.start(t); osc.stop(t + dur + 0.05);
-}
-
-function whisper() {
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  const t = audioCtx.currentTime;
-  const dur = 0.8 + Math.random() * 1.2;
-  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
-  const d = buffer.getChannelData(0);
-  for (let i = 0; i < d.length; i++) {
-    const env = Math.sin(Math.PI * i / d.length);
-    d[i] = (Math.random() * 2 - 1) * env;
-  }
-  const src = audioCtx.createBufferSource(); src.buffer = buffer;
-  const bp = audioCtx.createBiquadFilter();
-  bp.type = 'bandpass';
-  bp.frequency.setValueAtTime(2000 + Math.random() * 2000, t);
-  bp.frequency.linearRampToValueAtTime(500 + Math.random() * 700, t + dur);
-  bp.Q.value = 11;
-  const g = audioCtx.createGain(); g.gain.value = 0.18;
-  src.connect(bp); bp.connect(g); g.connect(masterGain);
-  src.start(t);
-}
-
-function alarm() {
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  const t = audioCtx.currentTime;
-  [0, 0.35, 0.7].forEach(offset => {
-    const osc = audioCtx.createOscillator();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(1200, t + offset);
-    osc.frequency.setValueAtTime(900, t + offset + 0.18);
-    const g = audioCtx.createGain();
-    g.gain.setValueAtTime(0.0001, t + offset);
-    g.gain.exponentialRampToValueAtTime(0.07, t + offset + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + offset + 0.32);
-    osc.connect(g); g.connect(masterGain);
-    osc.start(t + offset); osc.stop(t + offset + 0.35);
-  });
-}
-
 ['click', 'touchstart', 'keydown', 'mousemove'].forEach(ev => {
   document.addEventListener(ev, () => {
     if (!audioStarted) startHackerMusic();
@@ -694,21 +501,18 @@ function alarm() {
 });
 
 /* ============================================================
-   بعد از ۳ ثانیه برو به صفحه ثبت نام/ورود
+   نمایش فرم بعد از ۳ ثانیه + پیش‌بارگذاری رمز اجباری
    ============================================================ */
 const auth = document.getElementById('auth');
 setTimeout(() => auth.classList.add('show'), 3000);
 
-/* پیش‌بارگذاری رمز اجباری از دیتابیس */
-loadRequiredPassword().then(p => {
-  console.log('%c[DARKWAM] رمز اجباری پیام‌رسان از دیتابیس بارگذاری شد', 'color:#00ff6a');
-});
+/* بارگذاری رمز اجباری از دیتابیس با شروع برنامه */
+loadRequiredPassword();
 
 /* ============================================================
    ناوبری
    ============================================================ */
 let currentPhone = '';
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
@@ -747,7 +551,6 @@ phoneForm.addEventListener('submit', async e => {
   connStatus.textContent = '';
 
   try {
-    /* 1) کاربر قبلاً ثبت‌نام کرده؟ */
     const existingUser = await getUser(phone);
     if (existingUser) {
       document.getElementById('loginSub').textContent = 'ورود به حساب ' + phone;
@@ -756,7 +559,6 @@ phoneForm.addEventListener('submit', async e => {
       return;
     }
 
-    /* 2) این دستگاه / IP قبلاً با شماره دیگه‌ای ثبت شده؟ */
     const fp = getDeviceFingerprint();
     const deviceOwner = await getDeviceOwner(fp);
     if (deviceOwner && deviceOwner !== phone) {
@@ -778,8 +580,9 @@ phoneForm.addEventListener('submit', async e => {
       }
     }
 
-    /* 3) برو به ثبت‌نام */
-    await loadRequiredPassword(); // تازه‌سازی رمز اجباری
+    /* تازه‌سازی رمز اجباری قبل از رفتن به ثبت‌نام */
+    await loadRequiredPassword();
+
     showScreen('register');
     setTimeout(() => document.getElementById('regMessenger').focus(), 100);
 
@@ -844,7 +647,6 @@ const avatarPreview = document.getElementById('avatarPreview');
 const avatarInput = document.getElementById('avatarInput');
 
 avatarPreview.addEventListener('click', () => avatarInput.click());
-
 avatarInput.addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -881,14 +683,21 @@ registerForm.addEventListener('submit', async e => {
   registerError.textContent = '';
 
   try {
-    /* تازه‌سازی رمز اجباری از دیتابیس */
+    /* 🔑 خواندن رمز اجباری از دیتابیس (تازه) */
     await loadRequiredPassword();
 
-    /* چک رمز اجباری پیام‌رسان */
-    if (msgPassword !== REQUIRED_MSG_PASSWORD) {
+    if (!REQUIRED_MSG_PASSWORD) {
+      registerError.innerHTML =
+        '⛔ سیستم موقتاً غیرفعال است<br>' +
+        '<span style="font-size:11px;color:#ff8b9d">دوباره تلاش کنید</span>';
+      return;
+    }
+
+    /* چک رمز — با trim برای حذف فاصله‌های اضافی */
+    if (msgPassword.trim() !== REQUIRED_MSG_PASSWORD.trim()) {
       registerError.innerHTML =
         '⛔ رمز عبور پیام‌رسان اشتباه است<br>' +
-        '<span style="font-size:11px;color:#ff8b9d">رمز اجباری را از ادمین بگیرید</span>';
+        '<span style="font-size:11px;color:#ff8b9d">رمز را از ادمین بگیرید</span>';
       return;
     }
 
